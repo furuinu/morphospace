@@ -1,6 +1,6 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.8.8 — Fast Gallery & Stable Palette</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.8.9 — Auto Naming</title>
 <style>
-:root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
+:root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
 
 :root{--ink:#e4f2f0;--muted:#a3b9bd;--line:#314356;--paper:#0a111b;--ivory:#101a29;--green:#3e9279}
@@ -1024,6 +1024,47 @@ function morphName(g){const d=g.morphDNA||{};
  const a=(d.radial||0)>.7?'放射':'偏在',b=(d.void||0)>.73?'空隙':(d.flat||0)>.75?'薄葉':(d.axial||0)>.72?'伸長':'胞状';
  const c=(d.branch||0)>.7?'枝体':(d.fusion||0)>.66?'融合体':'生体';return a+b+c;
 }
+// Proper names are distinct from the descriptive morphName taxonomy.
+// Each is stable for a seed/genome; actual assigned names persist on lineage records.
+function makeSpecimenName(genome,seed,used=null){
+ const g=genome||{}, d=g.morphDNA||{};
+ const rng=seedRng(((Number(seed)||1)>>>0)+731831);
+ const families=[
+  ['radial',['ラディ','ロタ','セフィ','オルビ']],
+  ['void',['ヴォラ','カヴィ','ネブラ','オルナ']],
+  ['flat',['フィラ','ペリ','リーフ','シルフィ']],
+  ['axial',['アクシ','ティル','ネリ','ヴェル']],
+  ['branch',['ラミ','デンド','アルボ','ケリ']],
+  ['budding',['ミオ','ブルナ','ノヴァ','ユル']],
+  ['fusion',['メル','ユニ','ソル','ネオ']],
+  ['twist',['キリ','スピラ','トル','リュア']]
+ ];
+ const ranked=families.slice().sort((a,b)=>(Number(d[b[0]])||0)-(Number(d[a[0]])||0));
+ const primary=ranked[Math.floor(rng()*Math.min(2,ranked.length))][1];
+ const begin=primary[Math.floor(rng()*primary.length)];
+ const colorGroups=[['シオ','リュ','アズ','キア'],['ヴェ','ミド','ネナ','リオ'],['ヴィ','ミラ','ルナ','ネリ'],['アン','コハ','オロ','エル'],['ロザ','マゼ','リラ','ユア'],['リム','セラ','ユル','イオ'],['アル','シア','ルミ','ノア']];
+ const mode=Math.max(0,Math.min(6,Math.floor(Number(g.emissionDNA?.colorMode) || 0)));
+ const middle=colorGroups[mode][Math.floor(rng()*colorGroups[mode].length)];
+ const endings=['ス','ル','ナ','ト','ラ','オン','リス','シア','ネ','ム','リア','クス','ディ','モル','リ','ア'];
+ const end=endings[Math.floor(rng()*endings.length)];
+ const base=begin+middle+end;
+ if(!used)return base;
+ let name=base,attempt=0;
+ const variations=['ア','エ','イ','オ','ウ','ナ','ラ','ス','ル','ト','ニ','モ','リ','ク','サ','ネ'];
+ while(used.has(name)){
+  // Only invoked for the uncommon name collision in one generated population.
+  name=base+variations[attempt%variations.length]+(attempt>=variations.length?String(Math.floor(attempt/variations.length)+1):'');
+  attempt++;
+ }
+ used.add(name);return name;
+}
+function ensurePopulationNames(records){
+ const taken=new Set(records.filter(x=>x&&typeof x.name==='string'&&x.name.trim()).map(x=>x.name));
+ for(const rec of records){if(!rec)continue;
+  if(typeof rec.name!=='string'||!rec.name.trim())rec.name=makeSpecimenName(rec.genome,rec.seed,taken);
+ }
+}
+function recordDisplayName(rec){return rec?.name||makeSpecimenName(rec?.genome,rec?.seed)}
 function morphGrowth(g){
  const d=g.morphDNA,r=seedRng(g.seed+911627),blobs=[],links=[],cuts=[];
  const baseY=.50+1.50*d.axial,baseX=.32+1.09*(1-d.axial*.42),baseZ=.14+.92*(1-d.flat);
@@ -2470,8 +2511,8 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false){
  meshes={shell:upload(gl,dynamicMesh(nextSpec.shell,0,(nextSpec.seed*.00013)%TAU,[0,0,0],null,shellGlow)),parts:groups.map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind})),cilia:ciliaGroups.map(mesh=>upload(gl,mesh))};
  rigMeshes=nextSpec.rigs;spec=nextSpec;spec.emissionSites=spec.emissionSites||buildEmissionSites(spec);spec.baseViewDistance=nextView;spec.viewDistance=preserveView&&oldView?oldView:nextView;
  if(updateMeta){applyEmissionDNAtoUI(getSpecEmissionDNA(spec));const seed=spec.seed;$('index').textContent='SPECIMEN / '+String(selected+1).padStart(2,'0')+' ・ SEED '+seed;
- $('name').textContent=spec.morphology?.name||(spec.genome.hybridStyle!==null&&spec.genome.hybridStyle!==spec.style?'混成体 '+PLANS[spec.style]+' × '+PLANS[spec.genome.hybridStyle]:PLANS[spec.style]+' / '+ARCHETYPES[spec.style][spec.genome.archetype]);
- $('description').textContent=spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。生成済みの立体を動かしたあと、その時点の変形結果を左右反転コピーしてロールシャッハ状の左右対称個体として描画します。固定8分類を使用せず、成長・融合・抑制で形成された立体です。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。';
+ $('name').textContent=recordDisplayName(currentIndividual())||morphName(spec.genome);
+ $('description').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。生成済みの立体を動かしたあと、その時点の変形結果を左右反転コピーしてロールシャッハ状の左右対称個体として描画します。固定8分類を使用せず、成長・融合・抑制で形成された立体です。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
  $('palette').innerHTML=pickPalette(seed,spec.genome.colorDNA,spec.genome.patternDNA).hex.map(c=>'<i style="background:'+c+'"></i>').join('');
  const dna=spec.genome.motionDNA||normalizedMotionDNA(null,seed);$('motionDNAInfo').innerHTML='<b>主運動：</b>'+MOTION_LABELS[dna.primary]+'　<b>副運動：</b>'+MOTION_LABELS[dna.secondary]+'<div>速度 '+Math.round(dna.tempo*100)+'% ／ 局所性 '+Math.round(dna.locality*100)+'% ／ 停止 '+Math.round(dna.rest*100)+'% ／ 伝播 '+Math.round(dna.propagation*100)+'%</div>';
  const bd=spec.genome.bioDNA;
@@ -2660,15 +2701,15 @@ function drawGpuPreview(target,sp){
  }
 }
 function currentIndividual(){return selected>=0&&population[selected]?population[selected]:null;}
-function snapshotIndividual(rec){return rec?copyJSON({id:rec.id,seed:rec.seed,style:rec.style,genome:rec.genome,generation:rec.generation,parents:rec.parents,mutationLog:rec.mutationLog}):null;}
+function snapshotIndividual(rec){return rec?copyJSON({id:rec.id,name:recordDisplayName(rec),seed:rec.seed,style:rec.style,genome:rec.genome,generation:rec.generation,parents:rec.parents,mutationLog:rec.mutationLog}):null;}
 function renderPedigree(){
  const a=parentSlots.A,b=parentSlots.B;
- $('parentACard').textContent=a?'親A：第'+a.generation+'世代 / '+(a.genome?.morphDNA?morphName(a.genome):PLANS[a.style])+' / '+a.id:'親A：未選択';
- $('parentBCard').textContent=b?'親B：第'+b.generation+'世代 / '+(b.genome?.morphDNA?morphName(b.genome):PLANS[b.style])+' / '+b.id:'親B：未選択';
+ $('parentACard').textContent=a?'親A：第'+a.generation+'世代 / '+recordDisplayName(a)+' / '+a.id:'親A：未選択';
+ $('parentBCard').textContent=b?'親B：第'+b.generation+'世代 / '+recordDisplayName(b)+' / '+b.id:'親B：未選択';
  $('parentACard').classList.toggle('selected',!!a);$('parentBCard').classList.toggle('selected',!!b);
  const btnA=$('setParentA'), btnB=$('setParentB');
- if(btnA){btnA.innerHTML='親Aに登録<span class="slot-state">'+(a?('設定済み：'+a.id.slice(-7)):'未選択')+'</span>';btnA.classList.toggle('slot-filled',!!a)}
- if(btnB){btnB.innerHTML='親Bに登録<span class="slot-state">'+(b?('設定済み：'+b.id.slice(-7)):'未選択')+'</span>';btnB.classList.toggle('slot-filled-b',!!b)}
+ if(btnA){btnA.innerHTML='親Aに登録<span class="slot-state">'+(a?('設定済み：'+recordDisplayName(a)):'未選択')+'</span>';btnA.classList.toggle('slot-filled',!!a)}
+ if(btnB){btnB.innerHTML='親Bに登録<span class="slot-state">'+(b?('設定済み：'+recordDisplayName(b)):'未選択')+'</span>';btnB.classList.toggle('slot-filled-b',!!b)}
  $('breed').disabled=!(a&&b&&a.id!==b.id)||busy;
  if($('breedQuick')){$('breedQuick').disabled=$('breed').disabled;$('breedQuick').textContent=(!a||!b)?'A × B 交配（親を選択）':(a.id===b.id?'同一個体は交配不可':'A × B 交配 / 64体');}
  $('genBadge').textContent='第'+generation+'世代・'+({wild:'野生',mutate:'単親変異',breed:'2親交配'}[collectionMode]||'読込');
@@ -2680,7 +2721,7 @@ function renderPedigree(){
 }
 function updateFamilyInfo(){const rec=currentIndividual();if(!rec)return;
  const mark=rec.mutationLog?.length||0;
- $('familyInfo').textContent='個体 '+rec.id+'　｜　第'+rec.generation+'世代　｜　'+(rec.parents?.length?('親 '+rec.parents.map(id=>id.slice(-7)).join(' × ')):'創始個体')+'　｜　変異 '+mark+'件　｜　色素行 '+((rec.genome.colorDNA?.rows||[]).map(x=>x+1).join('・')||'未指定');
+ $('familyInfo').textContent=recordDisplayName(rec)+' ｜ 個体 '+rec.id+'　｜　第'+rec.generation+'世代　｜　'+(rec.parents?.length?('親 '+rec.parents.map(id=>id.slice(-7)).join(' × ')):'創始個体')+'　｜　変異 '+mark+'件　｜　色素行 '+((rec.genome.colorDNA?.rows||[]).map(x=>x+1).join('・')||'未指定');
 }
 function syncPatternProfileUI(){for(let i=0;i<5;i++){const el=$("cat"+i),out=$("cat"+i+"out");if(el&&out)out.textContent=el.value+"%";} if($("patternScatterOut")) $("patternScatterOut").textContent=$("patternScatter").value+"%";}
 function readPatternProfile(){const vals=[];for(let i=0;i<5;i++)vals.push(Number($("cat"+i)?.value||0));const sum=vals.reduce((a,b)=>a+b,0)||1;return {enabled:!!$("patternLock")?.checked,weights:vals.map(v=>v/sum),scatter:clamp(Number($("patternScatter")?.value||0)/100,0,1)};}
@@ -2710,6 +2751,7 @@ async function build(seed,par=null,context=null){
  genomes=[];population=[];previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
  const variance=Number($('variance').value)/100;
  const patternProfile=readPatternProfile();
+ const usedSpecimenNames=new Set();
  for(let i=0;i<64;i++){
   const individualSeed=seeds[i],mode=collectionMode;
   const tryCount=1+Math.round(patternProfile.scatter*10);
@@ -2724,7 +2766,7 @@ async function build(seed,par=null,context=null){
   }
   const g=best.genome;
   genomes.push(g);
-  const rec={id:hashLineageId(individualSeed,i,mode,generation,ancestors.map(a=>a.id)),seed:individualSeed,style:g.style,genome:copyJSON(g),generation,parents:ancestors.map(a=>a.id),mutationLog:best.mutationLog,inherited:best.inherited,sourceSeed:Number(seed),index:i,mode};
+  const rec={id:hashLineageId(individualSeed,i,mode,generation,ancestors.map(a=>a.id)),name:makeSpecimenName(g,individualSeed,usedSpecimenNames),seed:individualSeed,style:g.style,genome:copyJSON(g),generation,parents:ancestors.map(a=>a.id),mutationLog:best.mutationLog,inherited:best.inherited,sourceSeed:Number(seed),index:i,mode};
   population.push(rec);pedigree[rec.id]=copyJSON(rec);
  }
  $('gallery').innerHTML='';$('progress').style.width='0%';$('message').textContent='軽量サムネイル64体を生成中…（詳細3Dは選択時に生成）';$('generate').disabled=true;$('same').disabled=true;renderPedigree();
@@ -2739,10 +2781,10 @@ async function build(seed,par=null,context=null){
    // Do not retain 64 preview meshes after rasterizing them.
    previewSpecimens[i]=null;
    if(i%8===0){const heading=document.createElement('div');heading.className='group-head';heading.textContent='第'+generation+'世代 / '+(collectionMode==='breed'?'交配群':collectionMode==='mutate'?'変異群':'原初群')+' '+String(Math.floor(i/8)+1).padStart(2,'0');$('gallery').append(heading)}
-   const item=document.createElement('button');item.className='item';item.setAttribute('aria-label','SPECIMEN '+(i+1)+' '+(g.morphDNA?morphName(g):PLANS[g.style]));
+   const item=document.createElement('button');item.className='item';item.setAttribute('aria-label','SPECIMEN '+(i+1)+' '+population[i].name+' / '+(g.morphDNA?morphName(g):PLANS[g.style]));
    const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawPreview(img,sp);item.append(img);
-   const name=document.createElement('strong');name.textContent=g.morphDNA?morphName(g):PLANS[g.style]+(Number.isInteger(g.hybridStyle)&&g.hybridStyle!==g.style?' × '+PLANS[g.hybridStyle]:'');item.append(name);
-   const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+generation+' / '+(g.morphDNA?'発生核':SUBS[g.material]);item.append(small);
+   const name=document.createElement('strong');name.textContent=population[i].name;item.append(name);
+   const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+generation+' / '+(g.morphDNA?morphName(g):PLANS[g.style]);item.append(small);
    item.addEventListener('click',()=>{try{loadSpecimen(i)}catch(e){fail(e)}});$('gallery').append(item);
    if(i%2===1){$('progress').style.width=Math.round((i+1)/64*100)+'%';$('message').textContent=(i+1)+' / 64 個体';await new Promise(ok=>requestAnimationFrame(ok));}
   }
@@ -2769,7 +2811,7 @@ async function importPedigree(file){if(!file)return;
   try{
    collectionSeed=String(data.collectionSeed);$('seed').value=collectionSeed;
    currentBuildContext=copyJSON(data.context||{mode:data.collectionMode||'wild'});collectionMode=data.collectionMode||'wild';
-   generation=data.generation||0;population=copyJSON(data.population);genomes=population.map(rec=>copyJSON(rec.genome));seeds=population.map(rec=>rec.seed);previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
+   generation=data.generation||0;population=copyJSON(data.population);ensurePopulationNames(population);for(const slot of ['A','B']){const parent=parentSlots[slot];if(parent&&!parent.name)parent.name=recordDisplayName(parent)}genomes=population.map(rec=>copyJSON(rec.genome));seeds=population.map(rec=>rec.seed);previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
    for(const rec of population)pedigree[rec.id]=copyJSON(rec);
    await redrawPopulation();renderPedigree();$('message').textContent='系譜JSONから第'+generation+'世代の64個体を復元しました';
   }finally{busy=false}
@@ -2784,8 +2826,8 @@ async function redrawPopulation(){
   const sp=makeSpecimen(seed,g.style,palette,true,null,variance,Number($('density').value)/100,Number($('micro').value)/100,g.archetype,null,g); previewSpecimens[i]=null;
   if(i%8===0){const heading=document.createElement('div');heading.className='group-head';heading.textContent='復元した第'+generation+'世代 / '+(i/8+1);$('gallery').append(heading)}
   const item=document.createElement('button');item.className='item';const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawPreview(img,sp);item.append(img);
-  const label=document.createElement('strong');label.textContent=g.morphDNA?morphName(g):PLANS[g.style]+(Number.isInteger(g.hybridStyle)&&g.style!==g.hybridStyle?' × '+PLANS[g.hybridStyle]:'');item.append(label);
-  const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+generation;item.append(small);
+  const label=document.createElement('strong');label.textContent=population[i].name;item.append(label);
+  const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+generation+' / '+(g.morphDNA?morphName(g):PLANS[g.style]);item.append(small);
   item.addEventListener('click',()=>{try{loadSpecimen(i)}catch(e){fail(e)}});$('gallery').append(item);
   if(i%2===1)await new Promise(ok=>requestAnimationFrame(ok));
  }
@@ -2837,8 +2879,8 @@ $('density').oninput=()=>{$('densityNum').textContent=$('density').value+'%'};$(
 for(let i=0;i<5;i++){ $('cat'+i).oninput=syncPatternProfileUI; } $('patternScatter').oninput=syncPatternProfileUI; $('patternRandom').onclick=()=>randomizePatternProfile(); syncPatternProfileUI();$('variance').oninput=()=>{$('varnum').textContent=$('variance').value};$('same').onclick=()=>build($('seed').value,null,currentBuildContext);$('generate').onclick=()=>{$('seed').value=String(Math.floor(100000+Math.random()*899999));build($('seed').value,null,{mode:'wild'})};
 $('mutate').onclick=()=>{const parent=currentIndividual();if(!parent)return;const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);build(seed,null,{mode:'mutate',parent:snapshotIndividual(parent)})};
 $('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=()=>{parentSlots={A:null,B:null};renderPedigree()};$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
-$('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-3d-'+spec.seed+'.png')},'image/png')};
-$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.3 tissue-coupled morphogenesis',collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-3d-'+spec.seed+'.json')};
+$('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.png')},'image/png')};
+$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.3 tissue-coupled morphogenesis',collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
 window.addEventListener('keydown',e=>{if(e.key==='Escape')close()});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();animating=false;fail(new Error('GPUコンテキストが失われました。アプリを再起動してください'))});
 
 </script></body></html>
