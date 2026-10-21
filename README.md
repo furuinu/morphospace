@@ -3,7 +3,7 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website (after enabling GitHub Pages):** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.8.8, fixed color placement with lightweight 64-specimen gallery.
+- **App:** [index.html](index.html) — v15.8.9, lightweight 64-specimen gallery with deterministic per-specimen names, stable palette placement and inherited genetic lineages.
 - No installation or external assets are needed. Supports touch rotation, default camera orbit, DNA mutation and breeding, procedural color patterns and bioluminescence.
 
 ## Publishing with GitHub Pages
