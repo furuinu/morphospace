@@ -16,3 +16,5 @@ Open [Settings → Pages](https://github.com/furuinu/morphospace/settings/pages)
 ## Development
 
 This public repository contains only MORPHOSPACE. The separate source repository `masala-generator` is not published here.
+
+Deployment refresh v15.9.4
