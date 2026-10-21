@@ -8,6 +8,9 @@ Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 ## Publishing with GitHub Pages
 
+Deployment refresh: MORPHOSPACE v15.9.4. The authoritative app is the root `index.html` on `main`; use the Pages deployment workflow for publishing.
+
+
 Open [Settings → Pages](https://github.com/furuinu/morphospace/settings/pages). Select **Deploy from a branch**, **main**, **/(root)**, then **Save**. GitHub will publish the root index.html and update the site on subsequent pushes.
 
 ## Development
