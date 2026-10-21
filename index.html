@@ -1,6 +1,6 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.8.10 — Quiet GPU Status</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.8.12 — Capture & Share</title>
 <style>
-:root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status[hidden]{display:none!important}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
+:root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
 
 :root{--ink:#e4f2f0;--muted:#a3b9bd;--line:#314356;--paper:#0a111b;--ivory:#101a29;--green:#3e9279}
@@ -104,15 +104,1664 @@ body{color:#eaf4f4;background:#090e18}
  .overlay .breeding-dock .slot-state{font-size:9px}
 }
 
-</style></head><body><div class="wrap"><header><div><div class="eyebrow">MORPHOGENESIS / PHYSIOLOGICAL COUPLING / v15.8.10 / DEEP SEA</div><h1>MORPHOSPACE 64</h1><p class="sub">人工生命アトラス・発生形態 × 内圧・張力の相互作用 × DNA交配・64体</p></div><span id="status" class="status" role="alert" hidden>描画エラー</span></header>
+
+/* v15.8.12: seeded ecology prose, failure-only WebGL indicator. */
+#status:not(.fail){display:none}
+.version-label{display:inline-block;font-size:11px;letter-spacing:.03em;vertical-align:middle;color:#799487;font-weight:500;white-space:nowrap}
+.overlay .desc{font-size:12px;line-height:1.95;color:#c2d6d4;white-space:normal;overflow-wrap:anywhere}
+.ecology-caption{font-size:10px;letter-spacing:.14em;color:#87c5af;margin:5px 0 0}
+/* v15.8.12 — two floating actions; breeding remains in the inspector. */
+.overlay .inspector-scroll{padding-bottom:100px}
+.capture-dock{position:absolute;bottom:12px;right:12px;width:min(44%,370px);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:rgba(8,23,35,.94);border:1px solid #4c756e;border-radius:14px;box-shadow:0 8px 24px #0007;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:20}
+.capture-dock .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:49px;font-size:14px;letter-spacing:.03em;border-color:#567b70}
+.capture-dock svg{width:23px;height:23px;flex:none}
+.breeding-tools .btn{min-height:44px;min-width:0;white-space:normal;line-height:1.45;padding:10px 6px}
+.breeding-tools{display:flex;flex-direction:column;gap:8px}
+#captureShareDialog{color:#e8f0e6;background:#10232b;border:1px solid #5a7b69;border-radius:17px;box-shadow:0 20px 80px #0009;padding:18px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;overscroll-behavior:contain}
+#captureShareDialog::backdrop{background:rgba(3,10,18,.82);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#captureShareDialog [hidden]{display:none!important}
+.capture-share-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:12px}
+.capture-share-heading h2{font-size:16px;letter-spacing:.04em;margin:0;color:#e2e7ce}
+.capture-share-heading .btn{font-size:24px;line-height:1;padding:8px 12px;min-height:42px;background:transparent;color:#d1e5dd;border-color:#50766b}
+.capture-share-preview{display:flex;align-items:center;justify-content:center;min-height:100px}
+#captureShareImage{display:block;max-width:100%;height:auto;max-height:61dvh;border-radius:10px;object-fit:contain;background:#071321;box-shadow:0 9px 30px #0005;-webkit-touch-callout:default}
+#captureShareDialog[data-mode="share"] #captureShareImage{max-height:30dvh}
+#captureShareMessage{font-size:12px;line-height:1.75;color:#c4d3ba;margin:15px 0}
+.capture-share-actions,.social-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.social-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}
+#captureShareDialog .btn{min-height:44px}
+#captureShareDialog .btn:disabled{opacity:.38;cursor:wait}
+#captureShareDialog .primary{background:#3c7354;border-color:#80a980;color:#fff8df}
+.share-field{display:flex;flex-direction:column;gap:7px;font-size:11px;color:#a6c0b5;margin:12px 0}
+.share-field textarea,.share-field input{width:100%;min-width:0;border:1px solid #456958;border-radius:8px;background:#0a1c23;color:#e1ede3;font:12px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;padding:10px;resize:vertical}
+.share-field input{font-size:11px;text-overflow:ellipsis}
+.share-help{font-size:10px;line-height:1.8;color:#9eb6ad;margin:8px 0}
+#publicURLSetting{font-size:11px;line-height:1.7;color:#a8c2b0;border-top:1px solid #355347;padding-top:13px;margin-top:15px}
+#publicURLSetting summary{cursor:pointer;min-height:30px}
+@media(max-width:600px){.overlay .inspector-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}.capture-dock{width:auto;left:10px;right:10px;bottom:calc(7px + env(safe-area-inset-bottom,0px))}.social-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#captureShareDialog{padding:16px}}
+
+
+/* v15.8.12: atlas first; all top-level controls follow the specimens. */
+.wrap>header{margin-bottom:18px}
+.atlas-bottom{margin-top:26px}
+.atlas-info{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px}
+.atlas-info .foot{margin-top:0}
+</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.8.12</span></h1></div></header>
+<div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
+<section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="731029" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
   <div class="breed-head"><strong>DNA交配実験室</strong><span id="genBadge">第0世代・野生</span></div>
   <div class="breed-parents"><div id="parentACard" class="parent-card">親A：未選択</div><div id="parentBCard" class="parent-card">親B：未選択</div></div>
   <div class="breed-actions"><button id="breed" class="btn primary" disabled>親A × 親B → 子64体</button><button id="clearParents" class="btn">親を解除</button><button id="exportLineage" class="btn">系譜JSON保存</button><label class="btn file-label">系譜JSON読込<input id="importLineage" type="file" accept=".json,application/json"></label></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">64個体から親A・親Bを選び、遺伝子を交叉して新しい子世代を作れます。</p></section>
-<div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div><div class="foot">v15.8.10：カメラが生物の周囲を周回し、探査灯が体表に追従。3Dマリンスノーには前後関係と水流・沈降があります。模様DNA・6色選定・類似回避・交配は維持。</div>
-</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="desc" id="description">閉じた3D外皮・内部器官を観察できます。</p><div class="pallet" id="palette"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div></div></section><div class="note">v15.8.10：正常時のGPUインジケーターを非表示化。64体は軽量メッシュで生成し、3D詳細は選択時のみ生成。ベースの6色配置はメッシュ精細度に依存しない共通座標を使用。タップ開閉式アコーディオンと、親A/B・交配・単親生成の固定フロートを追加。サムネイルはベース配色位置を優先。3D画面ではモデル表示を優先し、閉じる・親指定・生成を上部固定、詳細設定は折りたたみ化しました。</div></div></div><button class="btn x floating-close" id="close">×</button><div aria-label="交配と個体生成" class="breeding-dock" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></div><script>
+<div class="atlas-info"><p class="sub">味と香りのクオリアに潜む生物たち。</p><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.8.12</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.8.12：カメラが生物の周囲を周回し、探査灯が体表に追従。3Dマリンスノーには前後関係と水流・沈降があります。模様DNA・6色選定・類似回避・交配は維持。</div></div>
+</section>
+
+</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="ecology-caption">生態記録</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div></div></section><div class="note">MORPHOSPACE v15.8.12 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 5 4 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/><rect x="7" y="2" width="15" height="17" rx="2"/><path d="m14.5 6 1 2.2 2.4.3-1.7 1.7.4 2.4-2.1-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3Z"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div><dialog id="captureShareDialog" aria-labelledby="captureShareTitle">
+ <div class="capture-share-heading"><h2 id="captureShareTitle">capture</h2><button type="button" class="btn" id="closeCaptureShare" aria-label="プレビューを閉じる">×</button></div>
+ <div class="capture-share-preview"><img id="captureShareImage" alt="生体の画像" hidden></div>
+ <p id="captureShareMessage" role="status" aria-live="polite">画像を準備しています…</p>
+ <div id="captureOnly">
+  <div class="capture-share-actions"><button type="button" class="btn primary" id="saveCard" disabled>写真に保存</button><button type="button" class="btn" id="downloadCard" disabled>PNGをダウンロード</button></div>
+ </div>
+ <div id="shareOnly" hidden>
+  <label class="share-field" for="sharePost">投稿文<textarea id="sharePost" rows="4" readonly></textarea></label>
+  <div class="capture-share-actions"><button type="button" class="btn primary" id="nativeShare" disabled>画像つきで共有</button><button type="button" class="btn" id="downloadScene" disabled>3D画像を保存</button></div>
+  <p class="share-help">画像つきの共有では、共有メニューから投稿先のアプリを選べます。投稿先によっては文章や画像を別に選ぶ必要があります。</p>
+  <div class="social-buttons" aria-label="SNSの投稿画面を開く"><button type="button" class="btn" id="shareX" disabled>X</button><button type="button" class="btn" id="shareFacebook" disabled>Facebook</button><button type="button" class="btn" id="shareLine" disabled>LINE</button><button type="button" class="btn" id="shareBluesky" disabled>Bluesky</button></div>
+  <p class="share-help">SNSボタンは投稿画面を開きます。画像を付けるときは、保存した3D画像を添付してください。Facebookでは投稿文を貼り付けてください。</p>
+  <div class="capture-share-actions"><button type="button" class="btn" id="copyPost" disabled>投稿文をコピー</button><button type="button" class="btn" id="copyLink" disabled>リンクをコピー</button></div>
+  <label class="share-field" for="specimenDirectLink">この生体へのリンク<input type="text" id="specimenDirectLink" readonly></label>
+  <details id="publicURLSetting"><summary>公開ページのURL</summary><label class="share-field" for="publicPageURL"><span>公開したページで開くと自動で設定されます。</span><input id="publicPageURL" type="url" placeholder="https://…" autocomplete="url"></label></details>
+ </div>
+</dialog>
+<script>
+/* MORPHOSPACE v15.8.12 — portable specimens and trading cards. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+ 'use strict';
+ const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
+ const KEYS=('version record view id name seed style genome generation parents sourceSeed ecology text kind sensation place habitat food behavior cue effect templateId picks index mode archetype bend coil elong bulge asym ruffle notches split sacs branches material pitch dev pressure axialGrowth lobation segmentation curvature chirality vacuoleGrowth surfaceGrowth motionEnergy membraneTension fusion colorDNA rows cols hybridStyle hybridMix morphDNA axial flat radial branch void asymmetry twist budding extension lamella surface polarity strain shear motionDNA primary secondary tempo amplitude duty rest propagation locality phase accent axisBias bioDNA elasticity damping conductance tension compliance inertia impulse anisotropy delay patternDNA weights globalScale midScale microScale contrast hardness linearity radiality threshold sharpness bandMix speckle shift freqA freqB freqC phaseA phaseB phaseC family eyeCount spikeBias mottleBias ribbonBias emissionDNA colorMode blinkMode blinkSpeed strength bloomRadius density micro emitColor emitBlink emissionStrength shadeStrength motionAmp coupling motionSpeed bodySpeed motion wire auto yaw cameraPitch panX panY zoom time ecologyVersion').split(' ');
+ const KEY_INDEX=new Map(KEYS.map((key,i)=>[key,i+1]));
+ const forbidden=key=>key==='__proto__'||key==='constructor'||key==='prototype';
+ const utf8=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
+ function checksum(bytes){let h=2166136261;for(const b of bytes)h=Math.imul(h^b,16777619);return h>>>0;}
+ function encodeValue(value){
+  const out=[77,81,VERSION];let nodes=0;
+  const varint=n=>{do{let b=n%128;n=Math.floor(n/128);out.push(b+(n?128:0))}while(n)};
+  const string=s=>{const a=utf8.encode(s);if(a.length>6000)throw Error('文字列が長すぎます');varint(a.length);for(const b of a)out.push(b)};
+  function put(v,depth=0){
+   if(++nodes>MAX_NODES||depth>10)throw Error('個体データが大きすぎます');
+   if(v===null){out.push(0);return}if(v===false){out.push(1);return}if(v===true){out.push(2);return}
+   if(typeof v==='number'){
+    if(!Number.isFinite(v))throw Error('数値が不正です');
+    if(Number.isSafeInteger(v)&&Math.abs(v)<2**48){out.push(v<0?4:3);varint(Math.abs(v));return}
+    out.push(5);const a=new Uint8Array(8);new DataView(a.buffer).setFloat64(0,v,true);out.push(...a);return;
+   }
+   if(typeof v==='string'){out.push(6);string(v);return}
+   if(Array.isArray(v)){if(v.length>128)throw Error('配列が長すぎます');out.push(7);varint(v.length);for(const a of v)put(a,depth+1);return}
+   if(v&&typeof v==='object'){
+    const pairs=Object.entries(v).filter(([,x])=>x!==undefined);if(pairs.length>128)throw Error('項目が多すぎます');
+    out.push(8);varint(pairs.length);
+    for(const [key,x] of pairs){if(forbidden(key))throw Error('項目名が不正です');const token=KEY_INDEX.get(key)||0;varint(token);if(!token)string(key);put(x,depth+1)}return;
+   }
+   throw Error('個体データの型が不正です');
+  }
+  put(value);if(out.length>MAX_BYTES)throw Error('個体データが大きすぎます');
+  const hash=checksum(out);out.push(hash&255,(hash>>>8)&255,(hash>>>16)&255,hash>>>24);
+  return new Uint8Array(out);
+ }
+ function decodeValue(bytes){
+  if(bytes.length<8||bytes.length>MAX_BYTES+4||bytes[0]!==77||bytes[1]!==81||bytes[2]!==VERSION)throw Error('リンクの形式が違います');
+  const end=bytes.length-4,got=new DataView(bytes.buffer,bytes.byteOffset+end,4).getUint32(0,true);
+  if(checksum(bytes.subarray(0,end))!==got)throw Error('リンクが途中で切れているか、書き換わっています');
+  let at=3,nodes=0;
+  const take=n=>{if(at+n>end)throw Error('リンクの内容が不足しています');const b=bytes.subarray(at,at+n);at+=n;return b};
+  function varint(){let n=0,m=1;for(let i=0;i<8;i++){const b=take(1)[0];n+=(b&127)*m;if(!Number.isSafeInteger(n))throw Error('数値が大きすぎます');if(!(b&128))return n;m*=128}throw Error('数値が不正です')}
+  function string(){const len=varint();if(len>6000)throw Error('文字列が長すぎます');return decoder.decode(take(len))}
+  function read(depth=0){
+   if(++nodes>MAX_NODES||depth>10)throw Error('個体データが大きすぎます');
+   const t=take(1)[0];if(t===0)return null;if(t===1)return false;if(t===2)return true;if(t===3)return varint();if(t===4)return -varint();
+   if(t===5){const a=take(8),n=new DataView(a.buffer,a.byteOffset,8).getFloat64(0,true);if(!Number.isFinite(n))throw Error('数値が不正です');return n}
+   if(t===6)return string();
+   if(t===7){const n=varint();if(n>128)throw Error('配列が長すぎます');return Array.from({length:n},()=>read(depth+1))}
+   if(t===8){const n=varint(),obj={};if(n>128)throw Error('項目が多すぎます');for(let i=0;i<n;i++){const token=varint();if(token>KEYS.length)throw Error('項目名が不正です');const key=token?KEYS[token-1]:string();if(forbidden(key)||Object.prototype.hasOwnProperty.call(obj,key))throw Error('項目名が不正です');obj[key]=read(depth+1)}return obj}
+   throw Error('リンクの型が不正です');
+  }
+  const obj=read();if(at!==end)throw Error('リンクに余分なデータがあります');return obj;
+ }
+ function base64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+ function unbase64(s){if(!s||s.length>33000||!/^[A-Za-z0-9_-]+$/.test(s))throw Error('リンクの文字列が不正です');const bin=atob(s.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-s.length%4)%4));return Uint8Array.from(bin,c=>c.charCodeAt(0))}
+ function validatePayload(p){
+  if(!p||p.version!==VERSION||!p.record||typeof p.record!=='object')throw Error('個体データが見つかりません');
+  const r=p.record,g=r.genome;
+  if(!Number.isInteger(r.seed)||r.seed<0||r.seed>4294967295||typeof r.name!=='string'||!r.name.trim()||r.name.length>80||!/[\p{L}\p{N}]/u.test(r.name)||/[<>"'&]/.test(r.name))throw Error('個体名またはシードが不正です');
+  if(typeof r.id!=='string'||r.id.length>100||!g||!Number.isInteger(g.style)||g.style<0||g.style>7||!Number.isInteger(g.seed)||g.seed<0||g.seed>4294967295)throw Error('DNAの形式が違います');
+  if(!g.morphDNA||typeof g.morphDNA!=='object'||Array.isArray(g.morphDNA))throw Error('形態DNAが見つかりません');
+  for(const field of ['axial','flat','radial','branch','fusion','void','lobation','asymmetry','twist','budding','extension','lamella','surface','polarity','strain','shear']){
+   // Crossover blends use independent weights in the existing engine; valid offspring can exceed 1.
+   if(!Number.isFinite(g.morphDNA[field])||g.morphDNA[field]<0||g.morphDNA[field]>2)throw Error('形態DNAの範囲が不正です');
+  }
+  function inspect(o,depth=0){if(depth>8)throw Error('DNAの階層が深すぎます');for(const [k,v]of Object.entries(o)){
+   if(forbidden(k))throw Error('DNAの項目名が不正です');
+   if(typeof v==='number'&&(!Number.isFinite(v)||(k!=='seed'&&Math.abs(v)>256)))throw Error('DNAの数値が範囲外です');
+   if(v&&typeof v==='object')inspect(v,depth+1);
+   else if(typeof v!=='number'&&v!==null)throw Error('DNAの型が不正です');
+  }}inspect(g);
+  if(g.colorDNA){const c=g.colorDNA;if(!Array.isArray(c.rows)||c.rows.length!==2||c.rows.some(n=>!Number.isInteger(n)||n<0||n>80)||!Array.isArray(c.cols)||c.cols.length!==2||c.cols.some(a=>!Array.isArray(a)||a.length!==3||a.some(n=>!Number.isInteger(n)||n<0||n>5)))throw Error('色素DNAの形式が違います');}
+  if(r.ecology&&(!r.ecology.text||typeof r.ecology.text!=='string'||r.ecology.text.length>1200))throw Error('生態文の形式が違います');
+  if(!Number.isInteger(r.generation)||r.generation<0||r.generation>1000000)throw Error('世代が不正です');
+  if(!Array.isArray(r.parents)||r.parents.length>2||r.parents.some(x=>typeof x!=='string'||x.length>100))throw Error('系譜の形式が違います');
+  if(p.view){for(const [k,v]of Object.entries(p.view))if(typeof v!=='boolean'&&(!Number.isFinite(v)||Math.abs(v)>100000))throw Error('表示設定が不正です')}
+  return p;
+ }
+ function encode(payload){validatePayload(payload);return base64(encodeValue(payload))}
+ function decode(token){return validatePayload(decodeValue(unbase64(token)))}
+ function publicBase(value){const url=new URL(value);if(!/^https?:$/.test(url.protocol)||url.username||url.password)throw Error('公開ページのURLを https:// から入力してください');url.hash='';url.search='';return url.href}
+ function link(base,payload){return publicBase(base)+'#q='+encode(payload)}
+ function fromHash(hash){const token=new URLSearchParams(String(hash).replace(/^#/,'' )).get('q');return token?decode(token):null}
+ function postText(record){return record.name+'を捕まえた。'+(record.ecology?.text||'')}
+ function socialURLs(url,text){const u=publicBase(url);void u;return {
+  x:'https://twitter.com/intent/tweet?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(url),
+  facebook:'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url),
+  line:'https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text),
+  bluesky:'https://bsky.app/intent/compose?text='+encodeURIComponent(text+'\n'+url)
+ }}
+ function lines(ctx,text,width){
+  const out=[];let line='';
+  for(const c of Array.from(String(text))){if(c==='\n'){out.push(line);line='';continue}if(line&&ctx.measureText(line+c).width>width){if(/^[、。，．！？）」』】〕〉》ー…]$/.test(c)){line+=c;out.push(line);line=''}else{out.push(line);line=c}}else line+=c}
+  if(line)out.push(line);return out;
+ }
+ function fitText(ctx,text,{width,maxHeight,size=32,minSize=22,lineHeight=1.7,font='sans-serif'}){
+  for(let s=size;s>=minSize;s--){ctx.font=s+'px '+font;const a=lines(ctx,text,width);if(a.length*s*lineHeight<=maxHeight)return {lines:a,size:s,lineHeight:s*lineHeight}}
+  throw Error('生態文がカードに収まりません。文章を短くしてください');
+ }
+ function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+ function card(target,image,record,colors=[]){
+  const W=1080,H=1512;target.width=W;target.height=H;const c=target.getContext('2d');if(!c)throw Error('カードを描画できません');
+  const serif='"Hiragino Mincho ProN","Yu Mincho",serif',sans='"Hiragino Kaku Gothic ProN",sans-serif';
+  const gradient=c.createLinearGradient(0,0,W,H);gradient.addColorStop(0,'#16343b');gradient.addColorStop(.48,'#0b1d2c');gradient.addColorStop(1,'#14372e');c.fillStyle=gradient;c.fillRect(0,0,W,H);
+  c.strokeStyle='#c2b78d';c.lineWidth=2;roundRect(c,25,25,W-50,H-50,28);c.stroke();c.strokeStyle='rgba(197,192,149,.36)';c.lineWidth=1;roundRect(c,38,38,W-76,H-76,20);c.stroke();
+  c.fillStyle='#c6c9ae';c.font='600 20px '+sans;c.fillText('M O R P H O S P A C E',68,83);c.textAlign='right';c.font='17px '+sans;c.fillText('QUALIA SPECIMEN',W-68,83);c.textAlign='left';
+  let size=56;do{c.font='600 '+size+'px '+serif;if(c.measureText(record.name).width<=W-136)break;size--}while(size>25);
+  c.fillStyle='#f8f1d9';c.fillText(record.name,68,160,W-136);c.font='17px '+sans;c.fillStyle='#96b8af';c.fillText('CAPTURED / '+String(record.seed),70,198);
+  const x=58,y=232,w=964,h=772;c.save();roundRect(c,x,y,w,h,12);c.clip();c.fillStyle='#06101b';c.fillRect(x,y,w,h);
+  const scale=Math.min(w/image.width,h/image.height),iw=image.width*scale,ih=image.height*scale;c.drawImage(image,x+(w-iw)/2,y+(h-ih)/2,iw,ih);
+  const shade=c.createLinearGradient(0,y+h-140,0,y+h);shade.addColorStop(0,'rgba(4,16,24,0)');shade.addColorStop(1,'rgba(4,16,24,.88)');c.fillStyle=shade;c.fillRect(x,y+h-140,w,140);c.restore();
+  c.strokeStyle='rgba(191,199,160,.55)';c.lineWidth=1;roundRect(c,x,y,w,h,12);c.stroke();
+  c.fillStyle='#c8d8c9';c.font='18px '+sans;c.fillText('生息記録',80,1054);
+  c.textAlign='right';c.font='17px '+sans;c.fillStyle='#8ab3a3';c.fillText('GENERATION '+String(record.generation||0),1000,1054);c.textAlign='left';
+  const layout=fitText(c,record.ecology?.text||'',{width:916,maxHeight:286,size:31,minSize:21,lineHeight:1.72,font:serif});
+  c.fillStyle='#e4eadc';c.font=layout.size+'px '+serif;layout.lines.forEach((line,i)=>c.fillText(line,82,1110+i*layout.lineHeight));
+  c.strokeStyle='rgba(164,188,159,.32)';c.beginPath();c.moveTo(80,1410);c.lineTo(1000,1410);c.stroke();
+  for(let i=0;i<Math.min(6,colors.length);i++){c.fillStyle=/^#[0-9a-fA-F]{6}$/.test(colors[i])?colors[i]:'#8ba899';c.beginPath();c.arc(89+i*25,1454,7,0,Math.PI*2);c.fill()}
+  c.font='16px '+sans;c.fillStyle='#a6bba6';c.textAlign='right';c.fillText('味と香りのクオリアに潜む生物たち',996,1460);c.textAlign='left';
+  return {width:W,height:H,textLayout:{lines:layout.lines.length,size:layout.size,bottom:1110+(layout.lines.length-1)*layout.lineHeight}};
+ }
+ return Object.freeze({version:VERSION,encode,decode,encodeValue,decodeValue,validatePayload,publicBase,link,fromHash,postText,socialURLs,lines,fitText,card});
+});
+
+</script><script>
+/* MORPHOSPACE Qualia Ecology 1.0.0. No runtime network or AI calls.
+ * Seeded text RNG is intentionally independent from the geometry RNG.
+ * Preserve record.ecology on import: saved words survive dictionary changes.
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.MorphospaceEcology = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const LEXICON = {
+  "version": "1.0.0",
+  "language": "ja",
+  "entries": {
+    "sensations": [
+      "梅干しの酸味",
+      "青梅をかじった渋み",
+      "熟した桃の甘さ",
+      "林檎の皮の青い香り",
+      "洋梨のざらつく甘み",
+      "杏の乾いた酸味",
+      "枇杷の淡い後味",
+      "無花果の乳白色の甘さ",
+      "柿の舌に残る渋み",
+      "干し柿の濃い甘さ",
+      "柚子の皮の苦味",
+      "檸檬を絞った香り",
+      "酢橘の鋭い酸味",
+      "橙のほろ苦い果汁",
+      "晩白柚の白皮の苦味",
+      "金柑を噛んだ甘苦さ",
+      "蜜柑の房の薄い酸味",
+      "グレープフルーツの余韻",
+      "ライムの緑色の香り",
+      "ベルガモットの遠い芳香",
+      "苺の種のまわりの酸味",
+      "木苺のつぶれる甘さ",
+      "桑の実の黒い果汁の味",
+      "ブルーベリーの皮の渋み",
+      "クランベリーの尖った酸味",
+      "葡萄の皮を噛んだ渋み",
+      "マスカットの透ける香り",
+      "干し葡萄の沈んだ甘さ",
+      "さくらんぼの短い甘み",
+      "カシスの深い酸味",
+      "西瓜の皮に近い甘さ",
+      "メロンの熟れた香り",
+      "パイナップルの刺す酸味",
+      "マンゴーの重たい甘さ",
+      "パパイヤの丸い青臭さ",
+      "ライチの花に似た香り",
+      "竜眼の湿った甘み",
+      "バナナの粉っぽい甘さ",
+      "キウイの細かい酸味",
+      "パッションフルーツの弾む香り",
+      "栗のほぐれる甘み",
+      "焼き芋の蜜の香り",
+      "蒸した南瓜の甘さ",
+      "茹でた玉蜀黍の甘み",
+      "人参の土に近い甘さ",
+      "玉葱を炒めた甘い香り",
+      "焼いた葱の白い甘さ",
+      "百合根のほろりとした甘み",
+      "蓮根のかすかな渋み",
+      "牛蒡の湿った土の香り",
+      "生姜の生の辛さ",
+      "山葵の鼻に抜ける刺激",
+      "辛子の上向きの辛味",
+      "唐辛子の遅れてくる熱",
+      "黒胡椒の砕ける刺激",
+      "白胡椒の乾いた辛さ",
+      "花椒の舌先の痺れ",
+      "山椒の若葉の香り",
+      "長胡椒の甘い刺激",
+      "青唐辛子の青い熱",
+      "クミンを煎った香り",
+      "コリアンダーシードの丸い香り",
+      "カルダモンの冷たい芳香",
+      "クローブの暗い甘い香り",
+      "シナモンの木肌の香り",
+      "八角の星形の甘い香り",
+      "フェンネルの細い甘さ",
+      "フェヌグリークの焦げた苦味",
+      "ナツメグの温かな香り",
+      "ターメリックの粉の苦味",
+      "ミントの舌に残る冷たさ",
+      "バジルをちぎった香り",
+      "ローズマリーの針の香り",
+      "タイムの乾いた芳香",
+      "ディルの細い青臭さ",
+      "セージの煙るような香り",
+      "紫蘇の葉脈の香り",
+      "茗荷の涼しい辛味",
+      "三つ葉の茎の香り",
+      "パクチーの根の香り",
+      "煎った胡麻の香り",
+      "搗きたての胡麻の油の味",
+      "落花生の皮の苦味",
+      "胡桃の薄皮の渋み",
+      "アーモンドの焦げた香り",
+      "カシューナッツの乳のような甘さ",
+      "ピスタチオの青い油の味",
+      "松の実の柔らかな脂",
+      "ヘーゼルナッツの丸い香り",
+      "マカダミアナッツの鈍い甘み",
+      "黒糖の重たい甘さ",
+      "和三盆のほどける甘さ",
+      "氷砂糖の角のある甘さ",
+      "綿飴の消える甘さ",
+      "蜂蜜の喉に残る香り",
+      "楓蜜の木陰の甘さ",
+      "水飴の伸びる甘み",
+      "焦がしたカラメルの苦味",
+      "糖蜜の底に沈む香り",
+      "金平糖を噛んだ細い甘さ",
+      "冷たい牛乳の甘さ",
+      "温めた牛乳の膜の香り",
+      "生クリームの厚い甘み",
+      "ヨーグルトの白い酸味",
+      "発酵バターの涼しい香り",
+      "焦がしバターの褐色の香り",
+      "チーズの皮の熟れた香り",
+      "青黴チーズの鋭い塩気",
+      "練乳の粘る甘さ",
+      "粉乳の乾いた後味",
+      "炊きたての米の湯気の香り",
+      "冷えた御飯のほのかな甘さ",
+      "玄米を噛んだ香ばしさ",
+      "麦飯の湿った香り",
+      "蕎麦の実の青い香り",
+      "焼いた餅の皮の香り",
+      "白玉の淡い粉の味",
+      "米糠の温かな匂い",
+      "炒った大麦の苦味",
+      "粟の粒の素朴な甘み",
+      "焼きたてのパンの香り",
+      "パンの耳の焦げ味",
+      "発酵したパン生地の酸味",
+      "クロワッサンの薄皮の香り",
+      "ラスクの乾いた甘さ",
+      "ビスケットの粉の香り",
+      "塩煎餅の焦げた塩気",
+      "ポップコーンの弾けた香り",
+      "プレッツェルの表面の塩味",
+      "クラッカーの短い香ばしさ",
+      "浅煎り珈琲の果実の酸味",
+      "深煎り珈琲の黒い苦味",
+      "挽きたての珈琲の香り",
+      "冷めた珈琲の薄い酸味",
+      "エスプレッソの泡の苦味",
+      "カカオ豆の赤い渋み",
+      "高カカオチョコレートの苦味",
+      "ホワイトチョコレートの甘い脂",
+      "ココアの粉の香り",
+      "カカオニブの割れた苦味",
+      "煎茶の青い渋み",
+      "玉露の深い旨み",
+      "焙じ茶の乾いた香り",
+      "玄米茶の粒の香ばしさ",
+      "抹茶の舌に積もる苦味",
+      "烏龍茶の花のような香り",
+      "紅茶の琥珀色の渋み",
+      "ジャスミン茶の上澄みの香り",
+      "プーアル茶の湿った木の香り",
+      "ルイボス茶の赤い余韻",
+      "昆布出汁の丸い旨み",
+      "鰹出汁の立ち上る香り",
+      "煮干しの銀色の苦味",
+      "干し椎茸の戻し汁の旨み",
+      "貝の澄んだ出汁の塩気",
+      "鶏のスープの黄色い脂",
+      "牛のスープの深い余韻",
+      "野菜のブイヨンの柔らかな味",
+      "味噌汁の湯気の香り",
+      "吸い物の消え際の香り",
+      "醤油の焦げる香り",
+      "白味噌の丸い甘み",
+      "赤味噌の熟れた渋み",
+      "納豆の糸の匂い",
+      "甘酒の粒の甘さ",
+      "酒粕の白い芳香",
+      "塩麹のほぐれる旨み",
+      "ぬか漬けの乳酸の匂い",
+      "沢庵の黄色い香り",
+      "キムチの熟れた酸味",
+      "米酢の柔らかな酸味",
+      "黒酢の暗い酸味",
+      "林檎酢の細い香り",
+      "バルサミコ酢の甘い酸味",
+      "塩の結晶の尖り",
+      "岩塩の奥の甘み",
+      "海塩の湿った塩気",
+      "梅酢の赤い塩味",
+      "魚醤の重たい匂い",
+      "牡蠣ソースの底の旨み",
+      "海苔を炙った香り",
+      "青海苔の波の匂い",
+      "若布の戻る香り",
+      "とろろ昆布のぬめる酸味",
+      "もずくの細い磯の味",
+      "ひじきの黒い潮の匂い",
+      "生牡蠣の冷たい塩味",
+      "雲丹のほどける甘さ",
+      "焼いた海老の殻の香り",
+      "蟹味噌の濃い苦味",
+      "干した茸の森の香り",
+      "松茸の土を割る香り",
+      "舞茸を焼いた香り",
+      "マッシュルームの白い旨み",
+      "トリュフの暗い芳香",
+      "蕨のぬめる苦味",
+      "蕗の薹の春の苦味",
+      "独活の白い香り",
+      "芹の根の水の匂い",
+      "筍の節の青い味",
+      "胡瓜の切り口の香り",
+      "トマトの種の酸味",
+      "ピーマンの内側の苦味",
+      "焼いた茄子の煙の香り",
+      "セロリの筋の香り",
+      "レタスの芯の苦味",
+      "春菊の葉の尖った香り",
+      "水菜の茎の辛み",
+      "大根おろしの白い辛味",
+      "高菜漬けの熟れた香り",
+      "鹿肉を焼いた鉄の香り",
+      "猪肉の脂の甘さ",
+      "鶏皮の焼ける香り",
+      "牛肉の赤い旨み",
+      "豚の角煮の脂の味",
+      "燻したベーコンの煙の味",
+      "生ハムの熟成した塩気",
+      "ソーセージの皮の香り",
+      "レバーの舌に残る苦味",
+      "骨髄の重い甘み",
+      "卵黄のとろりとした旨み",
+      "ゆで卵の白い匂い",
+      "茶碗蒸しの柔らかな塩気",
+      "焼いた卵の端の香り",
+      "卵焼きの温かな甘さ",
+      "豆腐の水に近い甘み",
+      "豆乳の薄い青臭さ",
+      "湯葉の膜の味",
+      "炒った大豆の香り",
+      "枝豆の莢の湯気の匂い",
+      "小豆を煮た香り",
+      "粒餡の皮の渋み",
+      "漉し餡の静かな甘さ",
+      "白餡の細かな甘み",
+      "黄粉の舌に残る香り",
+      "桜餅の葉の塩気",
+      "柏餅の葉の青い匂い",
+      "蓬餅の草の苦味",
+      "葛湯の透ける甘さ",
+      "寒天の冷たい無味",
+      "炭酸水の泡の刺激",
+      "ラムネの青い甘さ",
+      "ジンジャーエールの喉の熱",
+      "コーラの黒い香り",
+      "クリームソーダの泡の甘み",
+      "トニックウォーターの苦味",
+      "麦酒の泡の苦味",
+      "日本酒の米の香り",
+      "赤葡萄酒の舌に残る渋み",
+      "ジンの杜松の香り",
+      "御神水の冷たい口当たり",
+      "井戸水の底の甘み",
+      "湧水を飲んだ後の余韻",
+      "氷を噛んだ瞬間の無味",
+      "雪を舌に載せた冷たさ",
+      "白湯の丸い温かさ",
+      "霧を吸い込んだ湿り気",
+      "朝露の葉に触れた匂い",
+      "雨上がりの土の匂い",
+      "乾いた石が濡れる匂い",
+      "薔薇の花弁の芳香",
+      "金木犀の夕方の香り",
+      "梔子の濃い白い香り",
+      "沈丁花の遠くから来る香り",
+      "藤の花房の淡い香り",
+      "菫の小さな甘い匂い",
+      "ラベンダーの乾いた香り",
+      "カモミールの林檎に似た香り",
+      "ハイビスカスの赤い酸味",
+      "桜の塩漬けの花の香り",
+      "焚き火に残った煙の匂い",
+      "炭火が消える手前の匂い",
+      "燻製茶の煙の香り",
+      "杉の葉を揉んだ匂い",
+      "檜の木肌の香り",
+      "松脂の透き通る匂い",
+      "乾いた藁の匂い",
+      "刈りたての草の匂い",
+      "稲穂が熟れる匂い",
+      "落ち葉の下の湿った匂い",
+      "揚げた衣のはじける香り",
+      "焼けた鉄板の上の油の匂い",
+      "飴が固まる手前の甘さ",
+      "プリンの底の焦げ味",
+      "アイスクリームが溶けた甘さ",
+      "シャーベットの氷の酸味",
+      "ゼリーを崩したときの香り",
+      "生キャラメルの塩の余韻",
+      "マシュマロの焦げた表面の味",
+      "クレームブリュレの割れる苦味",
+      "口に入れる前の檸檬の予感",
+      "飲み込んだ後の山椒の痺れ",
+      "二口目の前に残る珈琲の苦味",
+      "鼻へ戻ってきた柚子の香り",
+      "眠り際に思い出す桃の甘さ",
+      "舌の端に置き忘れた塩気",
+      "名前を忘れた飴の味",
+      "夢でだけ嗅いだスパイスの香り",
+      "空の匙に残る蜂蜜の匂い",
+      "最後のひと粒が残した米の甘さ"
+    ],
+    "places": [
+      "折り目",
+      "裏側の空洞",
+      "最も浅い底",
+      "底に沈んだ沈黙",
+      "中心から少し外れた窪み",
+      "薄皮の内側",
+      "輪郭のほつれ",
+      "端が重なった隙間",
+      "途切れかけた縁",
+      "裏返った表面",
+      "最初のひと粒の影",
+      "最後に残る一滴の奥",
+      "まだ触れられていない角",
+      "二度目だけ現れる襞",
+      "三口目へ続く廊下",
+      "飲み込まれる前の余白",
+      "舌から離れる境目",
+      "鼻へ抜ける途中の踊り場",
+      "喉へ落ちる手前の棚",
+      "口を閉じた後の残響",
+      "温度の低い岸辺",
+      "ぬるさが溜まる入江",
+      "熱さの剥がれた場所",
+      "冷たさの根元",
+      "温もりの切断面",
+      "融け残った季節の中",
+      "凍る直前の薄い層",
+      "湯気が逆流する穴",
+      "体温の届かない天井",
+      "冷えるたび深くなる溝",
+      "光が曲がる節",
+      "色のついていない裏庭",
+      "黄色になる手前の窪地",
+      "白さが沈む深み",
+      "赤みの抜けた回廊",
+      "青い影の付け根",
+      "黒くなる前の薄膜",
+      "透明さの内壁",
+      "明るさが滲んだ裂け目",
+      "色同士が触れない隙間",
+      "昨日へ向いた斜面",
+      "明日から流れ着く砂地",
+      "時間が一拍遅れる穴",
+      "午前だけ存在する裏口",
+      "夕方を折り畳んだ隅",
+      "夜の厚みが足りない場所",
+      "夜明けの下にある袋",
+      "正午の抜け殻の内側",
+      "秒針の届かない谷",
+      "時計回りに深まる井戸",
+      "記憶の薄い表層",
+      "思い出す直前の段差",
+      "忘れられた芯のまわり",
+      "初めてに似た古い場所",
+      "見覚えだけが残る窓辺",
+      "名前から剥がれた部分",
+      "呼び方のわからない奥",
+      "舌が覚えていない裏面",
+      "夢から戻る細い道",
+      "懐かしさの結晶の中",
+      "泡と泡の間の静止点",
+      "弾ける寸前の泡の壁",
+      "泡が消えた跡の凹み",
+      "気泡の根が絡む深部",
+      "泡立ちの一番遠い岸",
+      "泡の影が溜まる管",
+      "浮力の途切れる節目",
+      "空気の粒の中庭",
+      "一度も弾けない丸い部屋",
+      "息の入らない気泡の底",
+      "舌先の影に続く湿地",
+      "舌の左右が入れ替わる場所",
+      "上顎に映った逆さの森",
+      "頬の内側へ続く裂け目",
+      "歯の記憶に隠れた畝",
+      "唇の閉じ目の余白",
+      "喉の手前の小さな岬",
+      "鼻の奥へ伸びる樹洞",
+      "息を吐く側の渡り廊下",
+      "口の中にない方の岸",
+      "甘さが曲がる角",
+      "苦さが眠る根元",
+      "酸っぱさの細い背中",
+      "塩気が乾いた跡",
+      "辛さの影の涼しい部分",
+      "痺れが途切れる小島",
+      "旨みの沈殿層",
+      "渋みの毛羽立った内側",
+      "香ばしさの焦点の外",
+      "無味に接する縫い目",
+      "香りが立つ前の土台",
+      "余香が折り返す橋",
+      "芳香の脱げた殻の中",
+      "匂いの糸の結び目",
+      "吸い込まれない残り半分",
+      "吐息に追い越された場所",
+      "鼻に届く前の分かれ道",
+      "香りの厚みのいちばん薄い点",
+      "匂いが上下を失う谷間",
+      "残り香の水面の下",
+      "細い粒の隙間",
+      "ざらつきの山脈の奥",
+      "滑らかさの裂け目",
+      "ぬめりが乾く境界",
+      "とろみの中の軽い層",
+      "粘りの糸の袋小路",
+      "粉っぽさの柔らかな底",
+      "ぱりぱりした音の内部",
+      "歯触りの重ならない部分",
+      "舌触りが一度だけ反転する面",
+      "食器の音が沈む深さ",
+      "匙の跡が消えるくぼみ",
+      "箸の影に似た縦穴",
+      "皿の縁より遠い外周",
+      "湯呑みの底に似た高台",
+      "空の器へ続く玄関",
+      "まだ盛られていない中央",
+      "一滴だけ取り残された窓",
+      "ひと口の重さの真下",
+      "二枚の薄膜の間の食卓",
+      "重力の弱いくぼ地",
+      "上下のない鉛直の森",
+      "裏側にだけ続く階段",
+      "左へ曲がり続ける筒",
+      "内側より広い外皮",
+      "外へ出るほど深くなる口",
+      "平らになる直前の隆起",
+      "遠近の折れた場所",
+      "距離だけが乾いた河床",
+      "幅を失った長い部屋",
+      "ほどけた渦の中心",
+      "流れの背を向けた場所",
+      "淀みが逆さに積もる穴",
+      "一滴が二手に分かれる峠",
+      "満ち引きのない潮だまり",
+      "波の裏側のくぼみ",
+      "沈むものだけが渡れる浅瀬",
+      "流れ終わりの細い支流",
+      "乾くことを忘れた河口",
+      "水面の一段上の湖底",
+      "根のない森の木陰",
+      "芽が出る前の種の隙間",
+      "葉脈に似た地図の端",
+      "花が閉じた後の花粉室",
+      "果実の外にある種の部屋",
+      "朽ちない皮の内側",
+      "年輪のほどけた結び目",
+      "棘の影の柔らかい側",
+      "蔓が絡まらない輪の中",
+      "実りだけが通り過ぎる枝先",
+      "骨のように白い支柱の下",
+      "膜が二重になる継ぎ目",
+      "殻のない卵の窪み",
+      "脱皮の跡にできた洞穴",
+      "鱗の隙間に似た水路",
+      "内臓を入れ忘れた空間",
+      "まだ脈のない心室",
+      "触角が触れない距離",
+      "繊毛の影が立つ平原",
+      "瞼の内側に似た薄闇",
+      "音のない破裂の跡",
+      "噛む音の余白",
+      "沈黙が二重に響く洞窟",
+      "聞こえなかった呼吸の底",
+      "鼓動が折れる節",
+      "咀嚼の拍子の隙間",
+      "音程のない高い棚",
+      "小さな軋みの発生点",
+      "声にする前の丸い穴",
+      "耳に届かない余韻の縁",
+      "明滅と明滅の間",
+      "光らない部分の最奥",
+      "光の根がほどけるくぼみ",
+      "輝きの抜けた皮の裏",
+      "照り返しが眠る陰",
+      "反射しそこねた面",
+      "薄明かりの下の砂州",
+      "影が自分を見失う角",
+      "暗さが透き通る層",
+      "発光の終わりに残る輪",
+      "触れた瞬間だけできる隙間",
+      "離れるほど近づく壁際",
+      "見つめると閉じる洞口",
+      "目を逸らすと広がる床",
+      "数えるたび増える節の間",
+      "覚えようとすると消える小径",
+      "誰も舐めなかった空白",
+      "飲まれなかった一口の底",
+      "分け合われなかった半分の奥",
+      "取り戻せない余熱の岸",
+      "まだ味になっていない部分",
+      "匂いになる前の眠りの中",
+      "味と香りがすれ違う継ぎ目",
+      "感覚の裏にある小さな収納",
+      "ひと口の内側にある遠洋",
+      "空腹の輪郭が滲むところ",
+      "満腹に届かない天井裏",
+      "次の味が来るまでの踊り場",
+      "感覚が名づけられる前の余白",
+      "食べ終わりから続く細い暗渠"
+    ],
+    "foods": [
+      "赤い静電気",
+      "眠った苦味",
+      "香りの抜け殻",
+      "砕けた余韻",
+      "裏返った甘さ",
+      "冷えた痺れ",
+      "薄く削った塩気",
+      "まだ丸くない酸味",
+      "焦げ目の影",
+      "発酵しそこねた光",
+      "乾いた朝露",
+      "湯気の骨",
+      "氷の内側の綿毛",
+      "ぬるさの結晶",
+      "熱の燃えかす",
+      "冷気の皮",
+      "体温の粉",
+      "凍った寝息",
+      "解凍前の夕暮れ",
+      "温度を失った滴",
+      "昨日の花粉",
+      "明日の糠",
+      "古い正午の破片",
+      "一秒遅れの蜜",
+      "未使用の夜明け",
+      "熟れすぎた時間",
+      "時差の卵",
+      "繰り返されなかった朝",
+      "夕方の薄皮",
+      "時計からこぼれた澱",
+      "忘れた果実の種",
+      "名前のない飴の芯",
+      "初めての味の化石",
+      "思い出し損ねた匂い",
+      "懐かしさの胞子",
+      "消された献立の染み",
+      "夢の食べ残し",
+      "記憶の底の塩",
+      "呼び間違えた香り",
+      "まだ覚えていない空腹",
+      "泡の足跡",
+      "沈んだ浮力",
+      "弾けなかった音",
+      "気泡に絡まった影",
+      "空気の根",
+      "炭酸の髭",
+      "息継ぎの薄膜",
+      "吐息の粒",
+      "吸われなかった空気",
+      "喉の奥の小さな風",
+      "光の鱗",
+      "暗がりの蜜",
+      "反射の垢",
+      "明滅の切れ端",
+      "影の卵黄",
+      "蛍光の糠",
+      "白さの種",
+      "黄色の沈殿",
+      "青い照り返し",
+      "色からはぐれた輪郭",
+      "渋みの繊維",
+      "辛味の蕊",
+      "旨みの幼虫",
+      "甘味の根毛",
+      "塩味の棘",
+      "酸味の欠伸",
+      "苦味の皮脂",
+      "清涼感の鱗粉",
+      "香ばしさの骨片",
+      "無味の胞子",
+      "舌の上の砂時計",
+      "上顎に降った霧",
+      "唇の隙間の薄氷",
+      "歯の影の苔",
+      "喉を通らない小石",
+      "鼻の奥の落ち葉",
+      "頬の内側の潮",
+      "口を閉じた音",
+      "噛む直前の静止",
+      "飲み込んだ後の空白",
+      "柚子の夢の白皮",
+      "胡椒の影の種",
+      "胡麻の匂いの殻",
+      "米の記憶の胚芽",
+      "珈琲の眠りの澱",
+      "茶葉の忘れた葉脈",
+      "蜜柑の予感の筋",
+      "生姜の熱の根",
+      "梅干しの声の種",
+      "カカオの夜の粉",
+      "匙のくぼみの残響",
+      "箸先に触れた距離",
+      "皿の縁の薄闇",
+      "茶碗の底の重力",
+      "硝子に残った冷たさ",
+      "器の記憶の釉薬",
+      "空のカップの内圧",
+      "蓋を開けた瞬間の風",
+      "零れなかった一滴",
+      "誰も取らなかった最後の粒",
+      "やわらかい摩擦",
+      "とろみの糸屑",
+      "ざらつきの砂",
+      "ぬめりの鱗",
+      "歯応えの関節",
+      "弾力の芽",
+      "粘りの種皮",
+      "粉っぽさの雲",
+      "さくさくした沈黙",
+      "滑らかさの抜け毛",
+      "香りの錆",
+      "芳香の煤",
+      "匂いの結び目",
+      "残り香の茸",
+      "余香のしずく",
+      "青臭さの苔",
+      "乳臭さの膜",
+      "煙たさの羽",
+      "獣臭の細い根",
+      "土の匂いの種子",
+      "甘い方向感覚",
+      "酸っぱい遠近感",
+      "苦い水平線",
+      "塩辛い重さ",
+      "辛い北風",
+      "渋い曲がり角",
+      "痺れた裏道",
+      "旨みの浅瀬",
+      "冷たい上り坂",
+      "温かな袋小路",
+      "呼吸の裏糸",
+      "脈の隙間の蜜",
+      "心拍の繭",
+      "嚥下の影",
+      "くしゃみの種",
+      "欠伸の残骸",
+      "瞬きの膜",
+      "ため息の澱",
+      "無言の発酵物",
+      "独り言の薄皮",
+      "殻を持たない余熱",
+      "羽のない香気",
+      "根を持つ透明さ",
+      "骨のある霧",
+      "皮を被った無味",
+      "鰭の生えた眠気",
+      "触角のある空腹",
+      "繊毛を纏った薄明かり",
+      "鱗を落とした温もり",
+      "まだ孵らない甘苦さ",
+      "食卓に沈んだ季節",
+      "厨房の奥の幻の湯気",
+      "炭火の記憶の灰",
+      "包丁の背の冷たさ",
+      "まな板に残った青さ",
+      "石臼の回転の粉",
+      "笊から抜け落ちた湿り気",
+      "布巾に吸われた余韻",
+      "鍋底に映った夕陽",
+      "煮立つ直前の水の顔",
+      "羽化しなかった酸味",
+      "脱皮途中の塩",
+      "産卵前の甘さ",
+      "群れから離れた痺れ",
+      "越冬中の香ばしさ",
+      "渡りを忘れた辛味",
+      "休眠する旨み",
+      "蛹になった苦味",
+      "巣立たない芳香",
+      "抜け殻に戻った渋み",
+      "こぼれた左右",
+      "折れた上下",
+      "裏返る前後",
+      "丸まった遠さ",
+      "ほぐれた奥行き",
+      "短く切った向こう側",
+      "内側の外縁",
+      "外側の中心",
+      "片方だけの対称性",
+      "薄く伸ばした逆さま",
+      "見られなかった光沢",
+      "触れられなかった柔らかさ",
+      "聞かれなかった破裂音",
+      "嗅がれなかった花粉",
+      "味わわれなかった甘露",
+      "呼ばれなかった名前",
+      "待たれなかった熟成",
+      "観察されなかった脱皮",
+      "数えられなかった粒",
+      "忘れられなかった残り香",
+      "小さな不在",
+      "半分だけの予感",
+      "細く挽いた沈黙",
+      "二重になった気配",
+      "冷蔵された迷子の影",
+      "干しておいた透明さ",
+      "蒸し返した空白",
+      "焦がした懐かしさ",
+      "濾し残した夢",
+      "発芽する余白"
+    ],
+    "behaviors": [
+      "昨日の方向へ泳ぐ",
+      "上下を交換しながら進む",
+      "影だけを先に歩かせる",
+      "後退することで遠くへ向かう",
+      "体を折り畳んで距離を縮める",
+      "左へ曲がるたび一段深く潜る",
+      "匂いの流れを遡る",
+      "滑る前に足跡を置く",
+      "静止したまま岸を渡る",
+      "沈みながら高い場所へ移る",
+      "泡の内壁を這う",
+      "薄膜の裏を腹で滑る",
+      "葉脈のような道だけを辿る",
+      "渦の回転と逆向きに眠る",
+      "浮力のない場所でだけ浮く",
+      "湯気を梯子にして登る",
+      "影の継ぎ目をくぐり抜ける",
+      "丸い道を四角く周回する",
+      "舌の動きに一拍遅れて移動する",
+      "吐息の隙間を飛び石にする",
+      "一口ごとに脱皮する",
+      "眠る前に外皮を裏返す",
+      "古い殻を次の巣にする",
+      "脱いだ皮へ一度だけ戻る",
+      "成長するほど小さな膜を纏う",
+      "影を剥がして身軽になる",
+      "冷えるたび鱗を数え直す",
+      "古い輪郭を食べて大きくなる",
+      "薄皮を二枚ずつ置いていく",
+      "殻の内側に新しい外側を作る",
+      "眠った苦味に卵を預ける",
+      "余韻の長さだけ産卵する",
+      "卵を一粒ずつ昨日に埋める",
+      "孵化した後で卵殻を編む",
+      "自分の抜け殻を温め続ける",
+      "触れ合う代わりに影を交換する",
+      "親になると自分の幼体に似る",
+      "甘さの底で仔を反芻する",
+      "まだ生まれない子の巣を持ち歩く",
+      "卵が眠る間だけ活動する",
+      "空の繭に包まれて冬を待つ",
+      "蛹のまま別の香りへ渡る",
+      "幼体の殻を巣の天井に吊るす",
+      "孵化する向きを毎朝変える",
+      "最初の子だけ自分の外に育てる",
+      "分裂する前に片方の名前を捨てる",
+      "繁殖期にだけ輪郭を重ねる",
+      "一度産んだ卵の影を回収する",
+      "卵を産まずに孵化の跡を残す",
+      "親子で一枚の皮を交互に着る",
+      "群れでひとつの空洞を守る",
+      "隣の個体の眠りを見張る",
+      "仲間の影にだけ触れる",
+      "群れの中心を毎晩空ける",
+      "列の最後尾から順に透明になる",
+      "離れた個体と同時に欠伸する",
+      "互いの触角に余熱を預ける",
+      "一匹ずつ違う方向を向いて集まる",
+      "同じ泡に二匹まで潜る",
+      "群れの数を奇数に保つ",
+      "単独で小さな潮を育てる",
+      "群れを離れた跡を巣にする",
+      "他個体の不在を縄張りにする",
+      "誰も通らない道を毎日掃く",
+      "隣り合う空白の距離を測る",
+      "訪ねてきた影を外へ送り返す",
+      "同じ場所に二度は寝床を作らない",
+      "留守中の巣を自分で訪れる",
+      "帰り道だけを長く育てる",
+      "空席の数だけ触腕を伸ばす",
+      "香りの影を濾し取る",
+      "苦味を薄く削って貯える",
+      "甘さを一粒ずつ磨く",
+      "塩気の角を丸めて飲み込む",
+      "酸味を糸にして引き上げる",
+      "辛さの冷えた部分を選り分ける",
+      "痺れを細かく砕いて運ぶ",
+      "旨みの沈殿を腹に詰める",
+      "渋みの表皮だけを剥ぐ",
+      "無味を少しずつ発酵させる",
+      "食べた余熱を巣の壁に塗る",
+      "満腹になると周囲を薄くする",
+      "餌を飲み込む前に反射させる",
+      "空腹になるたび胃の位置を変える",
+      "一度吐き出した光だけを食べ直す",
+      "消化した香りを卵のまわりに巻く",
+      "咀嚼の回数だけ体節を増やす",
+      "腹の底で小さな夕方を育てる",
+      "栄養を使わずに空洞を大きくする",
+      "食後に一粒の無味を吐く",
+      "脈の間に眠る",
+      "片側ずつ夢を見る",
+      "眠っている間だけ群れを成す",
+      "目覚める前に寝床を沈める",
+      "夢の中の体を先に起こす",
+      "睡眠中に香りを遠くへ送る",
+      "体内の暗い場所から順に休む",
+      "瞼を持たずに景色を閉じる",
+      "寝返りのたび季節を替える",
+      "眠りの浅い側を外へ向ける",
+      "明滅の休止だけを長くする",
+      "光らない部分で仲間を呼ぶ",
+      "腹の奥から順に発光する",
+      "反射を一拍だけ遅らせる",
+      "眩しさを膜の内側に仕舞う",
+      "暗くなるほど影を濃くする",
+      "一度見られた光を二度と出さない",
+      "光の輪を脱皮の跡に残す",
+      "発光する前に温度を下げる",
+      "色を変えずに明るさだけ脱ぐ",
+      "触腕で余韻を折り畳む",
+      "繊毛で冷たい風を起こす",
+      "触角で甘さの厚みを測る",
+      "鰭で沈黙の表面を撫でる",
+      "脚のない側から歩き出す",
+      "尾の先にだけ重さを集める",
+      "鱗の隙間に残り香を挟む",
+      "内臓をゆっくり回転させる",
+      "背中の孔から細い匂いを吐く",
+      "膜の張りだけで方向を変える",
+      "周囲の苦さに擬態する",
+      "食べられた跡に姿を似せる",
+      "空の匙の光沢を真似る",
+      "まだ嗅がれていない香りに化ける",
+      "残響のふりをして待つ",
+      "影を二枚重ねて隠れる",
+      "見つめられた部分だけ平らになる",
+      "輪郭を背景へ少しずつ貸す",
+      "敵の予感に先回りして眠る",
+      "天敵の抜け殻を頭に載せる",
+      "同じ場所を違う深さで巡る",
+      "温度の境を越冬地にする",
+      "余香が薄れるたび南へ渡る",
+      "鼻へ抜ける道の途中で休む",
+      "香りが帰ってくる季節を待つ",
+      "干潮のない岸で潮を数える",
+      "朝の苦味から夜の甘さへ渡る",
+      "一滴が冷める間に往復する",
+      "移動先の記憶を先に脱ぐ",
+      "渡りの終わりに出発点を埋める",
+      "薄い甘さを編んで巣を作る",
+      "渋みの枝を格子に組む",
+      "泡の殻を積んで壁を作る",
+      "冷気を丸めて入口を塞ぐ",
+      "抜けた繊毛で帰路を縫う",
+      "香りの糸に小さな部屋を吊るす",
+      "自分より小さい空間に巣を構える",
+      "底のない袋を寝床にする",
+      "巣の外側だけを毎晩修理する",
+      "帰るたびに玄関を一枚剥ぐ",
+      "触れた温度を腹に写す",
+      "背中で昼夜を入れ替える",
+      "片側の内臓を折り畳む",
+      "体節ごとに違う速度で老いる",
+      "成長するたび中心を移す",
+      "古くなった触腕を根に変える",
+      "体の内側を外へ少しずつ回す",
+      "鰓の奥に乾いた風を貯める",
+      "骨格のない部分だけを伸ばす",
+      "心臓のまわりに余白を増やす",
+      "匂いの重さを量る",
+      "苦味の角度を測る",
+      "甘さの曲率に沿って丸まる",
+      "痺れの届く範囲をなぞる",
+      "塩気の高低差を覚える",
+      "酸味の振動を腹で聞く",
+      "温度の色を触角で読む",
+      "無味の密度に合わせて縮む",
+      "旨みの深さだけ背を伸ばす",
+      "香ばしさの年齢を数える",
+      "声を出さずに巣を共鳴させる",
+      "乾いた膜を鳴らして求愛する",
+      "味の違いを触腕で伝える",
+      "二度の明滅で帰巣を知らせる",
+      "無味の輪を置いて警告する",
+      "脈の速さを隣の個体へ貸す",
+      "小さな破裂音を殻にしまう",
+      "相手の呼吸を一回だけ真似る",
+      "香りのない方向へ合図を送る",
+      "聞こえない音を折り返して受け取る",
+      "見つめられると中心を隠す",
+      "指が近づくと内側へ逃げる",
+      "嗅がれる前に半歩だけ移る",
+      "口を開けた気配に反応する",
+      "観察者の瞬きに合わせて止まる",
+      "名前を呼ばれると影を縮める",
+      "数えられる前に一匹分の隙間を作る",
+      "姿を記録されると薄皮を脱ぐ",
+      "目を逸らされた間に上下を替える",
+      "触れられた場所をしばらく留守にする",
+      "蒸気の上に塩の畑を作る",
+      "余熱を耕して苦味を植える",
+      "静電気に小さな根を張る",
+      "冷たい膜に酸味を栽培する",
+      "種のない甘さを増やす",
+      "抜け殻の内壁に苔を育てる",
+      "夢の澱を集めて発酵させる",
+      "見えない胞子を背中で乾かす",
+      "匂いの結晶を巣に埋める",
+      "熟れた沈黙を収穫する",
+      "別の個体の体内に道を作る",
+      "隣の巣へ余った温度を渡す",
+      "天敵の眠りを食卓にする",
+      "仲間の空腹を一晩預かる",
+      "他種の卵を自分の影で包む",
+      "寄生先の名前だけを覚える",
+      "共生相手の脱皮を手伝う",
+      "見知らぬ触腕に帰り道を教える",
+      "群れの外にいる個体を内側から守る",
+      "体内の小さな群れに食べ物を分ける",
+      "一度失った膜を夢から再生する",
+      "折れた触角を余韻で繋ぐ",
+      "傷のない場所に新しい皮を作る",
+      "欠けた輪郭を沈黙で埋める",
+      "なくした内臓の形を保ち続ける",
+      "再生するたび左右を取り違える",
+      "残った半身で全身の影を動かす",
+      "古傷の上に小さな孔を開ける",
+      "体節を落として軽い個体になる",
+      "剥がれた部分を別の季節に育てる",
+      "一口目を冬として過ごす",
+      "二口目の前に春の皮を着る",
+      "食べ終わりだけ夏眠する",
+      "余韻が薄れる頃に秋を迎える",
+      "冷めるまでの間に一年を巡る",
+      "香りが立つたび暦を巻き戻す",
+      "日没を喉の奥で待つ",
+      "月のない夜を体内に保存する",
+      "朝露の重さで冬眠を終える",
+      "季節を一枚ずつ食べて渡る",
+      "自分の足跡を後から発芽させる",
+      "通り道に薄い無味を残す",
+      "這った場所の遠近感を薄くする",
+      "移動した分だけ岸を増やす",
+      "抜け殻を目印に使わない",
+      "影の跡を毎朝磨き直す",
+      "寝床にだけ痺れを残す",
+      "留守の巣から香りを出す",
+      "見つかった痕跡を体内へ戻す",
+      "消える途中の跡を次の巣にする",
+      "一匹分の影を三匹で共有する",
+      "二つの巣で同じ眠りを繰り返す",
+      "群れ全体で一度だけ呼吸する",
+      "隣の個体が脱ぐまで脱皮を待つ",
+      "一枚の膜を順番に裏返す",
+      "触角の数で役割を決めない",
+      "最も小さい個体に空洞を預ける",
+      "群れの外周だけを交代で生きる",
+      "欠けた一匹の形に集まる",
+      "誰もいない中心に餌を運ぶ",
+      "食べる前に餌の影を洗う",
+      "甘さを冷ましてから飲み込む",
+      "苦い粒を口のない側へ運ぶ",
+      "一晩置いた塩気だけを選ぶ",
+      "匂いを薄く伸ばして保存する",
+      "食べ残しを体より遠くへ吊るす",
+      "餌がなくなると食卓を小さくする",
+      "食べたものの輪郭を翌朝吐く",
+      "空腹の間だけ腹に光を入れる",
+      "満腹の影を幼体へ与える",
+      "脈打つたびに体を結び直す",
+      "収縮と収縮の間に孔を閉じる",
+      "粘着する側を交互に替える",
+      "融ける速さで寝床を選ぶ",
+      "伸びる部分だけを眠らせる",
+      "捻じれをほどかずに育つ",
+      "内圧を使って昨日を押し戻す",
+      "張力の弱い節に香りを集める",
+      "触腕の先から順に時間を止める",
+      "殻の硬さで呼吸の深さを替える",
+      "明るい場所で透明さを干す",
+      "暗い場所で自分の色を畳む",
+      "香りの薄い場所に重く沈む",
+      "苦味の深い場所でだけ軽くなる",
+      "塩気のない岸を選んで産卵する",
+      "甘さが途切れる場所で眠り直す",
+      "辛さの背後へ体温を逃がす",
+      "酸味の表面を毎晩裏返す",
+      "旨みが満ちるまで口を閉じる",
+      "無味が続くと繊毛を増やす",
+      "生まれた場所を毎晩作り直す",
+      "帰郷するたび別の個体になる",
+      "自分を見失うために輪郭を磨く",
+      "輪郭を見失うと群れへ戻る",
+      "眠りから抜けた殻を背負う",
+      "卵だった頃の向きで丸まる",
+      "孵る前の暗さへ時々戻る",
+      "成体になってから幼体の影を持つ",
+      "自分の後ろに小さな余白を飼う",
+      "死んだふりのまま少しずつ育つ",
+      "香りが消えた後も巣を守る",
+      "味わわれる直前に一度だけ跳ねる",
+      "忘れられた頃に表面へ出る",
+      "名づけられていない部分を撫でる",
+      "一番遠い内側を目指して掘る",
+      "透明な部分を目隠しに使う",
+      "動かなかった距離を体に刻む",
+      "次のひと口を背中で待ち受ける",
+      "食べ終わった景色へゆっくり帰る",
+      "誰もいない方へ生態を広げる"
+    ],
+    "cues": [
+      "飲み込まれる直前",
+      "誰かが息を止めたとき",
+      "口を閉じた瞬間",
+      "舌が上顎に触れたとき",
+      "唾液が一滴増えたとき",
+      "唇が離れた直後",
+      "喉が一度だけ鳴ったとき",
+      "鼻から息を吐くとき",
+      "舌先で塩を探すとき",
+      "味を確かめようとした瞬間",
+      "最初のひと口が届く前",
+      "二口目を待つ間",
+      "三口目の後",
+      "最後のひと粒が消えたとき",
+      "食べ終わって席を立つ頃",
+      "空の匙を口に運んだとき",
+      "箸を置いた瞬間",
+      "器の底が見えたとき",
+      "皿が一枚片づけられたとき",
+      "食卓から香りが離れる頃",
+      "ひと肌より少し冷えたとき",
+      "湯気が見えなくなる頃",
+      "氷が最後の角を失ったとき",
+      "冷たいものが舌を離れたとき",
+      "温かさが喉へ届いたとき",
+      "煮立つ直前",
+      "火を止めた直後",
+      "凍るより一拍早く",
+      "余熱だけが残ったとき",
+      "温度を言葉にしようとした瞬間",
+      "甘さが一度だけ濃くなったとき",
+      "苦味が舌の端へ移ったとき",
+      "酸味がほどけかけたとき",
+      "塩気の角が丸くなったとき",
+      "辛さが遅れて届いたとき",
+      "痺れが左右に分かれたとき",
+      "旨みが鼻へ抜けたとき",
+      "渋みが乾き始めたとき",
+      "香ばしさが苦さに変わる頃",
+      "何の味もしなくなった瞬間",
+      "香りが鼻へ戻ってきたとき",
+      "残り香を思い出したとき",
+      "匂いの名前を間違えたとき",
+      "花の香りが遠ざかったとき",
+      "焦げた匂いが先に届いたとき",
+      "青臭さが甘く感じられたとき",
+      "煙の匂いが消えたとき",
+      "二つの香りが重なった瞬間",
+      "吸い込んだ息が少し冷たいとき",
+      "もう一度嗅ごうと顔を寄せたとき",
+      "泡が弾ける一拍前",
+      "気泡が底から離れたとき",
+      "炭酸の音が途切れたとき",
+      "一番小さな泡が消えたとき",
+      "水面が静かになったとき",
+      "一滴が二つに分かれたとき",
+      "濁りが底へ沈み始めたとき",
+      "油の膜が虹色になったとき",
+      "湯気が逆向きに流れたとき",
+      "流れのない場所に波が立ったとき",
+      "観察者が瞬きをしたとき",
+      "誰かが目を逸らした間",
+      "指先の影が近づいたとき",
+      "名前を初めて呼ばれたとき",
+      "個体の数を数え直したとき",
+      "見つめる時間が長すぎたとき",
+      "触れようとして手を止めたとき",
+      "誰も見ていないことがわかったとき",
+      "同じ姿を二度見たとき",
+      "記録を取る手が止まった瞬間",
+      "朝の光が届く前",
+      "正午が少し長引いたとき",
+      "夕陽が器の縁に触れたとき",
+      "夜が一枚深くなった頃",
+      "夜明けを待つ間",
+      "月のない夜",
+      "雨が降り出すより少し前",
+      "露が乾ききったとき",
+      "風向きが変わった瞬間",
+      "季節の名前を忘れた頃",
+      "眠りへ落ちる直前",
+      "夢の続きを思い出したとき",
+      "目覚めて最初に息をしたとき",
+      "欠伸を途中で止めたとき",
+      "ため息が長くなったとき",
+      "心拍が一回だけ遅れたとき",
+      "空腹に気づいた瞬間",
+      "満腹のことを忘れたとき",
+      "懐かしい味を思い出したとき",
+      "食べたものの名前が出てこないとき",
+      "隣の個体が脱皮したとき",
+      "群れが一匹分だけ小さくなったとき",
+      "卵の影が丸くなったとき",
+      "幼体が初めて眠ったとき",
+      "親の触腕に触れたとき",
+      "天敵が空腹でなくなったとき",
+      "共生相手の明滅が止まったとき",
+      "見知らぬ抜け殻が流れ着いたとき",
+      "同じ巣へ二度戻ったとき",
+      "群れの中心が空いたとき",
+      "光が裏側へ回ったとき",
+      "影が二つに分かれたとき",
+      "反射が本体に追いついたとき",
+      "白さが少し青くなったとき",
+      "赤い部分が暗くなったとき",
+      "輪郭が一瞬ぼやけたとき",
+      "明滅の間隔が揃ったとき",
+      "暗さに目が慣れた頃",
+      "発光していない場所を見つけたとき",
+      "色の境目を辿り終えたとき",
+      "膜がぴんと張ったとき",
+      "触腕が内側へ巻いたとき",
+      "繊毛が同じ方向へ倒れたとき",
+      "内圧が一段だけ上がったとき",
+      "体の真ん中が縮んだとき",
+      "孔が一斉に閉じたとき",
+      "表面がゆっくり融けたとき",
+      "骨格の影が透けたとき",
+      "粘りの糸が切れたとき",
+      "空洞に風が通ったとき",
+      "匙が硝子に触れたとき",
+      "箸先から滴が落ちたとき",
+      "鍋の蓋を開けたとき",
+      "茶碗を両手で包んだとき",
+      "カップを持ち上げたとき",
+      "包丁の音が止んだとき",
+      "石臼の回転が緩んだとき",
+      "布巾が水を吸いきったとき",
+      "空の皿が温かいと気づいたとき",
+      "卓上に誰もいなくなったとき",
+      "同じ味が三度続いたとき",
+      "予想と違う香りがしたとき",
+      "甘いはずのものが苦く感じられたとき",
+      "左右の感覚が入れ替わったとき",
+      "味の濃さを比べようとしたとき",
+      "ほんの少しだけ塩を足したとき",
+      "一度冷めたものを温め直したとき",
+      "噛まずに飲み込んでしまったとき",
+      "残りの量が半分になったとき",
+      "まだ食べていないことを忘れたとき",
+      "昨日と同じ時間になったとき",
+      "明日を思い浮かべた瞬間",
+      "遠くで扉が閉まったとき",
+      "聞こえなかった音を待つ間",
+      "存在しない甘さを探したとき",
+      "夢の食卓へ戻ったとき",
+      "最後の残り香が見つからないとき",
+      "味と香りの区別が曖昧になったとき",
+      "自分の影を見失ったとき",
+      "次の感覚がまだ届かない間"
+    ],
+    "effects": [
+      "影だけが一匹増える",
+      "遠くのバターが少しだけ溶ける",
+      "卵から細い坂道が生まれる",
+      "抜け殻の内側で朝が始まる",
+      "一枚の皮が昨日へ流れ着く",
+      "腹の奥に夕方がひとつ灯る",
+      "巣の入口が裏側へ移る",
+      "眠っていた苦味が目を覚ます",
+      "舌の上に小さな岬ができる",
+      "ひと口の距離が少し長くなる",
+      "背中の孔から冷たい光が漏れる",
+      "触腕の先に透明な実がなる",
+      "内臓が一段ずつ下へずれる",
+      "鱗の裏側に塩が咲く",
+      "繊毛の根に小さな泡がつく",
+      "膜の内側で風向きが変わる",
+      "骨格の影だけが先に育つ",
+      "腹の中の空洞が一度鳴る",
+      "尾の先に未使用の夜が溜まる",
+      "体の左右が別々に目覚める",
+      "卵が親の名前を失う",
+      "生まれる前の幼体が脱皮する",
+      "蛹の殻から残り香が孵る",
+      "幼体が自分の巣を吐き出す",
+      "親の影から小さな親が生まれる",
+      "卵殻だけが先に渡りを始める",
+      "子の数だけ周囲が静かになる",
+      "殻を持たない卵が重くなる",
+      "繁殖の跡に一粒の無味が残る",
+      "まだいない幼体の足跡がつく",
+      "群れの中心が一匹分深くなる",
+      "離れていた二匹の影が繋がる",
+      "一匹だけ群れの外側を忘れる",
+      "空席を囲む個体が透明になる",
+      "隣の個体の鼓動が甘くなる",
+      "群れ全体が一枚の膜になる",
+      "同じ巣の奥行きが倍になる",
+      "最後尾の個体が最初に戻る",
+      "誰もいない位置に触角が現れる",
+      "一匹の眠りが全員に行き渡る",
+      "発光の順番が逆になる",
+      "眩しさが一枚だけ剥がれる",
+      "青い部分から先に温度がなくなる",
+      "赤い影がゆっくり沈む",
+      "黄色の薄膜が巣を覆う",
+      "暗い場所だけ輪郭を失う",
+      "白さの内側に夜ができる",
+      "光の粒が底へ降り積もる",
+      "明滅していない方が見え始める",
+      "照り返しが本体を追い越す",
+      "甘さが細い糸になる",
+      "苦味が丸い粒へ戻る",
+      "酸味の向きが上下逆になる",
+      "塩気の角から新しい膜が伸びる",
+      "辛さの中心に冷たい穴が開く",
+      "痺れが二枚の皮に分かれる",
+      "旨みの底が一段持ち上がる",
+      "渋みの毛羽が巣の外へ伸びる",
+      "香ばしさが小さな骨になる",
+      "無味の部分だけ深くなる",
+      "香りが巣の中へ帰ってくる",
+      "残り香に細い根が生える",
+      "芳香の影が器の底に映る",
+      "匂いの出口がもうひとつ開く",
+      "鼻に届かなかった香りが孵化する",
+      "吐息の裏に薄い森ができる",
+      "吸い込まれた匂いが一粒だけ戻る",
+      "香りの重さが半分になる",
+      "余香の端が丸くなる",
+      "嗅げなかった部分が光り始める",
+      "冷たさが腹の底へ移る",
+      "余熱に小さな羽が生える",
+      "凍った部分だけが呼吸する",
+      "温度の境界に卵が並ぶ",
+      "ぬるさが一晩分厚くなる",
+      "湯気の中に空の巣が現れる",
+      "融け残りが二匹に分かれる",
+      "熱さの輪郭だけが残る",
+      "巣の外側に薄氷が張る",
+      "温もりが小さな袋に包まれる",
+      "昨日の薄皮が今日に重なる",
+      "一秒だけ群れが古くなる",
+      "朝より先に夜明けが脱皮する",
+      "夕暮れが腹の中で折り返す",
+      "明日の匂いが一滴落ちる",
+      "正午の長さだけ尾が伸びる",
+      "眠りの途中に別の季節が挟まる",
+      "時計のない方へ巣が傾く",
+      "過ぎなかった時間が澱になる",
+      "遠い夜の底が浅くなる",
+      "見覚えのない味が懐かしくなる",
+      "忘れた名前が殻の内側に残る",
+      "夢の食べ残しに根が生える",
+      "思い出の色だけが褪せる",
+      "最初のひと口の影が戻る",
+      "まだ覚えていない香りが濃くなる",
+      "食べたことのない果実が熟れる",
+      "記憶の端に小さな孔が開く",
+      "忘れられた甘さが群れに加わる",
+      "呼び間違えた味が脱皮する",
+      "巣の壁から薄い蜜が滲む",
+      "玄関だけが一段小さくなる",
+      "寝床の底に新しい底ができる",
+      "入口より大きな抜け殻が残る",
+      "天井から余韻の糸が垂れる",
+      "空の部屋に一匹分の熱が溜まる",
+      "巣の内側が外側へ回る",
+      "帰り道の途中に別の帰り道が生える",
+      "床の影が天井へ移る",
+      "棲んでいない場所だけ温かくなる",
+      "歩かなかった場所に足跡がつく",
+      "触れていない面が柔らかくなる",
+      "沈まなかった粒が底へ戻る",
+      "渡らなかった岸が近づいてくる",
+      "動いた距離だけ後方が白くなる",
+      "浮いた跡から冷たい芽が出る",
+      "曲がらなかった道が輪になる",
+      "泳いだ余白がゆっくり固まる",
+      "通り過ぎた影に葉脈ができる",
+      "止まった場所から流れが始まる",
+      "鳴らなかった音が殻に溜まる",
+      "小さな沈黙が群れを呼ぶ",
+      "破裂音の内側に卵が見つかる",
+      "鼓動が一回だけ外へ出る",
+      "噛む音の長さだけ膜が震える",
+      "聞こえない声に色がつく",
+      "呼吸の間に薄い鐘が鳴る",
+      "残響が一匹分だけ遅れる",
+      "音のない方へ触腕が揃う",
+      "言葉になる前の息が孵る",
+      "満腹の部分だけ透明になる",
+      "胃の中に空の食卓ができる",
+      "消化した光が背中に戻る",
+      "餌の影が内臓に棲みつく",
+      "食べ残しが先に成長する",
+      "空腹が小さな結晶になる",
+      "腹から一粒の季節が零れる",
+      "吸収されなかった味が膜を張る",
+      "栄養のない場所に卵が集まる",
+      "飲み込んだ余白が裏返る",
+      "脱ぎ捨てた皮が眠り始める",
+      "抜け殻の方に色が残る",
+      "新しい外皮だけが古くなる",
+      "剥がれた影が別の巣を探す",
+      "輪郭が一枚ぶん薄くなる",
+      "鱗の枚数より影が多くなる",
+      "空の殻に小さな脈が戻る",
+      "脱皮の跡から無味が湧く",
+      "古い体節が道しるべになる",
+      "新しい皮の裏に海ができる",
+      "天敵の影が少し甘くなる",
+      "共生相手の触角に花粉がつく",
+      "寄生先の眠りが浅くなる",
+      "隣の巣から同じ夢が漏れる",
+      "別種の卵が同時に孵る",
+      "餌を奪った個体が軽くなる",
+      "見知らぬ群れへ名前が移る",
+      "守られた巣だけが冷える",
+      "借りた鼓動が元の体へ帰る",
+      "他種の抜け殻に体温が灯る",
+      "見つめた部分だけ小さくなる",
+      "観察者の影が一拍遅れる",
+      "数えたはずの個体が一匹抜ける",
+      "名前のついた部分だけ眠る",
+      "記録された色が先に薄れる",
+      "触れる前の距離が伸びる",
+      "見えなかった裏側に入口が開く",
+      "視線の外で卵殻が割れる",
+      "確かめた瞬間に痕跡が乾く",
+      "気づかれなかった個体が二重になる",
+      "体の中心が一節だけずれる",
+      "枝の先に別の中心ができる",
+      "空洞の数だけ呼吸が増える",
+      "捻じれがゆっくり裏へ回る",
+      "薄い部分から順に丸くなる",
+      "融合した跡が細い川になる",
+      "放射状の骨格が片側へ眠る",
+      "膨らんだ膜に小さな谷が走る",
+      "結び目を持たない触腕が解ける",
+      "縮んだ部分に遠くの風が入る",
+      "口の中にない岸が濡れる",
+      "空の器が少し重くなる",
+      "匙の影にもう一枚の匙が重なる",
+      "箸先から透明な根が伸びる",
+      "茶碗の底に夜の輪が残る",
+      "硝子の冷たさに体節ができる",
+      "蓋の裏に孵化の跡がつく",
+      "皿の余白が香りを持つ",
+      "誰も座っていない席が温まる",
+      "食べ終わった風景が少し膨らむ",
+      "まだ味にならないものが育つ",
+      "感覚の縫い目に新しい卵が挟まる",
+      "無人の内側で群れが増える",
+      "ひと口の裏にもうひと口が生まれる",
+      "味と香りの間が少し広がる",
+      "名前のない余韻に足が生える",
+      "何も起きなかった跡だけが残る",
+      "次の感覚が一拍遅れて届く",
+      "生息地の外側に小さな内側ができる",
+      "消えたはずの生態が別の場所で続く"
+    ]
+  }
+};
+  const TEMPLATES = [
+    ['feeding-01','食性','{S}の{L}に棲む。{F}を食べ、{B}。{T}、{E}。'],
+    ['feeding-02','食性','{S}の{L}を住処とする。主食は{F}。ふだんは{B}が、{T}、{E}。'],
+    ['feeding-03','食性','生息地は{S}の{L}。{F}を集めながら、{B}。{T}、{E}。'],
+    ['habit-01','習性','{S}の{L}で暮らす。{B}という習性を持ち、{F}を好む。{T}、{E}。'],
+    ['habit-02','習性','{S}の{L}に潜む。{B}。{F}が豊富な場所では、{T}、{E}。'],
+    ['habit-03','習性','{B}生物。住処は{S}の{L}にあり、餌は{F}。{T}、{E}。'],
+    ['breeding-01','繁殖','{S}の{L}で卵の時期を過ごす。幼体の主食は{F}。成体は{B}。{T}、{E}。'],
+    ['breeding-02','繁殖','{S}の{L}に棲む。繁殖期には{F}が巣に集まる。親は{B}。{T}、{E}。'],
+    ['breeding-03','繁殖','{S}の{L}で、孵化の跡だけが見つかる。成体は{F}を食べて{B}らしい。{T}、{E}。'],
+    ['trace-01','痕跡','{S}の{L}に棲んだ跡がある。{F}の食べ残しがあり、{B}と考えられる。{T}、{E}。'],
+    ['trace-02','痕跡','{S}の{L}に潜む姿は、まだ見つかっていない。食性は{F}に偏り、{B}という。{T}、{E}。'],
+    ['trace-03','痕跡','{T}、{E}。その跡を辿ると、{S}の{L}に行き着く。そこでは{F}を食べ、{B}。'],
+    ['colony-01','群生','{S}の{L}に小さな群れを作る。{F}を分け合いながら、{B}。{T}、{E}。'],
+    ['colony-02','群生','{S}の{L}に棲む個体は、離れていてもひとつの群れとされる。餌は{F}。{B}が、{T}、{E}。'],
+    ['colony-03','群生','{S}の{L}で群れが観察された。{B}個体のまわりに{F}が溜まる。{T}、{E}。'],
+    ['sleep-01','休眠','{S}の{L}を寝床にする。目覚めると{F}を探し、{B}。{T}、{E}。'],
+    ['sleep-02','休眠','{S}の{L}に眠る。夢の中では{B}。枕元には{F}が残り、{T}、{E}。'],
+    ['sleep-03','休眠','{S}の{L}に、長い休眠の季節がある。活動期は{F}を食べて{B}。{T}、{E}。'],
+    ['mimicry-01','擬態','{S}の{L}に身を隠す。{F}に似た気配を纏い、{B}。{T}、{E}。'],
+    ['mimicry-02','擬態','{S}の{L}では、周囲と区別しにくい。{B}姿と{F}の食痕が手がかりになる。{T}、{E}。'],
+    ['mimicry-03','擬態','{S}の{L}に潜む。生きていないもののように{B}。餌は{F}とされ、{T}、{E}。'],
+    ['migration-01','渡り','{S}の{L}に季節ごとに戻ってくる。{F}を蓄え、{B}。{T}、{E}。'],
+    ['migration-02','渡り','{S}の{L}は、この生物の通り道でもある。道中では{F}を食べて{B}。{T}、{E}。'],
+    ['migration-03','渡り','{S}の{L}で次の移動を待つ。餌になるのは{F}。{B}間に、{T}、{E}。'],
+    ['unknown-01','未詳','{S}の{L}に棲むらしい。{B}こと以外、生態はほとんどわからない。{F}のある場所では、{T}、{E}。'],
+    ['unknown-02','未詳','{S}の{L}で発見された。{F}との関係は不明だが、{B}姿が記録されている。{T}、{E}。'],
+    ['unknown-03','未詳','{T}、{E}。この現象の主は、{S}の{L}に潜むとされる。{F}を好み、{B}。'],
+    ['symbiosis-01','共生','{S}の{L}に、見えない共生相手と棲む。相手が{F}を集める間、{B}。{T}、{E}。'],
+    ['symbiosis-02','共生','{S}の{L}では、ひとつの巣が二種の生物に使われる。{F}を受け取り、代わりに{B}。{T}、{E}。'],
+    ['symbiosis-03','共生','{S}の{L}を借りて暮らす。宿主のために{B}といわれる。{F}が届くと活動を始め、{T}、{E}。']
+  ].map(([id, kind, text]) => Object.freeze({id, kind, text}));
+  for (const a of Object.values(LEXICON.entries)) Object.freeze(a);
+  Object.freeze(LEXICON.entries); Object.freeze(LEXICON); Object.freeze(TEMPLATES);
+
+  // Full string hashing: 13-digit seeds are not truncated to a 32-bit number.
+  function hash(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    h ^= h >>> 16; h = Math.imul(h, 0x7feb352d);
+    h ^= h >>> 15; h = Math.imul(h, 0x846ca68b);
+    return (h ^ (h >>> 16)) >>> 0;
+  }
+  function canonicalSeed(value) {
+    if (typeof value === 'number' && (!Number.isFinite(value) || !Number.isSafeInteger(value))) {
+      throw new TypeError('シードには整数または文字列を指定してください');
+    }
+    if (value != null && typeof value !== 'number' && typeof value !== 'string') {
+      throw new TypeError('シードには整数または文字列を指定してください');
+    }
+    return value == null ? '0' : String(value).trim() || '0';
+  }
+  function generate(seed) {
+    const key = canonicalSeed(seed);
+    const choose = (channel, length) => hash('morphospace-ecology-v1|' + key + '|' + channel) % length;
+    const picks = {};
+    for (const [k, a] of Object.entries(LEXICON.entries)) picks[k] = choose(k, a.length);
+    const at = k => LEXICON.entries[k][picks[k]];
+    const template = TEMPLATES[choose('template', TEMPLATES.length)];
+    const tokens = {S:at('sensations'), L:at('places'), F:at('foods'), B:at('behaviors'), T:at('cues'), E:at('effects')};
+    const text = template.text.replace(/\{([SLFBTE])\}/g, (_, k) => tokens[k]);
+    return {
+      version: LEXICON.version, seed: key, templateId: template.id, kind: template.kind,
+      sensation: tokens.S, place: tokens.L, habitat: tokens.S+'の'+tokens.L,
+      food: tokens.F, behavior: tokens.B, cue: tokens.T, effect: tokens.E,
+      text, picks
+    };
+  }
+  function isSavedRecord(value) {
+    return !!value && typeof value === 'object' && typeof value.text === 'string' && value.text.trim().length > 0;
+  }
+  // Never overwrite saved prose merely because a dictionary version changed.
+  function ensure(record) {
+    if (!record || typeof record !== 'object') throw new TypeError('個体レコードが必要です');
+    if (!isSavedRecord(record.ecology)) record.ecology = generate(record.seed ?? record.genome?.seed ?? 0);
+    return record.ecology;
+  }
+  const counts = Object.freeze(Object.fromEntries(Object.entries(LEXICON.entries).map(([k, a])=>[k,a.length])));
+  return Object.freeze({version:LEXICON.version, generate, ensure, counts, templates:TEMPLATES, lexicon:LEXICON.entries});
+});
+
+</script><script>
 
 'use strict';
 
@@ -2482,7 +4131,7 @@ const activePointers=new Map();
 let pinchState=null, environmentTime=0;
 function fail(e){
  console.error(e);const msg=String(e&&e.message||e);
- $('status').hidden=false;$('status').textContent='描画エラー';$('status').classList.add('fail');$('message').textContent=msg;const sceneAlert=$('sceneAlert');if(sceneAlert){sceneAlert.textContent='3D描画を継続できませんでした：\n'+msg;sceneAlert.hidden=false;}
+ $('status').textContent='描画エラー';$('status').classList.add('fail');$('message').textContent=msg;const sceneAlert=$('sceneAlert');if(sceneAlert){sceneAlert.textContent='3D描画を継続できませんでした：\n'+msg;sceneAlert.hidden=false;}
  const diag=$('gpuDiag');diag.hidden=false;diag.textContent='GPU診断: '+msg+'\n（スクリーンショットを送ってください）';
 }
 function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>destroy(gl,pt.mesh));(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
@@ -2512,7 +4161,8 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false){
  rigMeshes=nextSpec.rigs;spec=nextSpec;spec.emissionSites=spec.emissionSites||buildEmissionSites(spec);spec.baseViewDistance=nextView;spec.viewDistance=preserveView&&oldView?oldView:nextView;
  if(updateMeta){applyEmissionDNAtoUI(getSpecEmissionDNA(spec));const seed=spec.seed;$('index').textContent='SPECIMEN / '+String(selected+1).padStart(2,'0')+' ・ SEED '+seed;
  $('name').textContent=recordDisplayName(currentIndividual())||morphName(spec.genome);
- $('description').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。生成済みの立体を動かしたあと、その時点の変形結果を左右反転コピーしてロールシャッハ状の左右対称個体として描画します。固定8分類を使用せず、成長・融合・抑制で形成された立体です。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
+ $('description').textContent=MorphospaceEcology.ensure(currentIndividual()||{seed:spec.seed}).text;
+ $('morphologyInfo').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。生成済みの立体を動かしたあと、その時点の変形結果を左右反転コピーしてロールシャッハ状の左右対称個体として描画します。固定8分類を使用せず、成長・融合・抑制で形成された立体です。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
  $('palette').innerHTML=pickPalette(seed,spec.genome.colorDNA,spec.genome.patternDNA).hex.map(c=>'<i style="background:'+c+'"></i>').join('');
  const dna=spec.genome.motionDNA||normalizedMotionDNA(null,seed);$('motionDNAInfo').innerHTML='<b>主運動：</b>'+MOTION_LABELS[dna.primary]+'　<b>副運動：</b>'+MOTION_LABELS[dna.secondary]+'<div>速度 '+Math.round(dna.tempo*100)+'% ／ 局所性 '+Math.round(dna.locality*100)+'% ／ 停止 '+Math.round(dna.rest*100)+'% ／ 伝播 '+Math.round(dna.propagation*100)+'%</div>';
  const bd=spec.genome.bioDNA;
@@ -2618,7 +4268,7 @@ function drawUploaded(mesh,alpha=1,wire=false,rim=.2,glowPass=0){
 let framesInWindow=0,fpsWindowTime=0;
 function frame(now){if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
- if(selected>=0){
+ if(selected>=0&&!captureShareIsOpen){
   environmentTime+=Math.min(elapsed,.18);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/100);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100);}
@@ -2701,7 +4351,7 @@ function drawGpuPreview(target,sp){
  }
 }
 function currentIndividual(){return selected>=0&&population[selected]?population[selected]:null;}
-function snapshotIndividual(rec){return rec?copyJSON({id:rec.id,name:recordDisplayName(rec),seed:rec.seed,style:rec.style,genome:rec.genome,generation:rec.generation,parents:rec.parents,mutationLog:rec.mutationLog}):null;}
+function snapshotIndividual(rec){return rec?copyJSON({id:rec.id,name:recordDisplayName(rec),ecology:MorphospaceEcology.ensure(rec),seed:rec.seed,style:rec.style,genome:rec.genome,generation:rec.generation,parents:rec.parents,mutationLog:rec.mutationLog}):null;}
 function renderPedigree(){
  const a=parentSlots.A,b=parentSlots.B;
  $('parentACard').textContent=a?'親A：第'+a.generation+'世代 / '+recordDisplayName(a)+' / '+a.id:'親A：未選択';
@@ -2713,7 +4363,7 @@ function renderPedigree(){
  $('breed').disabled=!(a&&b&&a.id!==b.id)||busy;
  if($('breedQuick')){$('breedQuick').disabled=$('breed').disabled;$('breedQuick').textContent=(!a||!b)?'A × B 交配（親を選択）':(a.id===b.id?'同一個体は交配不可':'A × B 交配 / 64体');}
  $('genBadge').textContent='第'+generation+'世代・'+({wild:'野生',mutate:'単親変異',breed:'2親交配'}[collectionMode]||'読込');
- $('lineageSummary').textContent='系譜保存 '+Object.keys(pedigree).length+'個体 ／ 現在の64体：'+({wild:'独立創始個体',mutate:'単親からの変異子',breed:'2親の交叉子'}[collectionMode]||'復元')+'。親選択はギャラリー詳細から。';
+ $('lineageSummary').textContent='系譜保存 '+Object.keys(pedigree).length+'個体 ／ 現在の'+population.length+'体：'+({wild:'独立創始個体',mutate:'単親からの変異子',breed:'2親の交叉子'}[collectionMode]||'復元')+'。親選択はギャラリー詳細から。';
  for(const [i,button] of Array.from($('gallery').querySelectorAll('.item')).entries()){
   button.classList.toggle('parent-a',!!a&&population[i]?.id===a.id);
   button.classList.toggle('parent-b',!!b&&population[i]?.id===b.id);
@@ -2767,7 +4417,7 @@ async function build(seed,par=null,context=null){
   const g=best.genome;
   genomes.push(g);
   const rec={id:hashLineageId(individualSeed,i,mode,generation,ancestors.map(a=>a.id)),name:makeSpecimenName(g,individualSeed,usedSpecimenNames),seed:individualSeed,style:g.style,genome:copyJSON(g),generation,parents:ancestors.map(a=>a.id),mutationLog:best.mutationLog,inherited:best.inherited,sourceSeed:Number(seed),index:i,mode};
-  population.push(rec);pedigree[rec.id]=copyJSON(rec);
+  MorphospaceEcology.ensure(rec);population.push(rec);pedigree[rec.id]=copyJSON(rec);
  }
  $('gallery').innerHTML='';$('progress').style.width='0%';$('message').textContent='軽量サムネイル64体を生成中…（詳細3Dは選択時に生成）';$('generate').disabled=true;$('same').disabled=true;renderPedigree();
  try{
@@ -2797,30 +4447,33 @@ function startBreeding(){if(busy||!parentSlots.A||!parentSlots.B||parentSlots.A.
  build(seed,null,{mode:'breed',parents:[snapshotIndividual(parentSlots.A),snapshotIndividual(parentSlots.B)]});
 }
 function exportPedigree(){
- const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.3-tissue-coupling',savedAt:new Date().toISOString(),collectionSeed,
+ const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.8.12-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
   generation,collectionMode,context:currentBuildContext,seeds,genomes:copyJSON(genomes),population:copyJSON(population),pedigree:copyJSON(pedigree),parentSlots:copyJSON(parentSlots),variance:Number($('variance').value),patternProfile:{lock:!!$('patternLock').checked,scatter:Number($('patternScatter').value),cats:[0,1,2,3,4].map(i=>Number($('cat'+i).value))}};
  saveDownload(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),'morphospace-pedigree-G'+generation+'-'+collectionSeed+'.json');
 }
 async function importPedigree(file){if(!file)return;
  try{
   const data=JSON.parse(await file.text());
-  if(data.format!=='MORPHOSPACE-PEDIGREE'||data.version!==1||!Array.isArray(data.seeds)||data.seeds.length!==64||!Array.isArray(data.population)||data.population.length!==64)throw new Error('系譜JSON形式が違います');
+  if(data.format!=='MORPHOSPACE-PEDIGREE'||data.version!==1||!Array.isArray(data.seeds)||data.seeds.length<1||data.seeds.length>64||!Array.isArray(data.population)||data.population.length!==data.seeds.length)throw new Error('系譜JSON形式が違います');
   if(data.population.some(x=>!x||!x.genome||!Number.isInteger(x.seed)||x.genome.style<0||x.genome.style>7))throw new Error('個体データの形式が不正です');
   pedigree=data.pedigree||{};parentSlots=data.parentSlots||{A:null,B:null};$('variance').value=String(clamp(data.variance??75,0,100));$('varnum').textContent=$('variance').value;
   if(busy)throw new Error('生成中は読み込めません');busy=true;close();destroyMeshes();
   try{
    collectionSeed=String(data.collectionSeed);$('seed').value=collectionSeed;
    currentBuildContext=copyJSON(data.context||{mode:data.collectionMode||'wild'});collectionMode=data.collectionMode||'wild';
-   generation=data.generation||0;population=copyJSON(data.population);ensurePopulationNames(population);for(const slot of ['A','B']){const parent=parentSlots[slot];if(parent&&!parent.name)parent.name=recordDisplayName(parent)}genomes=population.map(rec=>copyJSON(rec.genome));seeds=population.map(rec=>rec.seed);previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
+   generation=data.generation||0;population=copyJSON(data.population);ensurePopulationNames(population);
+   for(const rec of population)MorphospaceEcology.ensure(rec);
+   for(const rec of Object.values(pedigree))if(rec&&typeof rec==='object')MorphospaceEcology.ensure(rec);
+   for(const slot of ['A','B']){const parent=parentSlots[slot];if(parent){if(!parent.name)parent.name=recordDisplayName(parent);MorphospaceEcology.ensure(parent)}}genomes=population.map(rec=>copyJSON(rec.genome));seeds=population.map(rec=>rec.seed);previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
    for(const rec of population)pedigree[rec.id]=copyJSON(rec);
-   await redrawPopulation();renderPedigree();$('message').textContent='系譜JSONから第'+generation+'世代の64個体を復元しました';
+   await redrawPopulation();renderPedigree();$('message').textContent='系譜JSONから第'+generation+'世代の'+population.length+'個体を復元しました';
   }finally{busy=false}
 
  }catch(e){fail(e)}finally{$('importLineage').value=''}
 }
 async function redrawPopulation(){
  $('gallery').innerHTML='';previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];const variance=Number($('variance').value)/100;
- for(let i=0;i<64;i++){
+ for(let i=0;i<population.length;i++){
   const g=genomes[i],seed=seeds[i],palette=pickPalette(seed,g.colorDNA,g.patternDNA); g.colorDNA={rows:palette.rows.slice(),cols:palette.cols.map(c=>c.slice())};
   ensureEmissionDNA(g,seed); if(population[i]&&population[i].genome) population[i].genome.emissionDNA=copyJSON(g.emissionDNA);
   const sp=makeSpecimen(seed,g.style,palette,true,null,variance,Number($('density').value)/100,Number($('micro').value)/100,g.archetype,null,g); previewSpecimens[i]=null;
@@ -2832,7 +4485,157 @@ async function redrawPopulation(){
   if(i%2===1)await new Promise(ok=>requestAnimationFrame(ok));
  }
 }
-if(!gl){$('status').hidden=false;$('status').textContent='WebGL利用不可';$('status').classList.add('fail');$('gpuDiag').hidden=false;$('gpuDiag').textContent='このブラウザではWebGLが利用できません。iPhoneの対応ブラウザで開いてください。';build($('seed').value)}else{
+// Capture/share adapter. Existing geometry and ecology generation are unchanged.
+const CaptureShare=MorphospaceCaptureShare;
+let captureShareIsOpen=false,captureShareState=null,captureShareSequence=0;
+const captureShareDialog=$('captureShareDialog');
+function captureView(){
+ const out={};for(const id of ['density','micro','emitColor','emitBlink','blinkSpeed','emissionStrength','bloomRadius','shadeStrength','motionAmp','coupling','motionSpeed','bodySpeed'])out[id]=Number($(id).value);
+ for(const id of ['motion','wire','auto'])out[id]=$(id).checked;
+ out.yaw=modelYaw;out.cameraPitch=modelPitch;out.panX=panX;out.panY=panY;out.zoom=spec?.baseViewDistance?spec.viewDistance/spec.baseViewDistance:1;out.time=bodyTime;
+ return out;
+}
+function sharedPayload(){
+ const rec=currentIndividual();if(!rec)throw Error('生体を選択してください');
+ const ecology=MorphospaceEcology.ensure(rec);
+ return {version:1,record:{id:rec.id,name:recordDisplayName(rec),seed:rec.seed,style:rec.style,genome:copyJSON(spec?.genome||rec.genome),generation:rec.generation||0,parents:copyJSON(rec.parents||[]),sourceSeed:rec.sourceSeed||rec.seed,ecology:{version:ecology.version||'1.0.0',text:ecology.text,kind:ecology.kind||''}},view:captureView()};
+}
+function specimenImage(){
+ if(selected<0||!spec||!gl||!renderer)throw Error('3D表示の準備ができていません');
+ const out=document.createElement('canvas');out.width=1080;out.height=1080;const ctx=out.getContext('2d');
+ const showRig=$('rigviz').checked;
+ try{
+  $('rigviz').checked=false;bloomFrame=0;render(1080);
+  ctx.drawImage(canvas,0,0,1080,1080);ctx.drawImage(rigCanvas,0,0,1080,1080);
+ }finally{$('rigviz').checked=showRig;bloomFrame=0;render()}
+ return out;
+}
+function canvasBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('画像を作成できませんでした')),'image/png'))}
+function localPublicBase(){
+ try{if(/^https?:$/.test(location.protocol))return CaptureShare.publicBase(location.href)}catch(e){}
+ try{return CaptureShare.publicBase(localStorage.getItem('morphospace-public-url')||'')}catch(e){return ''}
+}
+function setCaptureShareMessage(text){$('captureShareMessage').textContent=text}
+function nativeFileSupported(file){try{return typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:[file]})}catch(e){return false}}
+function makePNGFile(blob,name){return typeof File==='function'?new File([blob],name,{type:'image/png'}):null}
+function cleanFilePart(value){return String(value).replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,80)}
+function clearCaptureShareAssets(){if(captureShareState?.urls)for(const url of captureShareState.urls)URL.revokeObjectURL(url);captureShareState=null}
+function closeCaptureShare(){
+ captureShareSequence++;if(captureShareDialog.open)captureShareDialog.close();captureShareIsOpen=false;clearCaptureShareAssets();lastFrame=performance.now();
+ if(selected>=0)$(captureShareDialog.dataset.mode==='capture'?'capture':'share').focus();
+}
+function updateShareLink(){
+ const state=captureShareState;if(!state)return;
+ let url='';try{url=CaptureShare.link($('publicPageURL').value.trim(),state.payload);$('publicPageURL').setCustomValidity('')}catch(e){$('publicPageURL').setCustomValidity('公開ページのURLを入力してください')}
+ state.link=url;$('specimenDirectLink').value=url;
+ $('sharePost').value=state.text+(url?'\n'+url:'');
+ $('nativeShare').disabled=!state.sceneFile||!url||!nativeFileSupported(state.sceneFile);
+ $('copyPost').disabled=!url;$('copyLink').disabled=!url;
+ for(const id of ['shareX','shareFacebook','shareLine','shareBluesky'])$(id).disabled=!url;
+ if(url){try{localStorage.setItem('morphospace-public-url',CaptureShare.publicBase($('publicPageURL').value))}catch(e){}}
+ if(captureShareDialog.dataset.mode==='share')setCaptureShareMessage(url?'画像つきの共有、SNSの投稿画面、コピーから共有方法を選べます。':'共有するには、公開ページのURLを入力してください。');
+}
+async function openCaptureShare(mode){
+ if(captureShareIsOpen)return;
+ const seq=++captureShareSequence;
+ captureShareIsOpen=true;captureShareDialog.dataset.mode=mode;
+ $('captureShareTitle').textContent=mode==='capture'?'capture / 生体カード':'share / この生体を知らせる';
+ $('captureOnly').hidden=mode!=='capture';$('shareOnly').hidden=mode!=='share';
+ $('captureShareImage').removeAttribute('src');$('captureShareImage').hidden=true;
+ $('captureShareImage').alt=mode==='capture'?'生体名・生態文を載せたトレーディングカード':'共有する生体の3D画像';
+ $('saveCard').disabled=true;$('downloadCard').disabled=true;$('nativeShare').disabled=true;$('downloadScene').disabled=true;
+ for(const id of ['shareX','shareFacebook','shareLine','shareBluesky','copyPost','copyLink'])$(id).disabled=true;
+ $('publicPageURL').value=localPublicBase();$('publicURLSetting').open=!$('publicPageURL').value;
+ setCaptureShareMessage('画像を準備しています…');captureShareDialog.showModal();
+ try{
+  const payload=sharedPayload(),image=specimenImage(),record=payload.record;
+  const state={payload,text:CaptureShare.postText(record),urls:[],link:'',sceneBlob:null,sceneFile:null,cardBlob:null,cardFile:null};
+  const base=cleanFilePart(record.name)+'-'+record.seed;
+  if(mode==='capture'){
+   const card=document.createElement('canvas'),palette=pickPalette(record.seed,record.genome.colorDNA,record.genome.patternDNA);
+   CaptureShare.card(card,image,record,palette.hex);
+   const blob=await canvasBlob(card);
+   if(seq!==captureShareSequence)return;
+   state.cardBlob=blob;state.cardName='morphospace-card-'+base+'.png';state.cardFile=makePNGFile(blob,state.cardName);
+   const url=URL.createObjectURL(blob);state.urls.push(url);$('captureShareImage').src=url;$('captureShareImage').hidden=false;
+   captureShareState=state;$('saveCard').disabled=false;$('downloadCard').disabled=false;
+   $('saveCard').textContent=state.cardFile&&nativeFileSupported(state.cardFile)?'写真に保存':'カード画像を保存';
+   setCaptureShareMessage(state.cardFile&&nativeFileSupported(state.cardFile)?'「写真に保存」から、共有メニューの「画像を保存」を選んでください。':'iPhoneでは画像を長押しして「写真に保存」を選べます。保存ボタンでPNGも取得できます。');
+  }else{
+   const blob=await canvasBlob(image);
+   if(seq!==captureShareSequence)return;
+   state.sceneBlob=blob;state.sceneName='morphospace-3d-'+base+'.png';state.sceneFile=makePNGFile(blob,state.sceneName);
+   const url=URL.createObjectURL(blob);state.urls.push(url);$('captureShareImage').src=url;$('captureShareImage').hidden=false;
+   captureShareState=state;$('downloadScene').disabled=false;updateShareLink();
+   setCaptureShareMessage(state.link?(state.sceneFile&&nativeFileSupported(state.sceneFile)?'「画像つきで共有」から X・Facebook・LINE・Bluesky など、投稿先を選んでください。':'投稿文とリンクをコピーし、3D画像を保存して投稿に添付できます。'):'共有するには、公開ページのURLを入力してください。公開したページで開くと自動で設定されます。');
+  }
+ }catch(e){if(seq===captureShareSequence)setCaptureShareMessage(e.message||'画像を準備できませんでした')}
+}
+async function saveCardToPhotos(){
+ const state=captureShareState;if(!state?.cardBlob)return;
+ if(state.cardFile&&nativeFileSupported(state.cardFile)){
+  try{const pending=navigator.share({files:[state.cardFile]});await pending;setCaptureShareMessage('共有先へカードを渡しました。写真への保存は、共有メニューの「画像を保存」で行えます。')}
+  catch(e){if(e.name!=='AbortError')setCaptureShareMessage('共有メニューを開けませんでした。画像の長押し、または「PNGをダウンロード」をお試しください。')}
+ }else saveDownload(state.cardBlob,state.cardName);
+}
+async function nativeShareSpecimen(){
+ const state=captureShareState;if(!state?.sceneFile||!state.link)return;
+ try{
+  // Files are prepared before this click, so user activation is not lost to canvas work.
+  const pending=navigator.share({files:[state.sceneFile],text:state.text,url:state.link});await pending;
+  setCaptureShareMessage('共有先へ画像・投稿文・リンクを渡しました。投稿内容を確認して送信してください。');
+ }catch(e){if(e.name!=='AbortError')setCaptureShareMessage('画像付きの共有を開けませんでした。投稿文をコピーし、3D画像を保存して添付できます。')}
+}
+async function copyShareText(text){
+ try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);return true}}catch(e){}
+ const input=$('sharePost'),old=input.value;input.value=text;input.focus();input.select();
+ let ok=false;try{ok=document.execCommand('copy')}catch(e){}input.value=old;return ok;
+}
+async function openSocial(destination){
+ const state=captureShareState;if(!state?.link)return;
+ const url=CaptureShare.socialURLs(state.link,state.text)[destination];
+ // Open synchronously: awaiting clipboard permission before window.open can block the popup.
+ const tab=window.open(url,'_blank','noopener,noreferrer');void tab;
+ if(destination==='facebook'){
+  const copied=await copyShareText(state.text+'\n'+state.link);
+  setCaptureShareMessage(copied?'Facebookの投稿画面を開きました。投稿文を貼り付け、保存した3D画像を添付してください。':'Facebookの投稿画面を開きました。「投稿文をコピー」から文章を貼り付け、3D画像を添付してください。');
+ }else setCaptureShareMessage('投稿画面を開きました。画像は「3D画像を保存」で取得して添付できます。画像付きの標準共有も使えます。');
+}
+function applySharedView(view,afterLoad=false){
+ if(!view)return;
+ const ranges={density:[10,100],micro:[0,100],emitColor:[0,7],emitBlink:[0,6],blinkSpeed:[20,200],emissionStrength:[0,180],bloomRadius:[0,200],shadeStrength:[0,30],motionAmp:[0,200],coupling:[0,200],motionSpeed:[40,200],bodySpeed:[50,300]};
+ for(const [id,range]of Object.entries(ranges))if(Number.isFinite(view[id]))$(id).value=String(clamp(view[id],...range));
+ const outputs={density:'densityNum',micro:'microNum',blinkSpeed:'blinkSpeedOut',emissionStrength:'emissionNum',bloomRadius:'bloomNum',shadeStrength:'shadeNum',motionAmp:'motionAmpNum',coupling:'couplingNum',motionSpeed:'motionSpeedNum',bodySpeed:'bodySpeedNum'};
+ for(const [id,out]of Object.entries(outputs))$(out).textContent=$(id).value+'%';
+ for(const id of ['motion','wire','auto'])if(typeof view[id]==='boolean')$(id).checked=view[id];
+ if(afterLoad){modelYaw=Number.isFinite(view.yaw)?view.yaw:.54;modelPitch=clamp(view.cameraPitch??-.18,-Math.PI*.48,Math.PI*.48);panX=clamp(view.panX||0,-50,50);panY=clamp(view.panY||0,-50,50);bodyTime=Math.max(0,view.time||0);auto=$('auto').checked;if(spec?.baseViewDistance)spec.viewDistance=clamp(spec.baseViewDistance*(view.zoom||1),4,160);render()}
+}
+async function restoreSharedSpecimen(payload){
+ if(busy)return false;
+ CaptureShare.validatePayload(payload);const rec=copyJSON(payload.record);MorphospaceEcology.ensure(rec);
+ close();destroyMeshes();population=[rec];genomes=[copyJSON(rec.genome)];seeds=[rec.seed];generation=rec.generation;collectionMode='shared';collectionSeed=String(rec.sourceSeed||rec.seed);currentBuildContext={mode:'wild'};parentSlots={A:null,B:null};pedigree={[rec.id]:copyJSON(rec)};detailSpecimens=[];previewSpecimens=[];detailCacheOrder=[];
+ $('seed').value=collectionSeed;applySharedView(payload.view);
+ await redrawPopulation();renderPedigree();$('progress').style.width='100%';$('message').textContent='共有された「'+rec.name+'」を表示しています。';$('lineageSummary').textContent='共有された1個体。個体の詳細から捕獲・共有できます。';
+ if(gl&&renderer){loadSpecimen(0);applySharedView(payload.view,true)}return true;
+}
+async function bootMorphospace(){
+ try{const payload=CaptureShare.fromHash(location.hash);if(payload){await restoreSharedSpecimen(payload);return}}
+ catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message;await build($('seed').value);$('message').textContent='共有リンクを開けませんでした：'+e.message;return}
+ return build($('seed').value);
+}
+$('capture').onclick=()=>openCaptureShare('capture');$('share').onclick=()=>openCaptureShare('share');
+$('closeCaptureShare').onclick=closeCaptureShare;
+captureShareDialog.addEventListener('cancel',event=>{event.preventDefault();closeCaptureShare()});
+captureShareDialog.addEventListener('click',event=>{if(event.target===captureShareDialog){const r=captureShareDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeCaptureShare()}});
+$('saveCard').onclick=saveCardToPhotos;$('downloadCard').onclick=()=>{if(captureShareState?.cardBlob)saveDownload(captureShareState.cardBlob,captureShareState.cardName)};
+$('nativeShare').onclick=nativeShareSpecimen;$('downloadScene').onclick=()=>{if(captureShareState?.sceneBlob)saveDownload(captureShareState.sceneBlob,captureShareState.sceneName)};
+$('copyPost').onclick=async()=>{const s=captureShareState;if(s?.link)setCaptureShareMessage(await copyShareText(s.text+'\n'+s.link)?'投稿文とリンクをコピーしました。':'コピーできませんでした。投稿文を長押ししてコピーしてください。')};
+$('copyLink').onclick=async()=>{const s=captureShareState;if(s?.link)setCaptureShareMessage(await copyShareText(s.link)?'リンクをコピーしました。':'コピーできませんでした。リンク欄を長押ししてコピーしてください。')};
+$('shareX').onclick=()=>openSocial('x');$('shareFacebook').onclick=()=>openSocial('facebook');$('shareLine').onclick=()=>openSocial('line');$('shareBluesky').onclick=()=>openSocial('bluesky');
+$('publicPageURL').addEventListener('input',updateShareLink);
+window.addEventListener('hashchange',async()=>{try{const p=CaptureShare.fromHash(location.hash);if(p){if(captureShareIsOpen)closeCaptureShare();await restoreSharedSpecimen(p)}}catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message}});
+
+if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('fail');$('gpuDiag').hidden=false;$('gpuDiag').textContent='このブラウザではWebGLが利用できません。iPhoneの対応ブラウザで開いてください。';bootMorphospace()}else{
  try{
   const ios=/(iPad|iPhone|iPod)/i.test(navigator.userAgent) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   let originalError='';
@@ -2842,10 +4645,10 @@ if(!gl){$('status').hidden=false;$('status').textContent='WebGL利用不可';$('
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').hidden=true; // GPU ready: only show the indicator on errors
+  $('status').textContent='v15.8.12 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
-  animating=true;requestAnimationFrame(frame);build($('seed').value)
- }catch(e){fail(e);build($('seed').value)}
+  animating=true;requestAnimationFrame(frame);bootMorphospace()
+ }catch(e){fail(e);bootMorphospace()}
 }
 
 function getTwoPointers(){return Array.from(activePointers.values()).slice(0,2)}
@@ -2880,7 +4683,7 @@ for(let i=0;i<5;i++){ $('cat'+i).oninput=syncPatternProfileUI; } $('patternScatt
 $('mutate').onclick=()=>{const parent=currentIndividual();if(!parent)return;const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);build(seed,null,{mode:'mutate',parent:snapshotIndividual(parent)})};
 $('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=()=>{parentSlots={A:null,B:null};renderPedigree()};$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
 $('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.png')},'image/png')};
-$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.3 tissue-coupled morphogenesis',collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
-window.addEventListener('keydown',e=>{if(e.key==='Escape')close()});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();animating=false;fail(new Error('GPUコンテキストが失われました。アプリを再起動してください'))});
+$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.8.12 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(captureShareIsOpen)closeCaptureShare();else close()}});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();animating=false;fail(new Error('GPUコンテキストが失われました。アプリを再起動してください'))});
 
 </script></body></html>
