@@ -4506,7 +4506,7 @@ function ensureLensFlare(w,h){
     gl.bindFramebuffer(gl.FRAMEBUFFER,t.framebuffer);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t.texture,0);
     if(i===0&&f.depthTexture){
      gl.bindTexture(gl.TEXTURE_2D,f.depthTexture);
-     gl.texImage2D(gl.TEXTURE_2D,0,gl.DEPTH_COMPONENT,tw,th,0,gl.DEPTH_COMPONENT,modern?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,null);
+     gl.texImage2D(gl.TEXTURE_2D,0,modern?gl.DEPTH_COMPONENT24:gl.DEPTH_COMPONENT,tw,th,0,gl.DEPTH_COMPONENT,modern?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,null);
      gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,f.depthTexture,0);
     }
     if(t.depth){gl.bindRenderbuffer(gl.RENDERBUFFER,t.depth);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,tw,th);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,t.depth)}
