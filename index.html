@@ -4029,7 +4029,7 @@ function skinGrowthRig(mesh,em){
    const along=clamp(V.dot(V.sub(p,link.a),v)/d,0,1);
    const center=V.add(link.a,V.scale(v,along));
    const radius=Math.max(.12,link.radius*2.0);
-   const radial=V.len(V.sub(p,center));
+   const radial=Math.hypot(...V.sub(p,center));
    const influence=Math.max(0,1-radial/radius)*Math.min(1,along*5);
    if(influence>best){best=influence;chosen={link,along,k};}
   }
