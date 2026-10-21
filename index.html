@@ -4820,6 +4820,139 @@ function drawUploaded(mesh,alpha=1,wire=false,rim=.2,glowPass=0){
  gl.drawElements(wire?gl.LINES:gl.TRIANGLES,wire?mesh.edges.length:mesh.tri.length,gl.UNSIGNED_SHORT,0);
 }
 let videoRecording=null,videoResult=null,videoResultUrl=null;
+
+function videoStatus(msg){$('videoSaveStatus').textContent=msg}
+function supportedVideoMimes(){
+ if(typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function')return [];
+ return ['video/mp4;codecs=avc1.42E01E','video/mp4;codecs=avc1.4D401F','video/mp4',
+  'video/webm;codecs=vp8','video/webm;codecs=vp9','video/webm'].filter(t=>MediaRecorder.isTypeSupported(t));
+}
+function clearVideoResult(){
+ if(videoResultUrl){URL.revokeObjectURL(videoResultUrl);videoResultUrl=null}
+ videoResult=null;
+ $('videoPreview').pause();$('videoPreview').removeAttribute('src');$('videoPreview').load();
+ $('videoPreview').hidden=true;$('videoExportActions').hidden=true;
+}
+function videoControls(active){
+ for(const id of ['videoDuration','videoResolution','videoOrbit','videoVhs'])$(id).disabled=active;
+ $('videoRecordStart').disabled=active;$('videoRecordStop').disabled=!active;
+ $('videoDialogClose').disabled=active;$('recordVideo').disabled=active;
+}
+function openVideoDialog(){
+ if(selected<0||!spec||captureShareIsOpen||videoRecording)return;
+ if(!canvas.captureStream||typeof MediaRecorder==='undefined'){
+  alert('このブラウザではCanvasの動画録画に対応していません。SafariまたはChromeの新しいバージョンで開いてください。');return;
+ }
+ const types=supportedVideoMimes();
+ if(!types.length){alert('この端末で利用できる動画エンコード形式が見つかりませんでした。');return;}
+ $('videoDuration').value='15';$('videoResolution').value='720';
+ $('videoOrbit').checked=true;$('videoVhs').checked=true;
+ $('videoProgress').value=0;videoControls(false);clearVideoResult();
+ videoStatus('15秒・720p・30fps・音声なし / '+(types[0].includes('mp4')?'MP4優先':'WebM')+'。録画開始を押してください。');
+ $('videoSaveDialog').showModal();
+}
+function closeVideoDialog(){
+ if(videoRecording)return;
+ $('videoSaveDialog').close();
+ clearVideoResult();lastFrame=performance.now();
+}
+function finishVideoRecording(reason=''){
+ const job=videoRecording;if(!job||job.ending)return;
+ job.ending=true;videoRecording=null;
+ if(job.timer)clearTimeout(job.timer);
+ $('motion').checked=job.previousMotion;
+ videoControls(false);
+ if(reason)job.message=reason;
+ videoStatus('動画を仕上げています…');
+ try{
+  if(job.recorder.state!=='inactive')job.recorder.stop();else job.onDone();
+ }catch(error){job.failed=true;job.message='録画の終了に失敗しました：'+(error.message||error);job.onDone();}
+ lastFrame=performance.now();
+ try{if(selected>=0)render()}catch(e){console.warn('Scene restore after video',e)}
+}
+function beginVideoRecording(){
+ if(videoRecording||selected<0||!spec||captureShareIsOpen||!animating)return;
+ clearVideoResult();
+ const width=Number($('videoResolution').value)===1080?1920:1280;
+ const height=width===1920?1080:720,duration=Number($('videoDuration').value)||15;
+ const types=supportedVideoMimes();
+ if(!types.length){videoStatus('この端末は録画形式に対応していません。');return}
+ const out=document.createElement('canvas');out.width=width;out.height=height;
+ const ctx=out.getContext('2d',{alpha:false});
+ if(!ctx||!out.captureStream){videoStatus('録画用キャンバスが作れませんでした。');return}
+ let stream=null,recorder=null,mime='';
+ try{
+  ctx.fillStyle='#06101b';ctx.fillRect(0,0,width,height);
+  stream=out.captureStream(30);
+  if(!stream.getVideoTracks().length)throw Error('録画ストリームを取得できませんでした');
+  for(const t of types){
+   try{recorder=new MediaRecorder(stream,{mimeType:t,videoBitsPerSecond:width===1920?9000000:4800000});mime=t;break}
+   catch(e){continue}
+  }
+  if(!recorder)throw Error('対応形式でエンコーダーを起動できませんでした');
+ }catch(error){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  videoStatus('録画準備に失敗しました：'+(error.message||error));return;
+ }
+ const job={ctx,width,height,duration,autoOrbit:$('videoOrbit').checked,vhs:$('videoVhs').checked,
+  startTime:0,lastCapture:-Infinity,previousMotion:$('motion').checked,recorder,stream,chunks:[],mime,
+  ending:false,failed:false,message:'',timer:null,seed:spec.seed,
+  fileBase:'morphospace-'+cleanFilePart(recordDisplayName(currentIndividual())||'specimen')+'-'+spec.seed};
+ job.onDone=()=>{
+  stream.getTracks().forEach(t=>t.stop());
+  if(job.failed){videoStatus(job.message||'録画に失敗しました。');return}
+  const type=(job.chunks.find(b=>b.type)?.type||recorder.mimeType||mime).split(';')[0];
+  const blob=new Blob(job.chunks,{type});
+  if(!blob.size){videoStatus('動画データが空でした。保存容量・録画形式を確認してください。');return}
+  const ext=type.includes('mp4')?'mp4':type.includes('webm')?'webm':'video';
+  const name=job.fileBase+'-'+duration+'s.'+ext;
+  videoResult={blob,type,name};
+  videoResultUrl=URL.createObjectURL(blob);
+  $('videoPreview').src=videoResultUrl;$('videoPreview').hidden=false;
+  $('videoExportActions').hidden=false;
+  const file=typeof File==='function'?new File([blob],name,{type}):null;
+  $('videoShare').disabled=!(file&&nativeFileSupported(file));
+  $('videoShare').textContent=$('videoShare').disabled?'共有不可（ファイル保存を利用）':'動画を共有・写真に保存';
+  const notice=ext==='mp4'?'iPhoneは共有メニューから「ビデオを保存」を選べます。':'この動画形式の再生・写真保存は端末に依存します。';
+  videoStatus('録画完了：'+width+'×'+height+' / '+ext.toUpperCase()+' / '+(blob.size/1048576).toFixed(1)+'MB。'+(job.message||'')+' '+notice);
+ };
+ recorder.ondataavailable=e=>{if(e.data&&e.data.size)job.chunks.push(e.data)};
+ recorder.onerror=e=>{job.failed=true;job.message='動画エンコードに失敗しました：'+(e.error?.message||'不明なエラー');finishVideoRecording(job.message)};
+ recorder.onstop=()=>job.onDone();
+ try{recorder.start(1000)}
+ catch(error){stream.getTracks().forEach(t=>t.stop());videoStatus('録画を開始できません：'+(error.message||error));return}
+ $('motion').checked=true;
+ videoRecording=job;videoControls(true);
+ $('videoProgress').value=0;
+ videoStatus('録画中 0/'+duration+'秒 / '+(mime.includes('mp4')?'MP4':'WebM'));
+ job.startTime=performance.now();
+ job.timer=setTimeout(()=>finishVideoRecording(),duration*1000);
+ lastFrame=job.startTime;
+}
+function captureVideoFrame(now){
+ const job=videoRecording;if(!job||job.ending)return;
+ const elapsed=Math.max(0,now-job.startTime);
+ if(job.lastCapture!==-Infinity&&elapsed-job.lastCapture<1000/30)return;
+ job.lastCapture=elapsed;
+ try{
+  job.ctx.drawImage(canvas,0,0,job.width,job.height);
+  job.ctx.drawImage(rigCanvas,0,0,job.width,job.height);
+ }catch(error){job.failed=true;finishVideoRecording('録画フレームを合成できません：'+(error.message||error));return}
+ $('videoProgress').value=Math.min(100,elapsed/(job.duration*1000)*100);
+ if(Math.floor(elapsed/1000)!==job.lastSecond){
+  job.lastSecond=Math.floor(elapsed/1000);
+  videoStatus('録画中 '+Math.min(job.duration,Math.floor(elapsed/1000))+'/'+job.duration+'秒 / '+job.width+'×'+job.height);
+ }
+ if(elapsed>=job.duration*1000)finishVideoRecording();
+}
+async function shareRecordedVideo(){
+ if(!videoResult)return;
+ const {blob,name,type}=videoResult,file=typeof File==='function'?new File([blob],name,{type}):null;
+ if(!file||!nativeFileSupported(file)){videoStatus('共有が利用できません。「動画ファイルを保存」を選んでください。');return}
+ try{await navigator.share({files:[file],title:'MORPHOSPACE'});videoStatus('共有メニューに動画を渡しました。写真に保存する場合は「ビデオを保存」を選んでください。')}
+ catch(error){if(error.name!=='AbortError')videoStatus('共有に失敗しました。ファイル保存をご利用ください。')}
+}
+
 let framesInWindow=0,fpsWindowTime=0;
 function frame(now){if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
@@ -4827,10 +4960,10 @@ function frame(now){if(animating){
   environmentTime+=Math.min(elapsed,.18);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/100);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100);}
-  if(auto)modelYaw+=Math.min(elapsed,.15)*.17;
+  if(videoRecording?videoRecording.autoOrbit:auto)modelYaw+=Math.min(elapsed,.15)*.17;
   // All organisms' tissues now deform continuously in vertex shaders.
   // No CPU remeshing, normal rebuilding or buffer transfers inside this frame loop.
-  try{render()}catch(error){fail(error);animating=false}
+  try{if(videoRecording){render(videoRecording.width,true,videoRecording.height);captureVideoFrame(now)}else render()}catch(error){if(videoRecording)finishVideoRecording("描画エラーで録画を終了しました");fail(error);animating=false}
   framesInWindow++;
   if(!fpsWindowTime)fpsWindowTime=now;
   if(now-fpsWindowTime>900){
@@ -4842,7 +4975,7 @@ function frame(now){if(animating){
  }
  requestAnimationFrame(frame);
 }}
-function close(){selected=-1;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';if(collectionMode==='shared')void completeSharedGallery(population);}
+function close(){if(videoRecording)return;selected=-1;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';if(collectionMode==='shared')void completeSharedGallery(population);}
 function saveDownload(blob,name){let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 function paletteBound(v){return Math.max(0,Math.min(1,v))}
 function drawStudioBackground(ctx,w,h){
@@ -5169,7 +5302,7 @@ function updateShareLink(){
  if(url){try{localStorage.setItem('morphospace-public-url',CaptureShare.publicBase($('publicPageURL').value))}catch(e){}}
  if(captureShareDialog.dataset.mode==='share')setCaptureShareMessage(url?'画像つきの共有、SNSの投稿画面、コピーから共有方法を選べます。':'共有するには、公開ページのURLを入力してください。');
 }
-async function openCaptureShare(mode){
+async function openCaptureShare(mode){if(videoRecording)return;
  if(captureShareIsOpen)return;
  const seq=++captureShareSequence;
  captureShareIsOpen=true;captureShareDialog.dataset.mode=mode;
@@ -5262,6 +5395,15 @@ async function bootMorphospace(){
  catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message;await build($('seed').value);$('message').textContent='共有リンクを開けませんでした：'+e.message;return}
  return build($('seed').value);
 }
+
+$('recordVideo').onclick=openVideoDialog;
+$('videoDialogClose').onclick=closeVideoDialog;
+$('videoRecordStart').onclick=beginVideoRecording;
+$('videoRecordStop').onclick=()=>finishVideoRecording('途中で録画を停止しました。');
+$('videoDownload').onclick=()=>{if(videoResult)saveDownload(videoResult.blob,videoResult.name)};
+$('videoShare').onclick=shareRecordedVideo;
+$('videoSaveDialog').addEventListener('cancel',event=>{event.preventDefault();if(videoRecording)finishVideoRecording('途中で録画を停止しました。');else closeVideoDialog()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&videoRecording)finishVideoRecording('画面が非表示になったため録画を終了しました。')});
 $('capture').onclick=()=>openCaptureShare('capture');$('share').onclick=()=>openCaptureShare('share');
 $('closeCaptureShare').onclick=closeCaptureShare;
 captureShareDialog.addEventListener('cancel',event=>{event.preventDefault();closeCaptureShare()});
