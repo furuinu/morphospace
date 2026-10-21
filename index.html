@@ -3531,7 +3531,7 @@ float organismHash(float n){return fract(sin(n*127.1+39.17)*43758.5453);}
 float organismNoise(float t,float ch){float k=floor(t),f=fract(t);f=f*f*(3.0-2.0*f);return mix(organismHash(k+ch*137.0),organismHash(k+1.0+ch*137.0),f)*2.0-1.0;}
 vec3 wholeBodyWarp(vec3 p,float t,float amp){
  if(amp<.001)return p;
- float seed=uSeed*137.0;
+ float seed=uCamera*.137;
  float n0=organismNoise(t*.14+seed,1.0),n1=organismNoise(t*.21+seed,2.0),n2=organismNoise(t*.12+seed,3.0);
  float twist=amp*(.11*n0+.19*n1*p.y/(1.0+abs(p.y)));
  float co=cos(twist),si=sin(twist);
