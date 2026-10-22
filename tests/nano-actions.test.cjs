@@ -257,3 +257,17 @@ test('breeding starts exactly once after the convergence scene, while a navigati
  const operation=f.startBreeding();await tick();await f.startBreeding();assert.equal(calls.length,0);finish({skipped:true});await operation;assert.equal(calls.length,1);assert.equal(calls[0].parents[0].id,'a');assert.equal(f.nanoOperationBusy,false);
  const interrupted=f.startBreeding();await tick();f.nanoLabRevision++;finish({skipped:true});await interrupted;assert.equal(calls.length,1);
 });
+
+
+test('stored parent selection uses the same micro-extraction scene on an isolated saved specimen',async()=>{
+ const saved={id:'saved-parent',name:'Saved'},events=[];
+ const f={spec:{},currentIndividual:()=>saved,recordDisplayName:r=>r.name,
+  playNanoScene:async options=>{events.push(options);return {skipped:false}},
+  withNanoSpecimen:async(rec,run)=>{assert.equal(rec,saved);events.push('saved specimen');return run()}};
+ vm.createContext(f);vm.runInContext(section('async function playNanoParent(','function finishNanoAction('),f);
+ f.assignNanoParent=(rec,slot,source)=>f.playNanoParent(rec,slot,source);
+ vm.runInContext(section('async function chooseStoredParent(','function renderStock'),f);
+ await f.chooseStoredParent({payload:{record:saved}},'B');
+ assert.equal(events[0],'saved specimen');assert.equal(events[1].kind,'extract');assert.equal(events[1].slot,'B');
+ events.length=0;await f.playNanoParent(saved,'A','extract');assert.equal(events.length,1);assert.equal(events[0].kind,'extract');
+});
