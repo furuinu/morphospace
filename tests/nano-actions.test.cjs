@@ -205,6 +205,17 @@ test('micro-extraction leaves the parent in place and recovers contact deformati
  for(let t=0;t<fx.EXTRACT;t+=.03)for(const value of Object.values(fx.extractFrame(t,contact)))if(typeof value==='number')assert.ok(Number.isFinite(value));
 });
 
+test('extracted tissue stays connected until its neck pinches off, then accelerates into the lumen',()=>{
+ const contact={x:.59,y:.51},growing=fx.extractFrame(3.8,contact),pinching=fx.extractFrame(4.2,contact),separated=fx.extractFrame(4.35,contact);
+ assert.ok(growing.neck&&pinching.neck);assert.equal(growing.neck.x0,contact.x-.004);
+ assert.equal(growing.neck.x1,growing.tissues[0].x);assert.equal(growing.neck.y1,growing.tissues[0].y);
+ assert.ok(pinching.neck.r<fx.extractFrame(4.05,contact).neck.r);assert.equal(separated.neck,null);
+ assert.ok(separated.sampleTug>0);assert.equal(fx.extractFrame(5.1,contact).sampleTug,0);
+ assert.ok(fx.extractFrame(4.8,contact).tissues[0].x>separated.tissues[0].x);
+ for(let t=3.51;t<4.34;t+=.01){const f=fx.extractFrame(t,contact);assert.ok(f.neck.r>0);assert.equal(f.neck.x1,f.tissues[0].x);assert.equal(f.bodyPressure,0)}
+ const before=fx.extractFrame(4.349,contact).tissues[0],after=fx.extractFrame(4.351,contact).tissues[0];assert.ok(Math.abs(after.x-before.x)<.00001);
+});
+
 test('release sends fluid out before the actual organism and lets its free shape recover outside the tube',()=>{
  const before=fx.releaseFrame(1.5);assert.ok(before.pressure>.5);assert.equal(before.bodyX,1.2);assert.equal(before.flowDirection,-1);
  const exiting=fx.releaseFrame(3.2);assert.ok(exiting.bodyX<1.2&&exiting.bodyX>.36);assert.ok(exiting.bodyPressure>0);
