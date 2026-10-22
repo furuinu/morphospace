@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.9.34 — Fresnel & Structural Colour</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.10.0 — Specimen Stock & Breeding</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -105,12 +105,12 @@ body{color:#eaf4f4;background:#090e18}
 }
 
 
-/* v15.9.34: seeded ecology prose, failure-only WebGL indicator. */
+/* v15.10.0: seeded ecology prose, failure-only WebGL indicator. */
 #status:not(.fail){display:none}
 .version-label{display:inline-block;font-size:11px;letter-spacing:.03em;vertical-align:middle;color:#799487;font-weight:500;white-space:nowrap}
 .overlay .desc{font-size:12px;line-height:1.95;color:#c2d6d4;white-space:normal;overflow-wrap:anywhere}
 .scientific-name{font:italic 16px/1.5 Georgia,serif;color:#c1d6c1;margin:2px 0 6px;overflow-wrap:anywhere}.taxonomic-line{font-size:11px;line-height:1.7;color:#a1bdae;margin:0 0 8px}.ecology-caption{font-size:10px;letter-spacing:.14em;color:#87c5af;margin:5px 0 0}
-/* v15.9.34 — two floating actions; breeding remains in the inspector. */
+/* v15.10.0 — two floating actions; breeding remains in the inspector. */
 .overlay .inspector-scroll{padding-bottom:100px}
 .capture-dock{position:absolute;bottom:12px;right:12px;width:min(44%,370px);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:rgba(8,23,35,.94);border:1px solid #4c756e;border-radius:14px;box-shadow:0 8px 24px #0007;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:20}
 .capture-dock .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:49px;font-size:14px;letter-spacing:.03em;border-color:#567b70}
@@ -158,24 +158,43 @@ body{color:#eaf4f4;background:#090e18}
 @media(max-width:600px){.overlay .inspector-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}.capture-dock{width:auto;left:10px;right:10px;bottom:calc(7px + env(safe-area-inset-bottom,0px))}.social-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#captureShareDialog{padding:16px}}
 
 
-/* v15.9.34: atlas first; all top-level controls follow the specimens. */
+/* v15.10.0: atlas first; all top-level controls follow the specimens. */
 .wrap>header{margin-bottom:18px}
 .atlas-bottom{margin-top:26px}
 .atlas-info{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px}
 .atlas-info .foot{margin-top:0}
-</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.9.34</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div></header>
+/* Persistent specimen stock: previews are images; 3D is built only on opening. */
+.stock-launch{flex:none;min-height:44px;white-space:nowrap}.stock-count{display:inline-block;min-width:22px;margin-left:4px;padding:2px 5px;border-radius:20px;background:#122c23;color:#b8e7c9}
+#stockDialog{width:min(820px,calc(100vw - 20px));max-height:calc(100dvh - 24px);padding:18px;border:1px solid #54766a;border-radius:16px;background:#102029;color:#e6f0e6;overflow:auto;overscroll-behavior:contain}
+#stockDialog::backdrop{background:#030a12d9;backdrop-filter:blur(6px)}
+#stockDialog>.capture-share-heading{position:sticky;top:-18px;z-index:2;padding:10px 0;background:#102029}
+#stockDialog [hidden]{display:none!important}.stock-help,.stock-meta{font-size:11px;line-height:1.7;color:#a8c2b8}.stock-status{font-size:12px;line-height:1.7;min-height:21px;color:#bfe4cc}.stock-status.error{color:#ffbfaf}
+.stock-lab{padding:12px;border:1px solid #3c6659;border-radius:10px;margin:12px 0;background:#132c2c}.stock-lab .breed-parents{margin-bottom:9px}.stock-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.stock-card{min-width:0;border:1px solid #365363;background:#132735;border-radius:11px;overflow:hidden}.stock-card[data-parent-a="true"]{border-color:#5bdeb3}.stock-card[data-parent-b="true"]{box-shadow:inset 0 0 0 2px #eab86f}.stock-card img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#091725}.stock-card-body{padding:10px}.stock-card h3{font-size:13px;line-height:1.5;margin:0 0 4px;overflow-wrap:anywhere}.stock-card .stock-meta{margin:4px 0 8px}.stock-card .btn{min-height:44px;padding:8px 5px;font-size:11px}.stock-open{width:100%;margin-bottom:7px}.stock-choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}.stock-delete{margin-top:8px;width:100%;background:transparent;color:#b3beb5;border-color:#38505a}.stock-footer{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #37574c}.stock-footer .btn{min-height:44px}.stock-empty{padding:28px 14px;border:1px dashed #49695f;border-radius:10px;text-align:center;font-size:13px;line-height:1.8;color:#bed0c4}.capture-stock-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+@media(max-width:600px){.wrap>header{flex-wrap:wrap}.stock-launch{margin-left:auto}.stock-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#stockDialog{padding:13px}.stock-card-body{padding:8px}.stock-footer .btn{flex:1}.stock-lab .parent-card{font-size:11px}}
+</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.10.0</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div><button id="openStock" class="btn stock-launch" type="button">生体ストック <span id="stockCount" class="stock-count">0</span></button></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="731029" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
   <div class="breed-head"><strong>DNA交配実験室</strong><span id="genBadge">第0世代・野生</span></div>
   <div class="breed-parents"><div id="parentACard" class="parent-card">親A：未選択</div><div id="parentBCard" class="parent-card">親B：未選択</div></div>
   <div class="breed-actions"><button id="breed" class="btn primary" disabled>親A × 親B → 子64体</button><button id="clearParents" class="btn">親を解除</button><button id="exportLineage" class="btn">系譜JSON保存</button><label class="btn file-label">系譜JSON読込<input id="importLineage" type="file" accept=".json,application/json"></label></div>
+  <div class="breed-actions"><button id="stockToLab" class="btn" type="button">生体ストックから親を選ぶ</button></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">64個体から親A・親Bを選び、遺伝子を交叉して新しい子世代を作れます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.9.34</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.9.34：フレネル反射と角度で変わる構造色。真珠薄膜・甲虫積層・鱗片干渉・湿潤膜を個体ごとに生成。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.10.0</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.10.0：captureで生体をストック。後から3Dで呼び出し、ラボで掛け合わせて新しい世代へ。</div></div>
 </section>
 
-</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.9.34 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 5 4 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/><rect x="7" y="2" width="15" height="17" rx="2"/><path d="m14.5 6 1 2.2 2.4.3-1.7 1.7.4 2.4-2.1-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3Z"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.10.0 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 5 4 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/><rect x="7" y="2" width="15" height="17" rx="2"/><path d="m14.5 6 1 2.2 2.4.3-1.7 1.7.4 2.4-2.1-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3Z"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+<dialog id="stockDialog" aria-labelledby="stockTitle">
+ <div class="capture-share-heading"><h2 id="stockTitle">生体ストック</h2><button id="closeStock" class="btn" type="button" aria-label="ストックを閉じる">×</button></div>
+ <p class="stock-help">captureで捕獲した生体を、いつでも呼び出せます。親A・親Bを選ぶとラボで掛け合わせられます。</p>
+ <section class="stock-lab" aria-label="ストックの交配ラボ"><div class="breed-parents"><div id="stockParentA" class="parent-card">親A：未選択</div><div id="stockParentB" class="parent-card">親B：未選択</div></div><div class="breed-actions"><button id="stockBreed" class="btn primary" type="button" disabled>掛け合わせる → 子64体</button><button id="stockClearParents" class="btn" type="button">親を解除</button></div><p id="stockBreedHint" class="stock-help">異なる2体を選んでください。</p></section>
+ <p id="stockStatus" class="stock-status" role="status" aria-live="polite"></p>
+ <div id="stockEmpty" class="stock-empty">まだ生体がストックされていません。<br>図鑑から生体を開き、captureで捕獲してください。</div>
+ <div id="stockGrid" class="stock-grid" aria-label="捕獲した生体一覧"></div>
+ <div class="stock-footer"><button id="exportStock" class="btn" type="button" disabled>ストックを書き出す</button><label class="btn file-label">ストックを読み込む<input id="importStock" type="file" accept=".json,application/json"></label></div>
+ <p class="stock-help">この端末のブラウザに保存されます。別の端末に移すときや保存データを保管するときは、JSONを書き出して読み込んでください。</p>
+</dialog>
 <dialog id="videoSaveDialog" aria-labelledby="videoSaveTitle">
  <div class="capture-share-heading"><h2 id="videoSaveTitle">生体動画を保存</h2><button type="button" class="btn" id="videoDialogClose" aria-label="閉じる">×</button></div>
  <p class="video-help">最終映像を録画します。模様・動き・マリンスノー・発光・レンズフレア・VHSを含み、操作ボタンは映りません。録画中は画面を開いたままにしてください。</p>
@@ -200,6 +219,8 @@ body{color:#eaf4f4;background:#090e18}
  <div class="capture-share-preview"><img id="captureShareImage" alt="生体の画像" hidden></div>
  <p id="captureShareMessage" role="status" aria-live="polite">画像を準備しています…</p>
  <div id="captureOnly">
+  <p id="captureStockStatus" class="stock-status" role="status" aria-live="polite"></p>
+  <div class="capture-stock-actions"><button type="button" class="btn primary" id="captureOpenStock">ストックを見る・交配する</button><button type="button" class="btn" id="retryStock" hidden>ストック保存を再試行</button></div>
   <div class="capture-share-actions"><button type="button" class="btn primary" id="saveCard" disabled>写真に保存</button><button type="button" class="btn" id="downloadCard" disabled>PNGをダウンロード</button></div>
  </div>
  <div id="shareOnly" hidden>
@@ -214,7 +235,7 @@ body{color:#eaf4f4;background:#090e18}
  </div>
 </dialog>
 <script>
-/* MORPHOSPACE v15.9.34 — portable specimens and trading cards. */
+/* MORPHOSPACE v15.10.0 — portable specimens and trading cards. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
@@ -387,6 +408,80 @@ body{color:#eaf4f4;background:#090e18}
  return Object.freeze({version:VERSION,encode,decode,encodeValue,decodeValue,validatePayload,publicBase,link,fromHash,postText,taxonomy,weightedLength,socialURLs,lines,fitText,card});
 });
 
+/* Browser-local stock, independent of the generated gallery and its caches. */
+(function(root){
+ 'use strict';
+ const FORMAT='MORPHOSPACE-STOCK',MAX_FILE=32*1024*1024,MAX_ENTRIES=2000;
+ const clone=value=>JSON.parse(JSON.stringify(value));
+ function safe(value,depth=0,state={nodes:0}){
+  if(++state.nodes>16000||depth>14)throw Error('生体データが大きすぎます');
+  if(typeof value==='number'&&!Number.isFinite(value))throw Error('生体データの数値が不正です');
+  if(typeof value==='string'&&value.length>180000)throw Error('生体データの文字列が長すぎます');
+  if(value&&typeof value==='object')for(const [key,item]of Object.entries(value)){
+   if(['__proto__','prototype','constructor'].includes(key))throw Error('生体データの項目名が不正です');safe(item,depth+1,state);
+  }
+ }
+ function payload(value){
+  safe(value);root.MorphospaceCaptureShare.validatePayload(value);
+  if(!value.record.id||['__proto__','constructor','prototype'].includes(value.record.id))throw Error('個体IDが不正です');
+  if(JSON.stringify(value).length>180000)throw Error('生体データが大きすぎます');return clone(value);
+ }
+ function normalizeEntry(value){
+  if(!value||typeof value!=='object')throw Error('ストックの形式が違います');
+  const p=payload(value.payload),now=new Date().toISOString();
+  const date=v=>typeof v==='string'&&v.length<=30&&Number.isFinite(Date.parse(v))?new Date(v).toISOString():now;
+  const preview=value.preview||'';
+  if(typeof preview!=='string'||preview.length>180000||(preview&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(preview)))throw Error('プレビュー画像の形式が違います');
+  return {id:p.record.id,payload:p,preview,savedAt:date(value.savedAt),updatedAt:date(value.updatedAt)};
+ }
+ function normalizeParents(value){
+  const out={A:null,B:null};for(const slot of ['A','B'])if(value?.[slot])out[slot]=payload({version:1,record:value[slot]}).record;return out;
+ }
+ function exportData(entries,parents){return {format:FORMAT,version:1,savedAt:new Date().toISOString(),entries:entries.map(normalizeEntry),parents:normalizeParents(parents)}}
+ function parseImport(text){
+  if(typeof text!=='string'||text.length>MAX_FILE)throw Error('ストックJSONは32MB以内で読み込んでください');
+  const data=JSON.parse(text);
+  if(data.format!==FORMAT||data.version!==1||!Array.isArray(data.entries)||data.entries.length>MAX_ENTRIES)throw Error('ストックJSONの形式が違います');
+  const entries=data.entries.map(normalizeEntry),ids=new Set();
+  for(const entry of entries){if(ids.has(entry.id))throw Error('JSONに同じ個体が重複しています');ids.add(entry.id)}
+  return {entries,parents:normalizeParents(data.parents)};
+ }
+ function createStore(indexedDB){
+  let opening=null;
+  function open(){
+   if(opening)return opening;
+   opening=new Promise((resolve,reject)=>{
+    if(!indexedDB){reject(Error('このブラウザでは生体ストックを保存できません'));return}
+    const factory=typeof indexedDB==='function'?indexedDB():indexedDB;
+    if(!factory){reject(Error('このブラウザでは生体ストックを保存できません'));return}
+    let settled=false;const request=factory.open('morphospace-specimens',1);
+    request.onupgradeneeded=()=>{const db=request.result;db.createObjectStore('specimens',{keyPath:'id'});db.createObjectStore('settings')};
+    request.onerror=()=>{settled=true;reject(request.error||Error('保存領域を開けませんでした'))};
+    request.onblocked=()=>{settled=true;reject(Error('別のタブを閉じてから、もう一度開いてください'))};
+    request.onsuccess=()=>{if(settled){request.result.close();return}const db=request.result;db.onversionchange=()=>{db.close();opening=null};resolve(db)};
+   }).catch(error=>{opening=null;throw error});return opening;
+  }
+  async function transaction(mode,run){
+   const db=await open();return new Promise((resolve,reject)=>{
+    const tx=db.transaction(['specimens','settings'],mode);let result;
+    tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(tx.error||Error('保存できませんでした。端末の空き容量をご確認ください'));
+    try{run(tx.objectStore('specimens'),tx.objectStore('settings'),value=>{result=value})}catch(error){tx.abort();reject(error)}
+   });
+  }
+  return Object.freeze({
+   async list(){return transaction('readonly',(store,meta,done)=>{store.getAll().onsuccess=event=>done(event.target.result.map(normalizeEntry).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)))})},
+   async save(value){const entry=normalizeEntry(value);return transaction('readwrite',(store,meta,done)=>{store.get(entry.id).onsuccess=event=>{const old=event.target.result;entry.savedAt=old?.savedAt||entry.savedAt;if(!entry.preview)entry.preview=old?.preview||'';store.put(entry);done({entry,created:!old})}})},
+   async remove(id){return transaction('readwrite',(store,meta)=>{store.delete(id);meta.get('parents').onsuccess=event=>{const parents=normalizeParents(event.target.result);for(const slot of ['A','B'])if(parents[slot]?.id===id)parents[slot]=null;meta.put(parents,'parents')}})},
+   async parents(){return transaction('readonly',(store,meta,done)=>{meta.get('parents').onsuccess=event=>done(normalizeParents(event.target.result))})},
+   async saveParents(value){const parents=normalizeParents(value);return transaction('readwrite',(store,meta)=>meta.put(parents,'parents'))},
+   async merge(values,parents){const entries=values.map(normalizeEntry),slots=normalizeParents(parents);return transaction('readwrite',(store,meta,done)=>{
+    for(const entry of entries)store.get(entry.id).onsuccess=event=>{const old=event.target.result;store.put({...entry,savedAt:old?.savedAt||entry.savedAt,preview:entry.preview||old?.preview||''})};
+    meta.put(slots,'parents');done(entries.length);
+   })}
+  });
+ }
+ root.MorphospaceStock=Object.freeze({normalizeEntry,normalizeParents,exportData,parseImport,createStore,MAX_FILE});
+})(typeof globalThis!=='undefined'?globalThis:this);
 </script><script>
 /* MORPHOSPACE Qualia Ecology 1.0.0. No runtime network or AI calls.
  * Seeded text RNG is intentionally independent from the geometry RNG.
@@ -4351,6 +4446,7 @@ function updateUpload(gl,uploaded,next){
 
 const canvas=$('glview'),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true})||canvas.getContext('webgl',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true});
 let genomes=[],population=[],pedigree={},parentSlots={A:null,B:null},generation=0,collectionMode='wild',currentBuildContext=null,previewSpecimens=[],detailSpecimens=[],detailCacheOrder=[];
+let activeStoredIndividual=null;
 let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-.18,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
 const EMIT_COUNT=4;
 const EMIT_COLORS=[[.28,.90,1.0],[.10,1,.70],[.65,.34,1],[1,.68,.12],[1,.28,.66],[.62,1,.20],[.92,.97,1]];
@@ -4503,6 +4599,10 @@ function fail(e){
 }
 function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>destroy(gl,pt.mesh));(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
 function createSpecimenForIndex(i,motion=null){
+ if(activeStoredIndividual){
+  const rec=activeStoredIndividual.payload.record,g=copyJSON(rec.genome);
+  return makeSpecimen(rec.seed,g.style,pickPalette(rec.seed,g.colorDNA,g.patternDNA),false,null,Number($('variance').value)/100,Number($('density').value)/100,Number($('micro').value)/100,g.archetype,motion,g);
+ }
  if(!motion && detailSpecimens[i]){
   detailCacheOrder=detailCacheOrder.filter(k=>k!==i);detailCacheOrder.push(i);
   return detailSpecimens[i];
@@ -4550,7 +4650,7 @@ function refreshAnimatedSpecimen(forceStatic=false){if(selected<0||!gl||!rendere
 // Main shell/organs refresh more slowly; cilia and their joint chains refresh independently.
 // All visible cilia are animated by the GPU every rendered frame.
 // The parent body can be regenerated at lower frequency without interrupting them.
-function loadSpecimen(i){if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}selected=i;rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-.18;panX=0;panY=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;render();}
+function loadSpecimen(i,stored=null){if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-.18;panX=0;panY=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;render();}
 const rigCanvas=$('rigCanvas');
 let lastSceneViewProj=null;
 function drawRigOverlay(mvp,w,h){
@@ -5043,7 +5143,7 @@ async function shareRecordedVideo(){
 let framesInWindow=0,fpsWindowTime=0;
 function frame(now){if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
- if(selected>=0&&(!captureShareIsOpen||videoRecording)){
+ if(selected>=0&&!stockDialog.open&&(!captureShareIsOpen||videoRecording)){
   environmentTime+=Math.min(elapsed,.18);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/100);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100);}
@@ -5062,7 +5162,7 @@ function frame(now){if(animating){
  }
  requestAnimationFrame(frame);
 }}
-function close(){if(videoRecording)return;selected=-1;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';if(collectionMode==='shared')void completeSharedGallery(population);}
+function close(){if(videoRecording)return;selected=-1;activeStoredIndividual=null;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';if(collectionMode==='shared')void completeSharedGallery(population);}
 function saveDownload(blob,name){let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 function paletteBound(v){return Math.max(0,Math.min(1,v))}
 function drawStudioBackground(ctx,w,h){
@@ -5134,7 +5234,7 @@ function drawGpuPreview(target,sp){
   if(selected>=0&&spec&&meshes)render();
  }
 }
-function currentIndividual(){return selected>=0&&population[selected]?population[selected]:null;}
+function currentIndividual(){return selected>=0?(activeStoredIndividual?.payload.record||population[selected]||null):null;}
 function snapshotIndividual(rec){return rec?copyJSON({id:rec.id,name:recordDisplayName(rec),ecology:MorphospaceEcology.ensure(rec),seed:rec.seed,style:rec.style,genome:rec.genome,generation:rec.generation,parents:rec.parents,mutationLog:rec.mutationLog}):null;}
 function renderPedigree(){
  const a=parentSlots.A,b=parentSlots.B;
@@ -5153,6 +5253,7 @@ function renderPedigree(){
   button.classList.toggle('parent-a',!!a&&population[i]?.id===a.id);
   button.classList.toggle('parent-b',!!b&&population[i]?.id===b.id);
  }
+ renderStockParents();
 }
 function updateFamilyInfo(){const rec=currentIndividual();if(!rec)return;
  const mark=rec.mutationLog?.length||0;
@@ -5172,7 +5273,7 @@ function noveltyScore(candidate,existing){if(!existing.length)return 999; let m=
 function generateGenomeCandidate(mode,ancestors,candidateSeed,i,variance,profile,attempt){ let result; if(mode==='breed'&&ancestors.length===2){result=crossoverGenome(ancestors[0],ancestors[1],candidateSeed,i+attempt*13,variance)} else if(mode==='mutate'&&ancestors.length===1){result=crossoverGenome(ancestors[0],ancestors[0],candidateSeed,i+attempt*13,variance); result.genome.hybridStyle=null; result.genome.hybridMix=0;} else {result={genome:makeFounderGenome(candidateSeed,Math.floor(i/8),i%8),mutationLog:[],inherited:{}}}
  const g=result.genome; g.seed=candidateSeed; g.style=Math.max(0,Math.min(7,g.style|0)); if(!g.morphDNA)g.morphDNA=morphFounderDNA(candidateSeed,i); if(!g.motionDNA)g.motionDNA=motionFounderDNA(candidateSeed,i,g.morphDNA); if(!g.bioDNA)g.bioDNA=bioFounderDNA(candidateSeed,i,g.morphDNA); if(!g.patternDNA)g.patternDNA=patternFounderDNA(candidateSeed,i,g.morphDNA); ensureEmissionDNA(g,candidateSeed); g.patternDNA=applyPatternProfileDNA(g.patternDNA,profile,candidateSeed,.58+.26*(profile.enabled?1:0)); return {genome:g,mutationLog:result.mutationLog,inherited:result.inherited};}
 function setParent(slot){const rec=currentIndividual();if(!rec)return;
- parentSlots[slot]=snapshotIndividual(rec);pedigree[rec.id]=copyJSON(rec);renderPedigree();updateFamilyInfo();close();
+ parentSlots[slot]=snapshotIndividual(rec);pedigree[rec.id]=copyJSON(rec);void persistStockParents();renderPedigree();updateFamilyInfo();close();
 }
 async function build(seed,par=null,context=null){
  const buildStarted=performance.now();
@@ -5232,7 +5333,7 @@ function startBreeding(){if(busy||!parentSlots.A||!parentSlots.B||parentSlots.A.
  build(seed,null,{mode:'breed',parents:[snapshotIndividual(parentSlots.A),snapshotIndividual(parentSlots.B)]});
 }
 function exportPedigree(){
- const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.9.34-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
+ const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.10.0-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
   generation,collectionMode,context:currentBuildContext,seeds,genomes:copyJSON(genomes),population:copyJSON(population),pedigree:copyJSON(pedigree),parentSlots:copyJSON(parentSlots),variance:Number($('variance').value),patternProfile:{lock:!!$('patternLock').checked,scatter:Number($('patternScatter').value),cats:[0,1,2,3,4].map(i=>Number($('cat'+i).value))}};
  saveDownload(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),'morphospace-pedigree-G'+generation+'-'+collectionSeed+'.json');
 }
@@ -5251,7 +5352,7 @@ async function importPedigree(file){if(!file)return;
    for(const rec of Object.values(pedigree))if(rec&&typeof rec==='object')MorphospaceEcology.ensure(rec);
    for(const slot of ['A','B']){const parent=parentSlots[slot];if(parent){if(!parent.name)parent.name=recordDisplayName(parent);MorphospaceEcology.ensure(parent)}}genomes=population.map(rec=>copyJSON(rec.genome));seeds=population.map(rec=>rec.seed);previewSpecimens=[];detailSpecimens=[];detailCacheOrder=[];
    for(const rec of population)pedigree[rec.id]=copyJSON(rec);
-   await redrawPopulation();renderPedigree();$('message').textContent='系譜JSONから第'+generation+'世代の'+population.length+'個体を復元しました';
+   await redrawPopulation();void persistStockParents();renderPedigree();$('message').textContent='系譜JSONから第'+generation+'世代の'+population.length+'個体を復元しました';
   }finally{busy=false}
 
  }catch(e){fail(e)}finally{$('importLineage').value=''}
@@ -5348,13 +5449,116 @@ async function registerSharedImage(state,image,seq){
  setCaptureShareMessage('個体専用のリンクカードを準備しました。共有先を選べます。');
 }
 
+// Captured organisms remain separate from the 64 generated specimens.
+const Stock=MorphospaceStock,stockStore=Stock.createStore(()=>window.indexedDB),stockDialog=$('stockDialog');
+let stockEntries=[],stockError='',stockParentRevision=0,stockReturnFocus=null;
+function stockStatus(text,error=false){$('stockStatus').textContent=text;$('stockStatus').classList.toggle('error',error)}
+function renderStockParents(){
+ for(const slot of ['A','B']){
+  const rec=parentSlots[slot],el=$('stockParent'+slot);el.textContent='親'+slot+'：'+(rec?recordDisplayName(rec)+' / 第'+rec.generation+'世代':'未選択');el.classList.toggle('selected',!!rec);
+ }
+ const a=parentSlots.A,b=parentSlots.B,same=a&&b&&a.id===b.id;
+ $('stockBreed').disabled=busy||!a||!b||!!same;
+ $('stockBreedHint').textContent=same?'同じ個体どうしは掛け合わせられません。別の生体を選んでください。':(a&&b?'2体のDNAから新しい64体を生成します。親の生体はストックに残ります。':'一覧から、異なる2体を親A・親Bに選んでください。');
+ for(const card of $('stockGrid').querySelectorAll('.stock-card')){
+  card.dataset.parentA=String(!!a&&a.id===card.dataset.id);card.dataset.parentB=String(!!b&&b.id===card.dataset.id);
+  for(const slot of ['A','B'])card.querySelector('[data-slot="'+slot+'"]').setAttribute('aria-pressed',String(parentSlots[slot]?.id===card.dataset.id));
+ }
+}
+async function persistStockParents(){
+ stockParentRevision++;
+ try{await stockStore.saveParents(parentSlots);return true}catch(error){stockStatus('親の選択を保存できませんでした：'+error.message,true);$('message').textContent='親の選択は今回のみ有効です。保存できませんでした：'+error.message;return false}
+}
+function clearStockParents(){parentSlots={A:null,B:null};void persistStockParents();renderPedigree()}
+function chooseStoredParent(entry,slot){
+ parentSlots[slot]=snapshotIndividual(entry.payload.record);pedigree[entry.id]=copyJSON(entry.payload.record);
+ void persistStockParents();renderPedigree();stockStatus('「'+entry.payload.record.name+'」を親'+slot+'に選びました。');
+}
+function stockButton(text,action,className=''){
+ const button=document.createElement('button');button.type='button';button.className='btn '+className;button.textContent=text;button.onclick=action;return button;
+}
+function renderStock(){
+ $('stockCount').textContent=String(stockEntries.length);$('stockEmpty').hidden=stockEntries.length>0||!!stockError;
+ $('exportStock').disabled=stockEntries.length===0;
+ const grid=$('stockGrid');grid.replaceChildren();
+ for(const entry of stockEntries){
+  const rec=entry.payload.record,card=document.createElement('article');card.className='stock-card';card.dataset.id=entry.id;card.setAttribute('aria-label',rec.name);
+  if(entry.preview){const image=document.createElement('img');image.src=entry.preview;image.alt=rec.name;image.loading='lazy';image.width=240;image.height=240;card.append(image)}
+  const body=document.createElement('div');body.className='stock-card-body';const title=document.createElement('h3');title.textContent=rec.name;body.append(title);
+  const meta=document.createElement('p');meta.className='stock-meta';meta.textContent='第'+rec.generation+'世代 / '+new Date(entry.savedAt).toLocaleDateString('ja-JP')+' 捕獲';body.append(meta);
+  body.append(stockButton('3Dで開く',()=>openStoredSpecimen(entry),'primary stock-open'));
+  const choices=document.createElement('div');choices.className='stock-choices';
+  for(const slot of ['A','B']){const button=stockButton('親'+slot+'に選ぶ',()=>chooseStoredParent(entry,slot));button.dataset.slot=slot;choices.append(button)}body.append(choices);
+  body.append(stockButton('ストックから削除',async()=>{
+   if(!window.confirm('「'+rec.name+'」をストックから削除しますか？'))return;
+   try{await stockStore.remove(entry.id);for(const slot of ['A','B'])if(parentSlots[slot]?.id===entry.id)parentSlots[slot]=null;stockParentRevision++;await refreshStock();renderPedigree();stockStatus('ストックから削除しました。')}catch(error){stockStatus('削除できませんでした：'+error.message,true)}
+  },'stock-delete'));card.append(body);grid.append(card);
+ }
+ renderStockParents();
+}
+async function refreshStock(){stockEntries=await stockStore.list();stockError='';renderStock()}
+async function initStock(){
+ const revision=stockParentRevision;
+ try{
+  const [entries,parents]=await Promise.all([stockStore.list(),stockStore.parents()]);stockEntries=entries;
+  if(revision===stockParentRevision){parentSlots=parents;for(const rec of Object.values(parents))if(rec)pedigree[rec.id]=copyJSON(rec)}renderStock();renderPedigree();
+ }catch(error){stockError=error.message;$('stockCount').textContent='!';stockStatus('ストックを読み込めませんでした：'+error.message,true);$('stockEmpty').hidden=true}
+}
+async function openStock(){
+ if(videoRecording)return;if(captureShareIsOpen)closeCaptureShare();
+ stockReturnFocus=document.activeElement;if(!stockDialog.open)stockDialog.showModal();
+ stockStatus('ストックを読み込んでいます…');await stockReady;
+ try{await refreshStock();stockStatus(stockEntries.length+'体をストックしています。')}catch(error){stockError=error.message;$('stockEmpty').hidden=true;stockStatus('ストックを読み込めませんでした：'+error.message,true)}
+}
+function closeStock(){if(stockDialog.open)stockDialog.close();lastFrame=performance.now();if(stockReturnFocus?.isConnected)stockReturnFocus.focus()}
+function openStoredSpecimen(entry){
+ if(busy){stockStatus('図鑑の生成が終わってから開いてください。');return}
+ if(!gl||!renderer){stockStatus('このブラウザでは3D表示を利用できません。親を選んで交配することはできます。',true);return}
+ try{
+  const saved=Stock.normalizeEntry(entry);applySharedView(saved.payload.view);loadSpecimen(0,saved);applySharedView(saved.payload.view,true);
+  $('index').textContent='STOCK / SEED '+saved.payload.record.seed;closeStock();$('capture').focus();
+ }catch(error){stockStatus('生体を開けませんでした：'+error.message,true)}
+}
+async function saveCaptureToStock(state,seq,preview=state.stockPreview||''){
+ $('retryStock').disabled=true;
+ try{
+  const result=await stockStore.save({payload:state.stockPayload,preview,updatedAt:new Date().toISOString()});state.stockSaved=true;
+  await refreshStock();
+  if(seq===captureShareSequence){$('captureStockStatus').textContent=result.created?'生体をストックしました。後から3Dで開いたり、ラボで交配できます。':'この生体はストック済みです。形・色・動きの設定を更新しました。';$('captureStockStatus').classList.remove('error');$('retryStock').hidden=true}
+  return true;
+ }catch(error){
+  if(seq===captureShareSequence){$('captureStockStatus').textContent='ストックに保存できませんでした：'+error.message;$('captureStockStatus').classList.add('error');$('retryStock').hidden=false}
+  return false;
+ }finally{if(seq===captureShareSequence)$('retryStock').disabled=false}
+}
+async function exportStock(){
+ try{const entries=await stockStore.list(),data=Stock.exportData(entries,parentSlots);saveDownload(new Blob([JSON.stringify(data)],{type:'application/json'}),'morphospace-stock-'+new Date().toISOString().slice(0,10)+'.json');stockStatus(entries.length+'体のストックJSONを書き出しました。')}catch(error){stockStatus('書き出せませんでした：'+error.message,true)}
+}
+async function importStock(file){
+ if(!file)return;
+ try{
+  if(file.size>Stock.MAX_FILE)throw Error('ストックJSONは32MB以内で読み込んでください');
+  const data=Stock.parseImport(await file.text());await stockStore.merge(data.entries,data.parents);
+  parentSlots=data.parents;stockParentRevision++;for(const rec of Object.values(parentSlots))if(rec)pedigree[rec.id]=copyJSON(rec);
+  await refreshStock();renderPedigree();stockStatus(data.entries.length+'体を読み込みました。同じ個体は更新し、既存のストックは保持しました。');
+ }catch(error){stockStatus('読み込めませんでした：'+error.message,true)}finally{$('importStock').value=''}
+}
+const stockReady=initStock();
+$('openStock').onclick=openStock;$('stockToLab').onclick=openStock;$('closeStock').onclick=closeStock;
+$('stockBreed').onclick=()=>{if($('stockBreed').disabled)return;closeStock();startBreeding()};$('stockClearParents').onclick=clearStockParents;
+$('captureOpenStock').onclick=openStock;$('retryStock').onclick=()=>{if(captureShareState?.stockPayload)void saveCaptureToStock(captureShareState,captureShareSequence)};
+$('exportStock').onclick=exportStock;$('importStock').onchange=event=>importStock(event.target.files?.[0]);
+stockDialog.addEventListener('cancel',event=>{event.preventDefault();closeStock()});
+stockDialog.addEventListener('close',()=>{lastFrame=performance.now()});
+
 // Capture/share adapter. Existing geometry and ecology generation are unchanged.
 const CaptureShare=MorphospaceCaptureShare;
 let captureShareIsOpen=false,captureShareState=null,captureShareSequence=0;
 const captureShareDialog=$('captureShareDialog');
 function captureView(){
  const out={};for(const id of ['density','micro','emitColor','emitBlink','blinkSpeed','emissionStrength','bloomRadius','shadeStrength','fresnelStrength','iridescenceStrength','snowFarDim','snowEdgeDim','motionAmp','coupling','motionSpeed','bodySpeed'])out[id]=Number($(id).value);
- for(const id of ['motion','wire','auto'])out[id]=$(id).checked;
+ for(const id of ['dofStrength','dofDebug','dofFocus'])out[id]=Number($(id).value);
+ for(const id of ['motion','wire','auto','macroDof','branchMotion','branchSolo'])out[id]=$(id).checked;
  out.yaw=modelYaw;out.cameraPitch=modelPitch;out.panX=panX;out.panY=panY;out.zoom=spec?.baseViewDistance?spec.viewDistance/spec.baseViewDistance:1;out.time=bodyTime;
  return out;
 }
@@ -5402,19 +5606,30 @@ async function openCaptureShare(mode){if(videoRecording)return;
  if(captureShareIsOpen)return;
  const seq=++captureShareSequence;
  captureShareIsOpen=true;captureShareDialog.dataset.mode=mode;
- $('captureShareTitle').textContent=mode==='capture'?'capture / 生体カード':'share / この生体を知らせる';
+ $('captureShareTitle').textContent=mode==='capture'?'capture / 生体をストック':'share / この生体を知らせる';
  $('captureOnly').hidden=mode!=='capture';$('shareOnly').hidden=mode!=='share';
  $('captureShareImage').removeAttribute('src');$('captureShareImage').hidden=true;
  $('captureShareImage').alt=mode==='capture'?'生体名・生態文を載せたトレーディングカード':'共有する生体の3D画像';
  $('saveCard').disabled=true;$('downloadCard').disabled=true;$('nativeShare').disabled=true;$('downloadScene').disabled=true;
+ $('captureStockStatus').textContent=mode==='capture'?'生体をストックに保存しています…':'';$('captureStockStatus').classList.remove('error');$('retryStock').hidden=true;
  for(const id of ['shareX','shareFacebook','shareLine','shareBluesky','copyPost','copyLink'])$(id).disabled=true;
  $('publicPageURL').value=localPublicBase();$('publicURLSetting').open=!$('publicPageURL').value;
  setCaptureShareMessage('画像を準備しています…');captureShareDialog.showModal();
  try{
-  const payload=sharedPayload(),image=specimenImage(),record=payload.record;
+  const payload=sharedPayload(),record=payload.record;
   const state={payload,text:CaptureShare.postText(record),urls:[],link:'',sceneBlob:null,sceneFile:null,cardBlob:null,cardFile:null};
+  captureShareState=state;
+  if(mode==='capture'){
+   state.stockPayload={...copyJSON(payload),record:{...copyJSON(currentIndividual()),...copyJSON(record),ecology:copyJSON(MorphospaceEcology.ensure(currentIndividual()))}};
+   await saveCaptureToStock(state,seq);if(seq!==captureShareSequence)return;
+  }
+  const image=specimenImage();
   const base=cleanFilePart(record.name)+'-'+record.seed;
   if(mode==='capture'){
+   const thumb=document.createElement('canvas');thumb.width=240;thumb.height=240;thumb.getContext('2d').drawImage(image,0,0,240,240);
+   const preview=thumb.toDataURL('image/jpeg',.78);state.stockPreview=preview;
+   if(state.stockSaved){try{await stockStore.save({payload:state.stockPayload,preview,updatedAt:new Date().toISOString()});await refreshStock()}catch(error){console.warn('Stock preview could not be saved',error)}}
+   if(seq!==captureShareSequence)return;
    const card=document.createElement('canvas'),palette=pickPalette(record.seed,record.genome.colorDNA,record.genome.patternDNA);
    CaptureShare.card(card,image,record,palette.hex);
    const blob=await canvasBlob(card);
@@ -5471,22 +5686,24 @@ async function openSocial(destination){
 }
 function applySharedView(view,afterLoad=false){
  if(!view)return;
- const ranges={density:[10,100],micro:[0,100],emitColor:[0,7],emitBlink:[0,6],blinkSpeed:[20,200],emissionStrength:[0,180],bloomRadius:[0,200],shadeStrength:[0,30],fresnelStrength:[0,150],iridescenceStrength:[0,150],snowFarDim:[0,100],snowEdgeDim:[0,100],motionAmp:[0,200],coupling:[0,200],motionSpeed:[40,200],bodySpeed:[50,300]};
+ const ranges={density:[10,100],micro:[0,100],emitColor:[0,8],emitBlink:[0,6],blinkSpeed:[20,200],emissionStrength:[0,180],bloomRadius:[0,200],shadeStrength:[0,30],fresnelStrength:[0,150],iridescenceStrength:[0,150],snowFarDim:[0,100],snowEdgeDim:[0,100],motionAmp:[0,200],coupling:[0,200],motionSpeed:[40,200],bodySpeed:[50,300],dofStrength:[0,100],dofDebug:[0,2],dofFocus:[-100,100]};
  for(const [id,range]of Object.entries(ranges))if(Number.isFinite(view[id]))$(id).value=String(clamp(view[id],...range));
  const outputs={density:'densityNum',micro:'microNum',blinkSpeed:'blinkSpeedOut',emissionStrength:'emissionNum',bloomRadius:'bloomNum',shadeStrength:'shadeNum',fresnelStrength:'fresnelStrengthNum',iridescenceStrength:'iridescenceStrengthNum',snowFarDim:'snowFarDimNum',snowEdgeDim:'snowEdgeDimNum',motionAmp:'motionAmpNum',coupling:'couplingNum',motionSpeed:'motionSpeedNum',bodySpeed:'bodySpeedNum'};
  for(const [id,out]of Object.entries(outputs))$(out).textContent=$(id).value+'%';
- for(const id of ['motion','wire','auto'])if(typeof view[id]==='boolean')$(id).checked=view[id];
+ for(const id of ['motion','wire','auto','macroDof','branchMotion','branchSolo'])if(typeof view[id]==='boolean')$(id).checked=view[id];
+ $('dofStrengthNum').textContent=$('dofStrength').value+'%';$('dofFocusNum').textContent=$('dofFocus').value;
  if(afterLoad){modelYaw=Number.isFinite(view.yaw)?view.yaw:.54;modelPitch=clamp(view.cameraPitch??-.18,-Math.PI*.48,Math.PI*.48);panX=clamp(view.panX||0,-50,50);panY=clamp(view.panY||0,-50,50);bodyTime=Math.max(0,view.time||0);auto=$('auto').checked;if(spec?.baseViewDistance)spec.viewDistance=clamp(spec.baseViewDistance*(view.zoom||1),4,160);render()}
 }
 async function restoreSharedSpecimen(payload){
  if(busy)return false;
  CaptureShare.validatePayload(payload);const rec=copyJSON(payload.record);MorphospaceEcology.ensure(rec);
- close();destroyMeshes();population=[rec];genomes=[copyJSON(rec.genome)];seeds=[rec.seed];generation=rec.generation;collectionMode='shared';collectionSeed=String(rec.sourceSeed||rec.seed);currentBuildContext={mode:'wild'};parentSlots={A:null,B:null};pedigree={[rec.id]:copyJSON(rec)};detailSpecimens=[];previewSpecimens=[];detailCacheOrder=[];
+ close();destroyMeshes();population=[rec];genomes=[copyJSON(rec.genome)];seeds=[rec.seed];generation=rec.generation;collectionMode='shared';collectionSeed=String(rec.sourceSeed||rec.seed);currentBuildContext={mode:'wild'};pedigree={...pedigree,[rec.id]:copyJSON(rec)};detailSpecimens=[];previewSpecimens=[];detailCacheOrder=[];
  $('seed').value=collectionSeed;applySharedView(payload.view);
  const restoredPopulation=population;await redrawPopulation();if(population!==restoredPopulation)return false;renderPedigree();$('progress').style.width='1.5625%';$('message').textContent='共有された「'+rec.name+'」を表示しています。残りの図鑑を自動生成します。';
  if(gl&&renderer){loadSpecimen(0);applySharedView(payload.view,true)}void completeSharedGallery(population);return true;
 }
 async function bootMorphospace(){
+ await stockReady;
  try{const payload=CaptureShare.fromHash(location.hash);if(payload){await restoreSharedSpecimen(payload);return}}
  catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message;await build($('seed').value);$('message').textContent='共有リンクを開けませんでした：'+e.message;return}
  return build($('seed').value);
@@ -5522,7 +5739,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.9.34 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.10.0 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;requestAnimationFrame(frame);bootMorphospace()
  }catch(e){fail(e);bootMorphospace()}
@@ -5555,21 +5772,21 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEve
  else {drag=false;previous=null;pinchState=null;}
 });
 $('reset').onclick=()=>{modelYaw=.54;modelPitch=-.18;panX=0;panY=0;if(spec&&spec.baseViewDistance)spec.viewDistance=spec.baseViewDistance;activePointers.clear();pinchState=null;render()};
-$('density').oninput=()=>{$('densityNum').textContent=$('density').value+'%'};$('density').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected)}catch(e){fail(e)}}};$('micro').oninput=()=>{$('microNum').textContent=$('micro').value+'%'};$('micro').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected)}catch(e){fail(e)}}};$('motion').onchange=()=>{rigPrevious=performance.now();render()};$('transparency').oninput=()=>{$('transNum').textContent=$('transparency').value+'%';render()};$('glow').oninput=()=>{$('glowNum').textContent=$('glow').value+'%';render()};$('layerLight').oninput=()=>{$('layerLightNum').textContent=$('layerLight').value+'%';render()};$('wire').onchange=render;$('rigviz').onchange=render;$('emissionStrength').oninput=()=>{$('emissionNum').textContent=$('emissionStrength').value+'%';render()};$('emitColor').onchange=render;$('emitBlink').onchange=render;$('blinkSpeed').oninput=()=>{$('blinkSpeedOut').textContent=$('blinkSpeed').value+'%';render()};$('bloomRadius').oninput=()=>{$('bloomNum').textContent=$('bloomRadius').value+'%';render()};$('shadeStrength').oninput=()=>{$('shadeNum').textContent=$('shadeStrength').value+'%';render()};
+$('density').oninput=()=>{$('densityNum').textContent=$('density').value+'%'};$('density').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual)}catch(e){fail(e)}}};$('micro').oninput=()=>{$('microNum').textContent=$('micro').value+'%'};$('micro').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual)}catch(e){fail(e)}}};$('motion').onchange=()=>{rigPrevious=performance.now();render()};$('transparency').oninput=()=>{$('transNum').textContent=$('transparency').value+'%';render()};$('glow').oninput=()=>{$('glowNum').textContent=$('glow').value+'%';render()};$('layerLight').oninput=()=>{$('layerLightNum').textContent=$('layerLight').value+'%';render()};$('wire').onchange=render;$('rigviz').onchange=render;$('emissionStrength').oninput=()=>{$('emissionNum').textContent=$('emissionStrength').value+'%';render()};$('emitColor').onchange=render;$('emitBlink').onchange=render;$('blinkSpeed').oninput=()=>{$('blinkSpeedOut').textContent=$('blinkSpeed').value+'%';render()};$('bloomRadius').oninput=()=>{$('bloomNum').textContent=$('bloomRadius').value+'%';render()};$('shadeStrength').oninput=()=>{$('shadeNum').textContent=$('shadeStrength').value+'%';render()};
 for(const [id,out] of [['snowFarDim','snowFarDimNum'],['snowEdgeDim','snowEdgeDimNum'],['fresnelStrength','fresnelStrengthNum'],['iridescenceStrength','iridescenceStrengthNum']]){
  $(id).oninput=()=>{$(out).textContent=$(id).value+'%';render()};
 }$('motionAmp').oninput=()=>{$('motionAmpNum').textContent=$('motionAmp').value+'%';render()};$('coupling').oninput=()=>{$('couplingNum').textContent=$('coupling').value+'%';render()};$('motionSpeed').oninput=()=>{$('motionSpeedNum').textContent=$('motionSpeed').value+'%'};$('bodySpeed').oninput=()=>{$('bodySpeedNum').textContent=$('bodySpeed').value+'%'};$('ciliaMotion').oninput=()=>{$('ciliaMotionNum').textContent=$('ciliaMotion').value+'%';render()};$('auto').onchange=()=>{auto=$('auto').checked;lastFrame=performance.now()};$('close').onclick=close;
 for(let i=0;i<5;i++){ $('cat'+i).oninput=syncPatternProfileUI; } $('patternScatter').oninput=syncPatternProfileUI; $('patternRandom').onclick=()=>randomizePatternProfile(); syncPatternProfileUI();$('variance').oninput=()=>{$('varnum').textContent=$('variance').value};$('same').onclick=()=>build($('seed').value,null,currentBuildContext);$('generate').onclick=()=>{$('seed').value=String(Math.floor(100000+Math.random()*899999));build($('seed').value,null,{mode:'wild'})};
 $('mutate').onclick=()=>{const parent=currentIndividual();if(!parent)return;const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);build(seed,null,{mode:'mutate',parent:snapshotIndividual(parent)})};
-$('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=()=>{parentSlots={A:null,B:null};renderPedigree()};$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
+$('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=clearStockParents;$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
 $('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.png')},'image/png')};
-$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.9.34 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex,optics:p.design.optics},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
+$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.10.0 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex,optics:p.design.optics},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
 window.addEventListener('keydown',e=>{
  if(e.key!=='Escape')return;
  if($('videoSaveDialog').open){
   e.preventDefault();e.stopPropagation();
   if(videoRecording)finishVideoRecording('途中で録画を停止しました。');else closeVideoDialog();
- }else if(captureShareIsOpen)closeCaptureShare();else close();
+ }else if(stockDialog.open){e.preventDefault();closeStock()}else if(captureShareIsOpen)closeCaptureShare();else close();
 });
 canvas.addEventListener('webglcontextlost',e=>{
  e.preventDefault();
@@ -5578,3 +5795,4 @@ canvas.addEventListener('webglcontextlost',e=>{
 });
 
 </script></body></html>
+
