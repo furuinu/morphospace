@@ -2,19 +2,30 @@
 
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
-- **Live website (after enabling GitHub Pages):** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.8.9, lightweight 64-specimen gallery with deterministic per-specimen names, stable palette placement and inherited genetic lineages.
-- No installation or external assets are needed. Supports touch rotation, default camera orbit, DNA mutation and breeding, procedural color patterns and bioluminescence.
+- **Live website:** https://furuinu.github.io/morphospace/
+- **App:** [index.html](index.html) — v15.9.33, Chromatic Grammar.
+- No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
-## Publishing with GitHub Pages
+## Chromatic Grammar
 
-Deployment refresh: MORPHOSPACE v15.9.4. The authoritative app is the root `index.html` on `main`; use the Pages deployment workflow for publishing.
+The 200 source triads remain unchanged. Six pigments are assigned by their actual colour contrast to eight distinct spatial grammars: mantle margins, reef panels, corolla rays, structural-colour armour, ocelli, branching veins, segmented belts and multicoloured colonies.
 
+Pattern DNA and the existing category controls determine the grammar. Surface fields follow the principal developmental axis and growth nuclei, independent of mesh resolution. Standard and compatibility shaders share one colour implementation; gallery thumbnails use that same shader and release their temporary GPU meshes immediately. A fallback CPU preview remains available.
 
-Open [Settings → Pages](https://github.com/furuinu/morphospace/settings/pages). Select **Deploy from a branch**, **main**, **/(root)**, then **Save**. GitHub will publish the root index.html and update the site on subsequent pushes.
+Previously saved DNA and shared links still load. This release interprets their colours using the new grammar, so their appearance changes while geometry, motion DNA, names and genealogy remain intact. Iridescence is an artistic reflectance approximation, separate from self-emission.
 
 ## Development
 
-This public repository contains only MORPHOSPACE. The separate source repository `masala-generator` is not published here.
+Run the dependency-free regression checks with Node.js:
 
-Deployment refresh v15.9.4
+```sh
+node --test tests/chromatic-grammar.test.cjs
+```
+
+Checks cover seeded colour determinism, all eight layouts, category controls, stable colour coordinates across mesh resolutions, unchanged geometry under recolouring, shared-link round trips and descendant palettes.
+
+The authoritative source is the root `index.html` on `main` in this public repository. `masala-generator` contains historical snapshots and is not the publication source.
+
+## Publishing
+
+The **Deploy MORPHOSPACE to GitHub Pages** workflow publishes the root app when `main` changes. GitHub Pages must use **GitHub Actions** as its source. Each workflow run uploads its own uniquely named Pages artifact.

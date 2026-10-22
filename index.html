@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.9.32 — Capture & Share</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.9.33 — Chromatic Grammar</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -105,12 +105,12 @@ body{color:#eaf4f4;background:#090e18}
 }
 
 
-/* v15.9.32: seeded ecology prose, failure-only WebGL indicator. */
+/* v15.9.33: seeded ecology prose, failure-only WebGL indicator. */
 #status:not(.fail){display:none}
 .version-label{display:inline-block;font-size:11px;letter-spacing:.03em;vertical-align:middle;color:#799487;font-weight:500;white-space:nowrap}
 .overlay .desc{font-size:12px;line-height:1.95;color:#c2d6d4;white-space:normal;overflow-wrap:anywhere}
 .scientific-name{font:italic 16px/1.5 Georgia,serif;color:#c1d6c1;margin:2px 0 6px;overflow-wrap:anywhere}.taxonomic-line{font-size:11px;line-height:1.7;color:#a1bdae;margin:0 0 8px}.ecology-caption{font-size:10px;letter-spacing:.14em;color:#87c5af;margin:5px 0 0}
-/* v15.9.32 — two floating actions; breeding remains in the inspector. */
+/* v15.9.33 — two floating actions; breeding remains in the inspector. */
 .overlay .inspector-scroll{padding-bottom:100px}
 .capture-dock{position:absolute;bottom:12px;right:12px;width:min(44%,370px);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:rgba(8,23,35,.94);border:1px solid #4c756e;border-radius:14px;box-shadow:0 8px 24px #0007;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:20}
 .capture-dock .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:49px;font-size:14px;letter-spacing:.03em;border-color:#567b70}
@@ -158,12 +158,12 @@ body{color:#eaf4f4;background:#090e18}
 @media(max-width:600px){.overlay .inspector-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}.capture-dock{width:auto;left:10px;right:10px;bottom:calc(7px + env(safe-area-inset-bottom,0px))}.social-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#captureShareDialog{padding:16px}}
 
 
-/* v15.9.32: atlas first; all top-level controls follow the specimens. */
+/* v15.9.33: atlas first; all top-level controls follow the specimens. */
 .wrap>header{margin-bottom:18px}
 .atlas-bottom{margin-top:26px}
 .atlas-info{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px}
 .atlas-info .foot{margin-top:0}
-</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.9.32</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div></header>
+</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.9.33</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="731029" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -172,10 +172,10 @@ body{color:#eaf4f4;background:#090e18}
   <div class="breed-actions"><button id="breed" class="btn primary" disabled>親A × 親B → 子64体</button><button id="clearParents" class="btn">親を解除</button><button id="exportLineage" class="btn">系譜JSON保存</button><label class="btn file-label">系譜JSON読込<input id="importLineage" type="file" accept=".json,application/json"></label></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">64個体から親A・親Bを選び、遺伝子を交叉して新しい子世代を作れます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.9.32</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.9.32：個体名114,688種類。生態文から学名と分類を生成し、共有文・標本カード・個体詳細に表示。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.9.33</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.9.33：成長構造に沿う8種の配色方式。大色面・縁取り・環紋・放射脈・先端色・構造色を個体ごとに生成。</div></div>
 </section>
 
-</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.9.32 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 5 4 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/><rect x="7" y="2" width="15" height="17" rx="2"/><path d="m14.5 6 1 2.2 2.4.3-1.7 1.7.4 2.4-2.1-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3Z"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.9.33 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 5 4 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/><rect x="7" y="2" width="15" height="17" rx="2"/><path d="m14.5 6 1 2.2 2.4.3-1.7 1.7.4 2.4-2.1-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3Z"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
 <dialog id="videoSaveDialog" aria-labelledby="videoSaveTitle">
  <div class="capture-share-heading"><h2 id="videoSaveTitle">生体動画を保存</h2><button type="button" class="btn" id="videoDialogClose" aria-label="閉じる">×</button></div>
  <p class="video-help">最終映像を録画します。模様・動き・マリンスノー・発光・レンズフレア・VHSを含み、操作ボタンは映りません。録画中は画面を開いたままにしてください。</p>
@@ -214,7 +214,7 @@ body{color:#eaf4f4;background:#090e18}
  </div>
 </dialog>
 <script>
-/* MORPHOSPACE v15.9.32 — portable specimens and trading cards. */
+/* MORPHOSPACE v15.9.33 — portable specimens and trading cards. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
@@ -1876,28 +1876,98 @@ function hexToRgb(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255)}
 function vividBoost(c, sat=1.28, gain=1.08){const hsv=rgbToHsv(c);const m=(c[0]+c[1]+c[2])/3;let out=c.map(v=>m+(v-m)*sat);const floor=.015,peak=Math.max(...out);if(peak<.38)out=V.mix(out,[1,1,1],(.38-peak)*.22);out=out.map(v=>clamp(Math.pow(clamp(v*gain,0,1),.92),floor,1));return out}
 function neonLift(c, tint=[1,1,1], amt=.18){return c.map((v,i)=>clamp(Math.pow(v,.9)*(1-amt)+tint[i]*amt,0,1))}
 
+// Independent spatial grammars: inherited pattern DNA chooses the layout, not a blend of every motif.
 const COLOR_DESIGNS=[
- {name:'自然基調型',tones:['natural','vitamin','neon']},
- {name:'深海蛍光型',tones:['natural','neon','vitamin']},
- {name:'熱帯鮮色型',tones:['vitamin','natural','neon']},
- {name:'熱帯発光型',tones:['vitamin','neon','natural']},
- {name:'蛍光優勢型',tones:['neon','natural','vitamin']},
- {name:'ネオン対比型',tones:['neon','vitamin','natural']}
+ {name:'外套縁取り型',description:'明るい外皮・二重の縁・局所斑紋',areas:[.46,.22,.12,.09,.07,.04]},
+ {name:'珊瑚礁分区型',description:'拮抗する大色面・対照色の境界・末端色',areas:[.31,.29,.18,.10,.07,.05]},
+ {name:'花冠放射型',description:'中心・放射脈・広い花弁面・先端色',areas:[.34,.22,.17,.12,.09,.06]},
+ {name:'甲殻構造色型',description:'暗い継ぎ目・鮮色の装甲面・角度で変わる光沢',areas:[.32,.24,.18,.12,.08,.06]},
+ {name:'眼状環紋型',description:'無地の外皮・大きな多重環・微細な斑点',areas:[.40,.20,.16,.11,.08,.05]},
+ {name:'葉脈樹状型',description:'広い地色・分岐する脈・対照色の葉縁',areas:[.43,.20,.14,.10,.08,.05]},
+ {name:'分節帯状型',description:'成長軸に沿う多色の帯・節境界・末端色',areas:[.25,.23,.20,.15,.10,.07]},
+ {name:'群体多色型',description:'成長核ごとの色・融合部の縁・局所的な点紋',areas:[.23,.21,.18,.16,.13,.09]}
 ];
-const COLOR_AREA_PRESETS=[[.60,.30,.10],[.70,.20,.10],[.50,.35,.15],[.80,.15,.05]];
-function designPalette(hexes,seed,rows){
+function chromaticDistance(a,b){
+ const x=rgbToHsv(a),y=rgbToHsv(b);
+ return hueDist(x.h,y.h)*Math.min(x.s,y.s)*2.1+
+  Math.abs(x.v-y.v)*.65+Math.hypot(...a.map((v,i)=>v-b[i]))*.42;
+}
+function designPalette(hexes,seed,rows,pattern){
  const r=seedRng((seed>>>0)+737317+(rows[0]+1)*73+(rows[1]+1)*151);
- const scheme=COLOR_DESIGNS[Math.floor(r()*COLOR_DESIGNS.length)];
- const areas=COLOR_AREA_PRESETS[Math.floor(r()*COLOR_AREA_PRESETS.length)].slice();
- // Each source row uses [vitamin, neon, natural], allowing precise tone assignment.
- const categories={vitamin:[0,3],neon:[1,4],natural:[2,5]};
- const a=categories[scheme.tones[0]],b=categories[scheme.tones[1]],c=categories[scheme.tones[2]];
- // Macro: one from each tonal family. Meso+micro: the remaining three,
- // one from each family. No pigment disappears in role assignment.
- const groups=[[a[0],b[0]],[c[0],a[1]],[c[1],b[1]]];
- const roleIndices={shell:groups[0][0],shell2:groups[0][1],membrane:groups[1][0],
-  organ:groups[1][1],cilia:groups[2][1],glow:groups[2][0]};
- return {name:scheme.name,tones:scheme.tones.slice(),areas,groups,roleIndices};
+ const w=pattern.weights||[.2,.2,.2,.2,.2];
+ const chances=[w[3]*1.25,w[1]*1.25,w[2]*.55+w[4]*.45,w[0]*1.25,
+  (w[3]+w[0])*.5,w[4]*1.1,w[1]*.65+w[4]*.2,w[2]*.9];
+ const sum=chances.reduce((a,b)=>a+b,0);
+ const draw=(((Math.abs(Math.floor(pattern.family||0))*13)%22)+.5)/22*sum;
+ let grammar=7,cumulative=0;for(let i=0;i<8;i++){cumulative+=chances[i];if(draw<cumulative){grammar=i;break;}}
+ const scheme=COLOR_DESIGNS[grammar],rgb=hexes.map(hexToRgb),hs=rgb.map(rgbToHsv);
+ const available=new Set([0,1,2,3,4,5]),order=[];
+ // Select neighbours by their actual colour contrast. Tonal categories never impose a dull base.
+ const take=score=>{let best=-1,value=-Infinity;for(const i of available){const s=score(i);if(s>value){best=i;value=s;}}available.delete(best);order.push(best);return best;};
+ take(i=>hs[i].s*.80+hs[i].v*.45+r()*.10);
+ take(i=>chromaticDistance(rgb[order[0]],rgb[i]));
+ take(i=>Math.min(...order.map(j=>chromaticDistance(rgb[j],rgb[i]))));
+ take(i=>chromaticDistance(rgb[order[0]],rgb[i])*.7+hs[i].v*.35);
+ take(i=>Math.min(...order.map(j=>chromaticDistance(rgb[j],rgb[i]))));
+ take(i=>hs[i].v+hs[i].s*.3);
+ const jitter=.70+(pattern.bandMix||0)*.60,areas=scheme.areas.map((v,i)=>v*(i===0?jitter:1));
+ const total=areas.reduce((a,b)=>a+b,0);for(let i=0;i<6;i++)areas[i]/=total;
+ const glow=hs.reduce((best,h,i)=>h.s*.7+h.v>hs[best].s*.7+hs[best].v?i:best,0);
+ const roleIndices={shell:order[0],shell2:order[1],membrane:order[2],organ:order[3],cilia:order[4],glow};
+ return {version:2,grammar,name:scheme.name,description:scheme.description,areas,order,
+  groups:[[order[0],order[1]],[order[2],order[3]],[order[5],order[4]]],roleIndices,
+  phase:pattern.phaseA||0,frequency:2.4+(pattern.freqA||3)*.54,
+  edge:.025+(pattern.hardness||.5)*.035,spotScale:2.4+(pattern.freqB||4)*.28,
+  detail:10+(pattern.microScale||5)*1.1,metallic:grammar===3?.65+r()*.30:grammar===1?.12:0};
+}
+function chromaticFrame(palette,em){
+ const main=em?.blobs?.reduce((a,b)=>!a||b.axes[0]*b.axes[1]*b.axes[2]>a.axes[0]*a.axes[1]*a.axes[2]?b:a,null);
+ if(!main)return palette.chromaticFrame={origin:[0,0,0],axis:[0,1,0],side:[1,0,0],depth:[0,0,-1],extent:[2,2,2]};
+ const k=main.axes.indexOf(Math.max(...main.axes));
+ const axis=k===0?[main.c,main.s,0]:k===1?[-main.s,main.c,0]:[0,0,1];
+ const side=V.norm(V.cross(axis,Math.abs(axis[2])>.9?[0,1,0]:[0,0,1])),depth=V.norm(V.cross(side,axis));
+ const basis=[side,axis,depth],lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+ for(const b of em.blobs){
+  const bx=[b.c,b.s,0],by=[-b.s,b.c,0];
+  for(let j=0;j<3;j++){
+   const a=basis[j],s=Math.hypot(V.dot(a,bx)*b.axes[0],V.dot(a,by)*b.axes[1],a[2]*b.axes[2]);
+   const p=V.dot(b.p,a);lo[j]=Math.min(lo[j],p-s);hi[j]=Math.max(hi[j],p+s);
+  }
+ }
+ let origin=[0,0,0];for(let j=0;j<3;j++)origin=V.add(origin,V.scale(basis[j],(lo[j]+hi[j])*.5));
+ return palette.chromaticFrame={origin,axis,side,depth,extent:hi.map((v,j)=>Math.max(.15,(v-lo[j])*.5)),growth:em};
+}
+function chromaticCoordinates(point,frame){
+ const p=V.sub(point,frame.origin);
+ return [V.dot(p,frame.side)/frame.extent[0],V.dot(p,frame.axis)/frame.extent[1],V.dot(p,frame.depth)/frame.extent[2]];
+}
+function chromaticBaseColor(palette,point){
+ const d=palette.design,f=palette.chromaticFrame||chromaticFrame(palette,null),p=chromaticCoordinates(point,f);
+ const [x,y,z]=p,phase=d.phase,rad=Math.hypot(x,y),angle=Math.atan2(y,x),wave=Math.sin(y*3.2+phase)*.10;
+ const colors=d.order.map(i=>palette.baseRgb[i]);let index=0;
+ switch(d.grammar){
+  case 0:{const r=Math.hypot(x*1.08,y*.88);index=r>.82?3:r>.74?2:0;break;}
+  case 1:{const split=x*.72+y*.46+Math.sin(y*3.1+phase)*.10;index=split<-.27?0:split<.18?1:2;if(y>.64)index=4;break;}
+  case 2:{const r=rad+.10*Math.cos(angle*5+phase);index=r<.24?3:r<.40?1:r>.77?4:0;break;}
+  case 3:index=Math.abs(x)<.065?3:Math.abs(x)>.70?2:0;break;
+  case 4:index=0;break;
+  case 5:index=Math.abs(x)<.055?3:rad>.84?2:0;break;
+  case 6:{const t=fract01((y+1)*d.frequency*.58+wave+phase*.12);index=t<.23?0:t<.47?1:t<.70?2:t<.87?4:3;break;}
+  default:{
+   // Actual growth nuclei assign colony colour: the same field is stable at every mesh resolution.
+   let best=Infinity,nearest=0;
+   for(let i=0;i<(f.growth?.blobs.length||0);i++){
+    const b=f.growth.blobs[i],dx=point[0]-b.p[0],dy=point[1]-b.p[1],dz=point[2]-b.p[2];
+    const dist=Math.hypot((b.c*dx+b.s*dy)/b.axes[0],(-b.s*dx+b.c*dy)/b.axes[1],dz/b.axes[2]);
+    if(dist<best){best=dist;nearest=i;}
+   }
+   index=nearest%6;
+  }
+ }
+ let col=colors[index];
+ if(d.grammar===0&&index===0)col=mixColors(col,[.98,.965,.92],.79);
+ if(d.grammar===3&&index===3)col=mulColor(col,.14);
+ return col;
 }
 function pickPalette(seed,colorDNA=null,patternDNA=null){
  const r=seedRng(seed+17),count=COLOR_TABLE.length;
@@ -1920,7 +1990,8 @@ function pickPalette(seed,colorDNA=null,patternDNA=null){
  const base=chosen.flatMap((row,i)=>cols[i].map(col=>COLOR_TABLE[row][col]));
  const exact=base.map(hexToRgb);
  const hs=exact.map(rgbToHsv);
- const design=designPalette(base,seed,chosen);
+ const pd=normalizedPatternDNA(patternDNA,seed,0,null);
+ const design=designPalette(base,seed,chosen,pd);
  const roles=design.roleIndices;
  const order=[0,1,2,3,4,5];
  for(let i=order.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
@@ -1932,7 +2003,7 @@ function pickPalette(seed,colorDNA=null,patternDNA=null){
   ra:.72+r()*.65
  }));
  const fallbackPattern={family:Math.floor(r()*22),secondary:Math.floor(r()*22),phaseA:r()*TAU,phaseB:r()*TAU,phaseC:r()*TAU,freqA:1.4+r()*6.0,freqB:1.8+r()*7.0,freqC:2.0+r()*9.0,threshold:.16+r()*.56,sharpness:.9+r()*2.8,bandMix:r(),speckle:r(),shift:r(),order,anchors,eyeCount:2+Math.floor(r()*6),spikeBias:r(),mottleBias:r(),ribbonBias:r(),globalScale:.9+r()*.5,midScale:1.5+r()*1.8,microScale:4.0+r()*5.0,contrast:.62+r()*.28,hardness:.38+r()*.44,linearity:r(),radiality:r(),weights:[r(),r(),r(),r(),r()]};
- const pd=normalizedPatternDNA(patternDNA,seed,0,null);
+
  const pattern={
   family:Number.isFinite(pd.family)?pd.family:fallbackPattern.family,
   secondary:Number.isFinite(pd.secondary)?pd.secondary:fallbackPattern.secondary,
@@ -1961,7 +2032,7 @@ function pickPalette(seed,colorDNA=null,patternDNA=null){
   radiality:Number.isFinite(pd.radiality)?pd.radiality:fallbackPattern.radiality,
   weights:(pd.weights||fallbackPattern.weights).slice(0,5)
  };
- return {rows:chosen,cols,raw:exact.slice(),baseRgb:exact.slice(),exactRgb:exact.slice(),hex:base,roles,design,pattern,seed,mode:'chromatic-composition-v1'};
+ return {rows:chosen,cols,raw:exact.slice(),baseRgb:exact.slice(),exactRgb:exact.slice(),hex:base,roles,design,pattern,seed,mode:'anatomical-chromatic-grammar-v2'};
 }
 function fract01(x){return x-Math.floor(x)}
 function smooth01(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
@@ -2009,69 +2080,12 @@ function softBlend(base,weights,colors,ids){
  if(sum<1e-6)return base; return mixColors(base,mulColor(col,1/sum),.48);
 }
 function colorFor(palette,t,theta,mode,anatomy=null){
- const colors=palette.baseRgb||palette.raw.slice(0,6), p=palette.pattern||{}, seed=palette.seed||0;
- const zone=((Math.abs(mode)|0)%6), F=patternFields(t,theta,seed,zone,p), ws=territoryWeights(palette,t,theta);
- const ids=ws.map(w=>w.i), wv=ws.map(w=>w.w);
- const dom=ids[0], sec=ids[1], third=ids[2], fourth=ids[3], fifth=ids[4], sixth=ids[5];
- // Start from a clearer territorial layout instead of heavy global mixing.
- const edgeBlend=smooth01(.16,.44,wv[1]);
- let col=mixColors(colors[dom], colors[sec], edgeBlend*.32);
- const fam=((p.family||0)+zone)%22, fam2=((p.secondary||3)+zone*2)%22;
- const altA=(dom+1+fam2)%6, altB=(sec+3+fam2)%6;
- const hard=(a,b,x)=>smooth01(a,b,x);
- const inv=x=>1-x;
- let m1=0,m2=0,m3=0,m4=0;
- switch(fam){
-  case 0: m1=hard(.45,.55,F.bands); m2=hard(.78,.90,F.freckles); m3=hard(.55,.72,F.cells); break;      // strong stripes
-  case 1: m1=hard(.42,.58,F.zebra); m2=hard(.64,.82,F.spots); m3=hard(.76,.90,F.freckles); break;      // zebra bars + spots
-  case 2: m1=hard(.56,.74,F.spots); m2=hard(.48,.62,F.cells); m3=hard(.76,.90,F.freckles); break;      // big spots
-  case 3: m1=hard(.48,.66,F.cells); m2=hard(.44,.56,F.web); m3=hard(.72,.88,F.scallop); break;         // cell membranes
-  case 4: m1=hard(.46,.58,F.scallop); m2=hard(.50,.64,F.web); m3=hard(.74,.90,F.speck); break;         // scalloped
-  case 5: m1=hard(.42,.56,F.web); m2=hard(.66,.80,F.spots); m3=hard(.48,.60,F.zebra); break;           // reticulate
-  case 6: m1=hard(.44,.58,F.plume); m2=hard(.50,.68,F.cells); m3=hard(.78,.90,F.scallop); break;       // feathered
-  case 7: m1=hard(.42,.58,F.marbling); m2=hard(.60,.74,F.spots); m3=hard(.70,.84,F.web); break;        // marble
-  case 8: m1=hard(.48,.62,F.ripples); m2=hard(.44,.58,F.scallop); m3=hard(.78,.90,F.speck); break;     // ripples
-  case 9: m1=hard(.44,.58,F.lattice); m2=hard(.54,.68,F.zebra); m3=hard(.74,.90,F.plume); break;       // lattice
-  case 10:m1=hard(.42,.58,F.blotch); m2=hard(.60,.76,F.spots); m3=hard(.78,.92,F.freckles); m4=hard(.48,.62,F.cells); break; // blotches
-  case 11:m1=hard(.42,.58,.5*F.marbling+.5*F.web); m2=hard(.48,.62,F.cells); m3=hard(.80,.92,F.freckles); break;
-  case 12:m1=hard(.44,.58,.5*F.plume+.5*F.ripples); m2=hard(.58,.74,F.spots); m3=hard(.46,.58,F.zebra); break;
-  case 13:m1=hard(.42,.58,.4*F.bands+.6*F.lattice); m2=hard(.44,.60,F.scallop); m3=hard(.76,.90,F.speck); break;
-  case 14:m1=hard(.40,.54,.35*F.cells+.65*F.spots); m2=hard(.46,.60,F.web); m3=hard(.80,.92,F.freckles); break;
-  case 15:m1=hard(.44,.58,.65*F.blotch+.35*F.ripples); m2=hard(.44,.58,F.plume); m3=hard(.78,.90,F.speck); break;
-  case 16:m1=hard(.42,.58,.55*F.web+.45*F.marbling); m2=hard(.44,.58,F.scallop); m3=hard(.80,.92,F.freckles); break;
-  case 17:m1=hard(.40,.54,.45*F.zebra+.55*F.bands); m2=hard(.50,.64,F.cells); m3=hard(.44,.58,F.web); break;
-  case 18:m1=hard(.44,.58,.40*F.scallop+.60*F.plume); m2=hard(.60,.78,F.spots); m3=hard(.76,.90,F.freckles); break;
-  case 19:m1=hard(.44,.58,.50*F.ripples+.50*F.lattice); m2=hard(.48,.62,F.cells); m3=hard(.78,.92,F.speck); break;
-  case 20:m1=hard(.42,.56,.50*F.blotch+.50*F.web); m2=hard(.46,.60,F.zebra); m3=hard(.76,.90,F.freckles); m4=hard(.46,.60,F.plume); break;
-  default:m1=hard(.42,.58,.35*F.marbling+.25*F.spots+.4*F.cells); m2=hard(.46,.60,F.scallop); m3=hard(.46,.60,F.web); m4=hard(.78,.92,F.ripples); break;
- }
- // Apply bold masks so the pattern is visibly present.
- col=mixColors(col, colors[sec], 0.40*m1);
- col=mixColors(col, colors[third], 0.34*m2);
- col=mixColors(col, colors[altA], 0.28*m3);
- col=mixColors(col, colors[altB], 0.22*m4);
- // Force weak colors to appear as accents / nodes.
- const n1=hard(.72,.90,F.freckles*0.8+F.speck*0.2);
- const n2=hard(.60,.78,F.spots*0.7+F.cells*0.3);
- col=mixColors(col, colors[fifth], 0.18*n1);
- col=mixColors(col, colors[sixth], 0.14*n2);
- // Territory edge halos: make region boundaries more obvious.
- const boundary=hard(.18,.38,wv[1]) * inv(hard(.56,.74,wv[0]));
- col=mixColors(col, colors[sec], 0.16*boundary);
- // Optional luminous / eye spots for extra visible structure.
- const eyeField=hard(.70,.92,.5+.5*Math.sin((theta*(2.0+(p.ribbonBias||0)*5)+(t*(p.eyeCount||4)*6.2))+(p.phaseB||0)));
- const eyeRing=eyeField*hard(.36,.56,F.spots);
- col=mixColors(col, colors[(dom+2)%6], 0.18*eyeRing);
- // Anatomical assignment: external shells are mapped above; internal organs and cilia
- // favour their designated colour group while retaining the original patterned detail.
+ if(!palette.design)return palette.baseRgb[Math.abs(mode|0)%6];
  const role=anatomy||(mode>=9?'cilia':mode>=6?'membrane':mode>=3?'organ':'shell');
- const target=palette.roles?.[role]??0;
- if(palette.design)col=mixColors(col,colors[target],role==='shell'?.26:.63);
- // Moderate saturation boost, preserve palette identity.
- const m=(col[0]+col[1]+col[2])/3;
- const sat=1.10+.18*hash01(seed*0.001+zone*3.7+fam*1.1);
- col=col.map(x=>clamp(m+(x-m)*sat,0,1));
- return col;
+ const target=palette.roles[role]??palette.roles.shell;
+ const pigment=palette.baseRgb[target],accent=palette.baseRgb[palette.roles.shell2];
+ const terminal=smooth01(.84,.96,t);
+ return mixColors(pigment,accent,terminal);
 }
 function glowTintsForPalette(palette,seed=0){
  const r=palette.roles||{shell:0,shell2:1,membrane:2,organ:3,cilia:4,glow:5};
@@ -2875,44 +2889,19 @@ function morphSDF(x,y,z,em){
  }
  return acc;
 }
-// Morphogenesis chromatic territories. Six true palette sources establish six
-// sufficiently broad, body-attached pigment domains; no single dominant tint is
-// allowed to erase one of the six. Patch boundaries follow the generated surface.
-// Stable low/high-LOD pigment map: six body-attached colour territories are
-// defined in a fixed world coordinate frame, never from mesh vertex sampling.
-// Thus a 19^3 preview and a 35^3 detailed specimen share the same base layout.
+// Pigment fields use the developmental frame, never quantiles of the current LOD vertices.
+// Both low/high meshes retain the same body-attached field and shared GPU colour grammar.
 function colourSixTerritories(mesh,palette,seed,bound=2.5){
- const data=mesh.data,count=data.length/9,colors=palette.baseRgb||palette.raw.slice(0,6);
- const design=palette.design;
- if(count<1||colors.length<6||!design)return mesh;
- // Three contiguous base pigments; the other three remain exclusive to shader details.
- const macro=[colors[design.groups[0][0]],colors[design.groups[0][1]],colors[design.groups[1][0]]];
- const cy=Math.cos(.54),sy=Math.sin(.54),cp=Math.cos(-.18),sp=Math.sin(-.18);
- const limit=Math.max(1.15,bound*.80),phase=(seed%10009)*.001,values=new Float32Array(count),positions=new Float32Array(count*3);
- for(let i=0;i<count;i++){
-  const j=i*9,x=data[j],y=data[j+1],z=data[j+2];
-  const u=.5+(x*cy+z*sy)/(2*limit);
-  const v=.5+(y*cp-(-x*sy+z*cy)*sp)/(2*limit);
-  const d=.5+(-x*sy+z*cy)/(2*limit);
-  positions[i*3]=u;positions[i*3+1]=v;positions[i*3+2]=d;
-  values[i]=Math.sin(u*9.7+v*5.6+d*1.5+phase)*.43+
-    Math.sin(v*11.5-u*4.1+d*3.9+phase*1.31)*.29+
-    Math.cos(u*3.9-v*8.3+d*6.1+phase*.71)*.18+u*.10;
- }
- const sorted=Array.from(values).sort((a,b)=>a-b);
- const q0=sorted[Math.min(count-1,Math.floor(count*design.areas[0]))];
- const q1=sorted[Math.min(count-1,Math.floor(count*(design.areas[0]+design.areas[1])))];
- for(let i=0;i<count;i++){
-  const j=i*9,k=i*3,u=positions[k],v=positions[k+1],d=positions[k+2],n=values[i];
-  const sub=smooth01(q0-.003,q0+.003,n);
-  const inner=smooth01(q1-.003,q1+.003,n);
-  const col=mixColors(mixColors(macro[0],macro[1],sub),macro[2],inner);
-  const surface=.99+.01*Math.sin(u*23+v*19+d*8+phase);
-  for(let h=0;h<3;h++)data[j+6+h]=clamp(col[h]*surface,0,1);
+ if(!palette.design)return mesh;
+ const data=mesh.data;
+ for(let j=0;j<data.length;j+=9){
+  const col=chromaticBaseColor(palette,[data[j],data[j+1],data[j+2]]);
+  data.set(col,j+6);
  }
  return mesh;
 }
 function morphImplicitMesh(em,palette,g,low){
+ chromaticFrame(palette,em);
  const N=low?19:35,dim=N*N*N,field=new Float32Array(dim),coords=new Float32Array(N),lim=em.bound;
  for(let i=0;i<N;i++)coords[i]=-lim+i*(2*lim/(N-1));
  const vid=(i,j,k)=>(k*N+j)*N+i;
@@ -3704,6 +3693,129 @@ void main(){
  vColor=aColor;vRole=9.;vObj=aPos;vAlong=u;vGlow=vec2(cGlow,.5+.5*sin(uTime*4.2+phase+u*4.0));vView=normalize(vec3(0.,0.,uCamera)-pos.xyz);
  gl_Position=uMvp*vec4(p,1.);
 }`;
+const chromaticGrammarGLSL=`uniform vec4 uChromaA; // spatial grammar, inherited phase, band frequency, large-area proportion
+uniform vec4 uChromaB; // boundary width, spot scale, fine detail, structural reflectance
+uniform vec4 uChromaOrigin; // anatomical frame origin and longitudinal extent
+uniform vec4 uChromaAxis; // principal growth axis and transverse extent
+uniform vec4 uChromaScale; // depth extent; reserved for future inherited controls
+vec3 chromaticPoint(vec3 point){
+ vec3 axis=normalize(uChromaAxis.xyz);
+ vec3 ref=abs(axis.z)>.9?vec3(0.,1.,0.):vec3(0.,0.,1.);
+ vec3 side=normalize(cross(axis,ref)),depth=normalize(cross(side,axis));
+ vec3 q=point-uChromaOrigin.xyz;
+ return vec3(dot(q,side)/uChromaAxis.w,dot(q,axis)/uChromaOrigin.w,dot(q,depth)/uChromaScale.x);
+}
+float pigmentLine(float d,float width){return 1.-smoothstep(width,width+.012,abs(d));}
+vec2 pigmentCell(vec2 p,float scale,float phase){
+ vec2 uv=p*scale+vec2(phase*.17,phase*.11),id=floor(uv);
+ vec2 jitter=vec2(sin(dot(id,vec2(1.73,2.91))+phase),cos(dot(id,vec2(2.13,1.37))-phase))*.17;
+ return fract(uv)-.5-jitter;
+}
+vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
+ vec3 p=chromaticPoint(point);
+ float x=p.x,y=p.y,z=p.z,phase=uChromaA.y,kind=uChromaA.x;
+ float r=length(p.xy),angle=atan(y,x+.00001),edge=uChromaB.x;
+ float spread=uChromaA.w-.32;
+ float wave=sin(y*3.2+phase)*.10;
+ vec2 cell=pigmentCell(p.xy,uChromaB.y,phase);
+ float spot=length(cell*vec2(1.08,.84));
+ vec3 color=uPal0;
+ if(kind<.5){
+  // Mantle: a quiet milk-coloured field, contrasting spots, two physical marginal bands.
+  float rim=length(p.xy*vec2(1.08,.88))-spread*.55;
+  color=mix(uPal0,vec3(.98,.965,.92),.79);
+  float marks=(1.-smoothstep(.14,.19,spot))*(1.-smoothstep(.62,.77,rim));
+  color=mix(color,uPal1,marks);
+  float small=(1.-smoothstep(.045,.075,length(cell-vec2(.17,.06))))*(1.-smoothstep(.61,.74,rim));
+  color=mix(color,uPal5,small);
+  color=mix(color,uPal2,smoothstep(.73,.75,rim));
+  color=mix(color,uPal3,smoothstep(.81,.83,rim));
+  color=mix(color,uPal4,smoothstep(.79,.91,abs(y)));
+ }else if(kind<1.5){
+  // Reef panels: broad colour opposition, narrow boundaries and an independent terminal colour.
+  float split=x*.72+y*.46+sin(y*3.1+phase)*.10-spread;
+  color=mix(uPal0,uPal1,smoothstep(-.285,-.255,split));
+  color=mix(color,uPal2,smoothstep(.165,.195,split));
+  float seam=max(pigmentLine(split+.27,edge),pigmentLine(split-.18,edge));
+  color=mix(color,uPal3,seam);
+  color=mix(color,uPal4,smoothstep(.63,.66,y));
+  float dots=(1.-smoothstep(.045,.075,spot))*smoothstep(.28,.45,abs(x));
+  color=mix(color,uPal5,dots);
+ }else if(kind<2.5){
+  // Corolla: an anatomical centre and radiating veins, not repeating full-body stripes.
+  float petals=r+.10*cos(angle*5.+phase)-spread;
+  color=mix(uPal0,uPal1,1.-smoothstep(.38,.41,petals));
+  color=mix(color,uPal3,1.-smoothstep(.23,.25,petals));
+  color=mix(color,uPal4,smoothstep(.76,.79,petals));
+  float vein=pigmentLine(sin(angle*(5.+floor(uChromaA.z))+r*.8+phase),.055)*smoothstep(.30,.44,r);
+  color=mix(color,uPal2,vein);
+  color=mix(color,uPal5,pigmentLine(petals-.40,.018));
+ }else if(kind<3.5){
+  // Elytra: luminous plates over dark seams; structural colour is applied separately below.
+  color=mix(uPal0,uPal1,smoothstep(.24,.30,abs(x)+sin(y*2.8+phase)*.08));
+  color=mix(color,uPal2,smoothstep(.68,.72,abs(x)));
+  color=mix(color,uPal3*.14,1.-smoothstep(.045,.065,abs(x)));
+  float ribs=pigmentLine(sin((abs(x)*6.3+y*.4)*3.1+phase),.035)*smoothstep(.12,.22,abs(x));
+  color=mix(color,uPal4,ribs*.78);
+  color=mix(color,uPal5,(1.-smoothstep(.035,.065,spot))*smoothstep(.42,.65,r));
+ }else if(kind<4.5){
+  // Ocelli: large concentric patches separated by genuinely unpatterned skin.
+  float eye=length(pigmentCell(p.xy,uChromaB.y*.56,phase)*vec2(.90,1.12))*(1.+spread);
+  color=mix(color,uPal1,1.-smoothstep(.34,.37,eye));
+  color=mix(color,uPal2,1.-smoothstep(.255,.275,eye));
+  color=mix(color,uPal3*.18,1.-smoothstep(.17,.19,eye));
+  color=mix(color,uPal4,1.-smoothstep(.09,.115,eye));
+  color=mix(color,uPal5,1.-smoothstep(.025,.045,eye));
+ }else if(kind<5.5){
+  // Leaf venation: branching oblique veins meet an axial rib, with open fields between them.
+  float branch=fract((y+1.)*2.4-abs(x)*1.85+wave)-.5;
+  float veins=pigmentLine(branch,.023)*smoothstep(.06,.12,abs(x));
+  color=mix(uPal0,uPal1,smoothstep(.18,.52,abs(x)+wave)*.84);
+  color=mix(color,uPal2,smoothstep(.82,.85,r));
+  color=mix(color,uPal3,max(veins,pigmentLine(x,.037)));
+  color=mix(color,uPal4,pigmentLine(branch-.07,.012)*smoothstep(.16,.28,abs(x)));
+  float spores=(1.-smoothstep(.045,.075,spot))*smoothstep(.48,.75,r);
+  color=mix(color,uPal5,spores);
+ }else if(kind<6.5){
+  // Segmented belts: four/five colours can occupy substantial areas, rather than three plus dust.
+  float belt=fract((y+1.)*uChromaA.z*.58+wave+phase*.12);
+  color=mix(uPal0,uPal1,smoothstep(.22,.24,belt));
+  color=mix(color,uPal2,smoothstep(.46,.48,belt));
+  color=mix(color,uPal4,smoothstep(.69,.71,belt));
+  color=mix(color,uPal3,smoothstep(.86,.88,belt));
+  color=mix(color,uPal5,pigmentLine(belt-.23,.010));
+  color=mix(color,uPal5,smoothstep(.88,.98,abs(y)));
+ }else{
+  // Colony patches were assigned to actual developmental nuclei in the shared mesh.
+  color=undercoat;
+  float beads=(1.-smoothstep(.065,.10,spot))*smoothstep(.35,.60,r);
+  color=mix(color,uPal5,beads);
+  float veins=pigmentLine(sin((x+y*.65)*uChromaB.z+sin(z*4.+phase)),.025);
+  color=mix(color,uPal3,veins*smoothstep(.70,.94,r)*.88);
+ }
+ // Separate organ meshes retain their assigned pigment; articulated outer skin has role 8.
+ if(vRole>.5&&vRole<7.5){
+  float tip=smoothstep(.76,.95,vAlong);
+  color=mix(undercoat,uPal4,tip);
+  color=mix(color,uPal5,pigmentLine(vAlong-.70,.02));
+ }else if(vRole>7.5&&vRole<8.5){
+  color=mix(color,uPal4,smoothstep(.77,.95,vAlong)*.94);
+ }
+ return clamp(color,0.,1.);
+}
+vec3 chromaticFinish(vec3 color){
+ // Reflectance changes with angle; pigments and self-emission remain separate.
+ float metallic=uChromaB.w;
+ if(metallic>.01){
+  vec3 n=normalize(vNormal),view=normalize(vView),light=normalize(uLampDir);
+  float tilt=pow(clamp(1.-abs(dot(n,view)),0.,1.),1.5);
+  float sheen=pow(max(0.,dot(reflect(-light,n),view)),22.);
+  color=mix(color,uPal1,tilt*metallic*.43);
+  color+=uPal2*sheen*metallic*.38;
+ }
+ return clamp(color,0.,1.);
+}
+`;
 const frag=`precision mediump float;
 uniform highp float uTime;
 varying vec3 vNormal; varying vec3 vColor; varying vec3 vView; varying float vRole; varying vec2 vGlow; varying vec3 vObj; varying float vAlong;
@@ -3728,32 +3840,7 @@ vec3 paletteAt(float idx){
  if(idx<0.5) return uPal0; else if(idx<1.5) return uPal1; else if(idx<2.5) return uPal2; else if(idx<3.5) return uPal3; else if(idx<4.5) return uPal4; return uPal5;
 }
 
-vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
- // Spatially coherent three-scale pigment marks, stable under mirror duplication.
- vec3 p=point*(1.25+uPatternD.y*.40),q=point*(2.1+uPatternD.z*.52),fine=point*(6.1+uPatternD.z*1.40);
- float seedA=uPatternB.y,seedB=uPatternB.z,seedC=uPatternB.w;
- float wave=.5+.5*sin(q.x*(4.5+uPatternA.z*.19)+q.y*1.55+sin(q.z*4.3+seedA)*1.35);
- float spots=.5+.5*cos(q.x*6.4+q.y*2.8+sin(q.z*6.6+seedC)*2.1);
- float lattice=1.0-abs(sin(p.x*8.0+sin(p.y*4.9+seedB)*.85)*sin(p.z*7.6+p.y*1.75+seedC));
- float radial=length(fract(vec2(p.x*2.4+p.z*.7,p.y*2.1+p.z*.4)+vec2(.5*sin(seedA),.5*cos(seedB)))-.5);
- float rings=1.0-smoothstep(.030,.085,abs(radial-.28));
- float kind=mod(uPatternA.x,4.0);
- float fieldA=kind<.5?wave:(kind<1.5?spots:(kind<2.5?lattice:rings));
- float fieldB=kind<.5?spots:(kind<1.5?rings:(kind<2.5?wave:lattice));
- float markA=smoothstep(.86,.94,fieldA);
- float markB=smoothstep(.90,.97,fieldB)*(1.0-markA*.88);
- float border=(smoothstep(.78,.83,fieldA)-smoothstep(.89,.95,fieldA))*.42;
- float fineA=.5+.5*sin(fine.x*6.6+fine.y*2.5+sin(fine.z*5.1+seedB)*.95);
- float fineB=.5+.5*cos(fine.y*7.2-fine.z*4.6+fine.x*.9+seedC);
- float beads=smoothstep(.94,.987,fineA)*smoothstep(.75,.90,fineB);
- float threads=(1.0-smoothstep(.035,.095,abs(sin(fine.x*4.2+fine.y*6.9+seedA))))*
-   smoothstep(.65,.90,fineB)*.43;
- float micro=clamp(max(beads,max(threads,border)),0.0,1.0);
- vec3 colored=mix(undercoat,uPal3,markA*.96);
- colored=mix(colored,uPal4,markB*.94);
- colored=mix(colored,uPal5,micro*.98);
- return colored;
-}
+${chromaticGrammarGLSL}
 
 void main(){
  vec3 base=saturateColor(pow(clamp(vColor,0.,1.),vec3(.92)),1.18);
@@ -3761,62 +3848,11 @@ void main(){
    gl_FragColor=vec4(0.,0.,0.,0.);
  } else {
    vec3 n=normalize(vNormal);
-   vec3 q=vObj*1.55;
-   float along=vAlong;
-   float family=uPatternA.x; float secondary=uPatternA.y;
-   float freq1=uPatternA.z, freq2=uPatternA.w, freq3=uPatternB.x;
-   float phase1=uPatternB.y, phase2=uPatternB.z, phase3=uPatternB.w;
-   float threshold=uPatternC.x, sharp=uPatternC.y, speckle=uPatternC.z, bandMix=uPatternC.w;
-   float globalScale=uPatternD.x, midScale=uPatternD.y, microScale=uPatternD.z, contrast=uPatternD.w;
-   float hardness=uPatternE.x, linearity=uPatternE.y, radiality=uPatternE.z, shift=uPatternE.w;
-   vec3 qG=vObj*(.9+globalScale*1.25);
-   vec3 qM=vObj*(1.3+midScale*1.45);
-   vec3 qS=vObj*(2.4+microScale*1.8);
-   float ang=atan(qG.z,qG.x);
-   float rad=length(qG.xz);
-   float stripes=0.5+0.5*sin(qM.x*freq1 + qM.y*(freq2*.55) + qM.z*(freq3*.22) + phase1 + along*6.2831);
-   float rings=0.5+0.5*sin(rad*(2.4+freq2*1.15) - qG.y*(.45+freq1*.22) + phase2 + along*4.0);
-   float net=0.5+0.5*cos((qM.x+qM.z)*freq3*1.08 + sin(qM.y*freq2+phase3)*1.2);
-   float marb=fbm(qM*vec3(.8,1.1,.9)+vec3(phase1,phase2,phase3));
-   float spots=smoothstep(threshold*.65, min(0.98, threshold*.65+.22), 0.5+0.5*sin(qM.x*freq2*1.9-qM.z*freq1*1.3+marb*4.2+phase2));
-   float cells=smoothstep(.44,.74,abs(sin(qM.x*freq1*.8+phase3)+cos(qM.z*freq2*.7-phase1))*0.5);
-   float speck=smoothstep(.68,.92,fbm(qS*2.4+vec3(4.2,1.7,8.4))*(.75+.25*speckle));
-   float plume=0.5+0.5*sin(ang*(2.0+freq1*.28) + qG.y*(1.1+freq2*.18) + phase2);
-   float beetle=clamp(mix(smoothstep(.42,.6,net), smoothstep(.38,.56,abs(sin(qS.x*(4.0+freq2)+phase1))), .55+.25*linearity) + smoothstep(.72,.88,speck)*.35,0.,1.);
-   float fish=clamp(mix(smoothstep(.44,.58,abs(sin(qM.x*(1.4+freq1)+sin(qM.z*(1.1+freq2)+phase2)))), smoothstep(.42,.62,marb), .35+.3*bandMix),0.,1.);
-   float jelly=clamp(mix(smoothstep(.44,.60,rings), smoothstep(.42,.58,plume), .45+.35*radiality),0.,1.);
-   float nudi=clamp(mix(smoothstep(.52,.72,spots), smoothstep(.46,.66,cells), .5)+smoothstep(.78,.9,speck)*.2,0.,1.);
-   float feather=clamp(mix(smoothstep(.40,.56,stripes), smoothstep(.44,.62,abs(sin((qS.x+qS.y)*(5.0+freq3)+phase3))), .35+.4*linearity)+smoothstep(.56,.72,rings)*.28,0.,1.);
-   vec4 w0=vec4(uBiome0.x,uBiome0.y,uBiome0.z,uBiome0.w);
-   float w4=uBiome1.x;
-   float macroA=clamp(dot(vec4(beetle,fish,jelly,nudi),w0)+feather*w4,0.,1.);
-   float macroB=clamp(dot(vec4(fish,jelly,nudi,feather),vec4(w0.y,w0.z,w0.w,w4))+beetle*w0.x*.35,0.,1.);
-   float macroC=clamp(dot(vec4(jelly,nudi,feather,beetle),vec4(w0.z,w0.w,w4,w0.x))+fish*w0.y*.35,0.,1.);
-   float microA=clamp(mix(speck,marb,.4)*contrast + speckle*.18,0.,1.);
-   float microB=clamp(mix(net,cells,.5)*(.55+.45*hardness),0.,1.);
-   float eye= smoothstep(.62,.86,0.5+0.5*sin(rad*(1.8+freq1*.35)-ang*(1.2+freq2*.18)+phase3+shift*6.2831));
-   float s=mod(secondary,6.0);
-   macroA=mix(macroA,1.0-macroA,step(3.0,s)*.18);
-   macroB=mix(macroB,softBand(marb,.28,.72),step(1.0,s)*.14);
-   macroC=mix(macroC,softBand(rings,.34,.66),step(5.0,s)*.22);
-   vec3 c1=paletteAt(mod(family+1.0,6.0));
-   vec3 c2=paletteAt(mod(family+2.0,6.0));
-   vec3 c3=paletteAt(mod(family+3.0,6.0));
-   vec3 c4=paletteAt(mod(family+4.0,6.0));
-   vec3 c5=paletteAt(mod(family+5.0,6.0));
-   vec3 color=base;
-   color=mix(color,c1,(.10+.07*contrast)*macroA);
-   color=mix(color,c2,(.09+.07*hardness)*macroB);
-   color=mix(color,c3,(.06+.05*radiality)*macroC);
-   color=mix(color,c4,.08*microA);
-   color=mix(color,c5,.065*microB + .065*eye*uBiome0.w + .050*eye*uBiome1.x);
-   float edgeGlow=smoothstep(.28,.38,abs(stripes-rings))*(.10+.16*speck);
-   color+=c5*edgeGlow*.10 + c2*eye*.045;
-   color=chromatophoreLayers(color,vObj);
+   vec3 color=chromaticFinish(chromatophoreLayers(base,vObj));
    vec3 lightDir=normalize(uLampDir);
    float lambert=max(dot(n,lightDir),0.0);
-   float explorer=mix(0.58,1.0,pow(lambert,0.75));float shade=explorer*(1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert));
-   color=clamp(color*(1.04+.12*contrast)*shade,0.,1.);
+   float explorer=mix(0.78,1.0,pow(lambert,0.75));float shade=explorer*(1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert));
+   color=clamp(color*(1.04+.12*uPatternD.w)*shade,0.,1.);
 
    float emitter=0.0;
    emitter=max(emitter,(1.0-smoothstep(uEmit0.w*.20,uEmit0.w,distance(vObj,uEmit0.xyz)))*blinkValue(0.0*0.31));
@@ -3900,32 +3936,7 @@ float blinkValue(float phase){float t=uTime*uBlinkSpeed+phase+uSeedPhase;float w
  else v=0.18+0.82*step(0.75,fract(t*.14));
  return clamp(v,0.08,1.0);}
 
-vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
- // Spatially coherent three-scale pigment marks, stable under mirror duplication.
- vec3 p=point*(1.25+uPatternD.y*.40),q=point*(2.1+uPatternD.z*.52),fine=point*(6.1+uPatternD.z*1.40);
- float seedA=uPatternB.y,seedB=uPatternB.z,seedC=uPatternB.w;
- float wave=.5+.5*sin(q.x*(4.5+uPatternA.z*.19)+q.y*1.55+sin(q.z*4.3+seedA)*1.35);
- float spots=.5+.5*cos(q.x*6.4+q.y*2.8+sin(q.z*6.6+seedC)*2.1);
- float lattice=1.0-abs(sin(p.x*8.0+sin(p.y*4.9+seedB)*.85)*sin(p.z*7.6+p.y*1.75+seedC));
- float radial=length(fract(vec2(p.x*2.4+p.z*.7,p.y*2.1+p.z*.4)+vec2(.5*sin(seedA),.5*cos(seedB)))-.5);
- float rings=1.0-smoothstep(.030,.085,abs(radial-.28));
- float kind=mod(uPatternA.x,4.0);
- float fieldA=kind<.5?wave:(kind<1.5?spots:(kind<2.5?lattice:rings));
- float fieldB=kind<.5?spots:(kind<1.5?rings:(kind<2.5?wave:lattice));
- float markA=smoothstep(.86,.94,fieldA);
- float markB=smoothstep(.90,.97,fieldB)*(1.0-markA*.88);
- float border=(smoothstep(.78,.83,fieldA)-smoothstep(.89,.95,fieldA))*.42;
- float fineA=.5+.5*sin(fine.x*6.6+fine.y*2.5+sin(fine.z*5.1+seedB)*.95);
- float fineB=.5+.5*cos(fine.y*7.2-fine.z*4.6+fine.x*.9+seedC);
- float beads=smoothstep(.94,.987,fineA)*smoothstep(.75,.90,fineB);
- float threads=(1.0-smoothstep(.035,.095,abs(sin(fine.x*4.2+fine.y*6.9+seedA))))*
-   smoothstep(.65,.90,fineB)*.43;
- float micro=clamp(max(beads,max(threads,border)),0.0,1.0);
- vec3 colored=mix(undercoat,uPal3,markA*.96);
- colored=mix(colored,uPal4,markB*.94);
- colored=mix(colored,uPal5,micro*.98);
- return colored;
-}
+${chromaticGrammarGLSL}
 
 void main(){
  vec3 base=pow(clamp(vColor,0.0,1.0),vec3(0.92));
@@ -3933,26 +3944,8 @@ void main(){
  vec3 color=clamp(vec3(l)+(base-vec3(l))*1.18,0.0,1.0)*1.08;
  if(uGlowPass>0.01){ gl_FragColor=vec4(0.0,0.0,0.0,0.0); }
  else {
-  vec3 q=vObj*(1.2+uPatternD.y*.7); float along=vAlong;
-  float f1=uPatternA.z,f2=uPatternA.w,f3=uPatternB.x;
-  float p1=uPatternB.y,p2=uPatternB.z,p3=uPatternB.w;
-  float stripes=0.5+0.5*sin(q.x*f1 + q.y*(f2*.55) + q.z*(f3*.22) + p1 + along*6.2831);
-  float net=0.5+0.5*cos((q.x+q.z)*f3*1.08 + sin(q.y*f2+p3)*1.2);
-  float marb=fbm(q*vec3(.8,1.1,.9)+vec3(p1,p2,p3));
-  float spots=smoothstep(uPatternC.x*.65, min(0.98, uPatternC.x*.65+.22), 0.5+0.5*sin(q.x*f2*1.9-q.z*f1*1.3+marb*4.2+p2));
-  float rings=0.5+0.5*sin(length(q.xz)*(2.0+f2*1.15) - q.y*(.45+f1*.22) + p2 + along*4.0);
-  float beetle=clamp(mix(smoothstep(.42,.6,net), smoothstep(.38,.56,abs(sin(q.x*(4.0+f2)+p1))), .55+.25*uPatternE.y),0.0,1.0);
-  float fish=clamp(mix(smoothstep(.44,.58,abs(sin(q.x*(1.4+f1)+sin(q.z*(1.1+f2)+p2)))), smoothstep(.42,.62,marb), .35+.3*uPatternC.w),0.0,1.0);
-  float jelly=clamp(mix(smoothstep(.44,.60,rings), smoothstep(.42,.58,0.5+0.5*sin(atan(q.z,q.x)*(2.0+f1*.28)+q.y*(1.1+f2*.18)+p2)), .45+.35*uPatternE.z),0.0,1.0);
-  float nudi=clamp(mix(smoothstep(.52,.72,spots), smoothstep(.46,.66,net), .5),0.0,1.0);
-  float feather=clamp(mix(smoothstep(.40,.56,stripes), smoothstep(.44,.62,abs(sin((q.x+q.y)*(5.0+f3)+p3))), .35+.4*uPatternE.y),0.0,1.0);
-  float wsum=uBiome0.x+uBiome0.y+uBiome0.z+uBiome0.w+uBiome1.x+0.0001;
-  color=mix(color,uPal1,(0.09+0.06*uPatternD.w)*(beetle*uBiome0.x+fish*uBiome0.y)/wsum);
-  color=mix(color,uPal2,(0.08+0.06*uPatternE.x)*(jelly*uBiome0.z+nudi*uBiome0.w)/wsum);
-  color=mix(color,uPal3,(0.08+0.05*uPatternE.y)*(feather*uBiome1.x+net*0.35)/wsum);
-  color=mix(color,uPal4,0.06*smoothstep(.76,.90,marb));
-  color=chromatophoreLayers(color,vObj);
-  vec3 n=normalize(vNormal);vec3 lightDir=normalize(uLampDir);float lambert=max(dot(n,lightDir),0.0);float explorer=mix(0.58,1.0,pow(lambert,0.75));float shade=explorer*(1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert));color=clamp(color*(1.02+0.1*uPatternD.w)*shade,0.0,1.0);
+  color=chromaticFinish(chromatophoreLayers(color,vObj));
+  vec3 n=normalize(vNormal);vec3 lightDir=normalize(uLampDir);float lambert=max(dot(n,lightDir),0.0);float explorer=mix(0.78,1.0,pow(lambert,0.75));float shade=explorer*(1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert));color=clamp(color*(1.02+0.1*uPatternD.w)*shade,0.0,1.0);
  float emitter=0.0;
  emitter=max(emitter,(1.0-smoothstep(uEmit0.w*.20,uEmit0.w,distance(vObj,uEmit0.xyz)))*blinkValue(0.0*0.31));
  emitter=max(emitter,(1.0-smoothstep(uEmit1.w*.20,uEmit1.w,distance(vObj,uEmit1.xyz)))*blinkValue(1.0*0.31));
@@ -4071,9 +4064,9 @@ function initGL(gl,compatibility=false){
  }catch(error){console.warn('3D marine snow disabled; biological rendering continues',error); snowProgram=null;snowVars=null;snowCount=0;}
 
  const vars={};for(const a of ['aPos','aNormal','aColor','aAnchor','aParams'])vars[a]=gl.getAttribLocation(program,a);
- for(const u of ['uMvp','uModel','uCamera','uAlpha','uWire','uRim','uTime','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase','uMotionGene0','uMotionGene1','uMotionGene2','uMotionFocus','uMotionAxis','uMirrorSign','uBranchEnabled','uBioNode0','uBioNode1','uBioNode2','uBioNode3','uBioPressure','uBioVelocity','uBioGene','uBioStrength'])vars[u]=gl.getUniformLocation(program,u);
+ for(const u of ['uMvp','uModel','uCamera','uAlpha','uWire','uRim','uTime','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase','uMotionGene0','uMotionGene1','uMotionGene2','uMotionFocus','uMotionAxis','uMirrorSign','uBranchEnabled','uBioNode0','uBioNode1','uBioNode2','uBioNode3','uBioPressure','uBioVelocity','uBioGene','uBioStrength'])vars[u]=gl.getUniformLocation(program,u);
  const ciliaVars={};for(const a of ['aPos','aNormal','aColor','aCiliaInfo'])ciliaVars[a]=gl.getAttribLocation(ciliaProgram,a);
- for(const u of ['uMvp','uModel','uCamera','uAlpha','uWire','uRim','uTime','uBodyTime','uCiliaAmp','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase'])ciliaVars[u]=gl.getUniformLocation(ciliaProgram,u);
+ for(const u of ['uMvp','uModel','uCamera','uAlpha','uWire','uRim','uTime','uBodyTime','uCiliaAmp','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase'])ciliaVars[u]=gl.getUniformLocation(ciliaProgram,u);
  gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.clearColor(.90,.90,.90,1);
  return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,snowProgram,snowVars,snowBuffer,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
 }
@@ -4090,6 +4083,15 @@ function applyPatternUniforms(gl,uniforms,palette){
  ]:[0,1,2,3,4,5];
  const cols=order.map(i=>raw[i]||[.7,.8,.9]);
  while(cols.length<6)cols.push(cols[cols.length-1]||[1,1,1]);
+ const d=palette.design,frame=palette.chromaticFrame||chromaticFrame(palette,null);
+ const set4=(loc,val)=>{if(loc!==null&&loc!==undefined)gl.uniform4fv(loc,new Float32Array(val));};
+ if(d){
+  set4(uniforms.uChromaA,[d.grammar,d.phase,d.frequency,d.areas[0]]);
+  set4(uniforms.uChromaB,[d.edge,d.spotScale,d.detail,d.metallic]);
+  set4(uniforms.uChromaOrigin,[...frame.origin,frame.extent[1]]);
+  set4(uniforms.uChromaAxis,[...frame.axis,frame.extent[0]]);
+  set4(uniforms.uChromaScale,[frame.extent[2],0,0,0]);
+ }
  const p=palette.pattern||{};
  const set3=(loc,val)=>{ if(loc) gl.uniform3fv(loc,new Float32Array(val)); };
  set3(uniforms.uPal0,cols[0]); set3(uniforms.uPal1,cols[1]); set3(uniforms.uPal2,cols[2]); set3(uniforms.uPal3,cols[3]); set3(uniforms.uPal4,cols[4]); set3(uniforms.uPal5,cols[5]);
@@ -4477,7 +4479,7 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false){
  $('palette').innerHTML=composition.hex.map(c=>'<i style="background:'+c+'"></i>').join('');
  if($('paletteDesignInfo')&&composition.design){
   const d=composition.design;
-  $('paletteDesignInfo').textContent='配色 '+d.name+' ｜ ベース '+Math.round(d.areas[0]*100)+'%・サブ '+Math.round(d.areas[1]*100)+'%・アクセント '+Math.round(d.areas[2]*100)+'% ｜ 3色の外皮＋斑・縞・点列・縁取りの3色を独立描画';
+  $('paletteDesignInfo').textContent='配色 '+d.name+' ｜ '+d.description;
  }
  const dna=spec.genome.motionDNA||normalizedMotionDNA(null,seed);$('motionDNAInfo').innerHTML='<b>主運動：</b>'+MOTION_LABELS[dna.primary]+'　<b>副運動：</b>'+MOTION_LABELS[dna.secondary]+'<div>速度 '+Math.round(dna.tempo*100)+'% ／ 局所性 '+Math.round(dna.locality*100)+'% ／ 停止 '+Math.round(dna.rest*100)+'% ／ 伝播 '+Math.round(dna.propagation*100)+'%</div>';
  const bd=spec.genome.bioDNA;
@@ -5049,9 +5051,14 @@ function drawPreview(canvas2,sp){
 // Capture a deterministic, unmoving specimen frame into a persistent 2D thumbnail.
 function drawGpuPreview(target,sp){
  if(!gl||!renderer){drawPreview(target,sp);return;}
+ const oldYaw=modelYaw,oldPitch=modelPitch,oldX=panX,oldY=panY,oldTime=bodyTime;
+ const oldEmissionUI=snapshotEmissionUI(),oldMotion=$('motion').checked;
+ const oldSpec=spec,oldMeshes=meshes,oldRigs=rigMeshes,oldBranchInfo=$('branchInspectInfo').textContent;
+ // The shared-link gallery also fills while its detailed organism is open.
+ // Detach its GPU buffers so the preview upload cannot destroy the active specimen.
+ meshes=null;rigMeshes=[];spec=null;
  try{
-  const oldYaw=modelYaw,oldPitch=modelPitch,oldX=panX,oldY=panY,oldTime=bodyTime;
-  const oldEmissionUI=snapshotEmissionUI();
+  $('motion').checked=false;
   applyEmissionDNAtoUI(getSpecEmissionDNA(sp));
   applyUploadedSpecimen(sp,false,false);
   modelYaw=.54;modelPitch=-.18;panX=0;panY=0;bodyTime=0;
@@ -5059,11 +5066,15 @@ function drawGpuPreview(target,sp){
   const ctx=target.getContext('2d');
   ctx.clearRect(0,0,target.width,target.height);
   ctx.drawImage(canvas,0,0,target.width,target.height);
-  modelYaw=oldYaw;modelPitch=oldPitch;panX=oldX;panY=oldY;bodyTime=oldTime;
-  restoreEmissionUI(oldEmissionUI);
  }catch(err){
   console.warn('GPU thumbnail fallback',err);
   drawPreview(target,sp);
+ }finally{
+  destroyMeshes();spec=oldSpec;meshes=oldMeshes;rigMeshes=oldRigs;
+  modelYaw=oldYaw;modelPitch=oldPitch;panX=oldX;panY=oldY;bodyTime=oldTime;
+  restoreEmissionUI(oldEmissionUI);$('motion').checked=oldMotion;
+  $('branchInspectInfo').textContent=oldBranchInfo;
+  if(selected>=0&&spec&&meshes)render();
  }
 }
 function currentIndividual(){return selected>=0&&population[selected]?population[selected]:null;}
@@ -5149,7 +5160,7 @@ async function build(seed,par=null,context=null){
    previewSpecimens[i]=null;
    if(i%8===0){const heading=document.createElement('div');heading.className='group-head';heading.textContent='第'+generation+'世代 / '+(collectionMode==='breed'?'交配群':collectionMode==='mutate'?'変異群':'原初群')+' '+String(Math.floor(i/8)+1).padStart(2,'0');$('gallery').append(heading)}
    const item=document.createElement('button');item.className='item';item.setAttribute('aria-label','SPECIMEN '+(i+1)+' '+population[i].name+' / '+(g.morphDNA?morphName(g):PLANS[g.style]));
-   const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawPreview(img,sp);item.append(img);
+   const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawGpuPreview(img,sp);item.append(img);
    const name=document.createElement('strong');name.textContent=population[i].name;item.append(name);
    const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+generation+' / '+(g.morphDNA?morphName(g):PLANS[g.style]);item.append(small);
    item.addEventListener('click',()=>{try{loadSpecimen(i)}catch(e){fail(e)}});$('gallery').append(item);
@@ -5164,7 +5175,7 @@ function startBreeding(){if(busy||!parentSlots.A||!parentSlots.B||parentSlots.A.
  build(seed,null,{mode:'breed',parents:[snapshotIndividual(parentSlots.A),snapshotIndividual(parentSlots.B)]});
 }
 function exportPedigree(){
- const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.9.32-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
+ const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.9.33-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
   generation,collectionMode,context:currentBuildContext,seeds,genomes:copyJSON(genomes),population:copyJSON(population),pedigree:copyJSON(pedigree),parentSlots:copyJSON(parentSlots),variance:Number($('variance').value),patternProfile:{lock:!!$('patternLock').checked,scatter:Number($('patternScatter').value),cats:[0,1,2,3,4].map(i=>Number($('cat'+i).value))}};
  saveDownload(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),'morphospace-pedigree-G'+generation+'-'+collectionSeed+'.json');
 }
@@ -5193,7 +5204,7 @@ function appendPopulationPreview(i,variance){
   ensureEmissionDNA(g,seed); if(population[i]&&population[i].genome) population[i].genome.emissionDNA=copyJSON(g.emissionDNA);
   const sp=makeSpecimen(seed,g.style,palette,true,null,variance,Number($('density').value)/100,Number($('micro').value)/100,g.archetype,null,g); previewSpecimens[i]=null;
   if(i%8===0){const heading=document.createElement('div');heading.className='group-head';heading.textContent=collectionMode==='shared'?'共有個体と野生個体 / '+(i/8+1):'復元した第'+generation+'世代 / '+(i/8+1);$('gallery').append(heading)}
-  const item=document.createElement('button');item.className='item';const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawPreview(img,sp);item.append(img);
+  const item=document.createElement('button');item.className='item';const img=document.createElement('canvas');img.width=180;img.height=180;img.className='thumb';drawGpuPreview(img,sp);item.append(img);
   const label=document.createElement('strong');label.textContent=population[i].name;item.append(label);
   const small=document.createElement('small');small.textContent=String(i+1).padStart(2,'0')+' / G'+population[i].generation+' / '+(g.morphDNA?morphName(g):PLANS[g.style]);item.append(small);
   item.addEventListener('click',()=>{try{loadSpecimen(i)}catch(e){fail(e)}});$('gallery').append(item);
@@ -5454,7 +5465,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.9.32 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.9.33 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;requestAnimationFrame(frame);bootMorphospace()
  }catch(e){fail(e);bootMorphospace()}
@@ -5495,7 +5506,7 @@ for(let i=0;i<5;i++){ $('cat'+i).oninput=syncPatternProfileUI; } $('patternScatt
 $('mutate').onclick=()=>{const parent=currentIndividual();if(!parent)return;const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);build(seed,null,{mode:'mutate',parent:snapshotIndividual(parent)})};
 $('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=()=>{parentSlots={A:null,B:null};renderPedigree()};$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
 $('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.png')},'image/png')};
-$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.9.32 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
+$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.9.33 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
 window.addEventListener('keydown',e=>{
  if(e.key!=='Escape')return;
  if($('videoSaveDialog').open){
