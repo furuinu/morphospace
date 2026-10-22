@@ -155,3 +155,18 @@ test('the original 3D snow is advected continuously with inertia and stable traj
  const idle=fx.createFlow(data,0,view,1,0);fx.stepFlow(idle,{...frame,pressure:0},.05,1);
  const ambient=fx.ambientSnow(data,0,.05);for(let i=0;i<3;i++)assert.ok(Math.abs(idle.output[i]-ambient[i])<1e-6);
 });
+
+test('portrait dolly-out reveals a fixed wider 3D field and keeps distant suction particles visible',()=>{
+ const base=new Float32Array(960*7);let seed=937651;const r=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+ for(let i=0;i<960;i++)base.set([(r()-.5)*48,(r()-.5)*36,(r()-.5)*48,.75+r()*3,r(),(r()-.5)*1.5,r()],i*7);
+ for(const aspect of [390/844,430/932,844/390]){
+  const distance=70,view=vm.runInContext('Array.from(mul4(translate(-70),mul4(rotX(-.2),rotY(-.5))))',context),field=fx.createCaptureSnow(base,view,distance,aspect,9000),frame=fx.captureSnowFrame(field,9000),tan=Math.tan(Math.PI*43/360);
+  const visible=zoom=>{let n=0;for(let i=0;i<field.count;i++){const j=i*10,x=frame[j],y=frame[j+1],z=frame[j+2];const vx=view[0]*x+view[4]*y+view[8]*z+view[12],vy=view[1]*x+view[5]*y+view[9]*z+view[13],depth=-(view[2]*x+view[6]*y+view[10]*z+view[14])+distance*(zoom-1);if(depth>0&&Math.abs(vx)<depth*tan*aspect&&Math.abs(vy)<depth*tan)n++}return n};
+  const counts=[1,1.4,2,2.85].map(visible);for(let i=1;i<counts.length;i++)assert.ok(counts[i]>counts[i-1],JSON.stringify(counts));assert.ok(counts[3]>counts[0]*2);
+  const farView=view.slice();farView[14]-=distance*1.85;
+  const flow=fx.createFlow(field.data,9000,farView,2*distance*2.85*tan,distance*2.85);
+  for(let i=1;i<=120;i++)fx.stepFlow(flow,{tipX:.53,tipY:.52,pressure:Math.min(1,i/27)},9000+i/30,aspect);
+  assert.ok(Array.from(flow.entered).reduce((a,b)=>a+b,0)>30,'a visible stream reaches the lumen in portrait and landscape');
+  assert.ok(field.count<=4160);assert.equal(base.length,960*7);
+ }
+});
