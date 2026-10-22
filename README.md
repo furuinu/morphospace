@@ -3,7 +3,7 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.11.0, Nano Capture & Parent Docking.
+- **App:** [index.html](index.html) — v15.11.1, Glass Micropipette Capture.
 - No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
 ## Capture, stock and breeding
@@ -54,3 +54,9 @@ The authoritative source is the root `index.html` on `main` in this public repos
 
 The **Deploy MORPHOSPACE to GitHub Pages** workflow publishes the root app when `main` changes. GitHub Pages must use **GitHub Actions** as its source. Each workflow run uploads its own uniquely named Pages artifact.
 
+
+## Glass capture
+
+Capture keeps the existing specimen mesh, materials, motion, marine snow and post effects. The camera pulls back before an open glass capillary enters from the right. The body compresses across the lumen and travels along the same tube, continuing offscreen; no capsule or replacement specimen image appears. The six-second sequence supports skip and reduced motion. Storage commits before animation, and interruption restores the original view.
+
+The probe is a cached hollow 3D mesh (outer wall, inner wall, annular lip) in the specimen WebGL render pass. Its transparent material samples the current scene for approximate refraction and adds Fresnel reflections before the existing post effects. It uses one bounded scene-copy texture and no per-frame geometry allocation. This is an artistic glass approximation.

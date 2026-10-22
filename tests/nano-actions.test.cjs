@@ -12,15 +12,26 @@ const plain=x=>JSON.parse(JSON.stringify(x));
 const section=(start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
-test('capture pulls back before suction, then holds a saved specimen without an abrupt stage jump',()=>{
+test('capture pulls back, draws the visible organism through one stationary glass lumen',()=>{
  assert.equal(fx.captureFrame(0).bodyX,.5);assert.equal(fx.captureFrame(0).bodyY,.5);
  let last=1;
  for(let t=0;t<2;t+=.025){const f=fx.captureFrame(t);assert.ok(f.zoom>=last-1e-8);assert.equal(f.suction,0);last=f.zoom}
  assert.equal(fx.captureFrame(1.4).zoom,2.85);
  assert.equal(fx.captureFrame(2.4).phase,'suction');
  assert.ok(fx.captureFrame(2.4).bodyScale>0&&fx.captureFrame(2.4).bodyScale<1);
- const end=fx.captureFrame(fx.CAPTURE);assert.equal(end.held,1);assert.ok(end.bodyScale<.002);assert.equal(end.done,true);
+ const end=fx.captureFrame(fx.CAPTURE);assert.equal(end.held,1);assert.ok(end.bodyScale>.4);assert.ok(end.bodyX>1.2);assert.equal(end.tipX,fx.captureFrame(2.35).tipX);assert.equal(end.done,true);
  for(const t of [-100,0,.2,1.3,2.05,2.85,4.15,100])for(const v of Object.values(fx.captureFrame(t)))if(typeof v==='number')assert.ok(Number.isFinite(v));
+});
+
+test('glass capillary has outward outer walls, inward lumen and an open annular lip',()=>{
+ const mesh=fx.glassMesh();assert.equal(mesh.length,64*18*6);
+ for(let j=0;j<mesh.length;j+=18){
+  const p=Array.from(mesh.slice(j,j+18));assert.ok(p.every(Number.isFinite));
+  const a=p.slice(0,3),b=p.slice(6,9),c=p.slice(12,15),u=b.map((v,i)=>v-a[i]),v=c.map((x,i)=>x-a[i]);
+  const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  assert.ok(normal.reduce((sum,x,i)=>sum+x*p[i+3],0)>0,'winding agrees with physical wall normal');
+  if(a[0]===0&&b[0]===0&&c[0]===0)for(const q of [a,b,c])assert.ok(Math.hypot(q[1],q[2])>.87,'lip never seals the lumen');
+ }
 });
 
 test('iPhone portrait and landscape layouts keep both parent holders visible within a bounded pixel budget',()=>{
