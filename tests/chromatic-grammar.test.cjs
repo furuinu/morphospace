@@ -105,3 +105,41 @@ test('background thumbnails preserve an open specimen and release only temporary
   assert.deepEqual([fixture.modelYaw,fixture.modelPitch,fixture.panX,fixture.panY,fixture.bodyTime],[1,2,3,4,5]);
  }
 });
+
+test('all four coatings are seeded, bounded and retained across saved DNA',()=>{
+ const result=run(`(()=>{
+  const families=new Set();let valid=true;
+  for(let seed=1;seed<=256;seed++){
+   const p=pickPalette(seed),o=p.design.optics,q=pickPalette(seed,{rows:p.rows,cols:p.cols},p.pattern);
+   families.add(o.family);
+   valid=valid&&JSON.stringify(o)===JSON.stringify(q.design.optics)&&
+    o.f0>0&&o.f0<.1&&o.thickness>=230&&o.thickness<=760&&o.filmIOR>1&&
+    o.roughness>0&&o.roughness<1&&o.filmStrength>0&&o.filmStrength<1&&o.rimStrength>0&&o.rimStrength<1;
+  }
+  return {count:families.size,valid};
+ })()`);
+ assert.deepEqual(plain(result),{count:4,valid:true});
+});
+
+test('camera position inverts the actual orbit/pan view transform',()=>{
+ const error=run(`(()=>{
+  let error=0;
+  for(const yaw of [-2.1,0,.54,2.4])for(const pitch of [-1.1,-.18,.3,1.1]){
+   const p=cameraWorldPosition(yaw,pitch,13,2,-3),m=mul4(translate(-13),mul4(rotX(-pitch),mul4(rotY(-yaw),translate3(-2,3,0))));
+   for(let r=0;r<3;r++)error=Math.max(error,Math.abs(m[r]*p[0]+m[4+r]*p[1]+m[8+r]*p[2]+m[12+r]));
+  }
+  return error;
+ })()`);
+ assert.ok(error<.00001,'reflections must use the camera that actually rendered the specimen');
+});
+
+test('shared views retain both optical controls and accept old links without them',()=>{
+ const result=run(`(()=>{
+  const g=makeFounderGenome(120003,0,0),record={id:'optics',name:'光彩標本',seed:g.seed,genome:g,generation:0,parents:[]};
+  const api=MorphospaceCaptureShare;
+  const current=api.decode(api.encode({version:1,record,view:{fresnelStrength:0,iridescenceStrength:137}}));
+  const legacy=api.decode(api.encode({version:1,record,view:{yaw:.5}}));
+  return {view:current.view,legacy:legacy.view};
+ })()`);
+ assert.deepEqual(plain(result),{view:{fresnelStrength:0,iridescenceStrength:137},legacy:{yaw:.5}});
+});
