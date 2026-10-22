@@ -64,7 +64,7 @@ function captureFixture(fail=false){
  const $=id=>elements[id]||(elements[id]={hidden:false,disabled:false,textContent:'',value:'',dataset:{},open:false,classList:{add(){},remove(){}},removeAttribute(){},showModal(){this.open=true;events.push('dialog')},close(){this.open=false}});
  const record={id:'captured',name:'捕獲標本',seed:1,genome:{},parents:[],generation:0,ecology:{text:'保存された生態文'}};
  let commit,animate,saves=0;
- const fixture={$,events,videoRecording:null,nanoAction:null,nanoOperationBusy:false,captureShareIsOpen:false,captureShareSequence:0,captureShareState:null,captureShareDialog:$('captureShareDialog'),
+ const fixture={$,events,pauseViewerTransition(){},videoRecording:null,nanoAction:null,nanoOperationBusy:false,captureShareIsOpen:false,captureShareSequence:0,captureShareState:null,captureShareDialog:$('captureShareDialog'),
   nanoBusy:value=>{fixture.nanoOperationBusy=value},sharedPayload:()=>({version:1,record,view:{yaw:.5}}),currentIndividual:()=>record,copyJSON:plain,MorphospaceEcology:{ensure:r=>r.ecology},
   stockStore:{save:async()=>{saves++;events.push(saves===1?'save':'preview-save');if(fail)throw Error('quota');if(saves===1)await new Promise(resolve=>{commit=resolve});return {created:saves===1}}},refreshStock:async()=>{},
   CaptureShare:{postText:()=>'',card:()=>events.push('card')},localPublicBase:()=>'',setCaptureShareMessage:()=>{},cleanFilePart:x=>x,
@@ -99,7 +99,7 @@ test('parent selection becomes active only after commit and remains selected whe
  const events=[],f={nanoOperationBusy:false,nanoAction:null,videoRecording:null,busy:false,parentSlots:{A:old,B:null},pedigree:{},stockParentRevision:0,
   nanoBusy:value=>{f.nanoOperationBusy=value},snapshotIndividual:plain,copyJSON:plain,recordDisplayName:r=>r.name,
   stockStatus(){},$:()=>({textContent:''}),stockStore:{saveParents:()=>{events.push('save');return new Promise(resolve=>{commit=resolve})}},renderPedigree(){},updateFamilyInfo(){},
-  playNanoParent:()=>{events.push('animation');return new Promise(resolve=>{finish=resolve})},console};
+  pauseViewerTransition(){},playNanoParent:()=>{events.push('animation');return new Promise(resolve=>{finish=resolve})},console};
  vm.createContext(f);vm.runInContext(section('async function assignNanoParent(','$(\'nanoSceneSkip\').onclick'),f);
  const selecting=f.assignNanoParent(rec,'A');assert.equal(f.parentSlots.A.id,'old');assert.deepEqual(events,['save']);
  assert.equal(await f.assignNanoParent(rec,'B'),false);commit();await tick();assert.equal(f.parentSlots.A.id,'new');assert.deepEqual(events,['save','animation']);
