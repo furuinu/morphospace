@@ -17,20 +17,20 @@ test('capture pulls back, draws the visible organism through one stationary glas
  let last=1;
  for(let t=0;t<2;t+=.025){const f=fx.captureFrame(t);assert.ok(f.zoom>=last-1e-8);assert.equal(f.suction,0);last=f.zoom}
  assert.equal(fx.captureFrame(1.4).zoom,2.85);
- assert.equal(fx.captureFrame(2.4).phase,'suction');
- assert.ok(fx.captureFrame(2.4).bodyScale>0&&fx.captureFrame(2.4).bodyScale<1);
- const end=fx.captureFrame(fx.CAPTURE);assert.equal(end.held,1);assert.ok(end.bodyScale>.4);assert.ok(end.bodyX>1.2);assert.equal(end.tipX,fx.captureFrame(2.35).tipX);assert.equal(end.done,true);
+ assert.equal(fx.captureFrame(4.1).phase,'suction');
+ assert.ok(fx.captureFrame(4.1).bodyScale>0&&fx.captureFrame(4.1).bodyScale<1);
+ const end=fx.captureFrame(fx.CAPTURE);assert.equal(end.held,1);assert.ok(end.bodyScale>.4);assert.ok(end.bodyX>1.2);assert.equal(end.tipX,fx.captureFrame(3.35).tipX);assert.equal(end.done,true);
  for(const t of [-100,0,.2,1.3,2.05,2.85,4.15,100])for(const v of Object.values(fx.captureFrame(t)))if(typeof v==='number')assert.ok(Number.isFinite(v));
 });
 
 test('glass capillary has outward outer walls, inward lumen and an open annular lip',()=>{
- const mesh=fx.glassMesh();assert.equal(mesh.length,64*18*6);
+ const mesh=fx.glassMesh();assert.ok(mesh.length>64*18*6);
  for(let j=0;j<mesh.length;j+=18){
   const p=Array.from(mesh.slice(j,j+18));assert.ok(p.every(Number.isFinite));
   const a=p.slice(0,3),b=p.slice(6,9),c=p.slice(12,15),u=b.map((v,i)=>v-a[i]),v=c.map((x,i)=>x-a[i]);
   const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
   assert.ok(normal.reduce((sum,x,i)=>sum+x*p[i+3],0)>0,'winding agrees with physical wall normal');
-  if(a[0]===0&&b[0]===0&&c[0]===0)for(const q of [a,b,c])assert.ok(Math.hypot(q[1],q[2])>.87,'lip never seals the lumen');
+  if(a[0]===0&&b[0]===0&&c[0]===0)for(const q of [a,b,c])assert.ok(Math.hypot(q[1],q[2])>.95,'lip never seals the lumen');
  }
 });
 
@@ -118,4 +118,18 @@ test('skip and interruption restore the camera and display controls, and resolve
  f.finishNanoAction(true);f.finishNanoAction(true);
  assert.equal(f.nanoAction,null);assert.equal(f.nanoDialog.open,false);assert.deepEqual(cancelled,[12,13]);assert.deepEqual(plain(results),[{skipped:true}]);
  assert.deepEqual([f.modelYaw,f.modelPitch,f.panX,f.panY,f.auto,f.lastFrame],[.5,-.2,2,-1,true,777]);assert.equal(controls.macroDof.checked,true);assert.equal(controls.rigviz.checked,true);
+});
+
+
+test('micromanipulator aligns and settles before pressure, then fluid transport accelerates smoothly',()=>{
+ const aligned=fx.captureFrame(3.35);assert.equal(aligned.pressure,0);assert.equal(aligned.suction,0);
+ assert.ok(Math.abs(fx.captureFrame(2.9).tipX-aligned.tipX)<.001);
+ const speed=t=>(fx.captureFrame(t+.001).bodyX-fx.captureFrame(t-.001).bodyX)/.002;
+ assert.ok(speed(3.36)<speed(3.8));assert.ok(speed(3.8)<speed(4.5));
+ assert.ok(Math.abs(speed(6)-speed(7))<.004,'pump keeps moving through the tube rather than stopping between cuts');
+ for(const t of [2.25,2.3,2.95,3.35,4.95]){
+  const before=fx.captureFrame(t-.0001),after=fx.captureFrame(t+.0001);
+  assert.ok(Math.abs(before.bodyX-after.bodyX)<.0001);assert.ok(Math.abs(before.tipX-after.tipX)<.0001);
+ }
+ for(const x of [0,.25,1,4,8,14]){const p=fx.glassProfile(x);assert.ok(p.wall/p.outer<.05);assert.ok(p.outer-p.wall>.95)}
 });
