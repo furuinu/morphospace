@@ -17,8 +17,8 @@ test('capture pulls back, draws the visible organism through one stationary glas
  let last=1;
  for(let t=0;t<2;t+=.025){const f=fx.captureFrame(t);assert.ok(f.zoom>=last-1e-8);assert.equal(f.suction,0);last=f.zoom}
  assert.equal(fx.captureFrame(1.4).zoom,2.85);
- assert.equal(fx.captureFrame(4.1).phase,'suction');
- assert.ok(fx.captureFrame(4.1).bodyScale>0&&fx.captureFrame(4.1).bodyScale<1);
+ assert.equal(fx.captureFrame(4.8).phase,'suction');
+ assert.ok(fx.captureFrame(4.8).bodyScale>0&&fx.captureFrame(4.8).bodyScale<1);
  const end=fx.captureFrame(fx.CAPTURE);assert.equal(end.held,1);assert.ok(end.bodyScale>.4);assert.ok(end.bodyX>1.2);assert.equal(end.tipX,fx.captureFrame(3.35).tipX);assert.equal(end.done,true);
  for(const t of [-100,0,.2,1.3,2.05,2.85,4.15,100])for(const v of Object.values(fx.captureFrame(t)))if(typeof v==='number')assert.ok(Number.isFinite(v));
 });
@@ -125,9 +125,9 @@ test('micromanipulator aligns and settles before pressure, then fluid transport 
  const aligned=fx.captureFrame(3.35);assert.equal(aligned.pressure,0);assert.equal(aligned.suction,0);
  assert.ok(Math.abs(fx.captureFrame(2.9).tipX-aligned.tipX)<.001);
  const speed=t=>(fx.captureFrame(t+.001).bodyX-fx.captureFrame(t-.001).bodyX)/.002;
- assert.ok(speed(3.36)<speed(3.8));assert.ok(speed(3.8)<speed(4.5));
- assert.ok(Math.abs(speed(6)-speed(7))<.004,'pump keeps moving through the tube rather than stopping between cuts');
- for(const t of [2.25,2.3,2.95,3.35,4.95]){
+ assert.ok(speed(4.16)<speed(4.6));assert.ok(speed(4.6)<speed(5.3));
+ assert.ok(Math.abs(speed(7)-speed(8))<.004,'pump keeps moving through the tube rather than stopping between cuts');
+ for(const t of [2.25,2.3,2.95,3.35,4.15,5.75]){
   const before=fx.captureFrame(t-.0001),after=fx.captureFrame(t+.0001);
   assert.ok(Math.abs(before.bodyX-after.bodyX)<.0001);assert.ok(Math.abs(before.tipX-after.tipX)<.0001);
  }
@@ -169,4 +169,28 @@ test('portrait dolly-out reveals a fixed wider 3D field and keeps distant suctio
   assert.ok(Array.from(flow.entered).reduce((a,b)=>a+b,0)>30,'a visible stream reaches the lumen in portrait and landscape');
   assert.ok(field.count<=4160);assert.equal(base.length,960*7);
  }
+});
+
+test('light particles enter first while the body and its deformation remain still for 0.8 seconds',()=>{
+ const frame=fx.captureFrame(3.9);assert.ok(frame.pressure>.5);assert.equal(frame.bodyPressure,0);assert.equal(frame.suction,0);assert.equal(frame.bodyX,fx.captureFrame(3.35).bodyX);assert.equal(frame.phase,'flow');
+ const data=new Float32Array([0,0,0,.8,.4,.1,.7]),view=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],flow=fx.createFlow(data,3.35,view,1,0);
+ flow.position.set([.03-.045,-.02+.01,0]);
+ for(let i=1;i<=23;i++)fx.stepFlow(flow,fx.captureFrame(3.35+i/30),3.35+i/30,1);
+ assert.equal(flow.entered[0],1,'a light particle crosses the inlet before body transport begins');
+ assert.ok(fx.captureFrame(4.4).bodyPressure>0);assert.ok(fx.captureFrame(4.4).bodyX>frame.bodyX);
+});
+
+test('landscape survey particles fill the central area at the same density as neighboring areas',()=>{
+ const base=new Float32Array(960*7),view=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,-70,1],aspect=844/390,field=fx.createCaptureSnow(base,view,70,aspect,4000);
+ const initial=fx.captureSnowFrame(field,4000,0);let hidden=0;
+ for(let i=960;i<field.count;i++)if(field.revealMask[i]){assert.equal(initial[i*10+6],-1);hidden++}
+ assert.ok(hidden>200,'central additions reveal gradually rather than popping into the first frame');
+ const frame=fx.captureSnowFrame(field,4000,1),bins=Array(9).fill(0),tan=Math.tan(Math.PI*43/360);
+ for(let i=960;i<field.count;i++){
+  const j=i*10,depth=70*2.85-frame[j+2],x=frame[j]/(depth*tan*aspect),y=frame[j+1]/(depth*tan);
+  if(Math.abs(x)>=.9||Math.abs(y)>=.9)continue;
+  bins[Math.floor((y+.9)/.6)*3+Math.floor((x+.9)/.6)]++;
+ }
+ const center=bins[4],neighbors=bins.filter((_,i)=>i!==4),mean=neighbors.reduce((a,b)=>a+b,0)/8;
+ assert.ok(center>mean*.8&&center<mean*1.2,JSON.stringify(bins));
 });
