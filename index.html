@@ -3589,15 +3589,15 @@ vec3 wholeBodyWarp(vec3 p,float t,float amp){
  float torsionB=sin(t*.31+phase*.76+1.14);
  float axis=clamp(p.y/(.48+abs(p.y)), -.94,.94);
  // Upper and lower masses slowly counter-rotate: genuine non-rigid axial twist.
- float angle=power*(.67*torsionA+.24*torsionB)*axis;
+ float angle=power*(.94*torsionA+.36*torsionB)*axis;
  float cs=cos(angle),sn=sin(angle);
  vec3 q=vec3(cs*p.x-sn*p.z,p.y,sn*p.x+cs*p.z);
  // A broad S-bend originates at the trunk and propagates along the organism.
  float bendA=sin(t*.37+phase*.57);
  float bendB=sin(t*.43+phase*.88+1.13);
  float lever=p.y/(1.0+.24*p.y*p.y);
- q.x+=power*(.28*bendA+.095*bendB)*lever;
- q.z+=power*(.24*bendB-.075*bendA)*lever;
+ q.x+=power*(.43*bendA+.13*bendB)*lever;
+ q.z+=power*(.38*bendB-.10*bendA)*lever;
  // Upper and lower lobes take turns bending; no rapid vibrating surface noise.
  float upper=smoothstep(-.20,1.10,p.y);
  float lower=1.0-smoothstep(-1.10,.20,p.y);
@@ -3664,7 +3664,7 @@ void main(){
  vec3 n=normalize(aNormal);
  float role=aAnchor.w, phase=aParams.x, u=clamp(aParams.y,0.0,1.0);
  // Keep fine surface jitter restrained while restoring visible large-scale body torsion.
- float tissueGain=role<.5?.30:.58;
+ float tissueGain=role<.5?1.0:.74;
  vec3 motion=developmentalMotion(aPos,n,role,phase,u,uTime,uMotion*tissueGain);
  vec3 p=wholeBodyWarp(aPos+motion+biomechanics(aPos,n,role)*tissueGain,uTime,uMotion);
  p=branchJointWarp(p,aAnchor.xyz,u,phase,role,uTime,uMotion*uBranchEnabled);
@@ -3845,7 +3845,7 @@ ${wholeBodyGLSL}
 void main(){
  vec3 n=normalize(aNormal);
  float role=aAnchor.w,phase=aParams.x;
- float tissueGain=role<.5?.30:.58;
+ float tissueGain=role<.5?1.0:.74;
  vec3 movement=developmentalMotion(aPos,n,role,phase,clamp(aParams.y,0.0,1.0),uTime,uMotion*tissueGain);
  vec3 p=wholeBodyWarp(aPos+movement+biomechanics(aPos,n,role)*tissueGain,uTime,uMotion);
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
@@ -4781,7 +4781,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false){
 }
 function render(thumbSize=0,postEffects=true,recordHeight=0){if(typeof thumbSize!=='number'||!Number.isFinite(thumbSize))thumbSize=0;if(!gl||!renderer||!meshes)return;let rect=canvas.getBoundingClientRect();let w=thumbSize||Math.max(1,Math.round(rect.width*Math.min(devicePixelRatio||1,1.35))),h=recordHeight||thumbSize||Math.max(1,Math.round(rect.height*Math.min(devicePixelRatio||1,1.35)));
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const lens=postEffects?ensureLensFlare(w,h):null;gl.bindFramebuffer(gl.FRAMEBUFFER,lens?lens.targets[0].framebuffer:null);gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);drawStudioGL();gl.useProgram(renderer.program);
- let pr=persp(Math.PI*43/180,w/h,.1,100),cam=mul4(translate(-spec.viewDistance),mul4(rotX(-modelPitch),mul4(rotY(-modelYaw),translate3(-panX,-panY,0))));let base=scale3(1,1,1);let u=renderer.vars;gl.uniform1f(u.uCamera,spec.viewDistance);gl.uniform1f(u.uTime,bodyTime);gl.uniform1f(u.uMotion,$('motion').checked?Number($('motionAmp').value)/100*(spec.genome.dev?.motionEnergy||1):0);gl.uniform1f(u.uStyle,spec.style);gl.uniform1f(u.uSeed,(spec.seed%100003)*.000013);applyPatternUniforms(gl,u,spec.palette);setEmissionUniforms(u);if(u.uLampDir)gl.uniform3f(u.uLampDir,Math.sin(modelYaw)*Math.cos(modelPitch),-Math.sin(modelPitch),Math.cos(modelYaw)*Math.cos(modelPitch));
+ let pr=persp(Math.PI*43/180,w/h,.1,100),cam=mul4(translate(-spec.viewDistance),mul4(rotX(-modelPitch),mul4(rotY(-modelYaw),translate3(-panX,-panY,0))));let base=scale3(1,1,1);let u=renderer.vars;gl.uniform1f(u.uCamera,spec.viewDistance);gl.uniform1f(u.uTime,bodyTime);gl.uniform1f(u.uMotion,$('motion').checked?Number($('motionAmp').value)/100*Math.max(.85,spec.genome.dev?.motionEnergy||1):0);gl.uniform1f(u.uStyle,spec.style);gl.uniform1f(u.uSeed,(spec.seed%100003)*.000013);applyPatternUniforms(gl,u,spec.palette);setEmissionUniforms(u);if(u.uLampDir)gl.uniform3f(u.uLampDir,Math.sin(modelYaw)*Math.cos(modelPitch),-Math.sin(modelPitch),Math.cos(modelYaw)*Math.cos(modelPitch));
  const md=spec.motionGPU;if(md){gl.uniform4fv(u.uMotionGene0,md.a);gl.uniform4fv(u.uMotionGene1,md.b);gl.uniform4fv(u.uMotionGene2,md.c);gl.uniform3fv(u.uMotionFocus,md.focus);gl.uniform3fv(u.uMotionAxis,md.axis);}
  const bu=bioUniforms(spec.biome);
  gl.uniform4fv(u.uBioNode0,bu.nodes[0]);gl.uniform4fv(u.uBioNode1,bu.nodes[1]);gl.uniform4fv(u.uBioNode2,bu.nodes[2]);gl.uniform4fv(u.uBioNode3,bu.nodes[3]);
@@ -4970,7 +4970,7 @@ async function shareRecordedVideo(){
 let framesInWindow=0,fpsWindowTime=0;
 function frame(now){if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
- if(selected>=0&&!captureShareIsOpen){
+ if(selected>=0&&(!captureShareIsOpen||videoRecording)){
   environmentTime+=Math.min(elapsed,.18);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/100);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100);}
