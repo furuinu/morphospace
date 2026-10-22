@@ -133,3 +133,25 @@ test('micromanipulator aligns and settles before pressure, then fluid transport 
  }
  for(const x of [0,.25,1,4,8,14]){const p=fx.glassProfile(x);assert.ok(p.wall/p.outer<.05);assert.ok(p.outer-p.wall>.95)}
 });
+
+test('suction is local, draws particles toward the open mouth and does not pull them through the glass wall',()=>{
+ const tip=[0,0,0],upstream=[-.15,.07,.025];
+ assert.deepEqual(plain(fx.flowVelocity(upstream,tip,0).velocity),[0,0,0]);
+ const flow=fx.flowVelocity(upstream,tip,1);assert.ok(flow.velocity[0]>0);assert.ok(flow.velocity[1]<0);assert.ok(flow.velocity[2]<0);
+ for(const point of [[-1,0,0],[.15,.15,0],[.05,0,.12]])assert.deepEqual(plain(fx.flowVelocity(point,tip,1).velocity),[0,0,0]);
+ const tube=fx.flowVelocity([.1,.01,.01],tip,1,true);assert.equal(tube.entered,true);assert.ok(tube.velocity[0]>.3);
+ const farther=fx.flowVelocity([-.25,.03,0],tip,1),closer=fx.flowVelocity([-.08,.03,0],tip,1);
+ assert.ok(Math.hypot(...closer.velocity)>Math.hypot(...farther.velocity),'particles speed up near the mouth');
+});
+
+test('the original 3D snow is advected continuously with inertia and stable trajectories at 30/60 fps',()=>{
+ const data=new Float32Array([-.2,.07,.01,1,.4,.1,.7]),original=Array.from(data),view=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],frame={tipX:.5,tipY:.5,pressure:1};
+ const run=fps=>{const state=fx.createFlow(data,0,view,1,0);state.position.set([-.18,.07,.01]);let lastX=state.position[0];
+  for(let i=1;i<=fps*4;i++){fx.stepFlow(state,frame,i/fps,1);assert.ok(state.position[0]>=lastX-1e-7);lastX=state.position[0];assert.ok(Array.from(state.output).every(Number.isFinite))}
+  assert.equal(state.entered[0],1);assert.ok(state.position[0]>.2);assert.equal(state.output.length,10);return state;
+ };
+ const a=run(30),b=run(60);assert.ok(Math.hypot(...Array.from(a.position,(x,i)=>x-b.position[i]))<.015);
+ assert.deepEqual(Array.from(data),original,'archive and ordinary snow buffer are never mutated');
+ const idle=fx.createFlow(data,0,view,1,0);fx.stepFlow(idle,{...frame,pressure:0},.05,1);
+ const ambient=fx.ambientSnow(data,0,.05);for(let i=0;i<3;i++)assert.ok(Math.abs(idle.output[i]-ambient[i])<1e-6);
+});
