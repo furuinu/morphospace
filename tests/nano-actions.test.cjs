@@ -99,7 +99,7 @@ test('parent selection becomes active only after commit and remains selected whe
  const events=[],f={nanoOperationBusy:false,nanoAction:null,videoRecording:null,busy:false,parentSlots:{A:old,B:null},pedigree:{},stockParentRevision:0,
   nanoBusy:value=>{f.nanoOperationBusy=value},snapshotIndividual:plain,copyJSON:plain,recordDisplayName:r=>r.name,
   stockStatus(){},$:()=>({textContent:''}),stockStore:{saveParents:()=>{events.push('save');return new Promise(resolve=>{commit=resolve})}},renderPedigree(){},updateFamilyInfo(){},
-  nanoParentSprite:async r=>r?{}:null,playNanoScene:()=>{events.push('animation');return new Promise(resolve=>{finish=resolve})},console};
+  playNanoParent:()=>{events.push('animation');return new Promise(resolve=>{finish=resolve})},console};
  vm.createContext(f);vm.runInContext(section('async function assignNanoParent(','$(\'nanoSceneSkip\').onclick'),f);
  const selecting=f.assignNanoParent(rec,'A');assert.equal(f.parentSlots.A.id,'old');assert.deepEqual(events,['save']);
  assert.equal(await f.assignNanoParent(rec,'B'),false);commit();await tick();assert.equal(f.parentSlots.A.id,'new');assert.deepEqual(events,['save','animation']);
@@ -193,4 +193,56 @@ test('landscape survey particles fill the central area at the same density as ne
  }
  const center=bins[4],neighbors=bins.filter((_,i)=>i!==4),mean=neighbors.reduce((a,b)=>a+b,0)/8;
  assert.ok(center>mean*.8&&center<mean*1.2,JSON.stringify(bins));
+});
+
+test('micro-extraction leaves the parent in place and recovers contact deformation after transporting a small 3D sample',()=>{
+ const contact={x:.59,y:.51};
+ assert.equal(fx.extractFrame(3.1,contact).tissues.length,0);
+ assert.ok(fx.extractFrame(3.1,contact).pressure>0);
+ const sample=fx.extractFrame(4.6,contact);assert.equal(sample.bodyX,.38);assert.equal(sample.bodyY,.54);assert.equal(sample.tissues.length,1);
+ assert.ok(sample.tissues[0].r<=.014);assert.ok(sample.tissues[0].x>contact.x);
+ const end=fx.extractFrame(fx.EXTRACT,contact);assert.equal(end.bodyPressure,0);assert.equal(end.bodyX,.38);assert.equal(end.done,true);assert.ok(end.tissues[0].x>1);
+ for(let t=0;t<fx.EXTRACT;t+=.03)for(const value of Object.values(fx.extractFrame(t,contact)))if(typeof value==='number')assert.ok(Number.isFinite(value));
+});
+
+test('release sends fluid out before the actual organism and lets its free shape recover outside the tube',()=>{
+ const before=fx.releaseFrame(1.5);assert.ok(before.pressure>.5);assert.equal(before.bodyX,1.2);assert.equal(before.flowDirection,-1);
+ const exiting=fx.releaseFrame(3.2);assert.ok(exiting.bodyX<1.2&&exiting.bodyX>.36);assert.ok(exiting.bodyPressure>0);
+ const end=fx.releaseFrame(fx.RELEASE);assert.equal(end.bodyX,.36);assert.equal(end.bodyPressure,0);assert.equal(end.axisAlign,0);assert.equal(end.done,true);
+ const data=new Float32Array([0,0,0,1,.5,.1,.6]),identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],state=fx.createFlow(data,1.05,identity,1,0);
+ state.position.set([.07+.02,-.02+.001,0]);
+ for(let i=1;i<=15;i++)fx.stepFlow(state,fx.releaseFrame(1.05+i/30),1.05+i/30,1);
+ assert.ok(state.position[0]<.09,'fluid travels left, out of the capillary');
+});
+
+test('two material-bearing samples converge inside a hollow 3D junction before offspring generation',()=>{
+ const start=fx.breedFrame(.7),joined=fx.breedFrame(3.4),end=fx.breedFrame(fx.BREED);
+ assert.ok(start.tissues[0].y<start.tissues[1].y);assert.equal(start.hideBody,true);
+ assert.ok(Math.abs(joined.tissues[0].y-joined.tissues[1].y)<.001);assert.equal(joined.tissues[0].material,0);assert.equal(joined.tissues[1].material,1);
+ assert.ok(end.tissues.every(t=>t.x>1));assert.equal(end.done,true);
+ const mesh=fx.junctionMesh(24,12);assert.ok(mesh.length>1000&&mesh.length<200000);
+ for(let j=0;j<mesh.length;j+=18){
+  const p=Array.from(mesh.slice(j,j+18));assert.ok(p.every(Number.isFinite));
+  const u=[p[6]-p[0],p[7]-p[1],p[8]-p[2]],v=[p[12]-p[0],p[13]-p[1],p[14]-p[2]],n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  assert.ok(n.reduce((sum,x,i)=>sum+x*p[i+3],0)>0,'outer and inner tube faces have consistent winding');
+ }
+});
+
+test('temporary lab rendering restores the real specimen and GPU buffers even after interruption',async()=>{
+ const old={viewDistance:17},oldMeshes={id:'real buffers'},oldRigs=[{id:'real rig'}],oldRecord={id:'real record'},events=[],info={textContent:'original'};
+ const f={gl:{},renderer:{},spec:old,meshes:oldMeshes,rigMeshes:oldRigs,selected:9,activeStoredIndividual:oldRecord,modelYaw:.8,modelPitch:-.2,panX:2,panY:3,auto:true,bodyTime:13,rigTime:14,lastFrame:0,nanoAction:null,
+  snapshotEmissionUI:()=>({original:true}),restoreEmissionUI:x=>events.push(x.original?'emission restored':'bad'),$:()=>info,copyJSON:plain,pickPalette:()=>({}),makeSpecimen:()=>({temporary:true}),getSpecEmissionDNA:()=>({}),applyEmissionDNAtoUI(){},performance:{now:()=>999},
+  applyUploadedSpecimen(sp){f.spec=sp;f.meshes={id:'temporary buffers'};f.rigMeshes=[]},destroyMeshes(){events.push(f.meshes?.id);f.meshes=null;f.rigMeshes=[]},render(){assert.equal(f.spec,old);assert.equal(f.meshes,oldMeshes)}};
+ vm.createContext(f);vm.runInContext(section('async function withNanoSpecimen(','async function playNanoParent('),f);
+ await assert.rejects(f.withNanoSpecimen({seed:1,genome:{style:0}},async()=>{assert.equal(f.spec.temporary,true);assert.notEqual(f.meshes,oldMeshes);throw Error('interrupted')}),/interrupted/);
+ assert.equal(f.spec,old);assert.equal(f.meshes,oldMeshes);assert.equal(f.rigMeshes,oldRigs);assert.equal(f.activeStoredIndividual,oldRecord);
+ assert.deepEqual([f.selected,f.modelYaw,f.modelPitch,f.panX,f.panY,f.auto,f.bodyTime,f.rigTime,f.lastFrame],[9,.8,-.2,2,3,true,13,14,999]);assert.ok(events.includes('temporary buffers'));assert.ok(!events.includes('real buffers'));
+});
+
+test('breeding starts exactly once after the convergence scene, while a navigation interruption cancels generation',async()=>{
+ let finish;const calls=[],parents={A:{id:'a',name:'A',genome:{}},B:{id:'b',name:'B',genome:{}}},f={nanoAction:null,nanoOperationBusy:false,busy:false,parentSlots:parents,nanoLabRevision:0,snapshotIndividual:plain,recordDisplayName:r=>r.name,
+  nanoBusy:v=>{f.nanoOperationBusy=v},withNanoSpecimen:async(rec,run)=>run(),playNanoScene:()=>new Promise(resolve=>{finish=resolve}),$:()=>({value:''}),build:async(seed,g,cx)=>calls.push(cx),Math,console};
+ vm.createContext(f);vm.runInContext(section('async function startBreeding(){','function exportPedigree(){'),f);
+ const operation=f.startBreeding();await tick();await f.startBreeding();assert.equal(calls.length,0);finish({skipped:true});await operation;assert.equal(calls.length,1);assert.equal(calls[0].parents[0].id,'a');assert.equal(f.nanoOperationBusy,false);
+ const interrupted=f.startBreeding();await tick();f.nanoLabRevision++;finish({skipped:true});await interrupted;assert.equal(calls.length,1);
 });

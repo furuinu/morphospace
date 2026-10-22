@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.11.6 — Glass Micropipette Capture</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>MORPHOSPACE v15.12.0 — Glass Sample Lab</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -105,12 +105,12 @@ body{color:#eaf4f4;background:#090e18}
 }
 
 
-/* v15.11.6: seeded ecology prose, failure-only WebGL indicator. */
+/* v15.12.0: seeded ecology prose, failure-only WebGL indicator. */
 #status:not(.fail){display:none}
 .version-label{display:inline-block;font-size:11px;letter-spacing:.03em;vertical-align:middle;color:#799487;font-weight:500;white-space:nowrap}
 .overlay .desc{font-size:12px;line-height:1.95;color:#c2d6d4;white-space:normal;overflow-wrap:anywhere}
 .scientific-name{font:italic 16px/1.5 Georgia,serif;color:#c1d6c1;margin:2px 0 6px;overflow-wrap:anywhere}.taxonomic-line{font-size:11px;line-height:1.7;color:#a1bdae;margin:0 0 8px}.ecology-caption{font-size:10px;letter-spacing:.14em;color:#87c5af;margin:5px 0 0}
-/* v15.11.6 — two floating actions; breeding remains in the inspector. */
+/* v15.12.0 — two floating actions; breeding remains in the inspector. */
 .overlay .inspector-scroll{padding-bottom:100px}
 .capture-dock{position:absolute;bottom:12px;right:12px;width:min(44%,370px);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:rgba(8,23,35,.94);border:1px solid #4c756e;border-radius:14px;box-shadow:0 8px 24px #0007;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:20}
 .capture-dock .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:49px;font-size:14px;letter-spacing:.03em;border-color:#567b70}
@@ -158,7 +158,7 @@ body{color:#eaf4f4;background:#090e18}
 @media(max-width:600px){.overlay .inspector-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}.capture-dock{width:auto;left:10px;right:10px;bottom:calc(7px + env(safe-area-inset-bottom,0px))}.social-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#captureShareDialog{padding:16px}}
 
 
-/* v15.11.6: atlas first; all top-level controls follow the specimens. */
+/* v15.12.0: atlas first; all top-level controls follow the specimens. */
 .wrap>header{margin-bottom:18px}
 .atlas-bottom{margin-top:26px}
 .atlas-info{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px}
@@ -193,7 +193,7 @@ body{color:#eaf4f4;background:#090e18}
 .parent-tools .parent-thumb{width:28px;height:28px;flex-basis:28px}
 .parent-tools .parent-slot-name{font-size:10px}
 @media(max-width:400px){.parent-card.parent-slot{padding:8px 6px;gap:5px}.parent-card .parent-thumb{width:32px;height:32px;flex-basis:32px}}
-</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.11.6</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div></header>
+</style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.12.0</span></h1><p class="sub">味と香りのクオリアに潜む生物たち。</p></div></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="731029" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -203,10 +203,10 @@ body{color:#eaf4f4;background:#090e18}
   <div class="breed-actions"><button id="stockToLab" class="btn" type="button">生体サンプルから親を選ぶ</button></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">64個体から親A・親Bを選び、遺伝子を交叉して新しい子世代を作れます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.11.6</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.11.6：顕微鏡視野のガラスプローブで吸引し、同じ管内へ生体サンプルを移送。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.12.0</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.12.0：顕微鏡視野のガラスプローブで吸引し、同じ管内へ生体サンプルを移送。</div></div>
 </section>
 
-</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.11.6 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+</div><div class="overlay" id="overlay"><div class="detail"><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas><div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked="" id="auto" type="checkbox"/> カメラ周回</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.12.0 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close">×</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
 <dialog id="nanoSceneDialog" aria-labelledby="nanoSceneKind" aria-describedby="nanoSceneStatus">
  <canvas id="nanoSceneCanvas" aria-hidden="true"></canvas>
  <div class="nano-head"><span id="nanoSceneKind">CAPTURE / 生体の捕獲</span><span id="nanoSceneName"></span></div>
@@ -262,7 +262,7 @@ body{color:#eaf4f4;background:#090e18}
  </div>
 </dialog>
 <script>
-/* MORPHOSPACE v15.11.6 — portable specimens and trading cards. */
+/* MORPHOSPACE v15.12.0 — portable specimens and trading cards. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
@@ -595,13 +595,20 @@ body{color:#eaf4f4;background:#090e18}
   return state;
  }
  const flowAxisNorm=Math.hypot(1,.06,.12),flowAX=1/flowAxisNorm,flowAY=.06/flowAxisNorm,flowAZ=.12/flowAxisNorm;
- function flowForce(out,x,y,z,pressure,entered,aspect){
+ function flowForce(out,x,y,z,pressure,entered,aspect,direction=1,radius=.05){
   const axial=x*flowAX+y*flowAY+z*flowAZ,rx=x-flowAX*axial,ry=y-flowAY*axial,rz=z-flowAZ*axial,rho=Math.hypot(rx,ry,rz),r=Math.hypot(x,y,z);
-  if(entered||(axial>=0&&rho<.048)){
+  if(direction<0){
+   const inside=axial>=0&&rho<radius*.96;
+   if(inside){const speed=.285*aspect*1.45;out[0]=pressure*(-flowAX*speed-rx*2);out[1]=pressure*(-flowAY*speed-ry*2);out[2]=pressure*(-flowAZ*speed-rz*2);out[3]=1;return}
+   out[3]=0;
+   if(axial<0&&axial>-.42&&rho<radius-axial*.24){const speed=.285*aspect*1.45*Math.exp(axial*2);out[0]=pressure*(-flowAX*speed+rx*.2);out[1]=pressure*(-flowAY*speed+ry*.2);out[2]=pressure*(-flowAZ*speed+rz*.2);return}
+   out[0]=out[1]=out[2]=0;return;
+  }
+  if(entered||(axial>=0&&rho<radius*.96)){
    const speed=.285*aspect*1.65;out[0]=pressure*(flowAX*speed-rx*2.8);out[1]=pressure*(flowAY*speed-ry*2.8);out[2]=pressure*(flowAZ*speed-rz*2.8);out[3]=1;return;
   }
-  out[3]=0;if(axial>0||r>=.36){out[0]=out[1]=out[2]=0;return}
-  const envelope=pressure*(1-ease((r-.13)/.23)),sink=.0021/Math.pow(r*r+.003,1.5),mouth=Math.exp(-(axial*axial+rho*rho)/(.055*.055))*.36;
+  out[3]=0;if(axial>0||r>=.36*Math.sqrt(radius/.05)){out[0]=out[1]=out[2]=0;return}
+  const envelope=pressure*(1-ease((r-.13)/.23)),sink=.0021*(radius/.05)*(radius/.05)/Math.pow(r*r+.003*(radius/.05)*(radius/.05),1.5),mouth=Math.exp(-(axial*axial+rho*rho)/(radius*radius*1.21))*.36;
   out[0]=envelope*(-x*sink+flowAX*mouth);out[1]=envelope*(-y*sink+flowAY*mouth);out[2]=envelope*(-z*sink+flowAZ*mouth);
  }
  function flowVelocity(position,tip,pressure,entered=false,aspect=1){
@@ -619,7 +626,7 @@ body{color:#eaf4f4;background:#090e18}
    const sx=p[k]-tipX,sy=p[k+1]-tipY,sz=p[k+2];
    const local=state.entered[i]||sx*sx+sy*sy+sz*sz<.17||Math.abs(velocity[k])+Math.abs(velocity[k+1])+Math.abs(velocity[k+2])>.00001;
    for(let n=0;local&&n<steps;n++){
-    flowForce(force,p[k]-tipX,p[k+1]-tipY,p[k+2],frame.pressure,!!state.entered[i],aspect);state.entered[i]=force[3];
+    flowForce(force,p[k]-tipX,p[k+1]-tipY,p[k+2],frame.pressure,!!state.entered[i],aspect,frame.flowDirection??1,frame.radius??.05);state.entered[i]=force[3];
     for(let a=0;a<3;a++){velocity[k+a]+=(force[a]-velocity[k+a])*response;p[k+a]+=velocity[k+a]*dt}
    }
    const qx=p[k]*state.scale-v[12],qy=p[k+1]*state.scale-v[13],qz=p[k+2]*state.scale-state.distance-v[14];
@@ -627,6 +634,40 @@ body{color:#eaf4f4;background:#090e18}
    out[o+7]=velocity[k];out[o+8]=-velocity[k+1];out[o+9]=Math.hypot(velocity[k],velocity[k+1]);
   }
   state.time=time;return out;
+ }
+ const EXTRACT=6.8,RELEASE=6.1,BREED=5.6;
+ function extractFrame(time,contact={x:.57,y:.53}){
+  const t=Math.max(0,time),pull=glide((t-.15)/.95),approach=glide((t-1.05)/1.35),flow=ease((t-2.8)/.55),grow=ease((t-3.5)/.65),transfer=glide((t-4.05)/1.9),withdraw=glide((t-5.95)/.75);
+  const tipX=mix(1.3,contact.x,approach)+withdraw*.24,tipY=mix(.48,contact.y,approach)-withdraw*.012;
+  return {kind:'extract',phase:t<1.1?'pullback':t<2.4?'approach':t<2.8?'contact':t<3.5?'flow':t<4.05?'sample':t<5.95?'transfer':'recover',pull,zoom:mix(1,2.2,pull),bodyX:mix(.5,.38,pull),bodyY:mix(.5,.54,pull),axisAlign:0,
+   tipX,tipY,radius:.027,probeAlpha:ease((t-1.05)/.4),pressure:flow*(1-ease((t-4.8)/.75))*.7,bodyPressure:.13*ease((t-2.4)/.5)*(1-ease((t-4.15)/.65)),suction:0,
+   tissues:grow>0?[{x:contact.x+.024*grow+.78*transfer,y:contact.y-(.024*grow+.78*transfer)*.06,r:.014*grow,sx:1+Math.sin(Math.PI*transfer)*.4,sy:1,material:0}]:[],done:t>=EXTRACT};
+ }
+ function releaseFrame(time){
+  const t=Math.max(0,time),pull=glide((t-.1)/.9),eject=glide((t-1.65)/2.9),recover=ease((t-4.55)/1),pressure=ease((t-1.05)/.45)*(1-ease((t-4.7)/.7));
+  return {kind:'release',phase:t<1.05?'prepare':t<1.65?'fluid':t<4.55?'release':'recover',pull,zoom:mix(1,2.2,pull),tipX:.57,tipY:.52,radius:.06,probeAlpha:1,
+   bodyX:mix(1.2,.36,eject),bodyY:.54,axisAlign:1-recover,bodyPressure:1-recover,pressure,flowDirection:-1,suction:0,tissues:[],done:t>=RELEASE};
+ }
+ function breedFrame(time){
+  const t=Math.max(0,time),enter=glide((t-.65)/2.65),exit=glide((t-3.5)/1.8),join={x:.56,y:.52},tissues=[];
+  for(let side=0;side<2;side++){
+   const sign=side===0?-1:1,x=mix(.12,.56,enter)+exit*.65,y=join.y+sign*.22*Math.pow(1-enter,2);
+   tissues.push({x:x+(enter>.99?(side===0?-.006:.006)*(1-exit):0),y,r:.017,sx:1+.25*Math.sin(enter*Math.PI),sy:1,material:side});
+  }
+  return {kind:'breed',phase:t<.65?'ready':t<3.3?'converge':t<3.8?'combine':'transfer',pull:1,zoom:2.2,bodyX:.5,bodyY:.5,hideBody:true,tipX:join.x,tipY:join.y,radius:.042,probeAlpha:1,junction:true,pressure:0,bodyPressure:0,suction:0,tissues,done:t>=BREED};
+ }
+ function junctionMesh(segments=40,steps=18){
+  const data=[],vertex=(branch,t,a,inner)=>{
+   const r=inner?.955:1,n=inner?-1:1,sign=branch===0?1:-1;
+   let x,y,dx,dy;if(branch<2){x=-27*(1-t);y=sign*11.925*(1-t)*(1-t);dx=27;dy=-sign*23.85*(1-t)}else{x=24*t;y=0;dx=24;dy=0}
+   const length=Math.hypot(dx,dy),ux=-dy/length,uy=dx/length,c=Math.cos(a),s=Math.sin(a);
+   return [x+ux*r*c,y+uy*r*c,r*s,ux*c*n,uy*c*n,s*n];
+  };
+  for(let b=0;b<3;b++)for(let k=0;k<steps;k++)for(let i=0;i<segments;i++)for(const inner of [false,true]){
+   const a=i*Math.PI*2/segments,z=(i+1)*Math.PI*2/segments,q=[vertex(b,k/steps,a,inner),vertex(b,(k+1)/steps,a,inner),vertex(b,(k+1)/steps,z,inner),vertex(b,k/steps,z,inner)];
+   for(const index of inner?[0,1,2,0,2,3]:[0,2,1,0,3,2])data.push(...q[index]);
+  }
+  return new Float32Array(data);
  }
  function parentFrame(time,ready){return {enter:ease(time/.9),seat:ease((time-.85)/.42),withdraw:ease((time-1.05)/.55),pulse:ready?clamp((time-1.35)/.55):0,done:time>=PARENT}}
  function resolution(w,h,dpr=1){const scale=Math.min(1.25,Math.max(1,dpr),Math.sqrt(560000/Math.max(1,w*h)));return {width:Math.max(1,Math.round(w*scale)),height:Math.max(1,Math.round(h*scale))}}
@@ -672,7 +713,7 @@ body{color:#eaf4f4;background:#090e18}
   }
   return f;
  }
- root.MorphospaceNanoFX=Object.freeze({CAPTURE,PARENT,captureFrame,glassMesh,glassProfile,ambientSnow,createCaptureSnow,captureSnowFrame,createFlow,flowVelocity,stepFlow,parentFrame,resolution,layout,background,capture,parents});
+ root.MorphospaceNanoFX=Object.freeze({CAPTURE,PARENT,EXTRACT,RELEASE,BREED,extractFrame,releaseFrame,breedFrame,junctionMesh,captureFrame,glassMesh,glassProfile,ambientSnow,createCaptureSnow,captureSnowFrame,createFlow,flowVelocity,stepFlow,parentFrame,resolution,layout,background,capture,parents});
 })(typeof globalThis!=='undefined'?globalThis:this);
 
 </script><script>
@@ -4660,7 +4701,7 @@ function updateUpload(gl,uploaded,next){
 }
 
 
-let nanoAction=null,nanoRenderPose=null,nanoOperationBusy=false;
+let nanoAction=null,nanoRenderPose=null,nanoOperationBusy=false,nanoLabRevision=0;
 const canvas=$('glview'),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true})||canvas.getContext('webgl',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true});
 let genomes=[],population=[],pedigree={},parentSlots={A:null,B:null},generation=0,collectionMode='wild',currentBuildContext=null,previewSpecimens=[],detailSpecimens=[],detailCacheOrder=[];
 let activeStoredIndividual=null;
@@ -4884,8 +4925,8 @@ const lensVertex=`attribute vec2 aPost; varying vec2 vPost;
 void main(){vPost=aPost*.5+.5;gl_Position=vec4(aPost,0.0,1.0);}`;
 const macroDofShader=`precision mediump float; varying vec2 vPost;
 uniform sampler2D uScene;uniform sampler2D uDepth;uniform vec2 uPixel;
-uniform float uFocus;uniform float uStrength;uniform float uDebug;
-float linearDepth(float z){return 10.0/(100.0-z*99.9);}
+uniform float uFocus;uniform float uStrength;uniform float uDebug;uniform vec2 uDepthRange;
+float linearDepth(float z){return uDepthRange.x*uDepthRange.y/(uDepthRange.y-z*(uDepthRange.y-uDepthRange.x));}
 float blurAt(vec2 uv){float z=texture2D(uDepth,clamp(uv,0.0,1.0)).r;
  if(z>.99999)return 0.0;
  float dist=linearDepth(z);
@@ -5020,7 +5061,7 @@ function ensureLensFlare(w,h){
      if(!gl.getProgramParameter(dp,gl.LINK_STATUS))throw Error('DOF shader: '+gl.getProgramInfoLog(dp));
     }finally{for(const shader of ss)gl.deleteShader(shader)}
     f.dofProgram={program:dp,a:gl.getAttribLocation(dp,'aPost'),u:{}};
-    for(const u of ['uScene','uDepth','uPixel','uFocus','uStrength','uDebug'])f.dofProgram.u[u]=gl.getUniformLocation(dp,u);
+    for(const u of ['uScene','uDepth','uPixel','uFocus','uStrength','uDebug','uDepthRange'])f.dofProgram.u[u]=gl.getUniformLocation(dp,u);
     }catch(dofError){console.warn('DOF unavailable; retaining flare',dofError);f.dofError=String(dofError.message||dofError);if(f.dofProgram)gl.deleteProgram(f.dofProgram.program);f.dofProgram=null;if(f.depthTexture)gl.deleteTexture(f.depthTexture);f.depthTexture=null;}
    }
    for(let i=0;i<4;i++){
@@ -5084,7 +5125,7 @@ function paintLensFlare(f,w,h,flareEnabled=true){
   gl.bindFramebuffer(gl.FRAMEBUFFER,f.targets[3].framebuffer);gl.viewport(0,0,w,h);
   gl.useProgram(p.program);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,scene);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,f.depthTexture);
-  gl.uniform1i(p.u.uScene,0);gl.uniform1i(p.u.uDepth,1);
+  gl.uniform1i(p.u.uScene,0);gl.uniform1i(p.u.uDepth,1);gl.uniform2f(p.u.uDepthRange,.1,nanoRenderPose&&!videoRecording?Math.max(100,spec.viewDistance*2.4):100);
   gl.uniform2f(p.u.uPixel,1/w,1/h);
   gl.uniform1f(p.u.uFocus,Math.max(.3,spec.viewDistance+Number($('dofFocus').value)*.012));
   gl.uniform1f(p.u.uStrength,Number($('dofStrength').value)/100*2.8);
@@ -5144,7 +5185,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
  const frame=nanoRenderPose?.frame,active=!!(nanoAction&&view&&frame);
  if(active){
   const aspect=canvas.width/canvas.height;
-  if(!nanoAction.snowField)nanoAction.snowField=MorphospaceNanoFX.createCaptureSnow(renderer.snowData,view,spec.viewDistance/frame.zoom,aspect,environmentTime);
+  if(!nanoAction.snowField){const reference=spec.viewDistance/frame.zoom,referenceView=Array.from(view);referenceView[14]+=spec.viewDistance-reference;nanoAction.snowField=MorphospaceNanoFX.createCaptureSnow(renderer.snowData,referenceView,reference,aspect,environmentTime)}
   const field=nanoAction.snowField;let data;
   if(frame.pressure>0){
    if(!nanoAction.flow)nanoAction.flow=MorphospaceNanoFX.createFlow(field.data,environmentTime,view,2*spec.viewDistance*Math.tan(Math.PI*43/360),spec.viewDistance);
@@ -5184,16 +5225,16 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
 let glassProbeGPU=null;
 const glassProbeVert=`precision highp float;
 attribute vec3 aPosition;attribute vec3 aNormal;
-uniform mat4 uProjection;uniform vec3 uTip;uniform vec2 uSize;
+uniform mat4 uProjection;uniform vec3 uTip;uniform vec2 uSize;uniform mediump float uJunction;
 varying mediump vec3 vNormal;varying mediump vec3 vView;varying mediump float vAlong;
 void main(){
- vec3 axis=normalize(vec3(1.,.06,.12)),up=normalize(vec3(-.06,1.,0.)),side=normalize(cross(axis,up));
+ vec3 axis=normalize(mix(vec3(1.,.06,.12),vec3(1.,0.,0.),uJunction)),up=normalize(mix(vec3(-.06,1.,0.),vec3(0.,1.,0.),uJunction)),side=normalize(cross(axis,up));
  vec3 p=uTip+axis*aPosition.x*uSize.x*uSize.y+(up*aPosition.y+side*aPosition.z)*uSize.x;
  vNormal=normalize(axis*aNormal.x/uSize.y+up*aNormal.y+side*aNormal.z);vView=-p;vAlong=aPosition.x;
  gl_Position=uProjection*vec4(p,1.);
 }`;
 const glassProbeFrag=`precision mediump float;
-uniform sampler2D uScene;uniform vec2 uResolution;uniform float uAlpha;
+uniform sampler2D uScene;uniform vec2 uResolution;uniform float uAlpha;uniform mediump float uJunction;
 varying mediump vec3 vNormal;varying mediump vec3 vView;varying mediump float vAlong;
 void main(){
  vec3 n=normalize(vNormal),v=normalize(vView);
@@ -5204,7 +5245,7 @@ void main(){
  vec2 bend=n.xy*(.65+2.8*grazing)/uResolution;
  vec3 through=texture2D(uScene,clamp(uv+bend,vec2(.001),vec2(.999))).rgb;
  float streak=pow(max(0.,dot(n,normalize(vec3(-.12,.72,.68)))),54.);
- float lip=1.-smoothstep(.025,.11,abs(vAlong));
+ float lip=(1.-smoothstep(.025,.11,abs(vAlong)))*(1.-uJunction);
  float counter=pow(max(0.,dot(n,normalize(vec3(.1,-.8,.55)))),18.);
  vec3 reflection=vec3(.38,.54,.58)*fresnel+vec3(.8,.91,.94)*streak*.46;
  vec3 color=through*(1.-counter*.18-fresnel*.1)+reflection+lip*vec3(.085,.12,.13);
@@ -5245,11 +5286,11 @@ function drawGlassProbe(projection,w,h,f){
   const program=linked(glassProbeVert,glassProbeFrag),focus=linked(glassFocusVert,glassFocusFrag),data=MorphospaceNanoFX.glassMesh(),buffer=gl.createBuffer(),quad=gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
   gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  const vars={},focusVars={};for(const name of ['uProjection','uTip','uSize','uScene','uResolution','uAlpha'])vars[name]=gl.getUniformLocation(program,name);
+  const vars={},focusVars={};for(const name of ['uProjection','uTip','uSize','uScene','uResolution','uAlpha','uJunction'])vars[name]=gl.getUniformLocation(program,name);
   for(const name of ['uGlass','uPixel','uTipUv'])focusVars[name]=gl.getUniformLocation(focus,name);
   glassProbeGPU={program,focus,buffer,quad,texture:texture(),layer:texture(),framebuffer:gl.createFramebuffer(),vars,focusVars,count:data.length/6,position:gl.getAttribLocation(program,'aPosition'),normal:gl.getAttribLocation(program,'aNormal'),post:gl.getAttribLocation(focus,'aPost'),attributes:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),w:0,h:0};
  }
- const g=glassProbeGPU,u=g.vars,half=spec.viewDistance*Math.tan(Math.PI*43/360),radius=half*.10,target=gl.getParameter(gl.FRAMEBUFFER_BINDING);
+ const g=glassProbeGPU,u=g.vars,half=spec.viewDistance*Math.tan(Math.PI*43/360),radius=half*2*(f.radius??.05),target=gl.getParameter(gl.FRAMEBUFFER_BINDING);
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,g.texture);gl.copyTexImage2D(gl.TEXTURE_2D,0,gl.RGB,0,0,w,h,0);
  gl.bindFramebuffer(gl.FRAMEBUFFER,g.framebuffer);
  if(g.w!==w||g.h!==h){
@@ -5258,15 +5299,17 @@ function drawGlassProbe(projection,w,h,f){
   if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw Error('ガラス描画領域を作成できません');g.w=w;g.h=h;
  }
  gl.viewport(0,0,w,h);gl.colorMask(true,true,true,true);const clear=gl.getParameter(gl.COLOR_CLEAR_VALUE);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.clearColor(...clear);
- gl.useProgram(g.program);gl.bindTexture(gl.TEXTURE_2D,g.texture);gl.bindBuffer(gl.ARRAY_BUFFER,g.buffer);
+ gl.useProgram(g.program);gl.bindTexture(gl.TEXTURE_2D,g.texture);
+ if(f.junction&&!g.junction){const data=MorphospaceNanoFX.junctionMesh();g.junction=gl.createBuffer();g.junctionCount=data.length/6;gl.bindBuffer(gl.ARRAY_BUFFER,g.junction);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW)}
+ gl.bindBuffer(gl.ARRAY_BUFFER,f.junction?g.junction:g.buffer);const drawCount=f.junction?g.junctionCount:g.count;gl.uniform1f(u.uJunction,f.junction?1:0);
  for(let i=0;i<g.attributes;i++)gl.disableVertexAttribArray(i);
  gl.enableVertexAttribArray(g.position);gl.vertexAttribPointer(g.position,3,gl.FLOAT,false,24,0);
  gl.enableVertexAttribArray(g.normal);gl.vertexAttribPointer(g.normal,3,gl.FLOAT,false,24,12);
  gl.uniformMatrix4fv(u.uProjection,false,projection);
  gl.uniform3f(u.uTip,(f.tipX-.5)*2*half*w/h,(.5-f.tipY)*2*half,-spec.viewDistance);
- gl.uniform2f(u.uSize,radius,Math.max(1,w/h*2));gl.uniform2f(u.uResolution,w,h);gl.uniform1i(u.uScene,0);gl.uniform1f(u.uAlpha,f.probeAlpha);
+ gl.uniform2f(u.uSize,radius,f.junction?w/h*.582:Math.max(1,w/h*2));gl.uniform2f(u.uResolution,w,h);gl.uniform1i(u.uScene,0);gl.uniform1f(u.uAlpha,f.probeAlpha);
  gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CCW);
- gl.cullFace(gl.FRONT);gl.drawArrays(gl.TRIANGLES,0,g.count);gl.cullFace(gl.BACK);gl.drawArrays(gl.TRIANGLES,0,g.count);
+ gl.cullFace(gl.FRONT);gl.drawArrays(gl.TRIANGLES,0,drawCount);gl.cullFace(gl.BACK);gl.drawArrays(gl.TRIANGLES,0,drawCount);
  gl.bindFramebuffer(gl.FRAMEBUFFER,target);gl.disable(gl.CULL_FACE);gl.useProgram(g.focus);gl.bindTexture(gl.TEXTURE_2D,g.layer);
  for(let i=0;i<g.attributes;i++)gl.disableVertexAttribArray(i);
  gl.bindBuffer(gl.ARRAY_BUFFER,g.quad);gl.enableVertexAttribArray(g.post);gl.vertexAttribPointer(g.post,2,gl.FLOAT,false,0,0);
@@ -5280,7 +5323,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){if(typeof thumbSize
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const lens=postEffects?ensureLensFlare(w,h):null;gl.bindFramebuffer(gl.FRAMEBUFFER,lens?lens.targets[0].framebuffer:null);gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);drawStudioGL();gl.useProgram(renderer.program);
  let pr=persp(Math.PI*43/180,w/h,.1,nanoRenderPose&&recordHeight>0&&!videoRecording?Math.max(100,spec.viewDistance*2.4):100),cam=mul4(translate(-spec.viewDistance),mul4(rotX(-modelPitch),mul4(rotY(-modelYaw),translate3(-panX,-panY,0))));let base=scale3(1,1,1);let u=renderer.vars;
  const capturePose=nanoRenderPose&&recordHeight>0&&!videoRecording?nanoRenderPose:null;
- if(u.uCapture)gl.uniform4f(u.uCapture,capturePose?(capturePose.frame.tipX-.5)*2:0,capturePose?(.5-capturePose.frame.tipY)*2:0,.10,capturePose?capturePose.frame.bodyPressure:0);
+ if(u.uCapture)gl.uniform4f(u.uCapture,capturePose?(capturePose.frame.tipX-.5)*2:0,capturePose?(.5-capturePose.frame.tipY)*2:0,capturePose?(capturePose.frame.radius??.05)*2:.10,capturePose?capturePose.frame.bodyPressure:0);
  if(u.uCaptureAspect)gl.uniform1f(u.uCaptureAspect,w/h);
  gl.uniform1f(u.uCamera,spec.viewDistance);gl.uniform1f(u.uTime,bodyTime);gl.uniform1f(u.uMotion,$('motion').checked?Number($('motionAmp').value)/100*Math.max(.85,spec.genome.dev?.motionEnergy||1):0);gl.uniform1f(u.uStyle,spec.style);gl.uniform1f(u.uSeed,(spec.seed%100003)*.000013);applyPatternUniforms(gl,u,spec.palette);setOpticalView(u);setEmissionUniforms(u);if(u.uLampDir)gl.uniform3f(u.uLampDir,Math.sin(modelYaw)*Math.cos(modelPitch),-Math.sin(modelPitch),Math.cos(modelYaw)*Math.cos(modelPitch));
  const md=spec.motionGPU;if(md){gl.uniform4fv(u.uMotionGene0,md.a);gl.uniform4fv(u.uMotionGene1,md.b);gl.uniform4fv(u.uMotionGene2,md.c);gl.uniform3fv(u.uMotionFocus,md.focus);gl.uniform3fv(u.uMotionAxis,md.axis);}
@@ -5320,8 +5363,10 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){if(typeof thumbSize
  }
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
- const mvpLeft=drawCopy(mLeft,false);
- drawCopy(mirrorM,true);
+ const hidden=!!capturePose?.frame.hideBody;
+ const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):drawCopy(mLeft,false);
+ if(!hidden)drawCopy(mirrorM,true);
+ if(capturePose?.frame.tissues?.length)drawNanoTissues(pr,cam,capturePose.frame,w,h);
  lastSceneViewProj=mul4(pr,cam);
  drawWorldSnow(lastSceneViewProj,!!(lens&&lens.depthTexture&&lens.dofProgram&&$('macroDof').checked&&!$('wire').checked),cam);
  if(!lens&&nanoRenderPose&&recordHeight>0&&!videoRecording)drawGlassProbe(pr,w,h,nanoRenderPose.frame);
@@ -5706,12 +5751,18 @@ async function build(seed,par=null,context=null){
   $('message').textContent='第'+generation+'世代 64体完成（'+((performance.now()-buildStarted)/1000).toFixed(1)+'秒）。詳細3Dは選択時のみ生成。';$('progress').style.width='100%';renderPedigree();
  }catch(e){fail(e)}finally{busy=false;$('generate').disabled=false;$('same').disabled=false;renderPedigree()}
 }
-function startBreeding(){if(nanoAction||nanoOperationBusy||busy||!parentSlots.A||!parentSlots.B||parentSlots.A.id===parentSlots.B.id)return;
+async function startBreeding(){
+ if(nanoAction||nanoOperationBusy||busy||!parentSlots.A||!parentSlots.B||parentSlots.A.id===parentSlots.B.id)return;
+ const parents=[snapshotIndividual(parentSlots.A),snapshotIndividual(parentSlots.B)],revision=++nanoLabRevision;
+ nanoBusy(true);
+ try{await withNanoSpecimen(parents[0],()=>playNanoScene({kind:'breed',parents,name:parents.map(recordDisplayName).join(' × ')}))}
+ catch(error){console.warn('Breeding animation skipped',error)}finally{nanoBusy(false)}
+ if(revision!==nanoLabRevision)return;
  const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);
- build(seed,null,{mode:'breed',parents:[snapshotIndividual(parentSlots.A),snapshotIndividual(parentSlots.B)]});
+ await build(seed,null,{mode:'breed',parents});
 }
 function exportPedigree(){
- const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.11.6-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
+ const state={format:'MORPHOSPACE-PEDIGREE',version:1,engine:'v15.12.0-capture-share',ecologyVersion:MorphospaceEcology.version,savedAt:new Date().toISOString(),collectionSeed,
   generation,collectionMode,context:currentBuildContext,seeds,genomes:copyJSON(genomes),population:copyJSON(population),pedigree:copyJSON(pedigree),parentSlots:copyJSON(parentSlots),variance:Number($('variance').value),patternProfile:{lock:!!$('patternLock').checked,scatter:Number($('patternScatter').value),cats:[0,1,2,3,4].map(i=>Number($('cat'+i).value))}};
  saveDownload(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),'morphospace-pedigree-G'+generation+'-'+collectionSeed+'.json');
 }
@@ -5849,7 +5900,7 @@ async function persistStockParents(){
  try{await stockStore.saveParents(parentSlots);return true}catch(error){stockStatus('親の選択を保存できませんでした：'+error.message,true);$('message').textContent='親の選択は今回のみ有効です。保存できませんでした：'+error.message;return false}
 }
 function clearStockParents(){if(nanoOperationBusy||nanoAction)return;parentSlots={A:null,B:null};void persistStockParents();renderPedigree()}
-async function chooseStoredParent(entry,slot){return assignNanoParent(entry.payload.record,slot)}
+async function chooseStoredParent(entry,slot){return assignNanoParent(entry.payload.record,slot,'release')}
 function stockButton(text,action,className=''){
  const button=document.createElement('button');button.type='button';button.className='btn '+className;button.textContent=text;button.onclick=action;return button;
 }
@@ -5887,13 +5938,14 @@ async function openStock(){
  try{await refreshStock();stockStatus(stockEntries.length+'体の生体サンプルがあります。')}catch(error){stockError=error.message;$('stockEmpty').hidden=true;stockStatus('サンプルを読み込めませんでした：'+error.message,true)}
 }
 function closeStock(){if(stockDialog.open)stockDialog.close();lastFrame=performance.now();if(stockReturnFocus?.isConnected)stockReturnFocus.focus()}
-function openStoredSpecimen(entry){
+async function openStoredSpecimen(entry){
  if(busy||nanoAction||nanoOperationBusy){stockStatus('処理が終わってから開いてください。');return}
  if(!gl||!renderer){stockStatus('このブラウザでは3D表示を利用できません。親を選んで交配することはできます。',true);return}
  try{
   const saved=Stock.normalizeEntry(entry);applySharedView(saved.payload.view);loadSpecimen(0,saved);applySharedView(saved.payload.view,true);
   $('index').textContent='STOCK / SEED '+saved.payload.record.seed;closeStock();$('capture').focus();
- }catch(error){stockStatus('生体を開けませんでした：'+error.message,true)}
+  nanoBusy(true);await playNanoScene({kind:'release',name:recordDisplayName(saved.payload.record)});
+ }catch(error){stockStatus('生体を開けませんでした：'+error.message,true)}finally{nanoBusy(false)}
 }
 async function saveCaptureToStock(state,seq,preview=state.stockPreview||''){
  $('retryStock').disabled=true;
@@ -5945,9 +5997,60 @@ async function nanoParentSprite(rec){
  const g=copyJSON(rec.genome),p=pickPalette(rec.seed,g.colorDNA,g.patternDNA),preview=document.createElement('canvas');preview.width=preview.height=320;
  const small=makeSpecimen(rec.seed,g.style,p,true,null,.75,.84,.75,g.archetype,null,g);drawPreview(preview,small);return nanoSprite(preview);
 }
+function nanoContact(aspect,distance){
+ const rotation=mul4(rotX(-modelPitch),rotY(-modelYaw)),data=spec.shell.data,half=distance*2.2*Math.tan(Math.PI*43/360);let best=-Infinity,point=[0,0];
+ // Choose a visible, middle-height portion of the existing shell, not an invented organ.
+ let extent=1;for(let j=0;j<data.length;j+=9)extent=Math.max(extent,Math.abs(data[j+1]));
+ for(let j=0;j<data.length;j+=9)for(const sign of [-1,1]){
+  const x=data[j]*sign,y=data[j+1],z=data[j+2],vx=rotation[0]*x+rotation[4]*y+rotation[8]*z,vy=rotation[1]*x+rotation[5]*y+rotation[9]*z,score=vx-Math.abs(vy)*.55;
+  if(Math.abs(vy)<extent*.55&&score>best){best=score;point=[vx,vy]}
+ }
+ return {x:.38+point[0]/(2*half*aspect)*.98,y:.54-point[1]/(2*half)};
+}
+function makeNanoTissue(palette,seed){
+ const pieces=[sphere([0,0,0],[1,.73,.67],palette,0,14,9),sphere([.61,.12,.06],[.53,.48,.46],palette,2,12,8),sphere([-.51,-.1,.04],[.47,.41,.42],palette,4,12,8)];
+ return upload(gl,dynamicMesh(pieces.reduce((a,b)=>mergeMeshes(a,b)),1,(seed%1000)*.01,[0,0,0]));
+}
+function drawNanoTissues(projection,camera,frame,w,h){
+ const job=nanoAction;if(!job)return;const u=renderer.vars,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch));
+ if(!job.tissueMaterials){
+  const records=job.parents||[currentIndividual()],materials=records.filter(Boolean).map(rec=>({palette:pickPalette(rec.seed,rec.genome.colorDNA,rec.genome.patternDNA),seed:rec.seed,style:rec.genome.style}));
+  if(!materials.length)materials.push({palette:spec.palette,seed:spec.seed,style:spec.style});
+  job.tissueMaterials=materials;job.tissueMeshes=materials.map(m=>makeNanoTissue(m.palette,m.seed));
+ }
+ gl.useProgram(renderer.program);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.frontFace(gl.CCW);gl.disable(gl.BLEND);
+ if(u.uCapture)gl.uniform4f(u.uCapture,0,0,.1,0);gl.uniform1f(u.uMotion,0);gl.uniform1f(u.uBioStrength,0);
+ for(const tissue of frame.tissues){
+  const index=Math.min(tissue.material||0,job.tissueMaterials.length-1),material=job.tissueMaterials[index],radius=2*half*tissue.r;
+  applyPatternUniforms(gl,u,material.palette);gl.uniform1f(u.uSeed,(material.seed%100003)*.000013);gl.uniform1f(u.uStyle,material.style);
+  const model=mul4(inverse,mul4(translate3((tissue.x-.5)*2*half*w/h,(.5-tissue.y)*2*half,.01*half),mul4(rotZ(Math.sin(bodyTime*.7)*.08),scale3(radius*(tissue.sx||1),radius*(tissue.sy||1),radius*.86))));
+  gl.uniformMatrix4fv(u.uModel,false,model);gl.uniformMatrix4fv(u.uMvp,false,mul4(projection,mul4(camera,model)));if(u.uMirrorSign)gl.uniform1f(u.uMirrorSign,1);
+  drawUploaded(job.tissueMeshes[index],1,false,0,0);
+ }
+}
+async function withNanoSpecimen(record,run){
+ if(!gl||!renderer)return {skipped:true};
+ const saved={spec,meshes,rigMeshes,selected,activeStoredIndividual,modelYaw,modelPitch,panX,panY,auto,bodyTime,rigTime,emission:snapshotEmissionUI(),branch:$('branchInspectInfo').textContent};
+ meshes=null;rigMeshes=[];spec=null;
+ try{
+  const g=copyJSON(record.genome),palette=pickPalette(record.seed,g.colorDNA,g.patternDNA),small=makeSpecimen(record.seed,g.style,palette,true,null,.75,.84,.75,g.archetype,null,g);
+  applyUploadedSpecimen(small,false,false);applyEmissionDNAtoUI(getSpecEmissionDNA(small));selected=0;activeStoredIndividual={payload:{record}};modelYaw=.54;modelPitch=-.18;panX=panY=0;auto=false;bodyTime=rigTime=0;
+  return await run();
+ }finally{
+  if(nanoAction)finishNanoAction(true);destroyMeshes();
+  spec=saved.spec;meshes=saved.meshes;rigMeshes=saved.rigMeshes;selected=saved.selected;activeStoredIndividual=saved.activeStoredIndividual;modelYaw=saved.modelYaw;modelPitch=saved.modelPitch;panX=saved.panX;panY=saved.panY;auto=saved.auto;bodyTime=saved.bodyTime;rigTime=saved.rigTime;restoreEmissionUI(saved.emission);$('branchInspectInfo').textContent=saved.branch;lastFrame=performance.now();
+  if(selected>=0&&spec&&meshes)render();
+ }
+}
+async function playNanoParent(rec,slot,source){
+ const options={kind:source==='release'?'release':'extract',slot,name:recordDisplayName(rec)};
+ if(source!=='release'&&currentIndividual()?.id===rec.id&&spec)return playNanoScene(options);
+ return withNanoSpecimen(rec,()=>playNanoScene(options));
+}
 function finishNanoAction(skipped=false){
  const job=nanoAction;if(!job)return;nanoAction=null;
  cancelAnimationFrame(job.raf);clearTimeout(job.timer);nanoRenderPose=null;
+ if(job.tissueMeshes)for(const mesh of job.tissueMeshes)destroy(gl,mesh);
  if(nanoDialog.open)nanoDialog.close();
  if(job.live&&spec===job.spec){spec.viewDistance=job.saved.distance;modelYaw=job.saved.yaw;modelPitch=job.saved.pitch;panX=job.saved.panX;panY=job.saved.panY;auto=job.saved.auto;$('macroDof').checked=job.saved.macroDof;$('rigviz').checked=job.saved.rigviz;}
  lastFrame=performance.now();
@@ -5957,38 +6060,41 @@ function finishNanoAction(skipped=false){
 function playNanoScene(options){
  if(nanoAction)return Promise.resolve({skipped:true});
  const c=nanoCanvas.getContext('2d');if(!c)return Promise.resolve({skipped:true});
- const live=options.kind==='capture'&&!!(gl&&renderer&&spec&&selected>=0),reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
- if(options.kind==='capture'&&!live)return Promise.resolve({skipped:true});
- const duration=reduced ? .32 : options.kind==='capture'?NanoFX.CAPTURE:NanoFX.PARENT;
+ const live=!!(gl&&renderer&&spec&&selected>=0),reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ if(!live)return Promise.resolve({skipped:true});
+ const length=options.kind==='capture'?NanoFX.CAPTURE:options.kind==='extract'?NanoFX.EXTRACT:options.kind==='release'?NanoFX.RELEASE:NanoFX.BREED,duration=reduced ? .32 : length;
  return new Promise(resolve=>{
-  const job={...options,live,reduced,duration,resolve,spec,start:performance.now(),previous:0,lastPaint:-Infinity,phase:'',resize:true,raf:0,timer:0,
-   saved:live?{distance:spec.viewDistance,yaw:modelYaw,pitch:modelPitch,panX,panY,auto,macroDof:$('macroDof').checked,rigviz:$('rigviz').checked}:null};
+  const job={...options,live,reduced,duration,length,resolve,spec,start:performance.now(),previous:0,lastPaint:-Infinity,phase:'',resize:true,raf:0,timer:0,
+   saved:{distance:spec.viewDistance,yaw:modelYaw,pitch:modelPitch,panX,panY,auto,macroDof:$('macroDof').checked,rigviz:$('rigviz').checked}};
   nanoAction=job;
   try{nanoDialog.showModal()}catch(error){nanoAction=null;resolve({skipped:true});return}
-  $('nanoSceneKind').textContent=options.kind==='capture'?'CAPTURE / 生体の捕獲':'PARENT '+options.slot+' / 親の指定';
-  $('nanoSceneName').textContent=options.name||'';$('nanoSceneSkip').focus();if(live){auto=false;$('rigviz').checked=false;}
+  $('nanoSceneKind').textContent=({capture:'CAPTURE / 生体の捕獲',extract:'SAMPLING / 親'+options.slot+'の微量採取',release:'RELEASE / 生体サンプルの呼び出し',breed:'BREED / 親A × 親B'})[options.kind];
+  $('nanoSceneName').textContent=options.name||'';$('nanoSceneSkip').focus();auto=false;$('rigviz').checked=false;
   function tick(now){
    if(nanoAction!==job)return;
    if(now-job.lastPaint<1000/30){job.raf=requestAnimationFrame(tick);return}job.lastPaint=now;
-   const elapsed=Math.max(0,(now-job.start)/1000),t=reduced?(options.kind==='capture'?NanoFX.CAPTURE:NanoFX.PARENT)-.1+Math.min(.1,elapsed*.32):elapsed;
+   const elapsed=Math.max(0,(now-job.start)/1000),t=reduced?length-.1+Math.min(.1,elapsed*.32):elapsed;
    try{
-    if(job.resize){const rect=nanoCanvas.getBoundingClientRect(),res=NanoFX.resolution(rect.width||innerWidth,rect.height||innerHeight,devicePixelRatio||1);nanoCanvas.width=res.width;nanoCanvas.height=res.height;job.resize=false}
-    const w=nanoCanvas.width,h=nanoCanvas.height;
-    if(options.kind==='capture'){
-     const f=NanoFX.captureFrame(t);
-     if(live){
-      const delta=Math.min(.06,Math.max(0,elapsed-job.previous));job.previous=elapsed;environmentTime+=delta;
-      if($('motion').checked){bodyTime+=delta*Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100;rigTime+=delta;stepBiomeSystem(spec.biome,delta,Number($('motionSpeed').value)/100)}
-      const distance=Math.max(job.saved.distance,(spec.baseViewDistance||job.saved.distance)*Math.max(1,h/w)*1.05);
-      spec.viewDistance=distance*f.zoom;panX=job.saved.panX*(1-f.pull);panY=job.saved.panY*(1-f.pull);modelYaw=job.saved.yaw;modelPitch=job.saved.pitch;
-      nanoRenderPose={x:f.bodyX,y:f.bodyY*(1-f.suction)+(f.tipY-(f.bodyX-f.tipX)*.06*w/h)*f.suction,sx:1,sy:1,sz:1,frame:f};
-      render(w,true,h);c.drawImage(canvas,0,0,w,h);
-     }
-     NanoFX.capture(c,w,h,t,options.sprite,live);
-     if(job.phase!==f.phase){job.phase=f.phase;$('nanoSceneStatus').textContent=({observe:'生体を追跡しています',pullback:'視野を広げ、プローブが接近しています',approach:'採取位置へプローブを合わせています',align:'先端を静止し、吸引圧を整えています',flow:'微粒子が先に吸い込まれています',suction:'生体を吸引しています',held:'ガラス管の内側へ移送しています'})[f.phase]}
-    }else{
-     const f=NanoFX.parents(c,w,h,t,options.sprites,options.slot,options.ready),phase=f.seat>.95?'seated':f.enter>.95?'seating':'approach';
-     if(job.phase!==phase){job.phase=phase;$('nanoSceneStatus').textContent=phase==='seated'?(options.ready?'親A・Bが揃いました。交配できます。':'親'+options.slot+'にセットしました。'):phase==='seating'?'保持リングを固定しています':'親'+options.slot+'の保持リングへ運んでいます'}
+    if(job.resize){const rect=nanoCanvas.getBoundingClientRect(),res=NanoFX.resolution(rect.width||innerWidth,rect.height||innerHeight,devicePixelRatio||1);nanoCanvas.width=res.width;nanoCanvas.height=res.height;job.resize=false;job.contact=null}
+    const w=nanoCanvas.width,h=nanoCanvas.height,aspect=w/h;
+    const distance=Math.max(job.saved.distance,(spec.baseViewDistance||job.saved.distance)*Math.max(1,h/w)*1.05);
+    modelYaw=job.saved.yaw;modelPitch=job.saved.pitch;
+    if(options.kind==='extract'&&!job.contact)job.contact=nanoContact(aspect,distance);
+    const f=options.kind==='capture'?NanoFX.captureFrame(t):options.kind==='extract'?NanoFX.extractFrame(t,job.contact):options.kind==='release'?NanoFX.releaseFrame(t):NanoFX.breedFrame(t);
+    if(options.kind==='extract')for(const tissue of f.tissues)tissue.y=job.contact.y-(tissue.x-job.contact.x)*.06*aspect;
+    const delta=Math.min(.06,Math.max(0,elapsed-job.previous));job.previous=elapsed;environmentTime+=delta;
+    if($('motion').checked){bodyTime+=delta*Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/100;rigTime+=delta;stepBiomeSystem(spec.biome,delta,Number($('motionSpeed').value)/100)}
+    spec.viewDistance=distance*f.zoom;panX=job.saved.panX*(1-f.pull);panY=job.saved.panY*(1-f.pull);
+    const align=f.axisAlign??f.suction;
+    nanoRenderPose={x:f.bodyX,y:f.bodyY*(1-align)+(f.tipY-(f.bodyX-f.tipX)*.06*aspect)*align,sx:1,sy:1,sz:1,frame:f};
+    render(w,true,h);c.drawImage(canvas,0,0,w,h);
+    if(job.phase!==f.phase){
+     job.phase=f.phase;
+     const messages=options.kind==='capture'?{observe:'生体を追跡しています',pullback:'視野を広げ、プローブが接近しています',approach:'採取位置へプローブを合わせています',align:'先端を静止し、吸引圧を整えています',flow:'微粒子が先に吸い込まれています',suction:'生体を吸引しています',held:'ガラス管の内側へ移送しています'}:
+      options.kind==='extract'?{pullback:'採取部位を観察しています',approach:'ガラスプローブを表面へ合わせています',contact:'先端を接触させています',flow:'微粒子が先に流れ込んでいます',sample:'微量の生体サンプルを採取しています',transfer:'採取したサンプルを管内へ送っています',recover:'採取を完了しました。生体は残ります。'}:
+      options.kind==='release'?{prepare:'ガラス管の出口を観察しています',fluid:'微粒子が先に流れ出しています',release:'生体をガラス管から送り出しています',recover:'生体が広がり、動きを取り戻しています'}:
+      {ready:'親A・Bのサンプルを流路へ送り出します',converge:'二つの流路からサンプルが近づいています',combine:'親A・Bのサンプルが合流しています',transfer:'交配したDNAから子64体を生成します'};
+     $('nanoSceneStatus').textContent=messages[f.phase]||'';
     }
    }catch(error){console.warn('Nano animation skipped',error);finishNanoAction(true);return}
    if(elapsed>=duration){finishNanoAction(false);return}job.raf=requestAnimationFrame(tick);
@@ -5997,15 +6103,14 @@ function playNanoScene(options){
  });
 }
 function playNanoCapture(image,record){return playNanoScene({kind:'capture',name:record.name,sprite:nanoSprite(image)})}
-async function assignNanoParent(rec,slot){
+async function assignNanoParent(rec,slot,source='extract'){
  if(nanoOperationBusy||nanoAction||videoRecording||!rec)return false;
  nanoBusy(true);let committed=false;
  try{
   const next={...parentSlots,[slot]:snapshotIndividual(rec)};stockStatus('親'+slot+'を登録しています…');
   // Only a committed parent selection may be shown as successfully seated.
   await stockStore.saveParents(next);committed=true;stockParentRevision++;parentSlots=next;pedigree[rec.id]=copyJSON(rec);renderPedigree();updateFamilyInfo();
-  const parents={A:parentSlots.A,B:parentSlots.B},images=await Promise.all([nanoParentSprite(parents.A),nanoParentSprite(parents.B)]);
-  await playNanoScene({kind:'parent',slot,name:recordDisplayName(rec),sprites:{A:images[0],B:images[1]},ready:!!(parents.A&&parents.B&&parents.A.id!==parents.B.id)});
+  await playNanoParent(rec,slot,source);
   stockStatus('「'+recordDisplayName(rec)+'」を親'+slot+'に選びました。');return true;
  }catch(error){if(committed){console.warn('Parent animation skipped after commit',error);stockStatus('親'+slot+'を登録しました。演出を省略しました。');return true}stockStatus('親を登録できませんでした：'+error.message,true);$('message').textContent='親を登録できませんでした：'+error.message;return false}
  finally{nanoBusy(false)}
@@ -6196,7 +6301,7 @@ $('copyPost').onclick=async()=>{const s=captureShareState;if(s?.link)setCaptureS
 $('copyLink').onclick=async()=>{const s=captureShareState;if(s?.link)setCaptureShareMessage(await copyShareText(s.link)?'リンクをコピーしました。':'コピーできませんでした。リンク欄を長押ししてコピーしてください。')};
 $('shareX').onclick=()=>openSocial('x');$('shareFacebook').onclick=()=>openSocial('facebook');$('shareLine').onclick=()=>openSocial('line');$('shareBluesky').onclick=()=>openSocial('bluesky');
 $('publicPageURL').addEventListener('input',updateShareLink);
-window.addEventListener('hashchange',async()=>{try{const p=CaptureShare.fromHash(location.hash);if(p){if(nanoAction)finishNanoAction(true);if(captureShareIsOpen)closeCaptureShare();await waitForNanoIdle();if(stockDialog.open)closeStock();await restoreSharedSpecimen(p)}}catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message}});
+window.addEventListener('hashchange',async()=>{try{const p=CaptureShare.fromHash(location.hash);if(p){nanoLabRevision++;if(nanoAction)finishNanoAction(true);if(captureShareIsOpen)closeCaptureShare();await waitForNanoIdle();if(stockDialog.open)closeStock();await restoreSharedSpecimen(p)}}catch(e){$('message').textContent='共有リンクを開けませんでした：'+e.message}});
 
 if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('fail');$('gpuDiag').hidden=false;$('gpuDiag').textContent='このブラウザではWebGLが利用できません。iPhoneの対応ブラウザで開いてください。';bootMorphospace()}else{
  try{
@@ -6208,7 +6313,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.11.6 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.12.0 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;requestAnimationFrame(frame);bootMorphospace()
  }catch(e){fail(e);bootMorphospace()}
@@ -6250,7 +6355,7 @@ for(let i=0;i<5;i++){ $('cat'+i).oninput=syncPatternProfileUI; } $('patternScatt
 $('mutate').onclick=()=>{const parent=currentIndividual();if(!parent)return;const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);build(seed,null,{mode:'mutate',parent:snapshotIndividual(parent)})};
 $('setParentA').onclick=()=>setParent('A');$('setParentB').onclick=()=>setParent('B');$('breed').onclick=startBreeding;$('breedQuick').onclick=startBreeding;$('clearParents').onclick=clearStockParents;$('exportLineage').onclick=exportPedigree;$('importLineage').onchange=e=>importPedigree(e.target.files?.[0]);
 $('save').onclick=()=>{if(selected<0)return;render();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const ctx=out.getContext('2d');drawStudioBackground(ctx,out.width,out.height);ctx.drawImage(canvas,0,0);out.toBlob(b=>{if(b)saveDownload(b,'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.png')},'image/png')};
-$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.11.6 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex,optics:p.design.optics},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
+$('json').onclick=()=>{if(selected<0)return;let p=pickPalette(spec.seed,spec.genome.colorDNA,spec.genome.patternDNA);saveDownload(new Blob([JSON.stringify({engine:'MORPHOSPACE v15.12.0 Capture & Share',ecologyVersion:MorphospaceEcology.version,collectionSeed,individual:copyJSON(currentIndividual()),genome:spec.genome,rigs:spec.rigs.map(r=>({type:r.type,rest:r.rest,segmentLengths:r.links,frequency:r.freq,phase:r.phase})),palette:{rows:p.rows,cols:p.cols,base:p.hex,optics:p.design.optics},biomechanics:{dna:spec.genome.bioDNA,links:spec.biome?.links||[],centres:spec.biome?.nodes.map(n=>n.p)||[],coupling:Number($('coupling').value)},motion:{dna:spec.genome.motionDNA,primaryName:MOTION_LABELS[spec.genome.motionDNA.primary],secondaryName:MOTION_LABELS[spec.genome.motionDNA.secondary],speed:Number($('motionSpeed').value),amplitude:Number($('motionAmp').value),ciliaAmplitude:Number($('ciliaMotion').value),bodySpeed:Number($('bodySpeed').value),glow:Number($('glow').value),layerLight:Number($('layerLight').value)}},null,2)],{type:'application/json'}),'morphospace-'+recordDisplayName(currentIndividual())+'-'+spec.seed+'.json')};
 window.addEventListener('keydown',e=>{
  if(e.key!=='Escape')return;
  if(nanoOperationBusy&&!nanoAction&&!captureShareDialog.open){e.preventDefault();return}
