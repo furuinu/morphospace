@@ -271,3 +271,13 @@ test('stored parent selection uses the same micro-extraction scene on an isolate
  assert.equal(events[0],'saved specimen');assert.equal(events[1].kind,'extract');assert.equal(events[1].slot,'B');
  events.length=0;await f.playNanoParent(saved,'A','extract');assert.equal(events.length,1);assert.equal(events[0].kind,'extract');
 });
+
+
+test('every initialized vertex shader calling captureClip includes its definition in both renderer modes',()=>{
+ const shaders=vm.runInContext('({vert,ciliaVert,compatibleVert,compatibleCiliaVert})',context);
+ for(const [name,shader] of Object.entries(shaders)){
+  if(/gl_Position\s*=\s*captureClip\(/.test(shader)){
+   const definition=shader.indexOf('vec4 captureClip(vec4 clip)');assert.ok(definition>=0,name+' must define captureClip');assert.ok(definition<shader.indexOf('void main()'),name+' definition must precede main');
+  }
+ }
+});
