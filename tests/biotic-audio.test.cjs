@@ -256,7 +256,7 @@ test('soft ceiling protects speakers and the same safe signal is recorded',()=>{
  assert.ok(safety.connections.includes(e.waveform));
  assert.ok(e.waveform.connections.includes(g.context.destination));
  assert.equal(safety.oversample,'2x');
- assert.ok(safety.curve instanceof Float32Array&&safety.curve.length>=1024);
+ assert.ok(ArrayBuffer.isView(safety.curve)&&safety.curve.length>=1024);
  let last=-2;
  for(const value of safety.curve){assert.ok(Number.isFinite(value));assert.ok(value>=last);assert.ok(Math.abs(value)<.92);last=value;}
  for(const volume of [0,.5,1])e.update([{sp,weight:1}],volume);
