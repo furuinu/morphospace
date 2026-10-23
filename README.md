@@ -3,7 +3,7 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.13.13, Glass Sample Lab.
+- **App:** [index.html](index.html) — v15.13.14, Glass Sample Lab.
 - No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
 ## Capture, stock and breeding
@@ -104,6 +104,16 @@ Tap the 3D canvas to hide or restore navigation in both normal and full-screen v
 Full-screen video export preserves the stage aspect ratio, visible text overlays, zoom, and timed morph transitions. Controls are excluded; MP4 remains the preferred format with WebM fallback.
 
 v15.13.10 keeps the existing capture/share actions available as compact buttons at the bottom right of full-screen viewing. The zoom slider and caption sit above them; position/transition status uses the remaining bottom-left space. These actions follow tap-to-hide navigation and reuse the existing capture/share flows. Zoom minus/plus are real, labeled buttons with five-point slider steps, synchronized camera distance and disabled limits in both normal and full-screen views. Zoom during morphing scales both endpoint distances together.
+
+## Biotic activity sound (v15.13.14)
+
+Viewing settings offer an explicit activity-sound start/stop button and a remembered volume slider. Audio is initially off and requires a button gesture. Each organism has deterministic sound DNA: timbre (pitch, cavity resonance, grains, membrane), recursive rhythm (cycle, depth, branching, decay), and response (lag, pressure sensitivity, phase, flutter). These blocks cross over and mutate with parent provenance. Legacy DNA receives stable defaults; audio DNA survives shared links and captured archives.
+
+A bounded recursive pulse tree (at most 15 events per cycle) nests small pulses inside broad breaths, with seeded variation between cycles. Persistent sine, filtered membrane and filtered-noise sources respond to these pulses and tissue pressure/velocity. Audio parameters ramp smoothly. During morphs two complete voices crossfade; the incoming graph continues at adoption instead of restarting. No sound files, microphone access, or per-frame PCM generation are used.
+
+Closing the viewer, hiding the page or an interrupted audio context stops sound and releases voices; resume requires the start button. Capture/stock dialogs and sample animations temporarily mute the output. A high-pass filter, compressor and bounded gains precede the speaker output. While sound is active, video recording adds a dedicated audio track and selects audio-capable MIME candidates. Recording cleanup detaches only its own destination, preserving listening audio. Exported audio follows the viewing volume.
+
+Validation: 78 Node checks, including bounded/deterministic pulse trees, 40 generations of sound inheritance, share-link/legacy round trips, synthesis graph/pressure automation, morph voice reuse, hide/close/resume cancellation and recording-track cleanup. Audio graph tests use a Web Audio test double. Physical iPhone listening and MediaRecorder audio encoding remain unverified.
 
 ## Captured-only and random viewing (v15.13.13)
 
