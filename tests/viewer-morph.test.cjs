@@ -27,6 +27,36 @@ function runtime(){
 function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},batches=ctx.createMorphBatches([a],[b])){
  worker.onmessage({data:{ok:true,payload:{target,distance:15,targetMeshes:{shell:b,parts:[],cilia:[]},batches}}});return target;
 }
+function stored(id,seed){return{id,payload:{record:{id,seed,name:id,genome:{}}}}}
+test('captured-only playback adopts saved identities without changing the gallery or its mesh cache',()=>{
+ const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
+ const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
+ f.startViewerMorph();assert.equal(workers[0].request.record.seed,102);deliver(f,workers[0],{seed:102,style:0,genome:{},parts:[],rigs:[],palette:{}});
+ f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);
+ assert.equal(f.activeStoredIndividual,second);assert.equal(f.spec.seed,102);assert.equal(f.detailSpecimens[0],cached);assert.equal(JSON.stringify(f.population),population);assert.equal(f.v.source,'stock');
+ f.queueViewerPreparation();assert.equal(workers[1].request.record.seed,101);
+});
+test('random next excludes the current organism and holds one choice throughout preloading in either collection',()=>{
+ for(const source of ['gallery','stock']){
+  const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.stockEntries=[stored('x',101),stored('y',102),stored('z',103)];f.v.source=source;f.v.random=true;
+  if(source==='stock')f.activeStoredIndividual=f.stockEntries[0];
+  vm.runInContext('Math.random=()=>.99',f);f.queueViewerPreparation();const chosen=workers[0].request.record.seed;assert.equal(chosen,source==='stock'?103:3);
+  for(let i=0;i<30;i++)f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(workers[0].terminated,undefined);
+  f.startViewerMorph(-1);assert.equal(workers[0].terminated,true);assert.equal(workers[1].request.record.seed,source==='stock'?103:3);
+ }
+});
+test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
+ const {f,workers}=runtime();f.stockEntries=[stored('only',101)];f.v.source='stock';f.startViewerMorph();assert.equal(workers[0].request.record.seed,101);
+ deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);
+ f.startViewerMorph();f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.activeStoredIndividual,f.stockEntries[0]);
+});
+test('captured-only selection reports an empty archive and ignores a load superseded by closing',async()=>{
+ const {f,workers}=runtime();f.stockEntries=[];f.refreshStock=async()=>{};await f.setViewerSource('stock');assert.equal(f.v.source,'gallery');assert.match(f.$('viewerTransition').textContent,/キャプチャーした生体がありません/);assert.equal(workers.length,0);
+ let release;f.refreshStock=()=>new Promise(resolve=>release=resolve);const pending=f.setViewerSource('stock');f.stopViewer();f.stockEntries=[stored('late',101)];release();await pending;assert.equal(f.v.source,'gallery');assert.equal(workers.length,0);
+});
+test('changing playback source cancels old preparation before preparing the new collection',async()=>{
+ const {f,workers}=runtime();f.queueViewerPreparation();const old=workers[0];f.stockEntries=[stored('only',101)];f.refreshStock=async()=>{};await f.setViewerSource('stock');assert.equal(old.terminated,true);assert.equal(workers[1].request.record.seed,101);assert.equal(f.v.source,'stock');deliver(f,old);assert.equal(f.v.pending.target,undefined);
+});
 test('closing terminates the worker and rejects a late result without touching the live specimen',()=>{
  const {f,workers}=runtime(),original=f.meshes;f.startViewerMorph();assert.equal(f.v.preparing,true);const worker=workers[0];f.stopViewer();deliver(f,worker);
  assert.equal(worker.terminated,true);assert.equal(f.v.morph,null);assert.equal(f.v.pending,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes,original);
