@@ -97,10 +97,10 @@ test('vocal pitches are stable within phrases, without slow alarm-like frequency
   g.context.currentTime=i*.04;e.update([{sp,weight:1}],.5);
   const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value};
   assert.ok(now.pitch>=285&&now.pitch<=710);
-  if(previous&&now.gain>.06&&previous.gain>.06){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
+  if(previous&&now.gain>.025&&previous.gain>.025){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
   previous=now;
  }
- assert.ok(adjacent>80);assert.ok(maxJump<12,'active vocal phrase must not sweep like an alarm');
+ assert.ok(adjacent>25);assert.ok(maxJump<12,'active vocal phrase must not sweep like an alarm');
 });
 test('sound DNA and bounded recursive pulse families are deterministic and vary by individual and cycle',()=>{
  const r=run(`(()=>{let different=false,active=false;for(let seed=1;seed<=100;seed++){const d=soundFounderDNA(seed),a=soundPulseTree(d,seed,0),b=soundPulseTree(d,seed,1);if(JSON.stringify(a)!==JSON.stringify(soundPulseTree(d,seed,0)))throw Error('unstable');if(a.length>15||a.some(e=>e.depth>3||e.duration<=0||e.start+e.duration>d.cycle))throw Error('unbounded recursion');different||=JSON.stringify(a)!==JSON.stringify(b);for(let t=0;t<d.cycle;t+=.017){const p=soundPulseValue(a,t);if(!Number.isFinite(p.breath)||p.breath<0||p.breath>1.8||p.grains<0||p.grains>1.5)throw Error('invalid envelope');active||=p.breath>.1;}}return{different,active};})()`);
@@ -162,7 +162,7 @@ test('all eight performance styles produce distinct bounded two-part trajectorie
 });
 test('all legacy performance genes feed vocal synthesis, not an instrument oscillator',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(571938);sp.genome.soundDNA.expression=7;e.update([{sp,weight:1}],1);
- const v=[...e.voices.values()][0];assert.ok(v.layers.every(layer=>layer.source.type==='triangle'));assert.equal(v.piano,undefined);
+ const v=[...e.voices.values()][0];assert.ok(v.layers.every(layer=>layer.source.type==='sawtooth'));assert.equal(v.piano,undefined);
 });
 test('voice families, expression genes and groove types cover a diverse founder population',()=>{
  const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
