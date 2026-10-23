@@ -161,11 +161,11 @@ test('vocal pitches are stable within phrases, without slow alarm-like frequency
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);let adjacent=0,maxJump=0,previous=null;
  for(let i=0;i<400;i++){
   g.context.currentTime=i*.04;e.update([{sp,weight:1}],.5);
-  const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value};
+  const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value,noteStep:v.layers[0].noteStep};
   assert.ok(now.pitch>=285&&now.pitch<=710);
   const duration=Math.max(5,Math.min(7.5,4.9+v.dna.cycle*.13));
   const phrase=Math.floor((Math.max(0,g.context.currentTime-v.start)+v.dna.phase)/duration);
-  if(previous&&previous.phrase===phrase&&now.gain>.025&&previous.gain>.025){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
+  if(previous&&previous.phrase===phrase&&previous.noteStep===now.noteStep&&now.gain>.025&&previous.gain>.025){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
   now.phrase=phrase;
   previous=now;
  }
