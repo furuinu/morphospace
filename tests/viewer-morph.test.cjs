@@ -18,7 +18,7 @@ function runtime(){const elements={},events=[],raf=[],timers=[];const f={console
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.v=vm.runInContext('viewer',f);return{f,events,raf,timers}}
 test('closing cancels queued navigation before it can generate or replace a specimen',()=>{const {f,raf,timers}=runtime();f.startViewerMorph();assert.equal(f.v.preparing,true);f.stopViewer();raf.shift()();timers.shift()();assert.equal(f.v.morph,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes.id,'original')});
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
- const source=f.spec,target={id:'target'},original=f.meshes;f.interpolateMorphBatch=()=>{};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,batches:[{id:'transient',buffer:1,data:new Float32Array(17)}],elapsed:4.79,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='transient').length,1);assert.equal(events.filter(e=>e==='apply').length,1);assert.ok(!events.includes('original'))});
+ const source=f.spec,target={id:'target'},original=f.meshes;f.interpolateMorphBatch=()=>{};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,batches:[{id:'transient',buffer:1,data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='transient').length,1);assert.equal(events.filter(e=>e==='apply').length,1);assert.ok(!events.includes('original'))});
 
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
  const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
@@ -26,9 +26,10 @@ test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>
 });
 test('navigation prepares real correspondence before replacing buffers and commits the next individual',()=>{
  const {f,raf,timers,events}=runtime(),original={shell:a,parts:[],cilia:[]},target={seed:2,glowProfile:{},shell:b,parts:[],rigs:[]};f.meshes=original;
+ f.textureMorphUniforms=ctx.textureMorphUniforms;f.renderer={vars:{}};
  f.createSpecimenForIndex=index=>{assert.equal(index,1);return target};f.dynamicMesh=x=>x;f.dynamicBatches=()=>[];f.createMorphBatches=ctx.createMorphBatches;f.interpolateMorphBatch=ctx.interpolateMorphBatch;f.upload=(gl,b)=>({...b,buffer:1,id:'transition'});f.viewerPatternValues=()=>new Map();f.specimenViewDistance=()=>15;
  f.startViewerMorph();raf.shift()();timers.shift()();assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);
- for(let i=0;i<49;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
+ for(let i=0;i<30;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
 });
 
 
@@ -39,41 +40,30 @@ test('zoom slider and pinch share distance bounds and preserve both morph endpoi
  f.v.morph=null;f.v.fit=2;assert.equal(f.viewerZoomBounds().max,48);
 });
 
-test('surface projection reaches triangle interiors instead of collapsing onto the nearest vertex',()=>{
- const source=mesh([[.2,.2,.2],[.3,.2,.2],[.2,.3,.2]],[0,1,2]),target=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]);
- const batch=ctx.createMorphBatches([source],[target])[0];
- for(let i=0;i<3;i++){assert.ok(Math.abs(batch.end[i*17]-source.data[i*17])<1e-6);assert.ok(Math.abs(batch.end[i*17+1]-source.data[i*17+1])<1e-6);assert.equal(batch.end[i*17+2],0)}
- assert.notDeepEqual(Array.from(batch.end.slice(0,3)),Array.from(batch.end.slice(17,20)));
-});
-
-test('shared vertices remain indexed to reduce interpolation work without dropping faces',()=>{
- const grid=mesh([[0,0,0],[1,0,0],[0,1,0],[1,1,0]],[0,1,2,1,3,2]),batches=ctx.createMorphBatches([grid],[grid]);
- assert.equal(batches.length,2);
- for(const batch of batches){assert.equal(batch.data.length,4*17);assert.deepEqual(Array.from(batch.tri),[0,1,2,1,3,2])}
-});
-
-test('opposite normals stay finite and unit length through the full transition',()=>{
- const source=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),target=mesh([[0,0,1],[1,0,1],[0,1,1]],[0,1,2]);
- for(let i=0;i<target.data.length;i+=17)target.data[i+5]=-1;
- const batches=ctx.createMorphBatches([source],[target]);
- for(const t of [.001,.25,.499,.5,.501,.75,.999])for(const batch of batches){ctx.interpolateMorphBatch(batch,t);for(let i=0;i<batch.data.length;i+=17){assert.ok(Array.from(batch.data.slice(i,i+17)).every(Number.isFinite));assert.ok(Math.abs(Math.hypot(...batch.data.slice(i+3,i+6))-1)<1e-6)}}
-});
-
-test('60 and 120 fps update geometry on every frame with equal elapsed-time progress',()=>{
- const progress=[];
- for(const fps of [30,60,120]){
-  const {f,events}=runtime();f.interpolateMorphBatch=()=>{};
-  f.v.morph={source:f.spec,target:{},index:1,originalMeshes:f.meshes,originalRigs:[],batches:[{data:new Float32Array(17)}],elapsed:0,t:0,fromDistance:20,toDistance:30};
-  for(let i=0;i<fps*2;i++)f.tickViewer(1/fps);
-  assert.equal(events.filter(e=>e==='upload').length,fps*2);progress.push(f.v.morph.t);
+test('texture blending keeps the two pattern and coating identities fixed at every eased weight',()=>{
+ const {f}=runtime(),values=new Map();f.gl.uniform1f=(key,value)=>values.set(key,[value]);f.gl.uniform4fv=(key,value)=>values.set(key,Array.from(value));
+ f.spec={style:0,seed:1};f.v.morph={source:f.spec,target:{style:0,seed:2},patternA:new Map([['sourcePattern',[0,.3,3,.4]],['sourceCoating',[0,.6,.8,.2]]]),patternB:new Map([['nextPattern',[7,2.9,6,.8]],['nextCoating',[3,.9,.5,1.7]]]),t:0};
+ for(const t of [0,.001,.25,.499,.5,.501,.75,.999,1]){
+  f.v.morph.t=t;f.applyViewerMorphUniforms({uTextureMix:'mix',uOpticsControl:'controls'});
+  assert.deepEqual(values.get('sourcePattern'),Array.from(new Float32Array([0,.3,3,.4])));assert.deepEqual(values.get('nextPattern'),Array.from(new Float32Array([7,2.9,6,.8])));
+  assert.equal(values.get('sourceCoating')[0],0);assert.equal(values.get('nextCoating')[0],3);assert.deepEqual(values.get('mix'),[t]);
  }
- assert.ok(Math.abs(progress[0]-progress[1])<1e-12);assert.ok(Math.abs(progress[1]-progress[2])<1e-12);
 });
 
-test('morph starts and finishes at rest and pauses without uploads while the page is hidden',()=>{
+test('texture snapshots use separate uniform locations and an ordinary draw resets the blend',()=>{
+ const result=vm.runInContext(`(()=>{
+  const original={},next={};for(const name of TEXTURE_ENDPOINT_UNIFORMS){original[name]=name;original['uNext'+name.slice(1)]='next:'+name}original.uTextureMix='mix';
+  const locations=textureMorphUniforms(original),calls=new Map(),gl={uniform1f:(key,value)=>calls.set(key,[value]),uniform2f:(key,...value)=>calls.set(key,value),uniform3fv:(key,value)=>calls.set(key,Array.from(value)),uniform4fv:(key,value)=>calls.set(key,Array.from(value))};
+  const a=pickPalette(731029),b=pickPalette(571938);applyPatternUniforms(gl,original,a);applyPatternUniforms(gl,locations,b);
+  calls.set('mix',[.6]);applyPatternUniforms(gl,original,a);
+  return {source:calls.get('uChromaA')[0],target:calls.get('next:uChromaA')[0],a:a.design.grammar,b:b.design.grammar,reset:calls.get('mix')[0],separate:TEXTURE_ENDPOINT_UNIFORMS.every(name=>locations[name]!==original[name])};
+ })()`,ctx);
+ assert.equal(result.source,result.a);assert.equal(result.target,result.b);assert.equal(result.reset,0);assert.equal(result.separate,true);
+});
+
+test('texture weights advance each render tick even when the original geometry upload is throttled',()=>{
  const {f,events}=runtime();f.interpolateMorphBatch=()=>{};
- f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17)}],elapsed:0,t:0,fromDistance:20,toDistance:30};
- f.tickViewer(1/60);assert.ok(f.v.morph.t<.000001);
- const before=f.v.morph.t,uploads=events.length;f.document.hidden=true;f.tickViewer(5);assert.equal(f.v.morph.t,before);assert.equal(events.length,uploads);
- f.document.hidden=false;f.v.morph.elapsed=4.8-1/30;f.tickViewer(1/60);assert.ok(f.v.morph.t>1-.000001);
+ f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17)}],elapsed:.1,lastUpload:.1,t:0,fromDistance:20,toDistance:30};
+ f.tickViewer(1/120);const a=f.v.morph.t;assert.equal(events.filter(e=>e==='upload').length,0);
+ f.tickViewer(1/120);assert.ok(f.v.morph.t>a);assert.equal(events.filter(e=>e==='upload').length,0);
 });
