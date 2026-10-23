@@ -6201,7 +6201,7 @@ function createBioticAudioEngine(context){
  waveform.fftSize=1024;master.connect(limiter);limiter.connect(waveform);waveform.connect(context.destination);
  const voices=new Map(),profiles=new WeakMap(),smooth=(param,value,t,tau=.055)=>param.setTargetAtTime(value,t,tau);
  const vowels=[[850,1250,2850],[480,1050,2550],[310,2050,2900],[520,1650,2600],[390,900,2400]];
- function retire(v){if(v.retired)return;v.retired=true;smooth(v.mix.gain,0,context.currentTime,.035);for(const o of v.oscillators)try{o.stop(context.currentTime+.2)}catch(e){}setTimeout(()=>{for(const n of v.nodes)try{n.disconnect()}catch(e){}},350);}
+ function retire(v){if(v.retired)return;v.retired=true;smooth(v.mix.gain,0,context.currentTime,.035);for(const o of v.oscillators)try{o.stop(context.currentTime+.2)}catch(e){}for(const n of v.nodes)try{n.disconnect()}catch(e){}}
  function voiceFor(sp){
   let p=profiles.get(sp);if(!p){p=soundMusicalProfile(sp);profiles.set(sp,p);}
   const dna=normalizedSoundDNA(sp.genome.soundDNA,sp.seed),key=sp.seed+':'+p.key;
