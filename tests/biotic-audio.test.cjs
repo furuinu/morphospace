@@ -189,7 +189,7 @@ test('persistent breath-led voices crossfade without reallocating the incoming o
  for(let i=1;i<=20;i++){g.context.currentTime=i*.1;e.update([{sp:a,weight:1-i/20},{sp:b,weight:i/20}],.45);assert.ok(e.voices.size<=2)}
  const incoming=[...e.voices.values()].find(v=>v.key!==first.key);assert.ok(incoming);
  e.update([{sp:b,weight:1}],.45);assert.equal([...e.voices.values()][0],incoming);assert.ok(first.oscillators.every(o=>o.stops.length===1));
- assert.ok(incoming.oscillators.every(o=>o.starts.length===1));assert.equal(e.output.gain.value,.45*.65);
+ assert.ok(incoming.oscillators.every(o=>o.starts.length===1));assert.equal(e.output.gain.value,.45*1.30);
 });
 test('musical motifs repeat, transform, rest and stay within a bounded pitch range',()=>{
  const r=run(`(()=>{const sp={seed:856123,genome:makeFounderGenome(856123,0,1),palette:{raw:[[.8,.1,.3],[.1,.7,.6]]}},p=soundMusicalProfile(sp),again=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(again))throw Error('unstable motif');const pitches=new Set();let rests=0,changed=0;for(let t=0;t<p.beats;t+=.05){const a=soundMelodyAt(p,t),repeat=soundMelodyAt(p,t+p.beats),variant=soundMelodyAt(p,t+p.beats*2),returning=soundMelodyAt(p,t+p.beats*8);if(Math.abs(a.frequency-repeat.frequency)>.0001||Math.abs(a.frequency-returning.frequency)>.0001)throw Error('lost motif');if(a.frequency<45||a.frequency>3200||a.envelope<0||a.envelope>1)throw Error('out of range');if(a.envelope>.1)pitches.add(a.frequency.toFixed(2));if(!a.envelope)rests++;if(a.frequency!==variant.frequency)changed++;}return{notes:pitches.size,rests,changed,count:p.events.length};})()`);
@@ -237,17 +237,50 @@ test('voice families, expression genes and groove types cover a diverse founder 
  const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
  assert.deepEqual(plain(r),{voices:6,expressions:9,grooves:5});
 });
-test('vocal master volume is bounded and recording follows the limiter',()=>{
- const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);let last=-1;
- for(const volume of [0,.1,.45,1]){e.update([{sp,weight:1}],volume);assert.ok(e.output.gain.value>=last&&e.output.gain.value<=1);last=e.output.gain.value;if(!volume)assert.equal(last,0)}
- const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();assert.equal(g.track.stops,1);
+test('50 percent matches the old maximum, with a bounded additional +6 dB gain range',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ for(const volume of [0,.1,.25,.5,.75,1]){
+  e.update([{sp,weight:1}],volume);
+  assert.ok(Math.abs(e.output.gain.value-volume*1.30)<1e-10);
+ }
+ e.update([{sp,weight:1}],.5);assert.equal(e.output.gain.value,.65);
+ e.update([{sp,weight:1}],1);assert.equal(e.output.gain.value,1.30);
+ e.update([{sp,weight:1}],0);assert.equal(e.output.gain.value,0);
+ e.update([{sp,weight:1}],5);assert.equal(e.output.gain.value,1.30);
+ e.update([{sp,weight:1}],-5);assert.equal(e.output.gain.value,0);
 });
-function controller(resume,savedSound=null,active=true){
+test('soft ceiling protects speakers and the same safe signal is recorded',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ const limiter=g.nodes.find(n=>n.type==='limiter'),safety=g.nodes.find(n=>n.type==='safety');
+ assert.ok(limiter&&safety&&limiter.connections.includes(safety));
+ assert.ok(safety.connections.includes(e.waveform));
+ assert.ok(e.waveform.connections.includes(g.context.destination));
+ assert.equal(safety.oversample,'2x');
+ assert.ok(safety.curve instanceof Float32Array&&safety.curve.length>=1024);
+ let last=-2;
+ for(const value of safety.curve){assert.ok(Number.isFinite(value));assert.ok(value>=last);assert.ok(Math.abs(value)<.92);last=value;}
+ for(const volume of [0,.5,1])e.update([{sp,weight:1}],volume);
+ const rec=e.recording();assert.equal(rec.track,g.track);
+ assert.ok(safety.connections.some(n=>n.type==='recording'));
+ assert.equal(e.output.connections.length,1);
+ rec.disconnect();assert.equal(safety.connections.length,1);
+ assert.equal(g.track.stops,1);
+});
+function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVolume=null){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
  g.context.resume=resume||(()=>{g.context.state='running';return Promise.resolve()});g.context.suspend=()=>{g.context.state='suspended';return Promise.resolve()};
- const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'45',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
+ const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:key==='morphospace-sound-volume-v2'?savedVolume:key==='morphospace-sound-volume'?legacyVolume:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'50',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const bioticAudio='),src.indexOf('function videoStatus(')),f);f.audio=vm.runInContext('bioticAudio',f);return{f,g,elements,intervals,timeouts,listeners,writes};
 }
+test('volume slider defaults to 50, resets legacy maximum safely and persists the rebased value',()=>{
+ assert.match(html,/id="viewerSoundVolume"[^>]*value="50"/);
+ const fresh=controller();assert.equal(fresh.f.$('viewerSoundVolume').value,'50');
+ const old=controller(undefined,null,true,null,'100');assert.equal(old.f.$('viewerSoundVolume').value,'50');
+ const saved=controller(undefined,null,true,'73','100');assert.equal(saved.f.$('viewerSoundVolume').value,'73');
+ saved.f.$('viewerSoundVolume').value='84';saved.f.$('viewerSoundVolume').oninput();
+ assert.equal(saved.writes['morphospace-sound-volume-v2'],'84');
+ assert.equal(saved.writes['morphospace-sound-volume'],undefined);
+});
 test('audio starts only on demand, stops on hide/close, and preserves the speaker output after recording',async()=>{
  const {f,g,intervals,listeners}=controller();assert.equal(f.audio.engine,null);assert.equal(intervals.size,0);
  await f.startBioticAudio();assert.equal(f.bioticAudioRunning(),true);assert.equal(intervals.size,1);
