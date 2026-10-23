@@ -135,6 +135,42 @@ test('the on-screen version, document title and GPU status use one release',()=>
  assert.ok(title&&visible&&atlas&&note&&status);
  assert.equal(visible,title);assert.equal(atlas,title);assert.equal(note,title);assert.equal(status,title);
 });
+test('inherited vocal melodies use multiple scales and remain distinct between organisms',()=>{
+ const signatures=new Set(),modes=new Set();
+ for(const seed of [1,2,3,4,5,6,7,8,9,42,731029,571938,856123,9473,1008,77357,192873,76241]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed),notes=[];
+  let last='';
+  for(let i=0;i<120;i++){
+   g.context.currentTime=i*.19;e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+   const v=[...e.voices.values()][0],lead=v.layers[0];
+   modes.add(lead.mode);
+   assert.ok(lead.noteMidi>=62&&lead.noteMidi<=69);
+   assert.ok(v.layers[1].noteMidi>=67&&v.layers[1].noteMidi<=74);
+   assert.ok(v.layers[2].noteMidi>=72&&v.layers[2].noteMidi<=77);
+   const key=lead.phraseNumber+':'+lead.noteStep;
+   if(key!==last){notes.push(lead.noteMidi.toFixed(2));last=key;}
+  }
+  signatures.add(notes.slice(0,12).join(','));
+  e.silence();
+ }
+ assert.ok(modes.size>=6);
+ assert.ok(signatures.size>=16);
+});
+test('vocal scale and motif genes influence the pitches heard',()=>{
+ function notes(changes){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);
+  Object.assign(sp.genome.soundDNA,changes);
+  const pitches=[];
+  for(let i=0;i<100;i++){
+   g.context.currentTime=i*.17;e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+   pitches.push([...e.voices.values()][0].layers[0].noteMidi.toFixed(2));
+  }
+  return pitches.join(',');
+ }
+ const original=notes({});
+ assert.notEqual(original,notes({mode:8}));
+ assert.notEqual(original,notes({motif:197}));
+});
 test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
  const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
  engine.update([{sp,weight:1}],.6);
