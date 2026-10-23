@@ -27,7 +27,7 @@ test('three piano slots retain bounded decays through phrase transitions without
 });
 test('siren formant engine generates vowel resonances with no instrumental piano or percussion',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
- assert.ok(v.layers.length>=3);assert.ok(v.layers.every(layer=>layer.filters.length===3));assert.equal(v.piano,undefined);assert.ok(v.oscillators.every(o=>o.type==='oscillator'));
+ assert.ok(v.layers.length>=3);assert.ok(v.layers.every(layer=>layer.filters.length===3));assert.equal(v.piano,undefined);assert.ok(v.oscillators.every(o=>o.starts.length===1));
  const n=g.nodes.length;for(let i=1;i<30;i++){g.context.currentTime=i*.15;e.update([{sp,weight:1}],.5)}assert.equal(g.nodes.length,n);
  assert.ok(v.layers.some(layer=>layer.gain.gain.value>0));assert.ok(v.layers.some(layer=>layer.filters[0].frequency.value>200));
  const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();assert.equal(g.track.stops,1);
