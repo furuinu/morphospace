@@ -26,3 +26,13 @@ test('encoder receives a complete export-size frame before capture starts, prefe
  vm.createContext(f);vm.runInContext(section('function videoFrameSize(','function drawVideoViewerText(')+section('function beginVideoRecording(){','function captureVideoFrame('),f);f.beginVideoRecording();
  assert.deepEqual(events.slice(1,4),['finish','complete frame','stream']);assert.ok(events.indexOf('video/mp4')<events.indexOf('start'));assert.equal(f.videoRecording.mode,'viewer');assert.equal(f.videoRecording.height,1280);assert.equal(f.videoRecording.width,592);
 });
+
+
+test('negative CSS letter-spacing cannot wrap and clip the final digit of the exported title',()=>{
+ const {f,calls,elements,ctx}=drawing();
+ for(const [id,el]of Object.entries(elements))el.display=id==='viewerTitleText'?'block':'none';
+ const title=elements.viewerTitleText;title.textContent='MORPHOSPACE 64';title.getBoundingClientRect=()=>({left:20,top:76,width:196,height:27});
+ const draws=[];ctx.measureText=text=>({width:text.length*17});ctx.fillText=(...args)=>draws.push(args);
+ f.drawVideoViewerText({mode:'viewer',width:592,height:1280,ctx});
+ assert.equal(draws.length,1);assert.equal(draws[0][0],'MORPHOSPACE 64');assert.ok(draws[0][3]>0);assert.ok(draws[0][3]<196*592/390);
+});
