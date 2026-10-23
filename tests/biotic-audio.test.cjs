@@ -32,7 +32,7 @@ test('organisms produce 1-3 staggered calls in mid, upper-mid and high ranges',(
   e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
   counts.add(v.voiceCount);assert.ok(v.voiceCount>=1&&v.voiceCount<=3);
   assert.equal(v.layers.length,3);assert.equal(v.sources.length,4);
-  assert.ok(v.layers.every(layer=>layer.source.type==='triangle'&&layer.filters.length===3));
+  assert.ok(v.layers.every(layer=>layer.source.type==='sawtooth'&&layer.filters.length===3));
   assert.ok(v.sources.every(source=>source.starts.length===1));
   const initial=g.nodes.length,sounding=[0,0,0],overlap=[];
   for(let i=1;i<=280;i++){
@@ -49,6 +49,7 @@ test('organisms produce 1-3 staggered calls in mid, upper-mid and high ranges',(
   assert.ok(sounding[0]>15);
   for(let k=v.voiceCount;k<3;k++)assert.equal(sounding[k],0);
   assert.ok(overlap.some(n=>n<=1));
+  if(v.voiceCount>=2)assert.ok(overlap.some(n=>n>=2),'independent calls should occasionally overlap');
   const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();e.silence();
   assert.ok(v.sources.every(source=>source.stops.length===1));v.sources[0].onended();
   assert.ok(v.nodes.every(node=>node.disconnected));
@@ -79,7 +80,7 @@ test('deep reverb and repeats use bounded filtered feedback and share the voice 
  assert.ok(delays[0].delayTime.value>=.5&&delays[0].delayTime.value<=.8);
  const feedback=voice.nodes.find(n=>n.type==='gain'&&n.gain.value===.34);
  assert.ok(feedback&&feedback.connections.includes(delays[0]));
- const damping=voice.nodes.find(n=>n.type==='filter'&&n.frequency.value>=1450&&n.frequency.value<=2150);
+ const damping=voice.nodes.find(n=>n.frequency?.value>=1450&&n.frequency?.value<=2150&&n.type==='lowpass');
  assert.ok(damping&&delays[0].connections.includes(damping));
  assert.ok(voice.sum.connections.includes(reverb));
  const count=g.nodes.length;
