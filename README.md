@@ -3,7 +3,7 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.13.4, Glass Sample Lab.
+- **App:** [index.html](index.html) — v15.13.5, Glass Sample Lab.
 - No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
 ## Capture, stock and breeding
@@ -98,6 +98,8 @@ The two-branch glass-flow convergence runs when breeding parent A × parent B in
 All three scenes use the original WebGL material pipeline, glass refraction/Fresnel and background. Temporary archive previews detach and retain the real scene's GPU buffers, then restore them even after interruption. Transient tissue meshes are released at the end. The depth-of-field shader now receives the active projection's near/far range so pulled-back lab views retain correct focus. Without WebGL, the visual is skipped and parent selection/breeding remains available. These are artistic microscope effects rather than a biological procedure simulation.
 
 Full-screen 3D viewing supports timed morph transitions, a pinch-synchronized zoom slider, and independent visibility for title, subtitle, organism name, scientific name, taxonomy, and ecology.
+
+Morphs run for 4.8 seconds with zero velocity and acceleration at both endpoints. Geometry updates on every rendered frame, including video export. A triangle BVH projects shared vertices onto continuous target surfaces using barycentric coordinates, keeping both endpoint topologies without nearest-vertex collapse. Indexed transition buffers reduce interpolation and upload work; normals remain normalized even when they oppose each other. Local motion modes change once at rest while the large body movement continues, and the incoming pressure simulation advances throughout the transition. Camera-dependent body motion uses a continuous phase to prevent jumps as framing changes.
 
 Tap the 3D canvas to hide or restore navigation in both normal and full-screen views (toolbar, zoom, close, capture/share and position status). Text visibility remains controlled by the viewing settings. Rotation drags, multi-touch gestures, cancelled pointers and long presses do not toggle navigation. Tapping outside the viewing settings closes the panel; that same tap does not hide the navigation. Opening another specimen restores the controls. The focused canvas also supports Enter/Space; Escape closes the settings before leaving full screen.
 

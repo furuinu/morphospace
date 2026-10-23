@@ -18,7 +18,7 @@ function runtime(){const elements={},events=[],raf=[],timers=[];const f={console
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.v=vm.runInContext('viewer',f);return{f,events,raf,timers}}
 test('closing cancels queued navigation before it can generate or replace a specimen',()=>{const {f,raf,timers}=runtime();f.startViewerMorph();assert.equal(f.v.preparing,true);f.stopViewer();raf.shift()();timers.shift()();assert.equal(f.v.morph,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes.id,'original')});
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
- const source=f.spec,target={id:'target'},original=f.meshes;f.interpolateMorphBatch=()=>{};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,batches:[{id:'transient',buffer:1,data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='transient').length,1);assert.equal(events.filter(e=>e==='apply').length,1);assert.ok(!events.includes('original'))});
+ const source=f.spec,target={id:'target'},original=f.meshes;f.interpolateMorphBatch=()=>{};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,batches:[{id:'transient',buffer:1,data:new Float32Array(17)}],elapsed:4.79,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='transient').length,1);assert.equal(events.filter(e=>e==='apply').length,1);assert.ok(!events.includes('original'))});
 
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
  const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
@@ -28,7 +28,7 @@ test('navigation prepares real correspondence before replacing buffers and commi
  const {f,raf,timers,events}=runtime(),original={shell:a,parts:[],cilia:[]},target={seed:2,glowProfile:{},shell:b,parts:[],rigs:[]};f.meshes=original;
  f.createSpecimenForIndex=index=>{assert.equal(index,1);return target};f.dynamicMesh=x=>x;f.dynamicBatches=()=>[];f.createMorphBatches=ctx.createMorphBatches;f.interpolateMorphBatch=ctx.interpolateMorphBatch;f.upload=(gl,b)=>({...b,buffer:1,id:'transition'});f.viewerPatternValues=()=>new Map();f.specimenViewDistance=()=>15;
  f.startViewerMorph();raf.shift()();timers.shift()();assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);
- for(let i=0;i<30;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
+ for(let i=0;i<49;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
 });
 
 
@@ -37,4 +37,43 @@ test('zoom slider and pinch share distance bounds and preserve both morph endpoi
  f.setViewerDistance(8);assert.equal(f.spec.viewDistance,8);f.setViewerDistance(100);assert.equal(f.spec.viewDistance,24);
  f.specimenViewDistance=()=>10;f.v.morph={source:f.spec,target:{},t:.5,fromDistance:20,toDistance:10};f.spec.viewDistance=15;f.setViewerDistance(7.5);assert.equal(f.v.morph.fromDistance,10);assert.equal(f.v.morph.toDistance,5);assert.equal(f.spec.viewDistance,7.5);
  f.v.morph=null;f.v.fit=2;assert.equal(f.viewerZoomBounds().max,48);
+});
+
+test('surface projection reaches triangle interiors instead of collapsing onto the nearest vertex',()=>{
+ const source=mesh([[.2,.2,.2],[.3,.2,.2],[.2,.3,.2]],[0,1,2]),target=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]);
+ const batch=ctx.createMorphBatches([source],[target])[0];
+ for(let i=0;i<3;i++){assert.ok(Math.abs(batch.end[i*17]-source.data[i*17])<1e-6);assert.ok(Math.abs(batch.end[i*17+1]-source.data[i*17+1])<1e-6);assert.equal(batch.end[i*17+2],0)}
+ assert.notDeepEqual(Array.from(batch.end.slice(0,3)),Array.from(batch.end.slice(17,20)));
+});
+
+test('shared vertices remain indexed to reduce interpolation work without dropping faces',()=>{
+ const grid=mesh([[0,0,0],[1,0,0],[0,1,0],[1,1,0]],[0,1,2,1,3,2]),batches=ctx.createMorphBatches([grid],[grid]);
+ assert.equal(batches.length,2);
+ for(const batch of batches){assert.equal(batch.data.length,4*17);assert.deepEqual(Array.from(batch.tri),[0,1,2,1,3,2])}
+});
+
+test('opposite normals stay finite and unit length through the full transition',()=>{
+ const source=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),target=mesh([[0,0,1],[1,0,1],[0,1,1]],[0,1,2]);
+ for(let i=0;i<target.data.length;i+=17)target.data[i+5]=-1;
+ const batches=ctx.createMorphBatches([source],[target]);
+ for(const t of [.001,.25,.499,.5,.501,.75,.999])for(const batch of batches){ctx.interpolateMorphBatch(batch,t);for(let i=0;i<batch.data.length;i+=17){assert.ok(Array.from(batch.data.slice(i,i+17)).every(Number.isFinite));assert.ok(Math.abs(Math.hypot(...batch.data.slice(i+3,i+6))-1)<1e-6)}}
+});
+
+test('60 and 120 fps update geometry on every frame with equal elapsed-time progress',()=>{
+ const progress=[];
+ for(const fps of [30,60,120]){
+  const {f,events}=runtime();f.interpolateMorphBatch=()=>{};
+  f.v.morph={source:f.spec,target:{},index:1,originalMeshes:f.meshes,originalRigs:[],batches:[{data:new Float32Array(17)}],elapsed:0,t:0,fromDistance:20,toDistance:30};
+  for(let i=0;i<fps*2;i++)f.tickViewer(1/fps);
+  assert.equal(events.filter(e=>e==='upload').length,fps*2);progress.push(f.v.morph.t);
+ }
+ assert.ok(Math.abs(progress[0]-progress[1])<1e-12);assert.ok(Math.abs(progress[1]-progress[2])<1e-12);
+});
+
+test('morph starts and finishes at rest and pauses without uploads while the page is hidden',()=>{
+ const {f,events}=runtime();f.interpolateMorphBatch=()=>{};
+ f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17)}],elapsed:0,t:0,fromDistance:20,toDistance:30};
+ f.tickViewer(1/60);assert.ok(f.v.morph.t<.000001);
+ const before=f.v.morph.t,uploads=events.length;f.document.hidden=true;f.tickViewer(5);assert.equal(f.v.morph.t,before);assert.equal(events.length,uploads);
+ f.document.hidden=false;f.v.morph.elapsed=4.8-1/30;f.tickViewer(1/60);assert.ok(f.v.morph.t>1-.000001);
 });
