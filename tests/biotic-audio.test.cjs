@@ -12,9 +12,25 @@ function graph(){
  return{context,nodes,parameters,track};
 }
 function specimen(seed){return{seed,genome:{soundDNA:plain(run(`soundFounderDNA(${seed})`))},biome:{nodes:[{pressure:.4,velocity:.2},{pressure:-.2,velocity:-.1}]}}}
+test('old drone expressions fall back to a motif and no founder selects a drone',()=>{
+ const sp=specimen(42);Object.assign(sp.genome.soundDNA,{expression:8,answerExpression:8,drone:1});const p=ctx.soundMusicalProfile(sp);
+ assert.equal(p.expression,0);assert.equal(p.answerExpression,0);assert.equal(p.drone,0);assert.equal(ctx.soundPerformanceAt(p,1,0,8).expression,0);
+});
+test('waveform is tapped after user volume without changing the recording route',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context);assert.ok(e.output.connections.includes(e.waveform));assert.ok(e.waveform.connections.includes(g.context.destination));assert.equal(e.waveform.fftSize,1024);
+ const rec=e.recording();assert.equal(e.output.connections.length,2);rec.disconnect();assert.equal(e.output.connections.length,1);
+});
+test('small unlabelled waveform draws a baseline and actual samples, flattens on mute and hides outside the viewer',()=>{
+ const paths=[],drawing={clearRect(){paths.length=0},beginPath(){paths.push([])},moveTo(x,y){paths.at(-1).push([x,y])},lineTo(x,y){paths.at(-1).push([x,y])},stroke(){}},canvas={width:336,height:88,hidden:true,getContext:()=>drawing};
+ let running=true;const c={Float32Array,selected:0,document:{hidden:false},$:id=>id==='audioWaveform'?canvas:{classList:{contains:()=>true}},bioticAudio:{engine:{waveform:{getFloatTimeDomainData(data){for(let i=0;i<data.length;i++)data[i]=Math.sin(i*.1)*.03}}}},bioticAudioRunning:()=>running};
+ vm.createContext(c);vm.runInContext(src.slice(src.indexOf('const bioticWaveform='),src.indexOf('function bioticAudioRunning()')),c);c.drawBioticWaveform(0);
+ assert.equal(canvas.hidden,false);assert.deepEqual(paths[0],[[0,44],[336,44]]);assert.ok(paths[1].some(p=>p[1]!==44));
+ running=false;c.drawBioticWaveform(40);assert.ok(paths[1].every(p=>p[1]===44));c.selected=-1;c.drawBioticWaveform(80);assert.equal(canvas.hidden,true);
+ assert.match(html,/<canvas id="audioWaveform"[^>]*aria-hidden="true"[^>]*><\/canvas>/);assert.match(html,/#audioWaveform\{position:fixed;right:[^}]*bottom:[^}]*z-index:2147483647;pointer-events:none/);
+});
 test('independent founder dimensions cover all voices, expressions, waves and scales without habitat restrictions',()=>{
  const result=run(`(()=>{const voices=new Set(),expressions=new Set(),scales=new Set(),waves=new Set(),pairs=new Set();for(let seed=1;seed<=1024;seed++){const d=soundFounderDNA(seed),sp={seed,genome:{soundDNA:d}},p=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(soundMusicalProfile(sp)))throw Error('unstable');voices.add(d.voiceKind);expressions.add(d.expression);scales.add(p.mode);waves.add(d.waveA);pairs.add(d.voiceKind+':'+d.expression);}return{voices:voices.size,expressions:expressions.size,scales:scales.size,waves:waves.size,pairs:pairs.size}})()`);
- assert.deepEqual(plain(result),{voices:6,expressions:10,scales:18,waves:4,pairs:60});
+ assert.deepEqual(plain(result),{voices:6,expressions:9,scales:18,waves:4,pairs:54});
 });
 test('fractional world-scale and harmonic intervals remain finite and distinct from twelve-tone pitches',()=>{
  const result=run(`(()=>{let fractional=0;for(const scale of SOUND_SCALES){if(scale[0]!==0||scale.some((x,i)=>x<0||x>=12||(i&&x<=scale[i-1])))throw Error('invalid scale');for(let degree=-20;degree<=20;degree++){const p={scale,root:60,tuning:1,voice:{answerOffset:0}},frequency=soundDegreeFrequency(p,degree);if(!Number.isFinite(frequency)||frequency<45||frequency>3200)throw Error('invalid pitch');}if(scale.some(x=>!Number.isInteger(x)))fractional++;}return fractional})()`);
@@ -26,17 +42,17 @@ test('waveforms, filter, FM, register and drone tone obey their own genes rather
 });
 test('sustained and breathing expressions remain audible between ordinary note attacks',()=>{
  const p=ctx.soundMusicalProfile(specimen(42));
- for(const expression of [8,9]){let min=1,max=0;for(let t=0;t<64;t+=.13){const n=ctx.soundPerformanceAt(p,t,0,expression);assert.ok(Number.isFinite(n.frequency));min=Math.min(min,n.envelope);max=Math.max(max,n.envelope);assert.equal(n.glide,true)}assert.ok(min>.1&&max-min>.3)}
+ for(const expression of [9]){let min=1,max=0;for(let t=0;t<64;t+=.13){const n=ctx.soundPerformanceAt(p,t,0,expression);assert.ok(Number.isFinite(n.frequency));min=Math.min(min,n.envelope);max=Math.max(max,n.envelope);assert.equal(n.glide,true)}assert.ok(min>.1&&max-min>.3)}
 });
 test('legacy genes remain explicit and unrelated musical dimensions vary independently',()=>{
  const result=run(`(()=>{const old={mode:4,voiceKind:2,expression:7,answerExpression:6},d=normalizedSoundDNA(old,42),sp={seed:42,genome:{soundDNA:d}},base=soundMusicalProfile(sp),wet=soundMusicalProfile({...sp,genome:{soundDNA:{...d,space:1,echo:0,spaceTime:0}}}),fast=soundMusicalProfile({...sp,genome:{soundDNA:{...d,tempo:1.3,cycleRatio:7}}});return{preserved:Object.entries(old).every(([k,v])=>d[k]===v),separate:wet.space===1&&wet.echo===0&&wet.spaceTime===0&&wet.drone===base.drone&&wet.tempo===base.tempo,time:fast.tempo!==base.tempo&&fast.ratio===11/7,upgrade:JSON.stringify(d)===JSON.stringify(normalizedSoundDNA(old,42))}})()`);
  assert.deepEqual(plain(result),{preserved:true,separate:true,time:true,upgrade:true});
 });
-test('diffuse echoes and drone sources share loudness correction, mute, recording and cleanup',()=>{
+test('diffuse echoes share loudness correction and all drone sources are removed',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);sp.genome.soundDNA.drone=1;
  e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0],count=g.nodes.length;
  assert.ok(v.sum.connections.includes(v.delay));assert.ok(v.wet.connections.includes(v.field));assert.ok(v.echoWet.connections.includes(v.field));assert.ok(v.field.connections.includes(v.balance));
- assert.ok(v.feedback.gain.value>0&&v.feedback.gain.value<.4);assert.ok(v.droneGainA.gain.value>.04);assert.ok(v.droneGainB.gain.value>.03);
+ assert.ok(v.feedback.gain.value>0&&v.feedback.gain.value<.4);assert.equal(v.sources.length,5);assert.equal(v.droneA,undefined);assert.equal(v.droneGainA,undefined);
  for(let i=1;i<20;i++){g.context.currentTime=i;e.update([{sp,weight:1}],.5)}assert.equal(g.nodes.length,count);
  e.update([{sp,weight:1}],0);assert.equal(e.output.gain.value,0);e.silence();v.sources[0].onended();assert.ok(v.sources.every(s=>s.stops.length===1));assert.ok(v.nodes.every(n=>n.disconnected));
 });
@@ -108,7 +124,7 @@ test('shape and pigment change the musical identity; legacy music genes upgrade 
 test('pressure and visible blink change timbre without allocating a graph per note',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(856123),frequencies=new Set(),indices=new Set();Object.assign(sp.genome.soundDNA,{expression:1,octave:1,pitch:.7,tempo:1,fmIndex:.8});
  for(let i=0;i<800;i++){g.context.currentTime=i*.025;sp.biome.nodes.forEach(n=>{n.pressure=.5*Math.sin(i*.07);n.velocity=.3*Math.cos(i*.07)});e.update([{sp,weight:1,visual:{time:i*.025,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];frequencies.add(v.low.frequency.value.toFixed(0));indices.add(v.fmGain.gain.value.toFixed(0));if(i===0)sp.initialNodes=g.nodes.length;assert.equal(g.nodes.length,sp.initialNodes);assert.equal(e.voices.size,1);}
- assert.ok(frequencies.size>10);assert.ok(indices.size>10);const v=[...e.voices.values()][0];assert.equal(v.sources.length,7);e.silence();assert.ok(v.sources.every(s=>s.stops.length===1));
+ assert.ok(frequencies.size>10);assert.ok(indices.size>10);const v=[...e.voices.values()][0];assert.equal(v.sources.length,5);e.silence();assert.ok(v.sources.every(s=>s.stops.length===1));
 });
 test('sound DNA is preserved through multiple generations and share encoding including all musical fields',()=>{
  const r=run(`(()=>{let a=makeFounderGenome(1,0,0),b=makeFounderGenome(42,1,1);for(let i=0;i<20;i++){const c=crossoverGenome(a,b,700+i,3,.75);const payload={version:1,record:{id:'music',name:'音響標本',seed:c.genome.seed,style:c.genome.style,genome:c.genome,generation:i,parents:[]}};const decoded=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(payload));if(JSON.stringify(decoded.record.genome.soundDNA)!==JSON.stringify(c.genome.soundDNA))throw Error('lost music');for(const k of SOUND_INTEGERS)if(!Number.isInteger(c.genome.soundDNA[k]))throw Error('fractional '+k);a=b;b=c.genome;}return true;})()`);
@@ -144,7 +160,7 @@ test('acid alternates accents and selected slides while its resonant filter foll
 });
 test('voice families, expression genes and groove types cover a diverse founder population',()=>{
  const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
- assert.deepEqual(plain(r),{voices:6,expressions:10,grooves:5});
+ assert.deepEqual(plain(r),{voices:6,expressions:9,grooves:5});
 });
 test('loudness stage is bounded and monotone, reaches true silence and feeds recording after volume',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42),safety=g.nodes.find(n=>n.type==='safety');assert.ok(safety.curve.length>1000);
