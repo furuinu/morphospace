@@ -3,7 +3,7 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.13.10, Glass Sample Lab.
+- **App:** [index.html](index.html) — v15.13.11, Glass Sample Lab.
 - No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
 ## Capture, stock and breeding
@@ -104,6 +104,10 @@ Tap the 3D canvas to hide or restore navigation in both normal and full-screen v
 Full-screen video export preserves the stage aspect ratio, visible text overlays, zoom, and timed morph transitions. Controls are excluded; MP4 remains the preferred format with WebM fallback.
 
 v15.13.10 keeps the existing capture/share actions available as compact buttons at the bottom right of full-screen viewing. The zoom slider and caption sit above them; position/transition status uses the remaining bottom-left space. These actions follow tap-to-hide navigation and reuse the existing capture/share flows. Zoom minus/plus are real, labeled buttons with five-point slider steps, synchronized camera distance and disabled limits in both normal and full-screen views. Zoom during morphing scales both endpoint distances together.
+
+## Viewing effects (v15.13.11)
+
+v15.13.11 adds a video-noise/glitch checkbox to viewing settings. It updates the live VHS composite immediately and remembers the preference locally. Video export initializes its existing VHS checkbox from that preference; its explicit recording choice applies for the recording and the live preference resumes afterwards. The initial default remains on.
 
 ## Inherited surface relationships (v15.13.9)
 
