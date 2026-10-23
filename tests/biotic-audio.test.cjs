@@ -25,23 +25,48 @@ test('three piano slots retain bounded decays through phrase transitions without
  for(let beat=0;beat<p.pianoRules.phraseBeats*5;beat+=.071){const notes=ctx.soundPianoAt(p,beat,cache);assert.equal(notes.length,3);assert.ok(cache.events.length<=22&&cache.previous.length<=22);for(const note of notes){assert.ok(Number.isFinite(note.frequency)&&note.frequency>50&&note.frequency<2000);assert.ok(note.envelope>=0&&note.envelope<=1&&note.bright>=0&&note.bright<=1);if(note.envelope>.1)active++}}
  assert.ok(active>100);assert.equal(cache.index,4);
 });
-test('soft organism voice is one singer with an occasional quiet response, breath and three vowel formants',()=>{
- const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);
- const v=[...e.voices.values()][0];assert.equal(v.layers.length,2);assert.equal(v.piano,undefined);
- assert.ok(v.layers.every(layer=>layer.filters.length===3&&layer.source.type==='sawtooth'));
- assert.ok(v.sources.every(source=>source.starts.length===1));assert.equal(v.sources.length,3);
- const count=g.nodes.length;let leadSinging=0,replySinging=0,rests=0;
- for(let i=1;i<=300;i++){
-  g.context.currentTime=i*.1;e.update([{sp,weight:1}],.5);assert.equal(g.nodes.length,count);
-  const [lead,reply]=v.layers.map(l=>l.gain.gain.value);
-  assert.ok(lead>=0&&lead<=.191&&reply>=0&&reply<=.044);
-  if(lead>.02)leadSinging++;else rests++;
-  if(reply>.01)replySinging++;
+test('organisms produce 1-3 staggered calls in mid, upper-mid and high ranges',()=>{
+ const counts=new Set();
+ for(const seed of [42,731029,571938,856123,197311,9473,91275,8675309,1008,77357]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+  e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
+  counts.add(v.voiceCount);assert.ok(v.voiceCount>=1&&v.voiceCount<=3);
+  assert.equal(v.layers.length,3);assert.equal(v.sources.length,4);
+  assert.ok(v.layers.every(layer=>layer.source.type==='triangle'&&layer.filters.length===3));
+  assert.ok(v.sources.every(source=>source.starts.length===1));
+  const initial=g.nodes.length,sounding=[0,0,0],overlap=[];
+  for(let i=1;i<=280;i++){
+   g.context.currentTime=i*.04;e.update([{sp,weight:1,visual:{motion:0}}],.5);
+   assert.equal(g.nodes.length,initial);
+   const values=v.layers.map(layer=>layer.gain.gain.value);
+   overlap.push(values.filter(x=>x>.005).length);
+   for(let k=0;k<3;k++){
+    if(values[k]>.005)sounding[k]++;
+    assert.ok(values[k]>=0&&values[k]<=.22);
+    assert.ok(v.layers[k].source.frequency.value>=285&&v.layers[k].source.frequency.value<=710);
+   }
+  }
+  assert.ok(sounding[0]>15);
+  for(let k=v.voiceCount;k<3;k++)assert.equal(sounding[k],0);
+  assert.ok(overlap.some(n=>n<=1));
+  const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();e.silence();
+  assert.ok(v.sources.every(source=>source.stops.length===1));v.sources[0].onended();
+  assert.ok(v.nodes.every(node=>node.disconnected));
  }
- assert.ok(leadSinging>80&&rests>20);assert.ok(replySinging>0&&replySinging<leadSinging/2);
- const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();assert.equal(g.track.stops,1);
- e.silence();assert.ok(v.sources.every(source=>source.stops.length===1));v.sources[0].onended();
- assert.ok(v.nodes.every(node=>node.disconnected));
+ assert.ok(counts.size>=2);
+});
+test('body motion produces short one-voice calls and respects disabled motion',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);
+ sp.biome.nodes.forEach(n=>{n.pressure=0;n.velocity=0});
+ e.update([{sp,weight:1,visual:{motion:0}}],.5);
+ const v=[...e.voices.values()][0];assert.equal(v.gestureAt,-10);
+ g.context.currentTime=1;sp.biome.nodes.forEach(n=>{n.pressure=1;n.velocity=1});
+ e.update([{sp,weight:1,visual:{motion:0}}],.5);assert.equal(v.gestureAt,-10);
+ g.context.currentTime=2;e.update([{sp,weight:1,visual:{motion:1}}],.5);
+ assert.equal(v.gestureAt,2);assert.ok(v.gestureVoice>=0&&v.gestureVoice<v.voiceCount);
+ g.context.currentTime=2.35;e.update([{sp,weight:1,visual:{motion:1}}],.5);
+ assert.ok(v.layers[v.gestureVoice].gain.gain.value>0);
+ g.context.currentTime=2.6;e.update([{sp,weight:1,visual:{motion:1}}],.5);assert.equal(v.gestureAt,2,'calls are throttled');
 });
 test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
  const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
@@ -70,11 +95,11 @@ test('vocal pitches are stable within phrases, without slow alarm-like frequency
  for(let i=0;i<400;i++){
   g.context.currentTime=i*.04;e.update([{sp,weight:1}],.5);
   const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value};
-  assert.ok(now.pitch>=170&&now.pitch<=430);
+  assert.ok(now.pitch>=285&&now.pitch<=710);
   if(previous&&now.gain>.06&&previous.gain>.06){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
   previous=now;
  }
- assert.ok(adjacent>80);assert.ok(maxJump<8,'active vocal phrase must not sweep like an alarm');
+ assert.ok(adjacent>80);assert.ok(maxJump<12,'active vocal phrase must not sweep like an alarm');
 });
 test('sound DNA and bounded recursive pulse families are deterministic and vary by individual and cycle',()=>{
  const r=run(`(()=>{let different=false,active=false;for(let seed=1;seed<=100;seed++){const d=soundFounderDNA(seed),a=soundPulseTree(d,seed,0),b=soundPulseTree(d,seed,1);if(JSON.stringify(a)!==JSON.stringify(soundPulseTree(d,seed,0)))throw Error('unstable');if(a.length>15||a.some(e=>e.depth>3||e.duration<=0||e.start+e.duration>d.cycle))throw Error('unbounded recursion');different||=JSON.stringify(a)!==JSON.stringify(b);for(let t=0;t<d.cycle;t+=.017){const p=soundPulseValue(a,t);if(!Number.isFinite(p.breath)||p.breath<0||p.breath>1.8||p.grains<0||p.grains>1.5)throw Error('invalid envelope');active||=p.breath>.1;}}return{different,active};})()`);
@@ -136,7 +161,7 @@ test('all eight performance styles produce distinct bounded two-part trajectorie
 });
 test('all legacy performance genes feed vocal synthesis, not an instrument oscillator',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(571938);sp.genome.soundDNA.expression=7;e.update([{sp,weight:1}],1);
- const v=[...e.voices.values()][0];assert.ok(v.layers.every(layer=>layer.source.type==='sawtooth'));assert.equal(v.piano,undefined);
+ const v=[...e.voices.values()][0];assert.ok(v.layers.every(layer=>layer.source.type==='triangle'));assert.equal(v.piano,undefined);
 });
 test('voice families, expression genes and groove types cover a diverse founder population',()=>{
  const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
