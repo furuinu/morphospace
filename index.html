@@ -6233,7 +6233,7 @@ function createBioticAudioEngine(context){
     gain.connect(filter);filter.connect(level);level.connect(sum);nodes.push(filter,level);return filter;
    });
    source.start();oscillators.push(source);nodes.push(source,gain,warmth);
-   return{source,gain,filters,character:Math.floor(r()*5),detune:(r()-.5)*.14,offset:r()*.4,rate:.85+r()*.32,callLength:.32+r()*.16};
+   return{source,gain,filters,character:Math.floor(r()*5),detune:(r()-.5)*.14,offset:r()*.4,rate:.85+r()*.32,callLength:.50+r()*.12};
   });
   const air=context.createBufferSource(),airFilter=context.createBiquadFilter(),airGain=context.createGain();
   air.buffer=noise;air.loop=true;airFilter.type='bandpass';airFilter.frequency.value=1750+r()*1100;airFilter.Q.value=.55;airGain.gain.value=0;
@@ -6256,7 +6256,7 @@ function createBioticAudioEngine(context){
   }
   reverb.buffer=impulse;reverbWet.gain.value=.30;
   sum.connect(reverb);reverb.connect(reverbWet);reverbWet.connect(mix);nodes.push(reverb,reverbWet);
-  const v={key,seed:sp.seed,profile,dna,voiceCount,layers,mix,oscillators,sources:[...oscillators,air],nodes,airGain,start:context.currentTime,last:context.currentTime,retired:false,lastPressure:0,lastMotion:0,gestureAt:-10,gestureVoice:0};
+  const v={key,seed:sp.seed,profile,dna,voiceCount,layers,mix,sum,oscillators,sources:[...oscillators,air],nodes,airGain,start:context.currentTime,last:context.currentTime,retired:false,lastPressure:0,lastMotion:0,gestureAt:-10,gestureVoice:0};
   voices.set(key,v);return v;
  }
  function update(individuals,volume){
@@ -6285,7 +6285,7 @@ function createBioticAudioEngine(context){
    // Seeded independent onsets allow occasional 2-voice overlaps without constant chords.
    const phrases=v.layers.map((layer,i)=>{
     if(i>=v.voiceCount)return 0;
-    const stagger=((position*layer.rate+layer.offset+i*.24)%1+1)%1;
+    const stagger=((position*layer.rate+layer.offset+i*.16)%1+1)%1;
     return phraseEnvelope(stagger,.045,.045+layer.callLength);
    });
    const concurrent=phrases.reduce((sum,e)=>sum+e,0);
@@ -6295,7 +6295,7 @@ function createBioticAudioEngine(context){
    v.layers.forEach((layer,i)=>{
     const extraCall=i===v.gestureVoice?gestureEnvelope:0;
     const envelope=Math.max(phrases[i],extraCall*.45);
-    const syllable=((position*layer.rate+layer.offset+i*.24)%1+1)%1;
+    const syllable=((position*layer.rate+layer.offset+i*.16)%1+1)%1;
     const vowelBlend=smoothstep((syllable-.12)/.14)*.95;
     const fundamental=pitches[i];
     // Female-range register with gentle late vibrato (<0.14 semitones), not a rising/falling siren.
