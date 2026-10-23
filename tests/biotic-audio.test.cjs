@@ -8,10 +8,40 @@ function graph(){
  const node=(type)=>{const n={type,connections:[],disconnected:false,connect(other){this.connections.push(other);return other},disconnect(other){if(other)this.connections=this.connections.filter(x=>x!==other);else{this.connections=[];this.disconnected=true}}};nodes.push(n);return n};
  const source=type=>Object.assign(node(type),{frequency:parameter(),starts:[],stops:[],start(...args){assert.ok(args.every(Number.isFinite));this.starts.push(args)},stop(time){this.stops.push(time)}});
  const track={stops:0,stop(){this.stops++}};
- const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter()}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createWaveShaper:()=>node('safety'),createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
+ const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter(),gain:parameter()}),createAnalyser:()=>Object.assign(node('meter'),{fftSize:2048,sample:0,getFloatTimeDomainData(a){a.fill(this.sample)}}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createWaveShaper:()=>node('safety'),createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
  return{context,nodes,parameters,track};
 }
 function specimen(seed){return{seed,genome:{soundDNA:plain(run(`soundFounderDNA(${seed})`))},biome:{nodes:[{pressure:.4,velocity:.2},{pressure:-.2,velocity:-.1}]}}}
+test('weighted loudness correction lifts quiet voices and attenuates strong voices toward the same middle level',()=>{
+ const outcomes=[];
+ for(const sample of [.018,.045,.12]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+  e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];v.meter.sample=sample;
+  for(let i=1;i<=40;i++){g.context.currentTime=i*.25;e.update([{sp,weight:1}],.5)}
+  outcomes.push(sample*v.level.gain);assert.ok(v.level.gain>=.35&&v.level.gain<=3);
+ }
+ for(const value of outcomes)assert.ok(Math.abs(value-.045)<.00001);
+});
+test('loudness meter is before morph and volume faders, with an inaudible side branch',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);
+ const v=[...e.voices.values()][0];v.meter.sample=.09;g.context.currentTime=1;e.update([{sp,weight:1}],.5);
+ const gain=v.level.gain;g.context.currentTime=2;e.update([{sp,weight:.01}],0);
+ assert.equal(v.level.gain,gain);assert.equal(e.output.gain.value,0);assert.ok(Math.abs(v.mix.gain.value-.0065)<1e-12);
+ assert.ok(v.sum.connections.includes(v.balance));assert.ok(v.balance.connections.includes(v.mix));assert.equal(v.meter.connections.length,0);
+ assert.ok(v.lowGain.connections.includes(v.sum));assert.ok(v.answerGain.connections.includes(v.sum));
+});
+test('silent rests and invalid meter data cannot increase gain or generate nonfinite automation',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);
+ const v=[...e.voices.values()][0];v.meter.sample=.09;g.context.currentTime=1;e.update([{sp,weight:1}],.5);const gain=v.level.gain;
+ for(const sample of [0,.0001,NaN]){v.meter.sample=sample;g.context.currentTime+=1;e.update([{sp,weight:1}],.5);assert.equal(v.level.gain,gain)}
+ e.silence();v.sources[0].onended();assert.ok(v.nodes.every(n=>n.disconnected));
+});
+test('correction bounds prevent runaway boost and use slow attack and release',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);
+ const v=[...e.voices.values()][0];v.meter.sample=.005;g.context.currentTime=1;e.update([{sp,weight:1}],.5);assert.equal(v.level.gain,3);
+ assert.equal(v.balance.gain.events.at(-1).constant,2);
+ v.level.energy=null;v.meter.sample=.8;g.context.currentTime=2;e.update([{sp,weight:1}],.5);assert.equal(v.level.gain,.35);assert.equal(v.balance.gain.events.at(-1).constant,.8);
+});
 test('sound DNA and bounded recursive pulse families are deterministic and vary by individual and cycle',()=>{
  const r=run(`(()=>{let different=false,active=false;for(let seed=1;seed<=100;seed++){const d=soundFounderDNA(seed),a=soundPulseTree(d,seed,0),b=soundPulseTree(d,seed,1);if(JSON.stringify(a)!==JSON.stringify(soundPulseTree(d,seed,0)))throw Error('unstable');if(a.length>15||a.some(e=>e.depth>3||e.duration<=0||e.start+e.duration>d.cycle))throw Error('unbounded recursion');different||=JSON.stringify(a)!==JSON.stringify(b);for(let t=0;t<d.cycle;t+=.017){const p=soundPulseValue(a,t);if(!Number.isFinite(p.breath)||p.breath<0||p.breath>1.8||p.grains<0||p.grains>1.5)throw Error('invalid envelope');active||=p.breath>.1;}}return{different,active};})()`);
  assert.deepEqual(plain(r),{different:true,active:true});
