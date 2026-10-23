@@ -94,11 +94,11 @@ test('loudness stage is bounded and monotone, reaches true silence and feeds rec
  let previous=-1;for(const volume of [0,.1,.45,1]){e.update([{sp,weight:1}],volume);assert.ok(e.output.gain.value>=previous&&e.output.gain.value<=1);previous=e.output.gain.value;if(!volume)assert.equal(previous,0);}
  const record=e.recording();assert.equal(e.output.connections.length,2);record.disconnect();assert.equal(e.output.connections.length,1);
 });
-function controller(resume){
- const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={};let timer=0;
+function controller(resume,savedSound=null,active=true){
+ const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
  g.context.resume=resume||(()=>{g.context.state='running';return Promise.resolve()});g.context.suspend=()=>{g.context.state='suspended';return Promise.resolve()};
- const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},localStorage:{getItem:()=>null,setItem(){}},$:id=>elements[id]||(elements[id]={value:'45',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
- vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const bioticAudio='),src.indexOf('function videoStatus(')),f);f.audio=vm.runInContext('bioticAudio',f);return{f,g,elements,intervals,timeouts,listeners};
+ const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'45',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
+ vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const bioticAudio='),src.indexOf('function videoStatus(')),f);f.audio=vm.runInContext('bioticAudio',f);return{f,g,elements,intervals,timeouts,listeners,writes};
 }
 test('audio starts only on demand, stops on hide/close, and preserves the speaker output after recording',async()=>{
  const {f,g,intervals,listeners}=controller();assert.equal(f.audio.engine,null);assert.equal(intervals.size,0);
@@ -111,4 +111,25 @@ test('late resume and rejected audio permission never restart a stopped sound en
  let release;const a=controller(()=>new Promise(resolve=>release=resolve));const pending=a.f.startBioticAudio();a.f.stopBioticAudio();release();await pending;assert.equal(a.f.audio.enabled,false);assert.equal(a.intervals.size,0);
  const b=controller(()=>Promise.reject(Error('unavailable')));await b.f.startBioticAudio();assert.equal(b.f.audio.enabled,false);assert.equal(b.intervals.size,0);assert.match(b.f.$('viewerSoundStatus').textContent,/開始できません/);assert.equal(b.f.$('viewerSound').disabled,false);
 });
+test('sound defaults on at specimen entry, remembers an explicit off and remains cancelable while resuming',async()=>{
+ const a=controller();assert.equal(a.f.$('viewerSound').checked,true);await a.f.maybeStartBioticAudio();assert.equal(a.f.bioticAudioRunning(),true);
+ a.f.$('viewerSound').checked=false;a.f.$('viewerSound').onchange();assert.equal(a.f.audio.enabled,false);assert.equal(a.writes['morphospace-sound-enabled'],'0');assert.equal(a.f.$('viewerSound').checked,false);
+ const b=controller(undefined,'0');b.f.maybeStartBioticAudio();await Promise.resolve();assert.equal(b.f.audio.engine,null);assert.equal(b.f.$('viewerSound').checked,false);
+ let release;const c=controller(()=>new Promise(resolve=>release=resolve));c.f.maybeStartBioticAudio();c.f.$('viewerSound').checked=false;c.f.$('viewerSound').onchange();release();await Promise.resolve();assert.equal(c.f.audio.enabled,false);assert.equal(c.intervals.size,0);
+});
+test('direct links defer blocked autoplay until a real gesture without clearing the on preference',async()=>{
+ const a=controller(undefined,null,false);a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);assert.equal(a.f.$('viewerSound').checked,true);
+ a.listeners.click({isTrusted:false});assert.equal(a.f.audio.engine,null);a.f.navigator.userActivation.isActive=true;a.listeners.click({isTrusted:true});await new Promise(setImmediate);assert.equal(a.f.bioticAudioRunning(),true);
+ a.f.document.hidden=true;a.listeners.visibilitychange();assert.equal(a.f.audio.enabled,false);assert.equal(a.f.$('viewerSound').checked,true);
+ a.f.document.hidden=false;a.listeners.click({isTrusted:true});await new Promise(setImmediate);assert.equal(a.f.bioticAudioRunning(),true);
+});
+test('viewing controls form five short two-column rows with one accessible sound checkbox',()=>{
+ const body=html.match(/<div class="viewer-checks" role="group"[^>]*>([\s\S]*?)<\/div>/)[1],labels=[...body.matchAll(/<label>([\s\S]*?)<\/label>/g)];
+ assert.equal(labels.length,10);for(const [,label]of labels){assert.equal((label.match(/<input/g)||[]).length,1);assert.ok([...label.replace(/<[^>]*>/g,'').trim()].length<=5);}
+ assert.match(body,/<input id="viewerSound" type="checkbox" checked>/);assert.equal((html.match(/id="auto"/g)||[]).length,1);assert.doesNotMatch(body,/grid-column/);assert.match(html,/if\(typeof maybeStartBioticAudio==='function'\)maybeStartBioticAudio\(\)/);
+});
+test('browsers without an activation API wait for a gesture instead of leaving resume pending on a direct link',async()=>{
+ const a=controller();delete a.f.navigator.userActivation;a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);await a.f.maybeStartBioticAudio(true);assert.equal(a.f.bioticAudioRunning(),true);
+});
+
 
