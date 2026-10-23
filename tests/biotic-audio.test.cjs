@@ -43,6 +43,28 @@ test('soft organism voice is one singer with an occasional quiet response, breat
  e.silence();assert.ok(v.sources.every(source=>source.stops.length===1));v.sources[0].onended();
  assert.ok(v.nodes.every(node=>node.disconnected));
 });
+test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
+ const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ engine.update([{sp,weight:1}],.6);
+ const voice=[...engine.voices.values()][0];
+ const reverb=voice.nodes.find(n=>n.type==='convolver');
+ assert.ok(reverb&&reverb.buffer,'diffuse impulse reverb must exist');
+ const delays=voice.nodes.filter(n=>n.type==='delay');
+ assert.equal(delays.length,1);
+ assert.ok(delays[0].delayTime.value>=.5&&delays[0].delayTime.value<=.8);
+ const feedback=voice.nodes.find(n=>n.type==='gain'&&n.gain.value===.34);
+ assert.ok(feedback&&feedback.connections.includes(delays[0]));
+ const damping=voice.nodes.find(n=>n.type==='filter'&&n.frequency.value>=1450&&n.frequency.value<=2150);
+ assert.ok(damping&&delays[0].connections.includes(damping));
+ assert.ok(voice.sum.connections.includes(reverb));
+ const count=g.nodes.length;
+ for(let i=1;i<30;i++){g.context.currentTime=i*.1;engine.update([{sp,weight:1}],.6)}
+ assert.equal(g.nodes.length,count,'no per-note delay or reverb allocation');
+ assert.ok(engine.output.connections.some(n=>n.type==='limiter'));
+ const recording=engine.recording();assert.equal(recording.track,g.track);
+ recording.disconnect();engine.silence();
+ assert.ok(voice.sources.every(source=>source.stops.length===1));
+});
 test('vocal pitches are stable within phrases, without slow alarm-like frequency sweeps',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);let adjacent=0,maxJump=0,previous=null;
  for(let i=0;i<400;i++){
