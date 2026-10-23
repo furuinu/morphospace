@@ -3,8 +3,14 @@
 Offline-compatible, self-contained WebGL artificial-life specimen gallery.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.13.14, Glass Sample Lab.
+- **App:** [index.html](index.html) — v15.13.15, Glass Sample Lab.
 - No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Full-screen specimen viewing
+
+Tap a specimen in the atlas or saved-sample list to open the immersive, edge-to-edge 3D viewer by default. The upper-left **詳細** button switches to the inspector, where DNA, appearance controls, capture options and parent breeding controls remain accessible; **鑑賞へ** returns to the immersive view without changing individuals.
+
+The upper-right **← 一覧** control returns to the atlas, restoring focus to the selected item where possible. The **‹ / ›** controls move between specimens with the existing morph transition and are positioned at the screen edges in the immersive view. **鑑賞設定** controls labels, automatic playback, sound and noise. Tapping the 3D view hides/shows controls; tapping outside the settings closes it. Escape closes settings first, then returns to the atlas. Responsive layout includes safe-area offsets on iPhone. Inspector appearance adjustments keep the current viewing mode.
 
 ## Capture, stock and breeding
 
@@ -105,7 +111,7 @@ Full-screen video export preserves the stage aspect ratio, visible text overlays
 
 v15.13.10 keeps the existing capture/share actions available as compact buttons at the bottom right of full-screen viewing. The zoom slider and caption sit above them; position/transition status uses the remaining bottom-left space. These actions follow tap-to-hide navigation and reuse the existing capture/share flows. Zoom minus/plus are real, labeled buttons with five-point slider steps, synchronized camera distance and disabled limits in both normal and full-screen views. Zoom during morphing scales both endpoint distances together.
 
-## Biotic activity sound (v15.13.14)
+## Biotic activity sound (v15.13.15)
 
 Viewing settings offer an explicit activity-sound start/stop button and a remembered volume slider. Audio is initially off and requires a button gesture. Each organism has deterministic sound DNA: timbre (pitch, cavity resonance, grains, membrane), recursive rhythm (cycle, depth, branching, decay), and response (lag, pressure sensitivity, phase, flutter). These blocks cross over and mutate with parent provenance. Legacy DNA receives stable defaults; audio DNA survives shared links and captured archives.
 
