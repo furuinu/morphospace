@@ -69,6 +69,72 @@ test('body motion produces short one-voice calls and respects disabled motion',(
  assert.ok(v.layers[v.gestureVoice].gain.gain.value>0);
  g.context.currentTime=2.6;e.update([{sp,weight:1,visual:{motion:1}}],.5);assert.equal(v.gestureAt,2,'calls are throttled');
 });
+test('phoneme syllabary articulates nasal humming, consonant attacks and distinct vowels',()=>{
+ const labels=new Set(),nasalLevels=[],airLevels=[],formants=new Set();
+ for(const seed of [42,731029,571938,856123,197311]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+  const firstNodes=g.nodes.length;
+  for(let k=0;k<360;k++){
+   g.context.currentTime=k*.06;
+   e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+   const v=[...e.voices.values()][0];labels.add(v.layers[0].syllable);
+   nasalLevels.push(v.layers[0].nasalGain.gain.value);
+   airLevels.push(v.airGain.gain.value);
+   formants.add(Math.round(v.layers[0].filters[1].frequency.value));
+   if(k===0)sp.nodeCount=g.nodes.length;
+   assert.equal(g.nodes.length,sp.nodeCount,'phonemes must reuse oscillator graph');
+   assert.ok(v.layers.every(layer=>layer.vibratoDepth>=0&&layer.vibratoDepth<=.17));
+  }
+  assert.ok(g.nodes.length>=firstNodes);e.silence();
+ }
+ assert.ok(labels.size>=9,'several consonant-vowel syllables should be selected');
+ assert.ok(nasalLevels.some(value=>value>.002),'m/n syllables should create humming');
+ assert.ok(airLevels.some(value=>value>.008),'h/r/y should produce breath or attack');
+ assert.ok(formants.size>10,'distinct vowels must have distinct resonant frequencies');
+});
+test('blink onsets trigger short calls only when an actual visible pulse crosses threshold',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ for(let i=0;i<140;i++){
+  g.context.currentTime=i*.04;
+  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:0,strength:1,speed:1,seed:0}}}],.5);
+ }
+ const v=[...e.voices.values()][0];assert.equal(v.blinkAt,-10);
+ for(let i=140;i<480;i++){
+  g.context.currentTime=i*.04;
+  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:2,strength:1,speed:1,seed:0}}}],.5);
+ }
+ assert.ok(v.blinkAt>5,'actual flashes should be detected');
+ const last=v.blinkAt;
+ for(let i=480;i<650;i++){
+  g.context.currentTime=i*.04;
+  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:2,strength:0,speed:1,seed:0}}}],.5);
+ }
+ assert.equal(v.blinkAt,last,'hidden light must not start new calls');
+ assert.ok(v.blinkVoice>=0&&v.blinkVoice<v.voiceCount);
+});
+test('surface displacement amplitude controls only bounded high-frequency vibrato, never alarm glide',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ sp.genome.surfaceDNA={depth:.85,coupling:1,phase:1,drift:.5};
+ const at=(motion,surfaceTime)=>{g.context.currentTime+=.10;e.update([{sp,weight:1,visual:{motion,surfaceTime,time:surfaceTime,emission:{mode:0}}}],.5);return [...e.voices.values()][0]};
+ const off=at(0,1.90),voiceIndex=sp.seed%off.voiceCount,quiet=off.layers[voiceIndex].vibratoDepth;
+ assert.equal(off.surfaceAmplitude,0);
+ const moving=at(1.8,1.90),strong=moving.layers[voiceIndex].vibratoDepth;
+ assert.ok(moving.surfaceAmplitude>.8);
+ assert.ok(strong>quiet+.08,'surface amplitude should directly deepen one voice vibrato');
+ assert.ok(strong<.17);
+ const shallow=at(1.8,15.6);
+ assert.ok(shallow.surfaceAmplitude>=0&&shallow.surfaceAmplitude<=1);
+ assert.ok(shallow.layers.every(layer=>layer.vibratoDepth<.17));
+});
+test('the on-screen version, document title and GPU status use one release',()=>{
+ const title=html.match(/<title>MORPHOSPACE (v\d+\.\d+\.\d+)/)?.[1];
+ const visible=html.match(/class="version-label">(v\d+\.\d+\.\d+)<\/span>/)?.[1];
+ const atlas=html.match(/QUALIA \/ CAPTURE & SHARE \/ (v\d+\.\d+\.\d+)/)?.[1];
+ const note=html.match(/MORPHOSPACE (v\d+\.\d+\.\d+) — QUALIA ECOLOGY/)?.[1];
+ const status=html.match(/textContent='(v\d+\.\d+\.\d+) \/ '/)?.[1];
+ assert.ok(title&&visible&&atlas&&note&&status);
+ assert.equal(visible,title);assert.equal(atlas,title);assert.equal(note,title);assert.equal(status,title);
+});
 test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
  const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
  engine.update([{sp,weight:1}],.6);
