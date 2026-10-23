@@ -237,7 +237,7 @@ test('voice families, expression genes and groove types cover a diverse founder 
  const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
  assert.deepEqual(plain(r),{voices:6,expressions:9,grooves:5});
 });
-test('50 percent matches the old maximum, with a bounded additional +6 dB gain range',()=>{
+test('slider keeps its 50 percent baseline and bounded 0 to 100 percent adjustment',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
  for(const volume of [0,.1,.25,.5,.75,1]){
   e.update([{sp,weight:1}],volume);
@@ -252,14 +252,20 @@ test('50 percent matches the old maximum, with a bounded additional +6 dB gain r
 test('soft ceiling protects speakers and the same safe signal is recorded',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
  const limiter=g.nodes.find(n=>n.type==='limiter'),safety=g.nodes.find(n=>n.type==='safety');
- assert.ok(limiter&&safety&&limiter.connections.includes(safety));
+ const boost=limiter?.connections[0];
+ assert.ok(limiter&&safety&&boost&&boost.type==='gain');
+ assert.equal(boost.gain.value,1.25,'output is boosted by precisely 25 percent');
+ assert.ok(boost.connections.includes(safety),'boost must precede the soft clipping protection');
  assert.ok(safety.connections.includes(e.waveform));
  assert.ok(e.waveform.connections.includes(g.context.destination));
  assert.equal(safety.oversample,'2x');
  assert.ok(ArrayBuffer.isView(safety.curve)&&safety.curve.length>=1024);
  let last=-2;
  for(const value of safety.curve){assert.ok(Number.isFinite(value));assert.ok(value>=last);assert.ok(Math.abs(value)<.92);last=value;}
- for(const volume of [0,.5,1])e.update([{sp,weight:1}],volume);
+ for(const volume of [0,.5,1]){
+  e.update([{sp,weight:1}],volume);
+  assert.equal(boost.gain.value,1.25,'volume changes must not compound the fixed boost');
+ }
  const rec=e.recording();assert.equal(rec.track,g.track);
  assert.ok(safety.connections.some(n=>n.type==='recording'));
  assert.equal(e.output.connections.length,1);
