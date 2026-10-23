@@ -314,6 +314,18 @@ function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVo
  const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:key==='morphospace-sound-volume-v2'?savedVolume:key==='morphospace-sound-volume'?legacyVolume:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'50',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const bioticAudio='),src.indexOf('function videoStatus(')),f);f.audio=vm.runInContext('bioticAudio',f);return{f,g,elements,intervals,timeouts,listeners,writes};
 }
+test('iOS silent mode audio session requests media playback before resume',async()=>{
+ const session={type:'ambient'};let observed='';
+ const a=controller(()=>{observed=session.type;return Promise.resolve()});
+ a.f.navigator.audioSession=session;
+ await a.f.startBioticAudio();
+ assert.equal(session.type,'playback');
+ assert.equal(observed,'playback');
+ assert.equal(a.f.bioticAudioRunning(),true);
+ const b=controller();
+ await b.f.startBioticAudio();
+ assert.equal(b.f.bioticAudioRunning(),true);
+});
 test('volume slider defaults to 50, resets legacy maximum safely and persists the rebased value',()=>{
  assert.match(html,/id="viewerSoundVolume"[^>]*value="50"/);
  const fresh=controller();assert.equal(fresh.f.$('viewerSoundVolume').value,'50');
