@@ -25,13 +25,34 @@ test('three piano slots retain bounded decays through phrase transitions without
  for(let beat=0;beat<p.pianoRules.phraseBeats*5;beat+=.071){const notes=ctx.soundPianoAt(p,beat,cache);assert.equal(notes.length,3);assert.ok(cache.events.length<=22&&cache.previous.length<=22);for(const note of notes){assert.ok(Number.isFinite(note.frequency)&&note.frequency>50&&note.frequency<2000);assert.ok(note.envelope>=0&&note.envelope<=1&&note.bright>=0&&note.bright<=1);if(note.envelope>.1)active++}}
  assert.ok(active>100);assert.equal(cache.index,4);
 });
-test('siren formant engine generates vowel resonances with no instrumental piano or percussion',()=>{
- const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
- assert.ok(v.layers.length>=3);assert.ok(v.layers.every(layer=>layer.filters.length===3));assert.equal(v.piano,undefined);assert.ok(v.oscillators.every(o=>o.starts.length===1));
- const n=g.nodes.length;for(let i=1;i<30;i++){g.context.currentTime=i*.15;e.update([{sp,weight:1}],.5)}assert.equal(g.nodes.length,n);
- assert.ok(v.layers.some(layer=>layer.gain.gain.value>0));assert.ok(v.layers.some(layer=>layer.filters[0].frequency.value>200));
+test('soft organism voice is one singer with an occasional quiet response, breath and three vowel formants',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);
+ const v=[...e.voices.values()][0];assert.equal(v.layers.length,2);assert.equal(v.piano,undefined);
+ assert.ok(v.layers.every(layer=>layer.filters.length===3&&layer.source.type==='sawtooth'));
+ assert.ok(v.sources.every(source=>source.starts.length===1));assert.equal(v.sources.length,3);
+ const count=g.nodes.length;let leadSinging=0,replySinging=0,rests=0;
+ for(let i=1;i<=300;i++){
+  g.context.currentTime=i*.1;e.update([{sp,weight:1}],.5);assert.equal(g.nodes.length,count);
+  const [lead,reply]=v.layers.map(l=>l.gain.gain.value);
+  assert.ok(lead>=0&&lead<=.191&&reply>=0&&reply<=.044);
+  if(lead>.02)leadSinging++;else rests++;
+  if(reply>.01)replySinging++;
+ }
+ assert.ok(leadSinging>80&&rests>20);assert.ok(replySinging>0&&replySinging<leadSinging/2);
  const rec=e.recording();assert.equal(rec.track,g.track);rec.disconnect();assert.equal(g.track.stops,1);
- e.silence();assert.ok(v.oscillators.every(o=>o.stops.length===1));
+ e.silence();assert.ok(v.sources.every(source=>source.stops.length===1));v.sources[0].onended();
+ assert.ok(v.nodes.every(node=>node.disconnected));
+});
+test('vocal pitches are stable within phrases, without slow alarm-like frequency sweeps',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);let adjacent=0,maxJump=0,previous=null;
+ for(let i=0;i<400;i++){
+  g.context.currentTime=i*.04;e.update([{sp,weight:1}],.5);
+  const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value};
+  assert.ok(now.pitch>=170&&now.pitch<=430);
+  if(previous&&now.gain>.06&&previous.gain>.06){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
+  previous=now;
+ }
+ assert.ok(adjacent>80);assert.ok(maxJump<8,'active vocal phrase must not sweep like an alarm');
 });
 test('sound DNA and bounded recursive pulse families are deterministic and vary by individual and cycle',()=>{
  const r=run(`(()=>{let different=false,active=false;for(let seed=1;seed<=100;seed++){const d=soundFounderDNA(seed),a=soundPulseTree(d,seed,0),b=soundPulseTree(d,seed,1);if(JSON.stringify(a)!==JSON.stringify(soundPulseTree(d,seed,0)))throw Error('unstable');if(a.length>15||a.some(e=>e.depth>3||e.duration<=0||e.start+e.duration>d.cycle))throw Error('unbounded recursion');different||=JSON.stringify(a)!==JSON.stringify(b);for(let t=0;t<d.cycle;t+=.017){const p=soundPulseValue(a,t);if(!Number.isFinite(p.breath)||p.breath<0||p.breath>1.8||p.grains<0||p.grains>1.5)throw Error('invalid envelope');active||=p.breath>.1;}}return{different,active};})()`);
@@ -45,13 +66,13 @@ test('saved audio DNA round trips through share links, with deterministic upgrad
  const r=run(`(()=>{const g=makeFounderGenome(731029,0,4);g.soundDNA=soundFounderDNA(g.seed);const p={version:1,record:{id:'audio',name:'音響標本',seed:g.seed,style:g.style,genome:g,generation:1,parents:[]}};const q=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(p));const same=JSON.stringify(q.record.genome.soundDNA)===JSON.stringify(g.soundDNA);delete p.record.genome.soundDNA;const legacy=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(p));return{same,legacy:JSON.stringify(normalizedSoundDNA(legacy.record.genome.soundDNA,g.seed))===JSON.stringify(soundFounderDNA(g.seed))};})()`);
  assert.deepEqual(plain(r),{same:true,legacy:true});
 });
-test('persistent siren voices crossfade without reallocating the incoming organism',()=>{
+test('persistent breath-led voices crossfade without reallocating the incoming organism',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),a=specimen(731029),b=specimen(571938);
  e.update([{sp:a,weight:1}],.45);const first=[...e.voices.values()][0];
  for(let i=1;i<=20;i++){g.context.currentTime=i*.1;e.update([{sp:a,weight:1-i/20},{sp:b,weight:i/20}],.45);assert.ok(e.voices.size<=2)}
  const incoming=[...e.voices.values()].find(v=>v.key!==first.key);assert.ok(incoming);
  e.update([{sp:b,weight:1}],.45);assert.equal([...e.voices.values()][0],incoming);assert.ok(first.oscillators.every(o=>o.stops.length===1));
- assert.ok(incoming.oscillators.every(o=>o.starts.length===1));assert.equal(e.output.gain.value,.45*.75);
+ assert.ok(incoming.oscillators.every(o=>o.starts.length===1));assert.equal(e.output.gain.value,.45*.65);
 });
 test('musical motifs repeat, transform, rest and stay within a bounded pitch range',()=>{
  const r=run(`(()=>{const sp={seed:856123,genome:makeFounderGenome(856123,0,1),palette:{raw:[[.8,.1,.3],[.1,.7,.6]]}},p=soundMusicalProfile(sp),again=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(again))throw Error('unstable motif');const pitches=new Set();let rests=0,changed=0;for(let t=0;t<p.beats;t+=.05){const a=soundMelodyAt(p,t),repeat=soundMelodyAt(p,t+p.beats),variant=soundMelodyAt(p,t+p.beats*2),returning=soundMelodyAt(p,t+p.beats*8);if(Math.abs(a.frequency-repeat.frequency)>.0001||Math.abs(a.frequency-returning.frequency)>.0001)throw Error('lost motif');if(a.frequency<45||a.frequency>3200||a.envelope<0||a.envelope>1)throw Error('out of range');if(a.envelope>.1)pitches.add(a.frequency.toFixed(2));if(!a.envelope)rests++;if(a.frequency!==variant.frequency)changed++;}return{notes:pitches.size,rests,changed,count:p.events.length};})()`);
@@ -64,7 +85,7 @@ test('shape and pigment change the musical identity; legacy music genes upgrade 
 test('body pressure and visible blink alter formant resonances without growing audio graph',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(856123),formants=new Set(),pitches=new Set();
  for(let i=0;i<160;i++){g.context.currentTime=i*.08;sp.biome.nodes.forEach(n=>{n.pressure=.5*Math.sin(i*.08);n.velocity=.3*Math.cos(i*.08)});e.update([{sp,weight:1,visual:{time:i*.08,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];formants.add(Math.round(v.layers[0].filters[0].frequency.value));pitches.add(Math.round(v.layers[0].source.frequency.value));if(i===0)sp.initialNodes=g.nodes.length;assert.equal(g.nodes.length,sp.initialNodes)}
- assert.ok(formants.size>12);assert.ok(pitches.size>8);e.silence();
+ assert.ok(formants.size>12);assert.ok(pitches.size>=3);e.silence();
 });
 test('sound DNA is preserved through multiple generations and share encoding including all musical fields',()=>{
  const r=run(`(()=>{let a=makeFounderGenome(1,0,0),b=makeFounderGenome(42,1,1);for(let i=0;i<20;i++){const c=crossoverGenome(a,b,700+i,3,.75);const payload={version:1,record:{id:'music',name:'音響標本',seed:c.genome.seed,style:c.genome.style,genome:c.genome,generation:i,parents:[]}};const decoded=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(payload));if(JSON.stringify(decoded.record.genome.soundDNA)!==JSON.stringify(c.genome.soundDNA))throw Error('lost music');for(const k of SOUND_INTEGERS)if(!Number.isInteger(c.genome.soundDNA[k]))throw Error('fractional '+k);a=b;b=c.genome;}return true;})()`);
