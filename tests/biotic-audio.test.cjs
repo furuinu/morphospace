@@ -26,7 +26,7 @@ test('small unlabelled waveform draws a baseline and actual samples, flattens on
  vm.createContext(c);vm.runInContext(src.slice(src.indexOf('const bioticWaveform='),src.indexOf('function bioticAudioRunning()')),c);c.drawBioticWaveform(0);
  assert.equal(canvas.hidden,false);assert.deepEqual(paths[0],[[0,44],[336,44]]);assert.ok(paths[1].some(p=>p[1]!==44));
  running=false;c.drawBioticWaveform(40);assert.ok(paths[1].every(p=>p[1]===44));c.selected=-1;c.drawBioticWaveform(80);assert.equal(canvas.hidden,true);
- assert.match(html,/<canvas id="audioWaveform"[^>]*aria-hidden="true"[^>]*><\/canvas>/);assert.match(html,/#audioWaveform\{position:fixed;right:[^}]*bottom:[^}]*z-index:2147483647;pointer-events:none/);
+ assert.match(html,/<canvas id="audioWaveform"[^>]*aria-hidden="true"[^>]*><\/canvas>/);assert.match(html,/id="viewerSubtitleText"[^<]*>[\s\S]*?<\/div><canvas id="audioWaveform"/);assert.match(html,/#audioWaveform\{display:block;position:relative;margin-top:6px;[^}]*pointer-events:none/);
 });
 test('independent founder dimensions cover all voices, expressions, waves and scales without habitat restrictions',()=>{
  const result=run(`(()=>{const voices=new Set(),expressions=new Set(),scales=new Set(),waves=new Set(),pairs=new Set();for(let seed=1;seed<=1024;seed++){const d=soundFounderDNA(seed),sp={seed,genome:{soundDNA:d}},p=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(soundMusicalProfile(sp)))throw Error('unstable');voices.add(d.voiceKind);expressions.add(d.expression);scales.add(p.mode);waves.add(d.waveA);pairs.add(d.voiceKind+':'+d.expression);}return{voices:voices.size,expressions:expressions.size,scales:scales.size,waves:waves.size,pairs:pairs.size}})()`);
