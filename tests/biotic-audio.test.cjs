@@ -97,7 +97,10 @@ test('vocal pitches are stable within phrases, without slow alarm-like frequency
   g.context.currentTime=i*.04;e.update([{sp,weight:1}],.5);
   const v=[...e.voices.values()][0],now={pitch:v.layers[0].source.frequency.value,gain:v.layers[0].gain.gain.value};
   assert.ok(now.pitch>=285&&now.pitch<=710);
-  if(previous&&now.gain>.025&&previous.gain>.025){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
+  const duration=Math.max(5,Math.min(7.5,4.9+v.dna.cycle*.13));
+  const phrase=Math.floor((Math.max(0,g.context.currentTime-v.start)+v.dna.phase)/duration);
+  if(previous&&previous.phrase===phrase&&now.gain>.025&&previous.gain>.025){maxJump=Math.max(maxJump,Math.abs(now.pitch-previous.pitch));adjacent++;}
+  now.phrase=phrase;
   previous=now;
  }
  assert.ok(adjacent>25);assert.ok(maxJump<12,'active vocal phrase must not sweep like an alarm');
