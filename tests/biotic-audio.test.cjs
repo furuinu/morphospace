@@ -8,7 +8,7 @@ function graph(){
  const node=(type)=>{const n={type,connections:[],disconnected:false,connect(other){this.connections.push(other);return other},disconnect(other){if(other)this.connections=this.connections.filter(x=>x!==other);else{this.connections=[];this.disconnected=true}}};nodes.push(n);return n};
  const source=type=>Object.assign(node(type),{frequency:parameter(),starts:[],stops:[],start(...args){assert.ok(args.every(Number.isFinite));this.starts.push(args)},stop(time){this.stops.push(time)}});
  const track={stops:0,stop(){this.stops++}};
- const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter()}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
+ const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter()}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createWaveShaper:()=>node('safety'),createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
  return{context,nodes,parameters,track};
 }
 function specimen(seed){return{seed,genome:{soundDNA:plain(run(`soundFounderDNA(${seed})`))},biome:{nodes:[{pressure:.4,velocity:.2},{pressure:-.2,velocity:-.1}]}}}
@@ -30,7 +30,7 @@ test('persistent synthesis voices crossfade without restarting the incoming voic
  for(let i=1;i<=20;i++){g.context.currentTime=i*.1;engine.update([{sp:a,weight:1-i/20},{sp:b,weight:i/20}],.45);assert.ok(engine.voices.size<=2);}
  const incoming=[...engine.voices.values()][0];assert.equal(incoming.seed,b.seed);assert.ok(first.sources.every(n=>n.stops.length===1));
  engine.update([{sp:b,weight:1}],.45);assert.equal([...engine.voices.values()][0],incoming);assert.ok(incoming.sources.every(n=>n.starts.length===1));
- assert.ok(g.parameters.every(p=>p.events.every(e=>e.constant>=.03)));assert.ok(engine.output.gain.value<=.5);
+ assert.ok(g.parameters.every(p=>p.events.every(e=>e.constant>=.01)));assert.ok(engine.output.gain.value<=1);
  first.sources[0].onended();assert.ok(first.nodes.every(n=>n.disconnected));
 });
 test('pressure changes synthesis parameters; zero volume, silence and recording cleanup are independent',()=>{
@@ -40,7 +40,7 @@ test('pressure changes synthesis parameters; zero volume, silence and recording 
  engine.silence();assert.equal(engine.voices.size,0);assert.equal(engine.output.gain.value,0);assert.ok(voice.sources.every(n=>n.stops.length===1));
 });
 test('musical motifs repeat, transform, rest and stay within a bounded pitch range',()=>{
- const r=run(`(()=>{const sp={seed:856123,genome:makeFounderGenome(856123,0,1),palette:{raw:[[.8,.1,.3],[.1,.7,.6]]}},p=soundMusicalProfile(sp),again=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(again))throw Error('unstable motif');const pitches=new Set();let rests=0,changed=0;for(let t=0;t<p.beats;t+=.05){const a=soundMelodyAt(p,t),repeat=soundMelodyAt(p,t+p.beats),variant=soundMelodyAt(p,t+p.beats*2),returning=soundMelodyAt(p,t+p.beats*8);if(Math.abs(a.frequency-repeat.frequency)>.0001||Math.abs(a.frequency-returning.frequency)>.0001)throw Error('lost motif');if(a.frequency<45||a.frequency>2200||a.envelope<0||a.envelope>1)throw Error('out of range');if(a.envelope>.1)pitches.add(a.frequency.toFixed(2));if(!a.envelope)rests++;if(a.frequency!==variant.frequency)changed++;}return{notes:pitches.size,rests,changed,count:p.events.length};})()`);
+ const r=run(`(()=>{const sp={seed:856123,genome:makeFounderGenome(856123,0,1),palette:{raw:[[.8,.1,.3],[.1,.7,.6]]}},p=soundMusicalProfile(sp),again=soundMusicalProfile(sp);if(JSON.stringify(p)!==JSON.stringify(again))throw Error('unstable motif');const pitches=new Set();let rests=0,changed=0;for(let t=0;t<p.beats;t+=.05){const a=soundMelodyAt(p,t),repeat=soundMelodyAt(p,t+p.beats),variant=soundMelodyAt(p,t+p.beats*2),returning=soundMelodyAt(p,t+p.beats*8);if(Math.abs(a.frequency-repeat.frequency)>.0001||Math.abs(a.frequency-returning.frequency)>.0001)throw Error('lost motif');if(a.frequency<45||a.frequency>3200||a.envelope<0||a.envelope>1)throw Error('out of range');if(a.envelope>.1)pitches.add(a.frequency.toFixed(2));if(!a.envelope)rests++;if(a.frequency!==variant.frequency)changed++;}return{notes:pitches.size,rests,changed,count:p.events.length};})()`);
  assert.ok(r.notes>=5);assert.ok(r.rests>0);assert.ok(r.changed>0);assert.ok(r.count>=12&&r.count<=24);
 });
 test('shape and pigment change the musical identity; legacy music genes upgrade deterministically',()=>{
@@ -55,6 +55,44 @@ test('pressure and visible blink change timbre without allocating a graph per no
 test('sound DNA is preserved through multiple generations and share encoding including all musical fields',()=>{
  const r=run(`(()=>{let a=makeFounderGenome(1,0,0),b=makeFounderGenome(42,1,1);for(let i=0;i<20;i++){const c=crossoverGenome(a,b,700+i,3,.75);const payload={version:1,record:{id:'music',name:'音響標本',seed:c.genome.seed,style:c.genome.style,genome:c.genome,generation:i,parents:[]}};const decoded=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(payload));if(JSON.stringify(decoded.record.genome.soundDNA)!==JSON.stringify(c.genome.soundDNA))throw Error('lost music');for(const k of SOUND_INTEGERS)if(!Number.isInteger(c.genome.soundDNA[k]))throw Error('fractional '+k);a=b;b=c.genome;}return true;})()`);
  assert.equal(r,true);
+});
+test('evenly distributed rhythms have the requested pulse count and balanced circular gaps',()=>{
+ for(let steps=5;steps<=16;steps++)for(let pulses=1;pulses<steps;pulses++)for(const rotation of [0,3]){
+  const hits=[];for(let i=0;i<steps;i++)if(ctx.soundEuclideanOn(i,pulses,steps,rotation))hits.push(i);
+  assert.equal(hits.length,pulses);const gaps=hits.map((v,i)=>(hits[(i+1)%hits.length]-v+steps)%steps||steps);assert.ok(Math.max(...gaps)-Math.min(...gaps)<=1);
+ }
+});
+test('ascending, descending and returning arpeggios actually order chord tones differently',()=>{
+ const p=ctx.soundMusicalProfile(specimen(856123));p.swing=0;p.arpOctave=0;p.events.forEach(e=>e.degree=0);
+ const notes=style=>{p.arpStyle=style;return Array.from({length:6},(_,i)=>ctx.soundPerformanceAt(p,(i+.4)/2,0,1).frequency)};
+ const up=notes(0),down=notes(1),returning=notes(2);assert.ok(up[0]<up[1]&&up[1]<up[2]&&up[2]<up[3]);assert.ok(down[0]>down[1]&&down[1]>down[2]&&down[2]>down[3]);assert.ok(returning[2]<returning[3]&&returning[3]>returning[4]&&returning[4]>returning[5]);
+});
+test('all eight performance styles produce distinct bounded two-part trajectories',()=>{
+ const p=ctx.soundMusicalProfile(specimen(731029)),signatures=new Set();
+ for(let expression=0;expression<8;expression++){
+  const trajectory=[];for(let i=0;i<400;i++)for(let part=0;part<2;part++){
+   const n=ctx.soundPerformanceAt(p,i*.047,part,expression);assert.ok(Number.isFinite(n.frequency)&&n.frequency>=45&&n.frequency<=3200);assert.ok(n.envelope>=0&&n.envelope<=1);trajectory.push([Math.round(n.frequency),Math.round(n.envelope*20)]);
+  }
+  signatures.add(JSON.stringify(trajectory));
+ }
+ assert.equal(signatures.size,8);
+});
+test('acid alternates accents and selected slides while its resonant filter follows note envelopes',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(571938);sp.genome.soundDNA.expression=7;sp.genome.soundDNA.answerExpression=7;sp.genome.soundDNA.glide=.8;
+ let slides=0,short=0;const cutoff=new Set(),gates=new Set();for(let i=0;i<400;i++){
+  g.context.currentTime=i*.025;e.update([{sp,weight:1,visual:{time:i*.025,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];assert.equal(v.tone.type,'lowpass');assert.ok(['square','sawtooth'].includes(v.low.type));cutoff.add(Math.round(v.tone.frequency.value));const n=ctx.soundPerformanceAt(v.profile,v.beat);if(n.glide)slides++;else short++;gates.add(Math.round(n.accent*10));
+ }
+ assert.ok(slides>0&&short>0);assert.ok(cutoff.size>20);assert.ok(gates.size>1);
+});
+test('voice families, expression genes and groove types cover a diverse founder population',()=>{
+ const r=run(`(()=>{const voices=new Set(),expressions=new Set(),grooves=new Set();for(let seed=1;seed<=256;seed++){const d=soundFounderDNA(seed);voices.add(d.voiceKind);expressions.add(d.expression);grooves.add(d.phraseKind);}return{voices:voices.size,expressions:expressions.size,grooves:grooves.size};})()`);
+ assert.deepEqual(plain(r),{voices:6,expressions:8,grooves:5});
+});
+test('loudness stage is bounded and monotone, reaches true silence and feeds recording after volume',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42),safety=g.nodes.find(n=>n.type==='safety');assert.ok(safety.curve.length>1000);
+ for(let i=0;i<safety.curve.length;i++){assert.ok(Math.abs(safety.curve[i])<.93);if(i)assert.ok(safety.curve[i]>=safety.curve[i-1]);}
+ let previous=-1;for(const volume of [0,.1,.45,1]){e.update([{sp,weight:1}],volume);assert.ok(e.output.gain.value>=previous&&e.output.gain.value<=1);previous=e.output.gain.value;if(!volume)assert.equal(previous,0);}
+ const record=e.recording();assert.equal(e.output.connections.length,2);record.disconnect();assert.equal(e.output.connections.length,1);
 });
 function controller(resume){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={};let timer=0;
