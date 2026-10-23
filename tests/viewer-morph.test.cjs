@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8'),scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]),src=scripts[2],core=src.slice(0,src.indexOf("const canvas=$('glview'),gl="));
 const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncoder,TextDecoder,btoa,atob,URL,URLSearchParams});vm.runInContext(scripts[0],ctx);vm.runInContext(core,ctx);
-function mesh(vertices,tri){const data=new Float32Array(vertices.length*17);vertices.forEach((p,i)=>data.set([...p,0,0,1,1,0,0,0,0,0,0,0,0,0,0],i*17));return{data,tri:new Uint16Array(tri)}}
+function mesh(vertices,tri){const data=new Float32Array(vertices.length*17);vertices.forEach((p,i)=>data.set([...p,0,0,1,1,0,0,0,0,0,0,0,0,0,0],i*17));return{data,tri:new Uint16Array(tri),edges:new Uint16Array(tri.flatMap((v,i)=>[v,tri[i-i%3+(i+1)%3]]))}}
 const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],[-2,0,1]],[0,1,2,0,2,3]);
 test('morph preserves every triangle of unequal topology at both endpoints with safe WebGL1 indices',()=>{
  const result=ctx.createMorphBatches([a],[b],1);assert.equal(result.length,3);
@@ -14,22 +14,39 @@ test('real seeded organisms create finite intermediate geometry without changing
  const r=vm.runInContext(`(()=>{const make=seed=>{const p=pickPalette(seed),sp=makeSpecimen(seed,0,p,true,null,.75,.84,.75,0);return {sp,surfaces:[dynamicMesh(sp.shell,0,0,[0,0,0]),...dynamicBatches(sp).map(p=>p.mesh)]}};const a=make(731029),b=make(571938),dna=JSON.stringify([a.sp.genome,b.sp.genome]),m=createMorphBatches(a.surfaces,b.surfaces);for(const batch of m)interpolateMorphBatch(batch,.5);return {finite:m.every(b=>Array.from(b.data).every(Number.isFinite)),triangles:m.reduce((n,b)=>n+b.tri.length/3,0),sameDNA:dna===JSON.stringify([a.sp.genome,b.sp.genome])}})()`,ctx);
  assert.ok(r.finite);assert.ok(r.triangles>100);assert.ok(r.sameDNA);
 });
-function runtime(){const elements={},events=[],raf=[],timers=[];const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false},spec:{baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a'},{id:'b'}],meshes:{id:'original'},rigMeshes:['original-rig'],gl:{ARRAY_BUFFER:1,bindBuffer(){},bufferSubData(){events.push('upload')}},destroy:(gl,m)=>events.push(m.id),applyUploadedSpecimen:(sp)=>{f.spec=sp;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),requestAnimationFrame:cb=>raf.push(cb),setTimeout:cb=>timers.push(cb),$:id=>elements[id]||(elements[id]={open:false,value:'0',textContent:'',checked:true,classList:{toggle(){},remove(){}},setAttribute(){}})};
- vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.v=vm.runInContext('viewer',f);return{f,events,raf,timers}}
-test('closing cancels queued navigation before it can generate or replace a specimen',()=>{const {f,raf,timers}=runtime();f.startViewerMorph();assert.equal(f.v.preparing,true);f.stopViewer();raf.shift()();timers.shift()();assert.equal(f.v.morph,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes.id,'original')});
+function runtime(){
+ const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
+ const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],detailSpecimens:[],detailCacheOrder:[],
+  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
+  Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
+  gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
+  applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),interpolateMorphBatch:ctx.interpolateMorphBatch,
+  $:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,classList:{toggle(){},remove(){}},setAttribute(){}})};
+ vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.viewerMetadata=()=>events.push('metadata');f.viewerPatternValues=()=>new Map();f.v=vm.runInContext('viewer',f);return{f,events,workers,transfers};
+}
+function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},batches=ctx.createMorphBatches([a],[b])){
+ worker.onmessage({data:{ok:true,payload:{target,distance:15,targetMeshes:{shell:b,parts:[],cilia:[]},batches}}});return target;
+}
+test('closing terminates the worker and rejects a late result without touching the live specimen',()=>{
+ const {f,workers}=runtime(),original=f.meshes;f.startViewerMorph();assert.equal(f.v.preparing,true);const worker=workers[0];f.stopViewer();deliver(f,worker);
+ assert.equal(worker.terminated,true);assert.equal(f.v.morph,null);assert.equal(f.v.pending,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes,original);
+});
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
- const source=f.spec,target={id:'target'},original=f.meshes;f.interpolateMorphBatch=()=>{};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,batches:[{id:'transient',buffer:1,data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='transient').length,1);assert.equal(events.filter(e=>e==='apply').length,1);assert.ok(!events.includes('original'))});
+ const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};f.interpolateMorphBatch=()=>{throw Error('Unneeded final interpolation')};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
+ assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.meshes,prepared);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='apply').length,1);assert.deepEqual(events,['apply','metadata']);assert.ok(f.v.retired.some(m=>m.buffer==='transient'));f.drainViewerRetired();assert.ok(events.includes('delete:transient'));assert.ok(!events.includes('delete:prepared'));
+});
 
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
  const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
  for(const t of [.1,.5,.9]){ctx.interpolateMorphBatch(batches[0],t);ctx.interpolateMorphBatch(batches[1],t);assert.deepEqual(Array.from(batches[0].data.slice(0,3)),Array.from(batches[1].data.slice(0,3)))}
 });
-test('navigation prepares real correspondence before replacing buffers and commits the next individual',()=>{
- const {f,raf,timers,events}=runtime(),original={shell:a,parts:[],cilia:[]},target={seed:2,glowProfile:{},shell:b,parts:[],rigs:[]};f.meshes=original;
- f.textureMorphUniforms=ctx.textureMorphUniforms;f.renderer={vars:{}};
- f.createSpecimenForIndex=index=>{assert.equal(index,1);return target};f.dynamicMesh=x=>x;f.dynamicBatches=()=>[];f.createMorphBatches=ctx.createMorphBatches;f.interpolateMorphBatch=ctx.interpolateMorphBatch;f.upload=(gl,b)=>({...b,buffer:1,id:'transition'});f.viewerPatternValues=()=>new Map();f.specimenViewDistance=()=>15;
- f.startViewerMorph();raf.shift()();timers.shift()();assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);
+test('navigation uses worker output, uploads ahead of time, and adopts prepared GPU buffers at completion',()=>{
+ const {f,workers,events}=runtime(),original=f.meshes;
+ f.createSpecimenForIndex=()=>{throw Error('Generation must not run on the rendering thread')};f.createMorphBatches=()=>{throw Error('Correspondence must not run on the rendering thread')};f.upload=()=>{throw Error('Synchronous upload must not be used')};
+ f.startViewerMorph();assert.equal(f.meshes,original);assert.equal(f.v.morph,null);const target=deliver(f,workers[0]);f.tickViewer(.01);
+ assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);const prepared=f.v.morph.targetMeshes;
  for(let i=0;i<30;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
+ assert.equal(f.meshes,prepared);
 });
 
 
@@ -66,4 +83,73 @@ test('texture weights advance each render tick even when the original geometry u
  f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17)}],elapsed:.1,lastUpload:.1,t:0,fromDistance:20,toDistance:30};
  f.tickViewer(1/120);const a=f.v.morph.t;assert.equal(events.filter(e=>e==='upload').length,0);
  f.tickViewer(1/120);assert.ok(f.v.morph.t>a);assert.equal(events.filter(e=>e==='upload').length,0);
+});
+
+test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
+ const {f,workers,events}=runtime(),original=f.meshes,before=Array.from(a.data);f.tickViewer(.1);
+ assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.v.morph,null);assert.equal(f.meshes,original);assert.equal(events.length,0);
+ const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.equal(request.from[0].data,a.data);assert.deepEqual(Array.from(a.data),before);
+ f.tickViewer(.1);assert.equal(workers.length,1);
+});
+
+test('GPU preparation obeys a byte budget and partial cancellation releases every allocated buffer',()=>{
+ const {f,workers,events,transfers}=runtime();f.startViewerMorph();const huge={data:new Float32Array(17*40000),tri:new Uint16Array([0,1,2]),edges:new Uint16Array([0,1,1,2,2,0])};
+ workers[0].onmessage({data:{ok:true,payload:{target:{seed:2},distance:15,targetMeshes:{shell:huge,parts:[],cilia:[]},batches:[]}}});
+ f.advanceViewerPreparation();const bytes=transfers.reduce((n,t)=>n+(t.bytes||0),0);assert.ok(bytes<=262144);assert.ok(bytes>0);assert.equal(f.v.pending.ready,false);assert.equal(f.v.morph,null);
+ const allocated=events.filter(e=>e==='allocate').length;f.stopViewer();assert.equal(f.v.pending,null);assert.equal(events.filter(e=>e.startsWith('delete:')).length,allocated);
+});
+
+test('worker failure preserves rendering state and is not retried every animation frame',()=>{
+ const {f,workers}=runtime(),original=f.meshes;f.queueViewerPreparation(1);const warn=f.console;f.console={warn(){}};
+ workers[0].onmessage({data:{ok:false,message:'worker failed'}});for(let i=0;i<12;i++)f.tickViewer(.016);
+ assert.equal(workers.length,1);assert.equal(f.meshes,original);assert.equal(f.selected,0);assert.equal(f.v.seconds,0);assert.equal(f.v.preparing,false);f.console=warn;
+});
+
+test('reversing navigation invalidates an old worker result',()=>{
+ const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.queueViewerPreparation(1);const old=workers[0];f.startViewerMorph(-1);const current=workers[1];
+ assert.equal(old.terminated,true);assert.equal(current.request.record.seed,3);deliver(f,old);assert.equal(f.v.pending.target,undefined);deliver(f,current,{seed:3});assert.equal(f.v.pending.target.seed,3);
+});
+
+test('the production adoption path uses prepared meshes without scanning, rebuilding, deleting or uploading',()=>{
+ const next={seed:2,rigs:[],parts:[],ciliaDefs:[],emissionSites:[]},prepared={meshes:{shell:{buffer:'ready'},parts:[],cilia:[]},distance:15};
+ Object.defineProperty(next,'shell',{get(){throw Error('Shape must not be scanned again')}});
+ const fail=()=>{throw Error('Unexpected mesh preparation on adoption')},f={spec:{viewDistance:20},specimenViewDistance:fail,dynamicBatches:fail,createGpuCiliaMeshes:fail,destroyMeshes:fail,upload:fail,buildEmissionSites:fail,$:()=>({textContent:''})};
+ vm.createContext(f);const code=src.slice(src.indexOf('function applyUploadedSpecimen('),src.indexOf('function refreshAnimatedSpecimen('));vm.runInContext(code,f);
+ f.applyUploadedSpecimen(next,false,false,prepared);assert.equal(f.meshes,prepared.meshes);assert.equal(f.spec,next);assert.equal(next.viewDistance,15);
+});
+
+test('pressure, emission and bloom reach the exact incoming state while blink identities remain fixed',()=>{
+ const {f}=runtime(),values=new Map(),u=new Proxy({},{get:(_,key)=>key});f.gl.uniform1f=(k,v)=>values.set(k,v);f.gl.uniform3fv=f.gl.uniform4fv=(k,v)=>values.set(k,Array.from(v));f.bioUniforms=ctx.bioUniforms;
+ const bio=(p,v)=>({nodes:[{p:[p,0,0],radius:.5,pressure:p,velocity:v}],gene:new Float32Array([p,.5,.6,.7])});
+ f.spec={seed:1,style:0,biome:bio(.2,.3),genome:{dev:{motionEnergy:1}}};f.$('motionAmp').value='125';
+ const emission=(n,mode)=>({sites:Array.from({length:4},()=>[n,0,0,.3]),strength:n,tint:[n,.2,.3],mode,speed:n,seed:n,bloom:n*100});
+ f.v.morph={source:f.spec,target:{seed:2,style:0,biome:bio(.8,.7),genome:{dev:{motionEnergy:2}}},patternA:new Map(),patternB:new Map(),emissionA:emission(.2,1),emissionB:emission(.8,6),t:0};
+ for(const t of [0,.25,.5,.75,1]){
+  f.v.morph.t=t;f.applyViewerMorphUniforms(u);assert.ok(Math.abs(values.get('uBioPressure')[0]-(.2+.6*t))<1e-6);assert.equal(values.get('uBlinkMode'),1);assert.equal(values.get('uNextBlinkMode'),6);
+  assert.equal(values.get('uNextEmission'),.8);assert.ok(Math.abs(f.viewerGlowSetting('bloomRadius')-(20+60*t))<1e-6);assert.ok(Math.abs(f.viewerGlowTint()[0]-(.2+.6*t))<1e-6);
+ }
+ assert.deepEqual(values.get('uBioPressure'),Array.from(new Float32Array([.8,0,0,0])));assert.equal(values.get('uMotion'),2.5);
+});
+
+test('the render loop advances the incoming pressure simulation before adoption',()=>{
+ const {f}=runtime(),steps=[];Object.assign(f,{animating:true,lastFrame:0,environmentTime:0,rigTime:0,bodyTime:0,modelYaw:0,auto:false,requestAnimationFrame(){},render(){},tickViewer(){},stepBiomeSystem:(bio,elapsed,speed)=>steps.push({bio,elapsed,speed})});
+ f.spec={biome:{name:'source'},genome:{}};f.v.morph={target:{biome:{name:'target'}}};f.$('motionSpeed').value='100';f.$('bodySpeed').value='100';
+ vm.runInContext(src.slice(src.indexOf('let framesInWindow='),src.indexOf('function close(){')),f);f.frame(16);
+ assert.equal(steps.length,2);assert.equal(steps[0].bio.name,'source');assert.equal(steps[1].bio.name,'target');assert.equal(steps[0].elapsed,steps[1].elapsed);assert.equal(steps[0].speed,steps[1].speed);
+});
+
+test('the real Worker builds identical target geometry while the main event loop keeps running',{timeout:30000},async t=>{
+ const {Worker}=require('node:worker_threads'),crypto=require('node:crypto');
+ const request=vm.runInContext(`(()=>{const g=makeFounderGenome(731029,0,4),sp=makeSpecimen(g.seed,g.style,pickPalette(g.seed,g.colorDNA,g.patternDNA),true,null,.75,.84,.75,0,null,copyJSON(g));return {record:{seed:571938,genome:makeFounderGenome(571938,0,3)},settings:{variance:.75,density:.84,micro:.75},from:[dynamicMesh(sp.shell,0,0,[0,0,0]),...dynamicBatches(sp).map(p=>p.mesh)]}})()`,ctx);
+ const before=JSON.stringify(request.record),sourceLength=request.from[0].data.byteLength;
+ const script="const {parentPort}=require('node:worker_threads');const self={postMessage:(value,transfer)=>parentPort.postMessage(value,transfer)};"+ctx.viewerWorkerSource(core)+";parentPort.on('message',data=>self.onmessage({data}));";
+ const worker=new Worker(script,{eval:true});let ticks=0;const interval=setInterval(()=>ticks++,2);
+ try{
+  const message=await new Promise((resolve,reject)=>{worker.once('message',resolve);worker.once('error',reject);worker.postMessage(request)});assert.equal(message.ok,true,message.message);assert.ok(ticks>=5,'render/event loop must be able to keep ticking');
+  ctx.transitionRequest=structuredClone(request);const direct=vm.runInContext('buildViewerTransition(transitionRequest)',ctx),hash=a=>crypto.createHash('sha256').update(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).digest('hex');
+  assert.equal(hash(message.payload.target.shell.data),hash(direct.target.shell.data));assert.equal(hash(message.payload.targetMeshes.shell.data),hash(direct.targetMeshes.shell.data));
+  assert.deepEqual(message.payload.batches.map(b=>hash(b.end)),Array.from(direct.batches,b=>hash(b.end)));
+  assert.equal(request.from[0].data.byteLength,sourceLength);assert.equal(JSON.stringify(request.record),before);assert.ok(message.payload.batches.every(b=>b.tri.length<=12000));
+  t.diagnostic('Main event-loop heartbeat during worker preparation: '+ticks+' ticks; all target/correspondence hashes match');
+ }finally{clearInterval(interval);await worker.terminate()}
 });
