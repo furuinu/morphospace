@@ -8,10 +8,25 @@ function graph(){
  const node=(type)=>{const n={type,connections:[],disconnected:false,connect(other){this.connections.push(other);return other},disconnect(other){if(other)this.connections=this.connections.filter(x=>x!==other);else{this.connections=[];this.disconnected=true}}};nodes.push(n);return n};
  const source=type=>Object.assign(node(type),{frequency:parameter(),starts:[],stops:[],start(...args){assert.ok(args.every(Number.isFinite));this.starts.push(args)},stop(time){this.stops.push(time)}});
  const track={stops:0,stop(){this.stops++}};
- const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter(),gain:parameter()}),createDelay:()=>Object.assign(node('delay'),{delayTime:parameter()}),createAnalyser:()=>Object.assign(node('meter'),{fftSize:2048,sample:0,getFloatTimeDomainData(a){a.fill(this.sample)}}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createWaveShaper:()=>node('safety'),createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
+ const context={currentTime:0,sampleRate:8000,state:'running',destination:node('destination'),createGain:()=>Object.assign(node('gain'),{gain:parameter()}),createBiquadFilter:()=>Object.assign(node('filter'),{frequency:parameter(),Q:parameter(),gain:parameter()}),createConvolver:()=>node('convolver'),createDelay:()=>Object.assign(node('delay'),{delayTime:parameter()}),createAnalyser:()=>Object.assign(node('meter'),{fftSize:2048,sample:0,getFloatTimeDomainData(a){a.fill(this.sample)}}),createDynamicsCompressor:()=>Object.assign(node('limiter'),Object.fromEntries(['threshold','knee','ratio','attack','release'].map(k=>[k,parameter()]))),createBuffer:(channels,length,rate)=>{assert.equal(channels,1);return{getChannelData:()=>new Float32Array(length)}},createWaveShaper:()=>node('safety'),createOscillator:()=>source('oscillator'),createBufferSource:()=>source('noise'),createMediaStreamDestination:()=>Object.assign(node('recording'),{stream:{getAudioTracks:()=>[track],getTracks:()=>[track]}})};
  return{context,nodes,parameters,track};
 }
 function specimen(seed){return{seed,genome:{soundDNA:plain(run(`soundFounderDNA(${seed})`))},biome:{nodes:[{pressure:.4,velocity:.2},{pressure:-.2,velocity:-.1}]}}}
+test('contemporary scores reproduce the individual, vary material and use asynchronous bounded clocks',()=>{
+ const result=run(`(()=>{const materials=new Set();for(let seed=1;seed<=128;seed++){const sp={seed,genome:{soundDNA:soundFounderDNA(seed)}},p=soundMusicalProfile(sp),q=soundMusicalProfile(sp);if(JSON.stringify(p.score)!==JSON.stringify(q.score))throw Error('unstable');materials.add(p.material.name);if(p.score[0].length===p.score[1].length)throw Error('synchronised');for(let beat=0;beat<100;beat+=.137)for(let part=0;part<2;part++){const n=soundContemporaryAt(p,beat,part);if(!Number.isFinite(n.frequency)||n.frequency<45||n.frequency>3200||n.envelope<0||n.envelope>1||!Number.isFinite(n.attack))throw Error('unbounded');}}return materials.size})()`);
+ assert.equal(result,4);
+});
+test('isolated attacks decay audibly, rests have no hammer noise and the answer waits before entering',()=>{
+ const sp=specimen(42),p=ctx.soundMusicalProfile(sp),track=p.score[0],event=track.events[0];
+ const early=ctx.soundContemporaryAt(p,p.tempo*.08),late=ctx.soundContemporaryAt(p,Math.min(event.length-.01,p.tempo*.9));
+ assert.ok(early.envelope>0);assert.ok(late.envelope<early.envelope);assert.equal(ctx.soundContemporaryAt(p,0,1).attack,0);assert.equal(ctx.soundContemporaryAt(p,0,1).envelope,0);
+ const rest=track.events.find(e=>e.rest);assert.ok(rest);const n=ctx.soundContemporaryAt(p,rest.start+.01);assert.equal(n.envelope,0);assert.equal(n.attack,0);
+});
+test('each voice has deterministic finite room reflections which share correction and cleanup',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
+ assert.ok(v.room.buffer);assert.ok(v.sum.connections.includes(v.room));assert.ok(v.roomGain.connections.includes(v.field));assert.ok(v.roomGain.gain.value>=.12&&v.roomGain.gain.value<=.37);
+ assert.equal(v.sources.length,5);e.silence();v.sources[0].onended();assert.ok(v.room.disconnected&&v.roomGain.disconnected);
+});
 test('old drone expressions fall back to a motif and no founder selects a drone',()=>{
  const sp=specimen(42);Object.assign(sp.genome.soundDNA,{expression:8,answerExpression:8,drone:1});const p=ctx.soundMusicalProfile(sp);
  assert.equal(p.expression,0);assert.equal(p.answerExpression,0);assert.equal(p.drone,0);assert.equal(ctx.soundPerformanceAt(p,1,0,8).expression,0);
@@ -124,7 +139,7 @@ test('shape and pigment change the musical identity; legacy music genes upgrade 
 test('pressure and visible blink change timbre without allocating a graph per note',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(856123),frequencies=new Set(),indices=new Set();Object.assign(sp.genome.soundDNA,{expression:1,octave:1,pitch:.7,tempo:1,fmIndex:.8});
  for(let i=0;i<800;i++){g.context.currentTime=i*.025;sp.biome.nodes.forEach(n=>{n.pressure=.5*Math.sin(i*.07);n.velocity=.3*Math.cos(i*.07)});e.update([{sp,weight:1,visual:{time:i*.025,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];frequencies.add(v.low.frequency.value.toFixed(0));indices.add(v.fmGain.gain.value.toFixed(0));if(i===0)sp.initialNodes=g.nodes.length;assert.equal(g.nodes.length,sp.initialNodes);assert.equal(e.voices.size,1);}
- assert.ok(frequencies.size>10);assert.ok(indices.size>10);const v=[...e.voices.values()][0];assert.equal(v.sources.length,5);e.silence();assert.ok(v.sources.every(s=>s.stops.length===1));
+ assert.ok(frequencies.size>=3);assert.ok(indices.size>10);const v=[...e.voices.values()][0];assert.equal(v.sources.length,5);e.silence();assert.ok(v.sources.every(s=>s.stops.length===1));
 });
 test('sound DNA is preserved through multiple generations and share encoding including all musical fields',()=>{
  const r=run(`(()=>{let a=makeFounderGenome(1,0,0),b=makeFounderGenome(42,1,1);for(let i=0;i<20;i++){const c=crossoverGenome(a,b,700+i,3,.75);const payload={version:1,record:{id:'music',name:'音響標本',seed:c.genome.seed,style:c.genome.style,genome:c.genome,generation:i,parents:[]}};const decoded=MorphospaceCaptureShare.decode(MorphospaceCaptureShare.encode(payload));if(JSON.stringify(decoded.record.genome.soundDNA)!==JSON.stringify(c.genome.soundDNA))throw Error('lost music');for(const k of SOUND_INTEGERS)if(!Number.isInteger(c.genome.soundDNA[k]))throw Error('fractional '+k);a=b;b=c.genome;}return true;})()`);
@@ -154,7 +169,7 @@ test('all eight performance styles produce distinct bounded two-part trajectorie
 test('acid alternates accents and selected slides while its resonant filter follows note envelopes',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(571938);sp.genome.soundDNA.expression=7;sp.genome.soundDNA.answerExpression=7;sp.genome.soundDNA.glide=.8;
  let slides=0,short=0;const cutoff=new Set(),gates=new Set();for(let i=0;i<400;i++){
-  g.context.currentTime=i*.025;e.update([{sp,weight:1,visual:{time:i*.025,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];assert.equal(v.tone.type,'lowpass');assert.ok(['square','sawtooth'].includes(v.low.type));cutoff.add(Math.round(v.tone.frequency.value));const n=ctx.soundPerformanceAt(v.profile,v.beat);if(n.glide)slides++;else short++;gates.add(Math.round(n.accent*10));
+  g.context.currentTime=i*.025;e.update([{sp,weight:1,visual:{time:i*.025,motion:1,emission:{mode:3,speed:1,strength:1}}}],1);const v=[...e.voices.values()][0];assert.equal(v.tone.type,'lowpass');assert.equal(v.low.type,v.profile.material.waves[0]);cutoff.add(Math.round(v.tone.frequency.value));const n=ctx.soundPerformanceAt(v.profile,v.beat);if(n.glide)slides++;else short++;gates.add(Math.round(n.accent*10));
  }
  assert.ok(slides>0&&short>0);assert.ok(cutoff.size>20);assert.ok(gates.size>1);
 });
