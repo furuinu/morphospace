@@ -19,9 +19,9 @@ test('calm choir constrains resonance and distortion', () => {
 
 test('light voices respond within shared pitch-center design', () => {
   assert.match(app, /const chordIntervals=\[0,harmonicMinor\?3:4,7,12\]/);
-  assert.match(app, /const sharedBodyPitch=Math\.max\(150,base\*noteAt/);
+  assert.match(app, /const sharedBodyPitch=clamp\(base\*noteAt/);
   assert.match(app, /const harmonyPitch=\(role,octave=0\)/);
-  assert.match(app, /const bassPitch=Math\.max\(105,harmonyPitch\(degree,-1\)\)/);
+  assert.match(app, /const bassPitch=clamp\(harmonyPitch\(degree,0\)/);
   assert.match(app, /tune\(v,harmonyPitch\(voiceRole/);
 });
 
@@ -97,4 +97,12 @@ test('choir restores body pulse light timing with articulated voices',()=>{
   assert.match(app, /if\(!v\.exciter&&typeof ctx\.createPeriodicWave/);
   assert.match(app, /const harmonyPitch=\(role,octave=0\)/);
   assert.match(app, /const responseWindow=voiceDNA\.response===0/);
+});
+
+test('legacy vocal registers retain body pulse light onset relationships',()=>{
+  assert.match(app, /const legacyHz=midi=>440\*Math\.pow\(2,\(midi-69\)\/12\)/);
+  assert.match(app, /legacyHz\(62\),legacyHz\(69\)/);
+  assert.match(app, /const lightPitch=clamp\(harmonyPitch\(voiceRole,0\),legacyHz\(67\),legacyHz\(77\)\)/);
+  assert.match(app, /const responseWindow=voiceDNA\.response===0/);
+  assert.match(app, /if\(emission&&emission\.strength>0&&emission\.mode!==0&&light>\.38&&previous<=\.38\)/);
 });
