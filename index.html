@@ -6553,7 +6553,9 @@ function createBioticAudioEngine(context){
    const signedPressure=nodes.slice(0,4).reduce((sum,n)=>sum+(n.pressure||0),0)/4;
    const renderedMotion=visual?.surfaceMotion??motion;
    const surfaceDisplacement=actualSurfaceVoiceAmplitude(v,surfaceTime,renderedMotion,signedPressure);
-   const skinAmplitude=clamp(surfaceDisplacement/.024,0,1);
+   // Render-space relief is tiny (~.001-.006 units for ordinary organisms).
+   // Calibrate to audible cents without altering the physically tracked envelope.
+   const skinAmplitude=clamp(surfaceDisplacement/.006,0,1);
    v.surfaceDisplacement=surfaceDisplacement;
    v.surfaceAmplitude=skinAmplitude;
    const slow=clamp((slowWave-.22)/.78,0,1)*strain*(.48+.52*tissueKinetic);
