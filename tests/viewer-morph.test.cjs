@@ -21,7 +21,7 @@ function runtime(){
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),interpolateMorphBatch:ctx.interpolateMorphBatch,
-  $:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,classList:{toggle(){},remove(){}},setAttribute(){}})};
+  $:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.viewerMetadata=()=>events.push('metadata');f.viewerPatternValues=()=>new Map();f.v=vm.runInContext('viewer',f);return{f,events,workers,transfers};
 }
 function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},batches=ctx.createMorphBatches([a],[b])){
@@ -73,6 +73,47 @@ test('autoplay defaults to 30 seconds in the viewer, on re-entry and for capture
  assert.equal(f.v.seconds,30);
  assert.equal(f.v.elapsed,0);
  assert.equal(f.$('viewerInterval').value,'30');
+});
+test('clockwise bottom-left timer renders the real transition progress at 5, 30 and 60 seconds',()=>{
+ assert.match(html, /<div class="viewer-state">[\s\S]*?<div class="viewer-countdown" id="viewerTimer"[^>]*>[\s\S]*?id="viewerTimerArc"/);
+ assert.match(html, /\.viewer-countdown\{position:absolute;z-index:30;left:calc\(16px \+ env\(safe-area-inset-left,0px\)\)/);
+ assert.match(html, /countdown-arc\{[^}]*stroke-width:7/);
+ assert.match(html, /transform:rotate\(-90deg\)/);
+ const {f}=runtime(),circle=f.$('viewerTimer'),arc=f.$('viewerTimerArc'),digits=f.$('viewerTimerSeconds'),length=2*Math.PI*24;
+ f.updateViewerCountdown();
+ assert.equal(circle.hidden,false);
+ assert.equal(digits.textContent,'30');
+ assert.equal(Number(arc.style.strokeDashoffset),0);
+ for(const lengthSeconds of [5,20,30,60]){
+  f.v.seconds=lengthSeconds;f.v.elapsed=lengthSeconds/4;
+  f.updateViewerCountdown();
+  assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length*.25)<1e-8);
+  assert.equal(digits.textContent,String(Math.ceil(lengthSeconds*.75)));
+  assert.match(circle['aria-label'],/次の生体まで/);
+ }
+ f.v.seconds=30;f.v.elapsed=29.5;f.updateViewerCountdown();
+ assert.ok(Number(arc.style.strokeDashoffset)>length*.9);
+ assert.equal(digits.textContent,'1');
+ f.v.elapsed=30;f.updateViewerCountdown();
+ assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length)<1e-8);
+ assert.equal(digits.textContent,'0');
+});
+test('countdown hides on stopped interval, missing next specimen or hidden tab; holds at zero during morph',()=>{
+ const {f}=runtime(),circle=f.$('viewerTimer'),arc=f.$('viewerTimerArc'),length=2*Math.PI*24;
+ f.updateViewerCountdown();assert.equal(circle.hidden,false);
+ f.v.seconds=0;f.updateViewerCountdown();assert.equal(circle.hidden,true);
+ f.v.seconds=30;f.document.hidden=true;f.updateViewerCountdown();assert.equal(circle.hidden,true);
+ f.document.hidden=false;f.population.pop();f.updateViewerCountdown();assert.equal(circle.hidden,true);
+ f.population.push({id:'b',seed:2,genome:{}});
+ f.v.elapsed=14;f.v.preparing=true;f.updateViewerCountdown();
+ assert.equal(circle.hidden,false);assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length)<1e-8);
+ f.v.preparing=false;f.v.morph={};f.updateViewerCountdown();
+ assert.equal(circle['aria-label'],'次の生体へ切り替え中');
+ f.v.morph=null;f.v.elapsed=0;f.updateViewerCountdown();
+ assert.equal(Number(arc.style.strokeDashoffset),0);
+ f.stopViewer();
+ assert.equal(circle.hidden,true,'closing viewer hides the timer immediately');
+ assert.equal(f.v.seconds,30);
 });
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
  const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};f.interpolateMorphBatch=()=>{throw Error('Unneeded final interpolation')};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
