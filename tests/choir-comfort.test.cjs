@@ -152,3 +152,13 @@ test('speech articulator and phonemes are initialized before first BODY sound',(
  assert.ok(render.indexOf('const bodyPhoneme=')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
  assert.ok(render.indexOf('const articulate=(v,phoneme,attack)=>')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
 });
+
+test('recording/upload UI is hidden while legacy audio hooks remain available',()=>{
+ assert.doesNotMatch(app, /<option value="sample">録音・アップロード音源<\/option>/);
+ assert.match(app, /<div class="buttons" hidden style="display:none;margin-top:8px" aria-hidden="true"><button type="button" class="btn" id="voiceRecordStart">/);
+ assert.match(app, /id="voiceSampleFile" type="file"[^>]*hidden/);
+ assert.match(app, /id="voiceSamplePreview" playsinline style="display:none" hidden/);
+ assert.match(app, /<option value="choir" selected>/);
+ assert.match(app, /<option value="speech">/);
+ assert.match(app, /<option value="synth">/);
+});
