@@ -19,9 +19,9 @@ test('calm choir constrains resonance and distortion', () => {
 
 test('light voices respond within shared pitch-center design', () => {
   assert.match(app, /const chordIntervals=\[0,harmonicMinor\?3:4,7,12\]/);
-  assert.match(app, /const sharedBodyPitch=base\*noteAt/);
+  assert.match(app, /const sharedBodyPitch=Math\.max\(150,base\*noteAt/);
   assert.match(app, /const harmonyPitch=\(role,octave=0\)/);
-  assert.match(app, /const bassPitch=harmonyPitch\(degree,-1\)/);
+  assert.match(app, /const bassPitch=Math\.max\(105,harmonyPitch\(degree,-1\)\)/);
   assert.match(app, /tune\(v,harmonyPitch\(voiceRole/);
 });
 
@@ -65,4 +65,13 @@ test('comfort stage softens the choir and preserves deliberate rests',()=>{
   assert.match(app, /const normalization=clamp\(Math\.sqrt\(\.42\/Math\.max\(\.22,state\.perceivedLevel\)\),\.72,1\.0\)/);
   assert.match(app, /state\.master\.gain\.setTargetAtTime\(quiet\?0:volume\*\.43\*normalization\*fade,ctx\.currentTime,\.55\)/);
   assert.match(app, /state\.comfortLowpass\?\.disconnect\(\)/);
+});
+
+test('phone-audible choir fundamental and parallel vowel formant',()=>{
+  assert.match(app, /const sharedBodyPitch=Math\.max\(150,base\*noteAt/);
+  assert.match(app, /vowelFormant\.type='bandpass';vowelFormant\.frequency\.value=1200/);
+  assert.match(app, /partial\.amp\.connect\(vowelFormant\)/);
+  assert.match(app, /state\.body\.vowelFormant\.frequency\.setTargetAtTime/);
+  assert.match(app, /const bassPitch=Math\.max\(105,harmonyPitch\(degree,-1\)\)/);
+  assert.match(app, /bassPresence\.gain\.value=\.22/);
 });
