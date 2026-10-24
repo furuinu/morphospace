@@ -690,24 +690,16 @@ body{color:#eaf4f4;background:#090e18}
   return new Float32Array(vertices);
  }
  // Capture-only flow reuses the existing snow particles; ordinary snow stays untouched.
- function brownHash(x){const n=Math.sin(x*127.1+78.233)*43758.5453;return n-Math.floor(n);}
- function brownWalk(time,seed){const cell=Math.floor(time),f=time-cell,e=f*f*(3-2*f);return (brownHash(cell+seed)*(1-e)+brownHash(cell+seed+1)*e)*2-1;}
- function snowBrownian(out,data,j,t){
-  const seed=data[j+4]*19+data[j]*.83+data[j+1]*1.37+data[j+2]*.61;
-  const offsets=[1,3,5];
-  for(let a=0;a<3;a++){const o=offsets[a];out[a]+=.32*brownWalk(t*.42,seed+o)+.14*brownWalk(t*1.13,seed+o+10)+.055*brownWalk(t*2.7,seed+o+20);}
-  return out;
- }
  function ambientSnow(data,j,t,out=[0,0,0]){
   const mod=(x,n)=>((x%n)+n)%n,phase=data[j+4],drift=data[j+5],weight=data[j+6];
   if(drift>2){
    const d=drift-10;out[0]=data[j]+t*d*.025+Math.sin(t*.11+phase+data[j+1]*.12)*.16;
    out[1]=data[j+1]-t*(.015+weight*.025)+Math.sin(t*.095+phase)*.08;
-   out[2]=data[j+2]+t*d*.012+Math.cos(t*.07+phase)*.12;return snowBrownian(out,data,j,t);
+   out[2]=data[j+2]+t*d*.012+Math.cos(t*.07+phase)*.12;return out;
   }
   out[0]=mod(data[j]+24+t*drift*.025+Math.sin(t*.11+phase+data[j+1]*.12)*.16,48)-24;
   out[1]=mod(data[j+1]+18-t*(.015+weight*.025)+Math.sin(t*.095+phase)*.08,36)-18;
-  out[2]=mod(data[j+2]+24+t*drift*.012+Math.cos(t*.07+phase)*.12,48)-24;return snowBrownian(out,data,j,t);
+  out[2]=mod(data[j+2]+24+t*drift*.012+Math.cos(t*.07+phase)*.12,48)-24;return out;
  }
  // Stratified fixed 3D survey volume, including the central region.
  // Central additions reveal gradually during pullback; no rectangular hole.
