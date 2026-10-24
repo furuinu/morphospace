@@ -4,7 +4,7 @@ const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncod
 vm.runInContext(src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio=')),ctx);
 const run=s=>vm.runInContext(s,ctx),plain=x=>JSON.parse(JSON.stringify(x));
 function graph(){
- const nodes=[],parameters=[];const parameter=()=>{const p={value:0,events:[],setTargetAtTime(value,time,constant){assert.ok(Number.isFinite(value)&&Number.isFinite(time)&&constant>0);this.value=value;this.events.push({value,time,constant})}};parameters.push(p);return p};
+ const nodes=[],parameters=[];const parameter=()=>{const p={value:0,events:[],setTargetAtTime(value,time,constant){assert.ok(Number.isFinite(value)&&Number.isFinite(time)&&constant>0,JSON.stringify({value,time,constant,stack:(new Error()).stack?.slice(0,1200)}));this.value=value;this.events.push({value,time,constant})}};parameters.push(p);return p};
  const node=(type)=>{const n={type,connections:[],disconnected:false,connect(other){this.connections.push(other);return other},disconnect(other){if(other)this.connections=this.connections.filter(x=>x!==other);else{this.connections=[];this.disconnected=true}}};nodes.push(n);return n};
  const source=type=>Object.assign(node(type),{frequency:parameter(),detune:parameter(),starts:[],stops:[],start(...args){assert.ok(args.every(Number.isFinite));this.starts.push(args)},stop(time){this.stops.push(time)}});
  const track={stops:0,stop(){this.stops++}};
