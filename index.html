@@ -6566,7 +6566,7 @@ function createBioticAudioEngine(context){
      let target=formants[j];
      if(choice.consonant==='y'&&j===1)target=target*(1-shape.formantGlide)+2150*shape.formantGlide;
      if((choice.consonant==='m'||choice.consonant==='n')&&j===0)target=target*(1-shape.nasal*.38);
-     smooth(layer.filters[j].frequency,clamp(target*(1+.018*blink+.032*activity),170,context.sampleRate*.42),now,.045);
+     smooth(layer.filters[j].frequency,clamp(target*(1+.018*maxBlink+.032*activity),170,context.sampleRate*.42),now,.045);
     }
    });
    const breaths=(calls[0]*.004+calls[1]*.002+calls[2]*.002+gestureEnvelope*.002);
