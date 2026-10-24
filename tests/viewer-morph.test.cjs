@@ -61,6 +61,19 @@ test('closing terminates the worker and rejects a late result without touching t
  const {f,workers}=runtime(),original=f.meshes;f.startViewerMorph();assert.equal(f.v.preparing,true);const worker=workers[0];f.stopViewer();deliver(f,worker);
  assert.equal(worker.terminated,true);assert.equal(f.v.morph,null);assert.equal(f.v.pending,null);assert.equal(f.v.preparing,false);assert.equal(f.selected,0);assert.equal(f.meshes,original);
 });
+test('autoplay defaults to 30 seconds in the viewer, on re-entry and for captured specimens',()=>{
+ const {f}=runtime();
+ assert.equal(f.v.seconds,30);
+ assert.equal(f.v.elapsed,0);
+ assert.match(html, /<select id="viewerInterval">[^<]*(?:<option[^>]*>[^<]*<\/option>)*<option value="30" selected>30秒<\/option>/);
+ assert.match(html, /viewer\.seconds=30;viewer\.elapsed=0;\$\('viewerInterval'\)\.value='30'/);
+ assert.match(html, /\$\('watchStock'\)\.onclick=async\(\)=>\{[^}]*viewer\.seconds=30;viewer\.elapsed=0;\$\('viewerInterval'\)\.value='30'/);
+ f.v.seconds=0;f.v.elapsed=9;
+ f.stopViewer();
+ assert.equal(f.v.seconds,30);
+ assert.equal(f.v.elapsed,0);
+ assert.equal(f.$('viewerInterval').value,'30');
+});
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
  const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};f.interpolateMorphBatch=()=>{throw Error('Unneeded final interpolation')};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
  assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.meshes,prepared);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='apply').length,1);assert.deepEqual(events,['apply','metadata']);assert.ok(f.v.retired.some(m=>m.buffer==='transient'));f.drainViewerRetired();assert.ok(events.includes('delete:transient'));assert.ok(!events.includes('delete:prepared'));
