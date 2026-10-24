@@ -195,7 +195,7 @@ test('actual rendered skin displacement directly determines the pitch-vibrato de
   e.update([{sp,weight:1,visual}],.5);
   const rms=expected(time);
   assert.ok(Math.abs(v.surfaceDisplacement-rms)<1e-12,'audio must reproduce the shader displacement magnitude');
-  const factor=Math.min(1,rms/.024);
+  const factor=Math.min(1,rms/.006);
   assert.ok(Math.abs(v.surfaceAmplitude-factor)<1e-12);
   for(const [i,layer] of v.layers.entries()){
    assert.ok(Math.abs(layer.vibratoDepth-factor*(i===vibratoVoice?.17:.045))<1e-12);
