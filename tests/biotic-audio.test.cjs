@@ -572,15 +572,15 @@ test('morph source voices fade independently and wavetable updates retain their 
  assert.match(src,/renderVoiceSample\(quiet,voiceSample,m\.source,Math\.cos\(angle\)\)/);
  assert.match(src,/renderVoiceSample\(quiet,incomingVoiceSample,m\.target,Math\.sin\(angle\)\)/);
  assert.doesNotMatch(sample,/stopVoiceSample\(\)/,'incoming sample setup must not mute the outgoing voice');
- assert.match(sample,/\.85\+\.15\*\.50\*pulse/,'blink sample contribution reduced to 50 percent');
- assert.match(choir,/\.50\*\(lightBed\+gate/,'light choir volume reduced to 50 percent');
+ assert.match(sample,/\.85\+\.15\*\.20\*pulse/,'blink sample contribution reduced to 20 percent');
+ assert.match(choir,/\.20\*\(lightBed\+gate/,'light choir volume reduced to 20 percent');
 });
-test('50 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
+test('20 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
  const engine=src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio='));
- assert.match(engine,/const gain=\.50\*envelope\*\(rapidLight/);
- assert.match(engine,/consonantAir\+=\.50\*envelope\*art\.air/);
- assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.50\*\(lightBed\+gate/);
+ assert.match(engine,/const gain=\.20\*envelope\*\(rapidLight/);
+ assert.match(engine,/consonantAir\+=\.20\*envelope\*art\.air/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.20\*\(lightBed\+gate/);
  assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\);bassPresence\.connect\(state\.master\)/);
  assert.match(choir,/bassWarmth\.frequency\.value=330/);
@@ -590,7 +590,18 @@ test('50 percent blinking voices preserve independent bass and body-driven rhyth
  assert.match(choir,/tune\(state\.body,bodyPitch/,'body voice follows its existing bending law');
  assert.match(choir,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
 });
-function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVolume=null){
+test('metallic light calls soften above 3 kHz without filtering bass or body',()=>{
+ const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
+ const sample=src.slice(src.indexOf('function renderVoiceSample('),src.indexOf('function updateVoiceSample('));
+ assert.match(choir,/for\(const v of state\.lights\)\{\s*const tamer=ctx\.createBiquadFilter\(\)/);
+ assert.match(choir,/tamer\.type='highshelf';tamer\.frequency\.value=3000;tamer\.gain\.value=-3\.5/);
+ assert.match(choir,/v\.out\.disconnect\(\);v\.out\.connect\(tamer\);tamer\.connect\(rhythmInput\)/);
+ assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\)/);
+ assert.match(choir,/\.20\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.033/);
+ assert.match(sample,/1700\+2800\*breathEnvelope\+170\*pulse/);
+ assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(bodyLevel/);
+});
+function controller(resume,savedSound=null,active=true,savedVolume=null){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
  g.context.resume=resume||(()=>{g.context.state='running';return Promise.resolve()});g.context.suspend=()=>{g.context.state='suspended';return Promise.resolve()};
  const f={console,Math,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,soundMusicalProfile:ctx.soundMusicalProfile,normalizedSurfaceDNA:ctx.normalizedSurfaceDNA,normalizedMotionDNA:ctx.normalizedMotionDNA,viewerEmissionValues:()=>({strength:1,speed:.8,seed:0,mode:2}),window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:key==='morphospace-sound-volume-v2'?savedVolume:key==='morphospace-sound-volume'?legacyVolume:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'50',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
