@@ -595,7 +595,7 @@ test('20 percent blinking voices preserve independent bass and body-driven rhyth
  assert.match(choir,/bassWarmth\.frequency\.value=330/);
  assert.match(choir,/bassPresence\.gain\.value=\.46/);
  assert.match(choir,/pulseEnvelope\*\.098\*state\.grooveAccent/);
- assert.match(choir,/state\.rhythm\.dry\.gain\.setTargetAtTime\(1\.00-strain\*\.18/);
+ assert.match(choir,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
  assert.match(choir,/tune\(state\.body,bodyPitch/,'body voice follows its existing bending law');
  assert.match(choir,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
 });
@@ -701,7 +701,7 @@ test('sound defaults on, respects a manual off until next visit and waveform fol
  assert.match(html,/<canvas id="audioWaveform"[^>]+ hidden>/);
  const a=controller(undefined,'0'),f=a.f;
  assert.equal(f.$('viewerSound').checked,true,'legacy off choice must not suppress the new default');
- assert.equal(f.$('audioWaveform').hidden,true);
+ assert.equal(f.$('audioWaveform').hidden,false);
  assert.equal(f.audio.engine,null);
  await f.maybeStartBioticAudio();
  assert.equal(f.bioticAudioRunning(),true);
@@ -715,7 +715,7 @@ test('sound defaults on, respects a manual off until next visit and waveform fol
  f.maybeStartBioticAudio();
  assert.equal(f.audio.enabled,false,'manual off must not autostart on following gestures in this visit');
  const b=controller(undefined,'0');assert.equal(b.f.$('viewerSound').checked,true);
- assert.equal(b.f.$('audioWaveform').hidden,true);
+ assert.equal(b.f.$('audioWaveform').hidden,false);
  assert.equal(b.f.audio.engine,null);
 });
 test('checked audio retains a silent indicator when playback stops',async()=>{
@@ -733,7 +733,7 @@ test('camera, high-pass trim and particle diffusion have explicit regression gua
  assert.match(src,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
  assert.match(src,/state\.rhythm\.wet\.gain\.setTargetAtTime\(\(\.025\+strain\*\.21\)\*highpassTrim/);
  assert.match(src,/p\+=snowBrownian\(aSnowPos,aSnowInfo\.y,t\)/);
- assert.match(src,/return snowBrownian\(out,data,j,t\)/);
+ assert.doesNotMatch(src,/return snowBrownian\(out,data,j,t\)/,'nano-action flow keeps physically advected trajectories');
  assert.match(src,/if\(peak<\.0002\)\{ctx\.moveTo\(0,mid\);ctx\.lineTo\(w,mid\)/);
 });
 test('autoplay is attempted without a gesture and a hidden page retains active audio',async()=>{
