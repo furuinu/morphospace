@@ -31,7 +31,7 @@ test('organisms produce 1-3 staggered calls in mid, upper-mid and high ranges',(
   const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
   e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
   counts.add(v.voiceCount);assert.ok(v.voiceCount>=1&&v.voiceCount<=3);
-  assert.equal(v.layers.length,3);assert.equal(v.sources.length,5);
+  assert.equal(v.layers.length,3);assert.equal(v.sources.length,10);
   assert.ok(v.layers.every(layer=>layer.source.type==='sawtooth'&&layer.filters.length===3));
   assert.ok(v.sources.every(source=>source.starts.length===1));
   const initial=g.nodes.length,sounding=[0,0,0],overlap=[];
@@ -92,25 +92,68 @@ test('phoneme syllabary articulates nasal humming, consonant attacks and distinc
  assert.ok(airLevels.some(value=>value>.008),'h/r/y should produce breath or attack');
  assert.ok(formants.size>10,'distinct vowels must have distinct resonant frequencies');
 });
-test('blink onsets trigger short calls only when an actual visible pulse crosses threshold',()=>{
+test('four GPU-phased light sites generate distinct resonant syllables with shared echo/reverb',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
- for(let i=0;i<140;i++){
-  g.context.currentTime=i*.04;
-  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:0,strength:1,speed:1,seed:0}}}],.5);
+ let events=0;const history=[];
+ for(let i=0;i<560;i++){
+  const now=i*.025;g.context.currentTime=now;
+  e.update([{sp,weight:1,visual:{time:now,motion:0,emission:{mode:i<20?0:2,strength:1,speed:1,seed:0}}}],.5);
+  const v=[...e.voices.values()][0];
+  if(i===0){
+   assert.equal(v.lightVoices.length,4);assert.equal(v.skinVoices.length,2);
+   assert.ok(v.lightVoices.every(p=>p.source.type==='sawtooth'&&p.filters.length===3));
+   assert.ok(v.lightVoices.every(p=>p.filters.every(q=>q.type==='bandpass')));
+   assert.ok(v.lightVoices.every(p=>p.filters.every(q=>q.connections.some(n=>n.type==='gain'))));
+   assert.ok(v.lightVoices.every(p=>!p.source.connections.includes(e.output)));
+   assert.ok(v.sum.connections.some(n=>n.type==='gain'));
+  }
+  if(i<20)assert.equal(v.blinkEvents,0);
+  for(const site of v.lightVoices){
+   assert.ok(site.amplitude>=0&&site.amplitude<=1.8);
+   assert.ok(site.gain.gain.value>=0&&site.gain.gain.value<=.08);
+  }
+  const total=v.lightVoices.reduce((n,q)=>n+q.events,0);
+  if(total>events){history.push({time:now,sites:v.lightVoices.map(x=>x.events)});events=total;}
  }
- const v=[...e.voices.values()][0];assert.equal(v.blinkAt,-10);
- for(let i=140;i<480;i++){
-  g.context.currentTime=i*.04;
-  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:2,strength:1,speed:1,seed:0}}}],.5);
+ const v=[...e.voices.values()][0];
+ assert.ok(events>=8,'visible sharp flashes must generate multiple syllabic onsets');
+ assert.ok(v.lightVoices.filter(part=>part.events>=2).length>=3,'each of the four phased emitters must call');
+ assert.ok(history.length>=7);
+ assert.ok(new Set(history.map(item=>item.sites.join(','))).size>=7);
+ const reverb=v.nodes.find(x=>x.type==='convolver');assert.ok(v.sum.connections.includes(reverb));
+});
+test('slow breathing glows sustain vocal formants, while rapid flashes yield separated syllables',()=>{
+ const strengths=[];
+ for(const mode of [1,2,3,4,6]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(731029);
+  let longest=0,streak=0,onsets=0;
+  for(let i=0;i<1000;i++){
+   const now=i*.025;g.context.currentTime=now;
+   e.update([{sp,weight:1,visual:{time:now,motion:0,emission:{mode,strength:1,speed:1,seed:0}}}],.5);
+   const v=[...e.voices.values()][0],site=v.lightVoices[0];
+   if(site.amplitude>.15){streak++;longest=Math.max(longest,streak);}else streak=0;
+   onsets=site.events;
+  }
+  strengths.push({mode,longest:onsets>0?longest*.025:0,onsets});
  }
- assert.ok(v.blinkAt>5,'actual flashes should be detected');
- const last=v.blinkAt;
- for(let i=480;i<650;i++){
-  g.context.currentTime=i*.04;
-  e.update([{sp,weight:1,visual:{time:i*.04,motion:0,emission:{mode:2,strength:0,speed:1,seed:0}}}],.5);
+ assert.ok(strengths.find(x=>x.mode===1).longest>1,'slow swell should sustain a vowel for more than one second');
+ assert.ok(strengths.find(x=>x.mode===2).onsets>=6,'fast blink pattern should yield repeated articulated calls');
+ assert.ok(strengths.find(x=>x.mode===3).onsets>=5,'multiple flashes should produce a call sequence');
+ assert.ok(strengths.find(x=>x.mode===6).onsets>=1,'binary flash must have a vocal onset');
+});
+test('disabled light mode and zero glow strength emit no accent while keeping the vocal graph stable',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ let initial=0;
+ for(let i=0;i<200;i++){
+  const now=i*.04;g.context.currentTime=now;
+  const emission={mode:i<100?0:2,strength:i<100?1:0,speed:1,seed:0};
+  e.update([{sp,weight:1,visual:{time:now,motion:0,emission}}],.5);
+  const v=[...e.voices.values()][0];
+  if(i===0)initial=g.nodes.length;
+  assert.equal(g.nodes.length,initial,'no new sound sources at light transitions');
+  assert.equal(v.blinkEvents,0);
+  assert.ok(v.lightVoices.every(p=>p.amplitude===0&&p.gain.gain.value===0));
  }
- assert.equal(v.blinkAt,last,'hidden light must not start new calls');
- assert.ok(v.blinkVoice>=0&&v.blinkVoice<v.voiceCount);
 });
 test('surface displacement amplitude controls only bounded high-frequency vibrato, never alarm glide',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
@@ -222,33 +265,43 @@ test('Bulgarian-inspired close seconds resolve on a following syllable',()=>{
  assert.ok(close>0,'intentional close seconds should be heard');
  assert.ok(resolved>0,'the close-interval friction must return to a wider spacing');
 });
-test('flash transducer is a short bright dry attack and never enters the long reverb send',()=>{
+test('peristaltic slow vowels and finer articulated tissue rhythms share the vocal reverb',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
- let strongest=0,minimumBed=1,peakEvents=0,firstCount=0;
- for(let i=0;i<340;i++){
-  const now=i*.04;g.context.currentTime=now;
-  const emission={mode:i<20?0:2,strength:i<20?1:1.1,speed:1,seed:0};
-  e.update([{sp,weight:1,visual:{time:now,motion:0,emission}}],.5);
+ sp.genome.surfaceDNA={depth:.84,coupling:1,phase:1,drift:.9,scale:9.5,lag:.8,direction:.3};
+ const maxima=[0,0],events=[0,0],syllables=[new Set(),new Set()];
+ let initial=0;
+ for(let i=0;i<640;i++){
+  const now=i*.035;g.context.currentTime=now;
+  e.update([{sp,weight:1,visual:{time:now,surfaceTime:now,motion:1.6,emission:{mode:0}}}],.5);
   const v=[...e.voices.values()][0];
-  if(i===0){
-   firstCount=g.nodes.length;
-   assert.equal(v.flashSource.type,'triangle');
-   assert.ok(v.flashOut.connections.includes(e.output));
-   assert.ok(!v.sum.connections.includes(v.flashOut));
-   assert.ok(v.flashGain.connections.includes(v.flashOut));
-   assert.ok(v.flashFilter.frequency.value>=500);
-  }
-  assert.equal(g.nodes.length,firstCount,'no oscillators allocated per light event');
-  if(i<20)assert.equal(v.blinkEvents,0);
-  strongest=Math.max(strongest,v.flashGain.gain.value);
-  if(v.blinkPulse>.2)minimumBed=Math.min(minimumBed,v.mix.gain.value);
-  peakEvents=Math.max(peakEvents,v.blinkEvents);
+  if(i===0)initial=g.nodes.length;
+  assert.equal(g.nodes.length,initial);
+  v.skinVoices.forEach((part,j)=>{
+   maxima[j]=Math.max(maxima[j],part.amplitude);
+   events[j]=part.events;
+   syllables[j].add(part.syllable);
+   assert.ok(part.gain.gain.value>=0&&part.gain.gain.value<.16);
+   assert.ok(part.source.frequency.value>=285&&part.source.frequency.value<=710);
+   assert.ok(part.filters.every(filter=>filter.type==='bandpass'));
+  });
  }
- assert.ok(peakEvents>=2,'visible flashing must create distinct accents');
- assert.ok(strongest>.015&&strongest<=.16,'transient must be clearly articulated but bounded');
- assert.ok(minimumBed<.72,'background should duck briefly under emission accents');
- e.silence();
- const v=[...e.voices.values()][0];assert.equal(v,undefined);
+ const v=[...e.voices.values()][0],reverb=v.nodes.find(x=>x.type==='convolver');
+ assert.ok(v.sum.connections.includes(reverb));
+ assert.ok(maxima[0]>.1,'slow peristalsis should create longer shaped sound');
+ assert.ok(maxima[1]>.1,'fine wrinkles should trigger faster vocal segments');
+ assert.ok(events[1]>events[0]+4,'fine articulated motion should occur more frequently than slow peristalsis');
+ assert.ok(syllables[1].size>1,'repeated tissue motions should articulate changing syllables');
+ assert.ok(v.skinPulseEvents>10);
+});
+test('peristalsis disappears when movement is disabled; motion still drives bounded vibrato',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ for(let i=0;i<90;i++){
+  const now=i*.06;g.context.currentTime=now;
+  e.update([{sp,weight:1,visual:{time:now,surfaceTime:now,motion:0,emission:{mode:0}}}],.5);
+  const v=[...e.voices.values()][0];
+  assert.ok(v.skinVoices.every(p=>p.amplitude===0&&p.gain.gain.value===0));
+ }
+ const v=[...e.voices.values()][0];assert.equal(v.skinPulseEvents,0);
 });
 test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
  const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
@@ -393,13 +446,13 @@ function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVo
  const f={console,seedRng:ctx.seedRng,normalizedSoundDNA:ctx.normalizedSoundDNA,soundPulseTree:ctx.soundPulseTree,soundPulseValue:ctx.soundPulseValue,clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),createBioticAudioEngine:ctx.createBioticAudioEngine,window:{AudioContext:function(){return g.context}},spec:specimen(731029),selected:0,animating:true,viewer:{morph:null},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,videoResult:null,document:{hidden:false,addEventListener:(name,fn)=>listeners[name]=fn},navigator:{userActivation:{isActive:active}},localStorage:{getItem:key=>key==='morphospace-sound-enabled'?savedSound:key==='morphospace-sound-volume-v2'?savedVolume:key==='morphospace-sound-volume'?legacyVolume:null,setItem:(key,value)=>writes[key]=value},$:id=>elements[id]||(elements[id]={value:'50',checked:id==='viewerSound',textContent:'',disabled:false,open:false,classList:{contains:()=>true},setAttribute(k,v){this[k]=v}}),setInterval:fn=>{intervals.set(++timer,fn);return timer},clearInterval:id=>intervals.delete(id),setTimeout:fn=>{timeouts.push(fn);return timeouts.length},clearTimeout(){}};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const bioticAudio='),src.indexOf('function videoStatus(')),f);f.audio=vm.runInContext('bioticAudio',f);return{f,g,elements,intervals,timeouts,listeners,writes};
 }
-test('iOS audio session is requested only after explicit sound opt-in',async()=>{
+test('iOS AudioSession playback is requested when default-on sound starts with the specimen',async()=>{
  const session={type:'ambient'};let observed='';
  const a=controller(()=>{observed=session.type;return Promise.resolve()});
  a.f.navigator.audioSession=session;
- assert.equal(a.f.$('viewerSound').checked,false);
+ assert.equal(a.f.$('viewerSound').checked,true);
  assert.equal(a.f.audio.engine,null);
- a.f.$('viewerSound').checked=true;await a.f.startBioticAudio();
+ await a.f.startBioticAudio();
  assert.equal(session.type,'playback');
  assert.equal(observed,'playback');
  assert.equal(a.f.bioticAudioRunning(),true);
@@ -430,28 +483,25 @@ test('late resume and rejected audio permission never restart a stopped sound en
  const b=controller(()=>Promise.reject(Error('unavailable')));b.f.$('viewerSound').checked=true;
  await b.f.startBioticAudio();assert.equal(b.f.audio.enabled,false);assert.equal(b.intervals.size,0);assert.match(b.f.$('viewerSoundStatus').textContent,/開始できません/);assert.equal(b.f.$('viewerSound').disabled,false);
 });
-test('sound defaults off even with legacy saved-on preference; waveform follows opted-in playback',async()=>{
- assert.match(html,/<input id="viewerSound" type="checkbox">活動音/);
- assert.doesNotMatch(html,/<input id="viewerSound" type="checkbox" checked>/);
+test('sound defaults on, respects a manual off until next visit and waveform follows audible playback',async()=>{
+ assert.match(html,/<input id="viewerSound" type="checkbox" checked>活動音/);
  assert.match(html,/<canvas id="audioWaveform"[^>]+ hidden>/);
- const a=controller(undefined,'1');const f=a.f;
- assert.equal(f.$('viewerSound').checked,false,'saved enabled state must not override new default');
+ const a=controller(undefined,'0'),f=a.f;
+ assert.equal(f.$('viewerSound').checked,true,'legacy off choice must not suppress the new default');
  assert.equal(f.$('audioWaveform').hidden,true);
  assert.equal(f.audio.engine,null);
- f.maybeStartBioticAudio();assert.equal(f.audio.engine,null);
- assert.equal(f.syncBioticWaveformVisibility(),false);
- f.$('viewerSound').checked=true;f.$('viewerSound').onchange();
- await new Promise(setImmediate);
+ await f.maybeStartBioticAudio();
  assert.equal(f.bioticAudioRunning(),true);
  assert.equal(f.$('audioWaveform').hidden,false);
- assert.equal(f.syncBioticWaveformVisibility(),true);
  f.$('viewerSound').checked=false;f.$('viewerSound').onchange();
  assert.equal(f.audio.enabled,false);
  assert.equal(f.$('audioWaveform').hidden,true);
  assert.equal(f.syncBioticWaveformVisibility(),false);
  assert.equal(a.intervals.size,0);
- assert.equal(a.writes['morphospace-sound-enabled'],undefined,'opt in must not persist across fresh visits');
- const b=controller(undefined,'1');assert.equal(b.f.$('viewerSound').checked,false);
+ assert.equal(a.writes['morphospace-sound-enabled'],undefined);
+ f.maybeStartBioticAudio();
+ assert.equal(f.audio.enabled,false,'manual off must not autostart on following gestures in this visit');
+ const b=controller(undefined,'0');assert.equal(b.f.$('viewerSound').checked,true);
  assert.equal(b.f.$('audioWaveform').hidden,true);
  assert.equal(b.f.audio.engine,null);
 });
@@ -463,9 +513,8 @@ test('stopping playback hides waveform even when the visual animation is not run
  assert.equal(f.$('audioWaveform').hidden,true);
  f.$('viewerSound').checked=true;assert.equal(f.syncBioticWaveformVisibility(),false);
 });
-test('direct links require explicit sound opt-in and then a real gesture',async()=>{
- const a=controller(undefined,null,false);a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);assert.equal(a.f.$('viewerSound').checked,false);
- a.f.$('viewerSound').checked=true;
+test('direct links with default-on sound wait for real user gesture to satisfy browser autoplay restrictions',async()=>{
+ const a=controller(undefined,null,false);a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);assert.equal(a.f.$('viewerSound').checked,true);
  a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);
  a.listeners.click({isTrusted:false});assert.equal(a.f.audio.engine,null);a.f.navigator.userActivation.isActive=true;a.listeners.click({isTrusted:true});await new Promise(setImmediate);assert.equal(a.f.bioticAudioRunning(),true);
  a.f.document.hidden=true;a.listeners.visibilitychange();assert.equal(a.f.audio.enabled,false);assert.equal(a.f.$('viewerSound').checked,true);
@@ -474,12 +523,11 @@ test('direct links require explicit sound opt-in and then a real gesture',async(
 test('viewing controls form five short two-column rows with one accessible sound checkbox',()=>{
  const body=html.match(/<div class="viewer-checks" role="group"[^>]*>([\s\S]*?)<\/div>/)[1],labels=[...body.matchAll(/<label>([\s\S]*?)<\/label>/g)];
  assert.equal(labels.length,10);for(const [,label]of labels){assert.equal((label.match(/<input/g)||[]).length,1);assert.ok([...label.replace(/<[^>]*>/g,'').trim()].length<=5);}
- assert.match(body,/<input id="viewerSound" type="checkbox">/);assert.equal((html.match(/id="auto"/g)||[]).length,1);assert.doesNotMatch(body,/grid-column/);assert.match(html,/if\(typeof maybeStartBioticAudio==='function'\)maybeStartBioticAudio\(\)/);
+ assert.match(body,/<input id="viewerSound" type="checkbox" checked>/);assert.equal((html.match(/id="auto"/g)||[]).length,1);assert.doesNotMatch(body,/grid-column/);assert.match(html,/if\(typeof maybeStartBioticAudio==='function'\)maybeStartBioticAudio\(\)/);
 });
-test('browsers without an activation API wait for opt-in and a gesture',async()=>{
+test('browsers without an activation API wait for a real gesture even when sound is enabled by default',async()=>{
  const a=controller();delete a.f.navigator.userActivation;a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);
- a.f.$('viewerSound').checked=true;
- a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);
+ assert.equal(a.f.$('viewerSound').checked,true);
  await a.f.maybeStartBioticAudio(true);assert.equal(a.f.bioticAudioRunning(),true);
 });
 
