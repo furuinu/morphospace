@@ -87,7 +87,7 @@ test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
 });
 
 test('choir restores body pulse light timing with articulated voices',()=>{
-  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\|\|voiceSample\.mode==='choir'\?0/);
+  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\|\|\(voiceSample\.mode==='choir'\|\|voiceSample\.mode==='speech'\)\?0/);
   assert.match(app, /updateVoiceSample\(quiet\);updatePureChoir\(quiet\)/);
   assert.match(app, /state\.pulse=giveVocalSource\(makeVoice\(9,450,'lowpass'\),'pulse'\)/);
   assert.match(app, /const v=giveVocalSource\(makeVoice\(8,/);
@@ -113,7 +113,7 @@ test('uniform vocal baseline and soft organ syllables',()=>{
  assert.match(app, /const bodySyllables=\[0,3,4,1\]/);
  assert.match(app, /const pulseSyllables=\[4,3,0,4\]/);
  assert.match(app, /const lightSyllables=\[\[2,1,2\]/);
- assert.match(app, /const lightVowel=v\.vowelBands\[syllableSequence\[lightStep\]\]/);
+ assert.match(app, /const lightVowel=v\.vowelBands\[speechMode\?lightPhoneme\.v:syllableSequence\[lightStep\]\]/);
 });
 
 test('formant vowels and consonant transients are audible on all vocal organs',()=>{
