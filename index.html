@@ -7127,7 +7127,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   tune(v,base*noteAt(degree)*[1,2,1,2][i],(i-1.5)*4);
   // Keep a faint resonant glow even between attacks; accents remain clearly distinct.
   const lightBed=emission&&emission.strength>0?.028*light:0;
-  v.out.gain.setTargetAtTime(.19*(lightBed+gate*(temperament===2?.8:.65)),ctx.currentTime,.09);
+  v.out.gain.setTargetAtTime(.20*(lightBed+gate*(temperament===2?.8:.65)),ctx.currentTime,.09);
   v.tone.frequency.setTargetAtTime([750,1250,1850,2600][i]*(1+.25*gate),ctx.currentTime,.04);
  }
  // Normalize slow average energy across specimens while retaining expressive dynamics.
