@@ -164,10 +164,85 @@ test('surface displacement amplitude controls only bounded high-frequency vibrat
  const moving=at(1.8,1.90),strong=moving.layers[voiceIndex].vibratoDepth;
  assert.ok(moving.surfaceAmplitude>.8);
  assert.ok(strong>quiet+.08,'surface amplitude should directly deepen one voice vibrato');
- assert.ok(strong<.17);
+ assert.ok(strong<=.17);
  const shallow=at(1.8,15.6);
  assert.ok(shallow.surfaceAmplitude>=0&&shallow.surfaceAmplitude<=1);
- assert.ok(shallow.layers.every(layer=>layer.vibratoDepth<.17));
+ assert.ok(shallow.layers.every(layer=>layer.vibratoDepth<=.17));
+});
+test('actual rendered skin displacement directly determines the pitch-vibrato depth, not a separate oscillator amplitude',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(571938);
+ sp.genome.surfaceDNA={depth:.51,coupling:.76,phase:.3,lag:.48,drift:.78};
+ const visual={time:1.2,surfaceTime:1.2,motion:.4,surfaceMotion:.4,emission:{mode:0}};
+ g.context.currentTime=1.2;e.update([{sp,weight:1,visual}],.5);
+ const v=[...e.voices.values()][0],skin=v.skin;
+ const probes=[{y:.33,boundary:.13,ridge:.93},{y:-.31,boundary:-.2,ridge:.11}];
+ v.surfaceProbes=probes;
+ const expected=time=>{
+  const pressure=(.4-.2)/4,motion=.4;
+  let total=0;
+  for(const p of probes){
+   const amount=skin.depth*skin.coupling*(p.ridge-.35)*
+    (.012+.025*Math.sin(time*(.22+.16*skin.drift)+skin.phase-skin.lag*(p.y*2+p.boundary*3)))*
+    motion*(1+.25*pressure);
+   total+=amount*amount;
+  }
+  return Math.sqrt(total/probes.length);
+ };
+ const vibratoVoice=sp.seed%v.voiceCount;
+ const samples=[];
+ for(const time of [0,3,6,9,12]){
+  g.context.currentTime+=.10;visual.surfaceTime=time;
+  e.update([{sp,weight:1,visual}],.5);
+  const rms=expected(time);
+  assert.ok(Math.abs(v.surfaceDisplacement-rms)<1e-12,'audio must reproduce the shader displacement magnitude');
+  const factor=Math.min(1,rms/.024);
+  assert.ok(Math.abs(v.surfaceAmplitude-factor)<1e-12);
+  for(const [i,layer] of v.layers.entries()){
+   assert.ok(Math.abs(layer.vibratoDepth-factor*(i===vibratoVoice?.17:.045))<1e-12);
+  }
+  samples.push(rms);
+ }
+ assert.ok(Math.max(...samples)-Math.min(...samples)>.0005,'vibrato strength tracks the changing surface amplitude');
+});
+test('surface intensity and motion amplitude scale vibrato linearly and fall to zero when surface stops',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ sp.genome.surfaceDNA={depth:.65,coupling:.7,phase:1,lag:.5,drift:.4};
+ const amplitude=surfaceMotion=>{
+  g.context.currentTime+=.11;
+  e.update([{sp,weight:1,visual:{time:2,surfaceTime:2,motion:.5,surfaceMotion,emission:{mode:0}}}],.5);
+  const v=[...e.voices.values()][0];
+  return{rms:v.surfaceDisplacement,norm:v.surfaceAmplitude,
+   note:v.layers[0].noteMidi,depth:v.layers[sp.seed%v.voiceCount].vibratoDepth,
+   slow:v.skinVoices[0].amplitude};
+ };
+ const low=amplitude(.20),high=amplitude(.40),off=amplitude(0);
+ assert.ok(low.rms>0);
+ assert.ok(Math.abs(high.rms/low.rms-2)<1e-10,'GPU uMotion must be a linear physical amplitude factor');
+ assert.ok(Math.abs(high.depth/low.depth-2)<1e-10,'the mapped vibrato follows amplitude directly before the ceiling');
+ assert.equal(off.rms,0);assert.equal(off.norm,0);assert.equal(off.depth,0);
+ assert.equal(off.note,high.note,'melodic contour remains unchanged by surface movement');
+ assert.equal(off.slow,high.slow,'existing slow flowing voice is not retimed');
+});
+test('actual shell probes carry pigment-boundary and relative-position phase from the vertex shader',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ sp.genome.surfaceDNA={depth:.8,coupling:1,lag:.6,drift:.5,phase:1};
+ sp.shell={data:new Float32Array([
+  .1,-.25,.2,0,0,1,1,0,0,
+  -.45,.15,.12,0,0,1,1,0,0,
+  .32,.72,.11,0,0,1,1,0,0
+ ])};
+ sp.palette={design:{grammar:1,phase:.4,areas:[.38]},chromaticFrame:{
+  origin:[0,0,0],axis:[0,1,0],side:[1,0,0],depth:[0,0,-1],extent:[1,1,1]}};
+ g.context.currentTime=.2;e.update([{sp,weight:1,visual:{surfaceTime:.2,motion:.6,emission:{mode:0}}}],.5);
+ const v=[...e.voices.values()][0],p=v.surfaceProbes;
+ assert.equal(p.length,3);
+ assert.ok(p.every(x=>Number.isFinite(x.y)&&Number.isFinite(x.boundary)&&x.ridge>=0&&x.ridge<=1));
+ for(let i=0;i<3;i++){
+  const offset=i*9,x=sp.shell.data[offset],y=sp.shell.data[offset+1];
+  const boundary=x*.72+y*.46+Math.sin(y*3.1+.4)*.10-(.38-.32)+.27;
+  assert.ok(Math.abs(p[i].boundary-boundary)<1e-6);
+  assert.ok(Math.abs(p[i].ridge-Math.exp(-boundary*boundary*100))<1e-6);
+ }
 });
 test('the on-screen version, document title and GPU status use one release',()=>{
  const title=html.match(/<title>MORPHOSPACE (v\d+\.\d+\.\d+)/)?.[1];
