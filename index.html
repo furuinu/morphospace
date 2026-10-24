@@ -6461,7 +6461,8 @@ function createBioticAudioEngine(context){
   const layers=Array.from({length:3},(_,i)=>{
    const source=context.createOscillator(),gain=context.createGain(),warmth=context.createBiquadFilter();
    source.type='sawtooth';gain.gain.value=0;warmth.type='lowpass';warmth.frequency.value=4100+r()*850;warmth.Q.value=.65;
-   source.connect(warmth);warmth.connect(gain);
+   const bodyFilter=context.createBiquadFilter();bodyFilter.type='lowpass';bodyFilter.frequency.value=2200;bodyFilter.Q.value=.8;
+   source.connect(warmth);warmth.connect(bodyFilter);bodyFilter.connect(gain);nodes.push(bodyFilter);
    const filters=vowels[0].map((_,j)=>{
     const filter=context.createBiquadFilter(),level=context.createGain();
     filter.type='bandpass';filter.Q.value=[3.8,4.6,5.2][j];level.gain.value=[.65,.43,.20][j];
@@ -6472,7 +6473,7 @@ function createBioticAudioEngine(context){
    nasal.type='lowpass';nasal.frequency.value=380;nasal.Q.value=.75;nasalGain.gain.value=0;
    source.connect(nasal);nasal.connect(nasalGain);nasalGain.connect(sum);
    source.start();oscillators.push(source);nodes.push(source,gain,warmth,nasal,nasalGain);
-   return{source,gain,filters,nasal,nasalGain,character:Math.floor(r()*5),detune:(r()-.5)*.14,offset:r()*.4,rate:(.70+r()*.65)*(.8+dna.tempo*.25),callLength:.50+r()*.12,syllable:'',vibratoDepth:0,noteStep:-1,noteMidi:0,contourId:-1,mode:profile.mode,phraseNumber:-1};
+   return{source,gain,bodyFilter,filters,nasal,nasalGain,character:Math.floor(r()*5),detune:(r()-.5)*.14,offset:r()*.4,rate:(.70+r()*.65)*(.8+dna.tempo*.25),callLength:.50+r()*.12,syllable:'',vibratoDepth:0,noteStep:-1,noteMidi:0,contourId:-1,mode:profile.mode,phraseNumber:-1};
   });
   // Six reusable formant voices: four spatial emission sites plus a slow and a rapid
   // tissue voice. All feed the SAME dry sum, echo and convolver as the main vocals.
@@ -6480,7 +6481,8 @@ function createBioticAudioEngine(context){
   const tissueVoice=(kind,index)=>{
    const source=context.createOscillator(),warmth=context.createBiquadFilter(),gain=context.createGain();
    source.type='sawtooth';warmth.type='lowpass';warmth.frequency.value=3200;warmth.Q.value=.7;gain.gain.value=0;
-   source.connect(warmth);warmth.connect(gain);
+   const bodyFilter=context.createBiquadFilter();bodyFilter.type='lowpass';bodyFilter.frequency.value=2200;bodyFilter.Q.value=.8;
+   source.connect(warmth);warmth.connect(bodyFilter);bodyFilter.connect(gain);nodes.push(bodyFilter);
    const filters=[0,1,2].map((j)=>{
     const filter=context.createBiquadFilter(),level=context.createGain();
     filter.type='bandpass';filter.Q.value=[3.5,4.2,5][j];level.gain.value=[.67,.38,.16][j];
@@ -6488,7 +6490,7 @@ function createBioticAudioEngine(context){
     return filter;
    });
    source.start();nodes.push(source,warmth,gain);
-   return{kind,index,source,gain,filters,lastValue:null,onAt:-10,events:0,
+   return{kind,index,source,gain,bodyFilter,filters,lastValue:null,onAt:-10,events:0,
     syllable:'',consonant:'h',vowel:0,peak:0,lastCycle:-1,amplitude:0};
   };
   const lightVoices=Array.from({length:4},(_,i)=>tissueVoice('light',i));
@@ -6542,6 +6544,32 @@ function createBioticAudioEngine(context){
    v.lastPressure=pressure;v.lastMotion=movement;
    const gestureAge=now-v.gestureAt;
    const gestureEnvelope=gestureAge>=0&&gestureAge<.72?Math.sin(Math.PI*gestureAge/.72)**1.5:0;
+   // Follow the existing wholeBodyWarp shader's two slow torsion/bend clocks.
+   // Signed upper/lower displacement drives separate timbral cavities; pitches
+   // and harmonic voicing remain unchanged. The filters precede vowel formants.
+   const bodyTime=visual?.time??Math.max(0,now-v.start);
+   const bodyPhase=((sp.seed>>>0)%997)*.006302;
+   const torsion=Math.sin(bodyTime*.49+bodyPhase*.39)*.94+
+                 Math.sin(bodyTime*.31+bodyPhase*.76+1.14)*.36;
+   const bend=Math.sin(bodyTime*.37+bodyPhase*.57)*.43+
+              Math.sin(bodyTime*.43+bodyPhase*.88+1.13)*.13;
+   const halfShape=[0,1].map((side)=>{
+    const sign=side===0?1:-1;
+    const flex=clamp(.5+.5*sign*bend*motion,0,1);
+    const twist=clamp(Math.abs(torsion*motion)*.65,0,1);
+    return{cutoff:clamp(300*Math.pow(4000/300,flex),300,Math.min(4000,context.sampleRate*.42)),
+           q:clamp(.7+3.3*twist,.7,4)};
+   });
+   v.layers.forEach((layer,i)=>{
+    const shape=halfShape[i%2];
+    smooth(layer.bodyFilter.frequency,shape.cutoff,now,.16);
+    smooth(layer.bodyFilter.Q,shape.q,now,.19);
+   });
+   [...v.lightVoices,...v.skinVoices].forEach((part,i)=>{
+    const shape=halfShape[i%2];
+    smooth(part.bodyFilter.frequency,shape.cutoff,now,.16);
+    smooth(part.bodyFilter.Q,shape.q,now,.19);
+   });
    const time=Math.max(0,now-v.start)+d.phase,duration=clamp(4.9+d.cycle*.13,5,7.5);
    const phrase=Math.floor(time/duration),position=(time%duration)/duration;
    // The register stays mid, upper-mid or high, but genetic scales determine the actual notes.
