@@ -582,14 +582,14 @@ test('morph source voices fade independently and wavetable updates retain their 
  assert.match(src,/renderVoiceSample\(quiet,incomingVoiceSample,m\.target,Math\.sin\(angle\)\)/);
  assert.doesNotMatch(sample,/stopVoiceSample\(\)/,'incoming sample setup must not mute the outgoing voice');
  assert.match(sample,/\.85\+\.15\*\.20\*pulse/,'blink sample contribution reduced to 20 percent');
- assert.match(choir,/\.10\*\(lightBed\+gate/,'light choir is half its prior volume');
+ assert.match(choir,/\.07\*\(lightBed\+gate/,'light choir stays below its earlier level');
 });
 test('20 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
  const engine=src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio='));
  assert.match(engine,/const gain=\.20\*envelope\*\(rapidLight/);
  assert.match(engine,/consonantAir\+=\.20\*envelope\*art\.air/);
- assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.10\*\(lightBed\+gate/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.07\*\(lightBed\+gate/);
  assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\);bassPresence\.connect\(state\.master\)/);
  assert.match(choir,/bassWarmth\.frequency\.value=330/);
@@ -606,7 +606,7 @@ test('metallic light calls soften above 3 kHz without filtering bass or body',()
  assert.match(choir,/tamer\.type='highshelf';tamer\.frequency\.value=3000;tamer\.gain\.value=-3\.5/);
  assert.match(choir,/v\.out\.disconnect\(\);v\.out\.connect\(tamer\);tamer\.connect\(rhythmInput\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\)/);
- assert.match(choir,/\.10\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.09/);
+ assert.match(choir,/\.07\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.16/);
  assert.match(sample,/1700\+2800\*breathEnvelope\+170\*pulse/);
  assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(bodyLevel\*1\.45/);
 });
@@ -617,7 +617,7 @@ test('pulse and luminous syllables follow live crests with independent gains',()
  assert.doesNotMatch(choir,/t-state\.grooveTime>\.65/);
  assert.doesNotMatch(choir,/t-state\.lightLastHit\[i\]>\.92/);
  assert.match(choir,/pulseEnvelope\*\.098\*state\.grooveAccent/);
- assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.10\*\(lightBed\+gate/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.07\*\(lightBed\+gate/);
  assert.match(choir,/bodyLevel\*1\.45/);
 });
 test('closed audio-contour smoothing rounds impulses and blink envelope boundaries',()=>{
@@ -731,7 +731,7 @@ test('camera, high-pass trim and particle diffusion have explicit regression gua
  assert.match(src,/modelPitch=-0\.703599/,'camera must look down an extra 30 degrees');
  assert.match(src,/const highpassTrim=1-\.42\*clamp\(\(highpassHz-160\)\/700,0,1\)/);
  assert.match(src,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
- assert.match(src,/state\.rhythm\.wet\.gain\.setTargetAtTime\(\(\.025\+strain\*\.21\)\*highpassTrim/);
+ assert.match(src,/state\.rhythm\.wet\.gain\.setTargetAtTime\(\(\.005\+strain\*\.015\)\*highpassTrim/);
  assert.match(src,/p\+=snowBrownian\(aSnowPos,aSnowInfo\.y,t\)/);
  assert.doesNotMatch(src,/return snowBrownian\(out,data,j,t\)/,'nano-action flow keeps physically advected trajectories');
  assert.match(src,/if\(peak<\.0002\)\{ctx\.moveTo\(0,mid\);ctx\.lineTo\(w,mid\)/);
