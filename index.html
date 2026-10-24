@@ -7322,8 +7322,16 @@ async function startBioticAudio(){
   }
   if(!bioticAudio.engine){const Context=window.AudioContext||window.webkitAudioContext;if(!Context)throw Error('このブラウザでは活動音を利用できません');bioticAudio.engine=createBioticAudioEngine(new Context({latencyHint:'interactive'}));}
   // Resume in the opening/toggle gesture before the first await.
-  await bioticAudio.engine.context.resume();
+  // A blocked autoplay resume can remain pending on iOS. Release the start latch
+  // so the next trusted tap can reattempt playback inside user activation.
+  let resumeTimeout;
+  const resumed=await Promise.race([
+   bioticAudio.engine.context.resume().then(()=>true),
+   new Promise(resolve=>{resumeTimeout=setTimeout(()=>resolve(false),1600)})
+  ]);
+  clearTimeout(resumeTimeout);
   if(revision!==bioticAudio.revision)return;
+  if(!resumed){stopBioticAudio('自動再生が保留されました。画面をタップして再生してください。');return;}
   if(selected<0||!$('viewerSound').checked){stopBioticAudio();return;}
   bioticAudio.enabled=true;bioticAudio.starting=false;bioticAudio.backgroundAt=Date.now();syncBioticWaveformVisibility();setBioticMediaSession(true);void requestBioticWakeLock();
   const identity=typeof soundMusicalProfile==='function'?soundMusicalProfile(spec):null;
@@ -7345,7 +7353,15 @@ $('viewerSound').onchange=()=>{
  if($('viewerSound').checked)maybeStartBioticAudio(true);
  else stopBioticAudio('活動音はオフです。');
 };
-document.addEventListener('click',event=>{if(event.isTrusted)maybeStartBioticAudio(true)});
+document.addEventListener('click',event=>{
+ if(!event.isTrusted)return;
+ // If the initial autoplay request is still pending, retry resume inside this gesture.
+ if(bioticAudio.starting&&bioticAudio.engine?.context?.state!=='running'){
+  void bioticAudio.engine.context.resume().catch(()=>{});
+  return;
+ }
+ void maybeStartBioticAudio(true);
+});
 $('viewerSoundVolume').oninput=()=>{try{localStorage.setItem('morphospace-sound-volume-v2',$('viewerSoundVolume').value)}catch(error){}tickBioticAudio()};
 try{const saved=localStorage.getItem('morphospace-sound-volume-v2');if(saved!==null&&Number.isFinite(Number(saved)))$('viewerSoundVolume').value=String(clamp(Number(saved),0,100))}catch(error){}
 document.addEventListener('visibilitychange',()=>{
