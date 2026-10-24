@@ -568,7 +568,7 @@ test('iOS AudioSession playback is requested when default-on sound starts with t
  await a.f.startBioticAudio();
  assert.equal(session.type,'playback');
  assert.equal(observed,'playback');
- assert.equal(a.f.bioticAudioRunning(),true);
+ assert.equal(a.f.bioticAudioRunning(),true,a.f.$('viewerSoundStatus').textContent);
  const b=controller();b.f.$('viewerSound').checked=true;
  await b.f.startBioticAudio();
  assert.equal(b.f.bioticAudioRunning(),true);
