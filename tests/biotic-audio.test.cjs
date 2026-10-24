@@ -2,6 +2,8 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]),src=scripts[2];
 const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncoder,TextDecoder,btoa,atob,URL,URLSearchParams});vm.runInContext(scripts[0],ctx);vm.runInContext(src.slice(0,src.indexOf("const canvas=$('glview'),gl=")),ctx);
 vm.runInContext(src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio=')),ctx);
+// Motion-driven arpeggios share the production waveform sampler, defined after the audio engine.
+vm.runInContext(src.slice(src.indexOf('function organismMotionPickups('),src.indexOf('function newPureChoirState(')),ctx);
 const run=s=>vm.runInContext(s,ctx),plain=x=>JSON.parse(JSON.stringify(x));
 function graph(){
  const nodes=[],parameters=[];const parameter=()=>{const p={value:0,events:[],setTargetAtTime(value,time,constant){assert.ok(Number.isFinite(value)&&Number.isFinite(time)&&constant>0,JSON.stringify({value,time,constant,stack:(new Error()).stack?.slice(0,1200)}));this.value=value;this.events.push({value,time,constant})}};parameters.push(p);return p};
