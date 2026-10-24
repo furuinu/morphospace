@@ -6508,14 +6508,14 @@ function createBioticAudioEngine(context){
   sum.connect(delay);delay.connect(damping);damping.connect(feedback);feedback.connect(delay);
   damping.connect(echoWet);echoWet.connect(mix);nodes.push(delay,damping,feedback,echoWet);
   const reverb=context.createConvolver(),reverbWet=context.createGain();
-  const seconds=4.2+r()*1.2,length=Math.max(1,Math.floor(context.sampleRate*seconds));
+  const seconds=6.0+r()*1.6,length=Math.max(1,Math.floor(context.sampleRate*seconds));
   const impulse=context.createBuffer(1,length,context.sampleRate),samples=impulse.getChannelData(0);
   let diffuse=0;for(let i=0;i<length;i++){
    diffuse=diffuse*.63+(r()*2-1)*.37;
    const t=i/context.sampleRate,early=t<.035?.52:1;
-   samples[i]=diffuse*early*Math.exp(-t/1.25)*.36;
+   samples[i]=diffuse*early*Math.exp(-t/2.05)*.36;
   }
-  reverb.buffer=impulse;reverbWet.gain.value=.30;
+  reverb.buffer=impulse;reverbWet.gain.value=.68;
   sum.connect(reverb);reverb.connect(reverbWet);reverbWet.connect(mix);nodes.push(reverb,reverbWet);
   const skin=normalizedSurfaceDNA(sp.genome.surfaceDNA,sp.seed),harmony=vocalHarmonyForMode(profile.mode);
   const surfaceProbes=surfaceVoiceProbes(sp);
@@ -6657,7 +6657,7 @@ function createBioticAudioEngine(context){
     const art=articulation(part.consonant,clamp((now-part.onAt)/(i===0?.46:.16),0,1));
     const note=vocalNoteAt(v,phrase,0,part.events+i+5);
     smooth(part.source.frequency,clamp(note.frequency*(i===0?.83:1.15),285,710),now,.055);
-    smooth(part.gain.gain,energy*(i===0?.052:.047)*(.48+.52*art.voiced),now,i===0?.10:.025);
+    smooth(part.gain.gain,energy*(i===0?.052*1.15:.047)*(.48+.52*art.voiced),now,i===0?.10:.025);
     consonantAir+=energy*art.air*(i===0?.006:.015);
     const vowelA=vowels[part.vowel],vowelB=vowels[(part.vowel+2)%vowels.length];
     const vowelMorph=i===0?.5+.5*Math.sin(localPhases[i]*.7):.4+.35*Math.sin(localPhases[i])*.5;
