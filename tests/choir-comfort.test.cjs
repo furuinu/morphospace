@@ -18,10 +18,11 @@ test('calm choir constrains resonance and distortion', () => {
 });
 
 test('light voices respond within shared pitch-center design', () => {
-  assert.match(app, /const bodyDegree=\(seed>>>8\)%5-2/);
-  assert.match(app, /const consonantOffsets=\[0,2,4,0\]/);
-  assert.match(app, /const degree=bodyDegree\+consonantOffsets/);
-  assert.match(app, /base\*\.5\*noteAt\(degree\)/);
+  assert.match(app, /const chordIntervals=\[0,harmonicMinor\?3:4,7,12\]/);
+  assert.match(app, /const sharedBodyPitch=base\*noteAt/);
+  assert.match(app, /const harmonyPitch=\(role,octave=0\)/);
+  assert.match(app, /const bassPitch=harmonyPitch\(degree,-1\)/);
+  assert.match(app, /tune\(v,harmonyPitch\(voiceRole/);
 });
 
 test('body and light motion coupling and independent recording remain', () => {
