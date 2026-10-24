@@ -572,8 +572,23 @@ test('morph source voices fade independently and wavetable updates retain their 
  assert.match(src,/renderVoiceSample\(quiet,voiceSample,m\.source,Math\.cos\(angle\)\)/);
  assert.match(src,/renderVoiceSample\(quiet,incomingVoiceSample,m\.target,Math\.sin\(angle\)\)/);
  assert.doesNotMatch(sample,/stopVoiceSample\(\)/,'incoming sample setup must not mute the outgoing voice');
- assert.match(sample,/\.85\+\.15\*\.85\*pulse/,'blink sample contribution reduced by 15 percent');
- assert.match(choir,/\.85\*\(lightBed\+gate/,'light choir volume reduced by 15 percent');
+ assert.match(sample,/\.85\+\.15\*\.50\*pulse/,'blink sample contribution reduced to 50 percent');
+ assert.match(choir,/\.50\*\(lightBed\+gate/,'light choir volume reduced to 50 percent');
+});
+test('50 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
+ const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
+ const engine=src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio='));
+ assert.match(engine,/const gain=\.50\*envelope\*\(rapidLight/);
+ assert.match(engine,/consonantAir\+=\.50\*envelope\*art\.air/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.50\*\(lightBed\+gate/);
+ assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);
+ assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\);bassPresence\.connect\(state\.master\)/);
+ assert.match(choir,/bassWarmth\.frequency\.value=330/);
+ assert.match(choir,/bassPresence\.gain\.value=\.46/);
+ assert.match(choir,/pulseEnvelope\*\.98\*state\.grooveAccent/);
+ assert.match(choir,/state\.rhythm\.dry\.gain\.setTargetAtTime\(1\.00-strain\*\.18/);
+ assert.match(choir,/tune\(state\.body,bodyPitch/,'body voice follows its existing bending law');
+ assert.match(choir,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
 });
 function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVolume=null){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
