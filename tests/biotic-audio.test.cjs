@@ -669,19 +669,19 @@ test('volume slider defaults to 50, resets legacy maximum safely and persists th
  assert.equal(saved.writes['morphospace-sound-volume-v2'],'84');
  assert.equal(saved.writes['morphospace-sound-volume'],undefined);
 });
-test('audio starts only on demand, stops on hide/close, and preserves the speaker output after recording',async()=>{
+test('audio keeps playing when hidden, stops on close, and preserves speaker output after recording',async()=>{
  const {f,g,intervals,listeners}=controller();assert.equal(f.audio.engine,null);assert.equal(intervals.size,0);
  f.$('viewerSound').checked=true;
  await f.startBioticAudio();assert.equal(f.bioticAudioRunning(),true);assert.equal(intervals.size,1);
  const job={},stream={tracks:[],addTrack(track){this.tracks.push(track)}};f.attachBioticRecording(job,stream);assert.equal(stream.tracks[0],g.track);f.detachBioticRecording(job);assert.equal(job.audio,null);assert.equal(f.audio.engine.output.connections.length,1);
- f.document.hidden=true;listeners.visibilitychange();assert.equal(f.audio.enabled,false);assert.equal(intervals.size,0);assert.equal(f.audio.engine.voices.size,0);
- f.document.hidden=false;await f.startBioticAudio();f.selected=-1;f.tickBioticAudio();assert.equal(f.audio.enabled,false);assert.equal(intervals.size,0);
+ f.document.hidden=true;listeners.visibilitychange();assert.equal(f.audio.enabled,true);assert.equal(intervals.size,1);
+ f.document.hidden=false;listeners.visibilitychange();f.selected=-1;f.tickBioticAudio();assert.equal(f.audio.enabled,false);assert.equal(intervals.size,0);
 });
 test('late resume and rejected audio permission never restart a stopped sound engine',async()=>{
  let release;const a=controller(()=>new Promise(resolve=>release=resolve));a.f.$('viewerSound').checked=true;
  const pending=a.f.startBioticAudio();a.f.stopBioticAudio();release();await pending;assert.equal(a.f.audio.enabled,false);assert.equal(a.intervals.size,0);
  const b=controller(()=>Promise.reject(Error('unavailable')));b.f.$('viewerSound').checked=true;
- await b.f.startBioticAudio();assert.equal(b.f.audio.enabled,false);assert.equal(b.intervals.size,0);assert.match(b.f.$('viewerSoundStatus').textContent,/開始できません/);assert.equal(b.f.$('viewerSound').disabled,false);
+ await b.f.startBioticAudio();assert.equal(b.f.audio.enabled,false);assert.equal(b.intervals.size,0);assert.match(b.f.$('viewerSoundStatus').textContent,/画面タップで再生/);assert.equal(b.f.$('viewerSound').disabled,false);
 });
 test('sound defaults on, respects a manual off until next visit and waveform follows audible playback',async()=>{
  assert.match(html,/<input id="viewerSound" type="checkbox" checked>活動音/);
@@ -713,22 +713,25 @@ test('stopping playback hides waveform even when the visual animation is not run
  assert.equal(f.$('audioWaveform').hidden,true);
  f.$('viewerSound').checked=true;assert.equal(f.syncBioticWaveformVisibility(),false);
 });
-test('direct links with default-on sound wait for real user gesture to satisfy browser autoplay restrictions',async()=>{
- const a=controller(undefined,null,false);a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);assert.equal(a.f.$('viewerSound').checked,true);
- a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);
- a.listeners.click({isTrusted:false});assert.equal(a.f.audio.engine,null);a.f.navigator.userActivation.isActive=true;a.listeners.click({isTrusted:true});await new Promise(setImmediate);assert.equal(a.f.bioticAudioRunning(),true);
- a.f.document.hidden=true;a.listeners.visibilitychange();assert.equal(a.f.audio.enabled,false);assert.equal(a.f.$('viewerSound').checked,true);
- a.f.document.hidden=false;a.listeners.click({isTrusted:true});await new Promise(setImmediate);assert.equal(a.f.bioticAudioRunning(),true);
+test('autoplay is attempted without a gesture and a hidden page retains active audio',async()=>{
+ const a=controller(undefined,null,false);
+ await a.f.maybeStartBioticAudio();assert.equal(a.f.bioticAudioRunning(),true);
+ a.f.document.hidden=true;a.listeners.visibilitychange();
+ assert.equal(a.f.audio.enabled,true);
+ assert.equal(a.intervals.size,1);
+ a.f.document.hidden=false;a.listeners.visibilitychange();
+ assert.equal(a.f.bioticAudioRunning(),true);
+ a.f.stopBioticAudio();assert.equal(a.f.audio.enabled,false);
 });
 test('viewing controls form five short two-column rows with one accessible sound checkbox',()=>{
  const body=html.match(/<div class="viewer-checks" role="group"[^>]*>([\s\S]*?)<\/div>/)[1],labels=[...body.matchAll(/<label>([\s\S]*?)<\/label>/g)];
  assert.equal(labels.length,10);for(const [,label]of labels){assert.equal((label.match(/<input/g)||[]).length,1);assert.ok([...label.replace(/<[^>]*>/g,'').trim()].length<=5);}
  assert.match(body,/<input id="viewerSound" type="checkbox" checked>/);assert.equal((html.match(/id="auto"/g)||[]).length,1);assert.doesNotMatch(body,/grid-column/);assert.match(html,/if\(typeof maybeStartBioticAudio==='function'\)maybeStartBioticAudio\(\)/);
 });
-test('browsers without an activation API wait for a real gesture even when sound is enabled by default',async()=>{
- const a=controller();delete a.f.navigator.userActivation;a.f.maybeStartBioticAudio();assert.equal(a.f.audio.engine,null);
- assert.equal(a.f.$('viewerSound').checked,true);
- await a.f.maybeStartBioticAudio(true);assert.equal(a.f.bioticAudioRunning(),true);
+test('autoplay attempts playback when activation API is unavailable',async()=>{
+ const a=controller();delete a.f.navigator.userActivation;
+ await a.f.maybeStartBioticAudio();assert.equal(a.f.bioticAudioRunning(),true);
+ a.f.stopBioticAudio();assert.equal(a.f.audio.enabled,false);
 });
 
 
