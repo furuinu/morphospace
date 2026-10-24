@@ -109,9 +109,18 @@ test('legacy vocal registers retain body pulse light onset relationships',()=>{
 
 test('uniform vocal baseline and soft organ syllables',()=>{
  assert.match(app, /const sharedVoiceLevel=\.20/);
- assert.match(app, /voicing\.gain\.value=\.15/);
+ assert.match(app, /voicing\.gain\.value=\.42/);
  assert.match(app, /const bodySyllables=\[0,3,4,1\]/);
  assert.match(app, /const pulseSyllables=\[4,3,0,4\]/);
  assert.match(app, /const lightSyllables=\[\[2,1,2\]/);
  assert.match(app, /const lightVowel=v\.vowelBands\[syllableSequence\[lightStep\]\]/);
+});
+
+test('formant vowels and consonant transients are audible on all vocal organs',()=>{
+ assert.match(app,/vocalExciterGain\.gain\.value=\.42/);
+ assert.match(app,/gain\.gain\.value=\[1\.15,\.83,\.38\]/);
+ assert.match(app,/addArticulation\(state\.body\);addArticulation\(state\.pulse\);state\.lights\.forEach\(addArticulation\)/);
+ assert.match(app,/state\.body\.consonantGain\.gain\.setTargetAtTime/);
+ assert.match(app,/state\.pulse\.consonantGain\.gain\.setTargetAtTime/);
+ assert.match(app,/v\.consonantGain\.gain\.setTargetAtTime/);
 });
