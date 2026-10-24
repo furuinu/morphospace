@@ -495,10 +495,14 @@ test('evenly distributed rhythms have the requested pulse count and balanced cir
   assert.equal(hits.length,pulses);const gaps=hits.map((v,i)=>(hits[(i+1)%hits.length]-v+steps)%steps||steps);assert.ok(Math.max(...gaps)-Math.min(...gaps)<=1);
  }
 });
-test('ascending, descending and returning arpeggios actually order chord tones differently',()=>{
- const p=ctx.soundMusicalProfile(specimen(856123));p.swing=0;p.arpOctave=0;p.events.forEach(e=>e.degree=0);
- const notes=style=>{p.arpStyle=style;return Array.from({length:6},(_,i)=>ctx.soundPerformanceAt(p,(i+.4)/2,0,1).frequency)};
- const up=notes(0),down=notes(1),returning=notes(2);assert.ok(up[0]<up[1]&&up[1]<up[2]&&up[2]<up[3]);assert.ok(down[0]>down[1]&&down[1]>down[2]&&down[2]>down[3]);assert.ok(returning[2]<returning[3]&&returning[3]>returning[4]&&returning[4]>returning[5]);
+test('arpeggios follow organism motion contours rather than fixed up/down note sequences',()=>{
+ const p=ctx.soundMusicalProfile(specimen(856123));p.swing=0;
+ const notes=Array.from({length:160},(_,i)=>ctx.soundPerformanceAt(p,i*.21,0,1));
+ assert.ok(notes.every(n=>Number.isFinite(n.frequency)&&n.frequency>=45&&n.frequency<=3200));
+ assert.ok(new Set(notes.map(n=>Math.round(n.frequency))).size>2,'pulse waveform should produce different chord pitches');
+ const alternate=ctx.soundMusicalProfile(specimen(731029));
+ const other=Array.from({length:160},(_,i)=>ctx.soundPerformanceAt(alternate,i*.21,0,1).frequency.toFixed(2));
+ assert.notDeepEqual(notes.map(n=>n.frequency.toFixed(2)),other,'organism motion should alter the melodic contour');
 });
 test('all eight performance styles produce distinct bounded two-part trajectories',()=>{
  const p=ctx.soundMusicalProfile(specimen(731029)),signatures=new Set();
