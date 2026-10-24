@@ -718,13 +718,23 @@ test('sound defaults on, respects a manual off until next visit and waveform fol
  assert.equal(b.f.$('audioWaveform').hidden,true);
  assert.equal(b.f.audio.engine,null);
 });
-test('stopping playback hides waveform even when the visual animation is not running',async()=>{
+test('checked audio retains a silent indicator when playback stops',async()=>{
  const a=controller(),f=a.f;
  f.$('viewerSound').checked=true;
  await f.startBioticAudio();assert.equal(f.$('audioWaveform').hidden,false);
  f.animating=false;f.stopBioticAudio();
- assert.equal(f.$('audioWaveform').hidden,true);
- f.$('viewerSound').checked=true;assert.equal(f.syncBioticWaveformVisibility(),false);
+ assert.equal(f.$('audioWaveform').hidden,false);
+ f.$('viewerSound').checked=true;assert.equal(f.syncBioticWaveformVisibility(),true);
+ f.$('viewerSound').checked=false;assert.equal(f.syncBioticWaveformVisibility(),false);
+});
+test('camera, high-pass trim and particle diffusion have explicit regression guards',()=>{
+ assert.match(src,/modelPitch=-0\.703599/,'camera must look down an extra 30 degrees');
+ assert.match(src,/const highpassTrim=1-\.42\*clamp\(\(highpassHz-160\)\/700,0,1\)/);
+ assert.match(src,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
+ assert.match(src,/state\.rhythm\.wet\.gain\.setTargetAtTime\(\(\.025\+strain\*\.21\)\*highpassTrim/);
+ assert.match(src,/p\+=snowBrownian\(aSnowPos,aSnowInfo\.y,t\)/);
+ assert.match(src,/return snowBrownian\(out,data,j,t\)/);
+ assert.match(src,/if\(peak<\.0002\)\{ctx\.moveTo\(0,mid\);ctx\.lineTo\(w,mid\)/);
 });
 test('autoplay is attempted without a gesture and a hidden page retains active audio',async()=>{
  const a=controller(undefined,null,false);
