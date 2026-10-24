@@ -144,3 +144,11 @@ test('articulated choir distinguishes nasal and fricative consonants',()=>{
  assert.match(app,/if\(speechMode\)articulate\(state\.pulse,pulsePhoneme/);
  assert.match(app,/if\(speechMode\)articulate\(v,lightPhoneme/);
 });
+
+test('speech articulator and phonemes are initialized before first BODY sound',()=>{
+ const render=app.slice(app.indexOf('function renderPureChoir('),app.indexOf('function updatePureChoir('));
+ assert.ok(render.indexOf('const articulate=(v,phoneme,attack)=>')>=0);
+ assert.ok(render.indexOf('const speechPhonemes=')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
+ assert.ok(render.indexOf('const bodyPhoneme=')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
+ assert.ok(render.indexOf('const articulate=(v,phoneme,attack)=>')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
+});
