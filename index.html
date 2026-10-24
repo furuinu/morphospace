@@ -6752,7 +6752,7 @@ function updatePureChoir(quiet=false){
    // Three vowel resonances turn an organ-like harmonic stack into a voice timbre.
    const vowelMix=ctx.createGain();vowelMix.gain.value=.55;
    const vowels=[[800,1150,2900],[650,1700,2450],[400,2000,2650],[500,900,2400]];
-   for(let j=0;j<3;j++){const f=ctx.createBiquadFilter(),g=ctx.createGain();f.type='bandpass';f.frequency.value=vowels[i][j];f.Q.value=j===0?3:5;g.gain.value=[1.25,.85,.5][j];v.gain.connect(f);f.connect(g);g.connect(vowelMix);v.formants.push(f);}
+   for(let j=0;j<3;j++){const f=ctx.createBiquadFilter(),g=ctx.createGain();f.type='bandpass';f.frequency.value=vowels[i][j];f.Q.value=j===0?3:5;g.gain.value=[1.25,.85,.5][j];v.gain.connect(f);f.connect(g);g.connect(vowelMix);v.formants.push({filter:f,base:vowels[i][j]});}
    if(v.pan){v.pan.pan.value=(i-1.5)*.18;vowelMix.connect(v.pan);v.pan.connect(pureChoir.master)}
    else vowelMix.connect(pureChoir.master);
    for(let h=1;h<=5;h++){
@@ -6824,7 +6824,7 @@ function updatePureChoir(quiet=false){
   const light=lights[i],articulation=emission&&emission.mode!==0?.16+1.12*light+.9*pureChoir.lightAccent[i]:1;
   v.gain.gain.setTargetAtTime((.42+.3*breath+.3*coupling*(.5+.5*bodyWave)+.75*pureChoir.beatAccent)*articulation,ctx.currentTime,.025);
   const vowelShift=1+.12*bodyWave*coupling+.08*light;
-  for(const f of v.formants)f.frequency.setTargetAtTime(f.frequency.value*vowelShift,ctx.currentTime,.08);
+  for(const f of v.formants)f.filter.frequency.setTargetAtTime(f.base*vowelShift,ctx.currentTime,.08);
  }
  // Faster light pulses also brighten the choir, while the low-frequency body
  // motion retains the long legato envelope.
