@@ -2964,10 +2964,10 @@ function soundPerformanceAt(p,beat,part=0,forceExpression){
   const sub=expression===3?p.ratchets:1,notePhase=(phase*sub)%1,gate=expression===7?p.gate:Math.min(.94,p.gate+.08);
   const kind=expression===7?2:p.voice.envelope;
   envelope=notePhase<gate?soundArticulation(kind,notePhase/gate)*(.65+.35*accent):0;
-  if(expression===1){const pulse=soundMotionArpeggio(p,x,part);envelope*=pulse.envelope;}
+  if(expression===1){const pulse=soundMotionArpeggio(p,x,part);envelope=pulse.envelope*(.6+.4*base.envelope);}
   if(expression===5&&!soundEuclideanOn(step,p.euclideanPulses,p.euclideanSteps,p.rotation))envelope=0;
   // Halve rhythmic attacks without slowing the arpeggio pitch progression.
-  if(step%2===1)envelope=0;
+  if(expression!==1&&step%2===1)envelope=0;
   if(expression===7&&event.rest)envelope=0;
   accent=step%4===0?1:((step+p.rotation)%7===0?.9:.48);
   glide=expression===7&&(step+p.rotation)%4!==0&&((step*13+p.rotation)%17)/17<p.glide;
@@ -4792,7 +4792,7 @@ float blinkValue(float phase){float t=uTime*uBlinkSpeed+phase+uSeedPhase;float w
  else if(uBlinkMode<3.5) v=0.18+0.78*(pow(max(0.0,sin(t*w*.52)),6.0)+0.65*pow(max(0.0,sin(t*w*.52-1.4)),7.0));
  else if(uBlinkMode<4.5) v=0.17+0.83*pow(max(0.0,sin(t*w*.28)),3.0);
  else if(uBlinkMode<5.5) v=0.36+0.45*sin(t*w*.13+sin(t*.72)*2.2)*sin(t*w*.07+1.0);
- else v=0.18+0.82*smoothstep(0.70,0.79,fract(t*.14));
+ else v=0.18+0.82*(smoothstep(0.70,0.79,fract(t*.14))*(1.0-smoothstep(0.94,1.0,fract(t*.14))));
  return clamp(v,0.08,1.0);}
 vec3 saturateColor(vec3 c,float amt){float l=dot(c,vec3(.2126,.7152,.0722));return clamp(vec3(l)+(c-vec3(l))*amt,0.,1.);}
 float hash21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
@@ -4891,7 +4891,7 @@ float blinkValue(float phase){float t=uTime*uBlinkSpeed+phase+uSeedPhase;float w
  else if(uBlinkMode<3.5) v=0.18+0.78*(pow(max(0.0,sin(t*w*.52)),6.0)+0.65*pow(max(0.0,sin(t*w*.52-1.4)),7.0));
  else if(uBlinkMode<4.5) v=0.17+0.83*pow(max(0.0,sin(t*w*.28)),3.0);
  else if(uBlinkMode<5.5) v=0.36+0.45*sin(t*w*.13+sin(t*.72)*2.2)*sin(t*w*.07+1.0);
- else v=0.18+0.82*smoothstep(0.70,0.79,fract(t*.14));
+ else v=0.18+0.82*(smoothstep(0.70,0.79,fract(t*.14))*(1.0-smoothstep(0.94,1.0,fract(t*.14))));
  return clamp(v,0.08,1.0);}
 
 ${chromaticGrammarGLSL}
