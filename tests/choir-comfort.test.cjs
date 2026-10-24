@@ -56,3 +56,13 @@ test('organ phrasing has actual breath gaps and motion-led response',()=>{
   assert.match(app, /const responseWindow=voiceDNA\.response===0/);
   assert.match(app, /roundedLightEnvelope\(a,duration\)[^;]+\*responseWindow/);
 });
+
+test('comfort stage softens the choir and preserves deliberate rests',()=>{
+  assert.match(app, /state\.comfortLowpass=ctx\.createBiquadFilter\(\)/);
+  assert.match(app, /state\.comfortLowpass\.frequency\.value=4600/);
+  assert.match(app, /state\.master\.connect\(state\.comfortLowpass\);state\.comfortLowpass\.connect\(engine\.sampleInput\)/);
+  assert.match(app, /state\.pulse\.tone\.Q\.setTargetAtTime\(clamp\(1\.1\+coupling\*\.7,\.7,2\.5\)/);
+  assert.match(app, /const normalization=clamp\(Math\.sqrt\(\.42\/Math\.max\(\.22,state\.perceivedLevel\)\),\.72,1\.0\)/);
+  assert.match(app, /state\.master\.gain\.setTargetAtTime\(quiet\?0:volume\*\.43\*normalization\*fade,ctx\.currentTime,\.55\)/);
+  assert.match(app, /state\.comfortLowpass\?\.disconnect\(\)/);
+});
