@@ -606,7 +606,7 @@ test('metallic light calls soften above 3 kHz without filtering bass or body',()
  assert.match(choir,/tamer\.type='highshelf';tamer\.frequency\.value=3000;tamer\.gain\.value=-3\.5/);
  assert.match(choir,/v\.out\.disconnect\(\);v\.out\.connect\(tamer\);tamer\.connect\(rhythmInput\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\)/);
- assert.match(choir,/\.20\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.033/);
+ assert.match(choir,/\.20\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.09/);
  assert.match(sample,/1700\+2800\*breathEnvelope\+170\*pulse/);
  assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(bodyLevel/);
 });
