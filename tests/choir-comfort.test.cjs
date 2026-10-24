@@ -85,3 +85,12 @@ test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
   assert.match(app, /state\.body\.exciter\.frequency\.setTargetAtTime/);
   assert.match(app, /voice\.exciter\.stop\(\)/);
 });
+
+test('choir mode routes to articulating vowel-consonant synthesis rather than pure beep choir',()=>{
+  assert.match(app, /function update\(individuals,volume,gentleChoir=false\)/);
+  assert.match(app, /const gentleChoir=voiceSample\.mode==='choir'/);
+  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\?0:Number\(\$\('viewerSoundVolume'\)\.value\)\/100,gentleChoir\)/);
+  assert.match(app, /if\(gentleChoir\)stopPureChoir\(\);else updatePureChoir\(quiet\)/);
+  assert.match(app, /v\.harmony=gentleChoir\?vocalHarmonyFamilies\.choral/);
+  assert.match(app, /gentleChoir\?\.003:\.028/);
+});
