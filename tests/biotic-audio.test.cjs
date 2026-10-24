@@ -582,14 +582,14 @@ test('morph source voices fade independently and wavetable updates retain their 
  assert.match(src,/renderVoiceSample\(quiet,incomingVoiceSample,m\.target,Math\.sin\(angle\)\)/);
  assert.doesNotMatch(sample,/stopVoiceSample\(\)/,'incoming sample setup must not mute the outgoing voice');
  assert.match(sample,/\.85\+\.15\*\.20\*pulse/,'blink sample contribution reduced to 20 percent');
- assert.match(choir,/\.07\*\(lightBed\+gate/,'light choir stays below its earlier level');
+ assert.match(choir,/sharedVoiceLevel\*clamp\(lightBed\+gate\/\.75/,'light choir stays below its earlier level');
 });
 test('20 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
  const engine=src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio='));
  assert.match(engine,/const gain=\.20\*envelope\*\(rapidLight/);
  assert.match(engine,/consonantAir\+=\.20\*envelope\*art\.air/);
- assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.07\*\(lightBed\+gate/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(sharedVoiceLevel\*clamp\(lightBed\+gate\/\.75/);
  assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\);bassPresence\.connect\(state\.master\)/);
  assert.match(choir,/bassWarmth\.frequency\.value=330/);
@@ -606,9 +606,9 @@ test('metallic light calls soften above 3 kHz without filtering bass or body',()
  assert.match(choir,/tamer\.type='highshelf';tamer\.frequency\.value=3000;tamer\.gain\.value=-3\.5/);
  assert.match(choir,/v\.out\.disconnect\(\);v\.out\.connect\(tamer\);tamer\.connect\(rhythmInput\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\)/);
- assert.match(choir,/\.07\*\(lightBed\+gate\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.16/);
+ assert.match(choir,/sharedVoiceLevel\*clamp\(lightBed\+gate\/\.75\*\(temperament===2\?\.8:\.65\)\),ctx\.currentTime,\.16/);
  assert.match(sample,/1700\+2800\*breathEnvelope\+170\*pulse/);
- assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(bodyLevel\*1\.45/);
+ assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(sharedVoiceLevel\*clamp\(bodyLevel\/\.48,0,1\)/);
 });
 test('pulse and luminous syllables follow live crests with independent gains',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
@@ -617,8 +617,8 @@ test('pulse and luminous syllables follow live crests with independent gains',()
  assert.doesNotMatch(choir,/t-state\.grooveTime>\.65/);
  assert.doesNotMatch(choir,/t-state\.lightLastHit\[i\]>\.92/);
  assert.match(choir,/sharedVoiceLevel\*clamp\(pulseEnvelope\*state\.grooveAccent,0,1\)/);
- assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.07\*\(lightBed\+gate/);
- assert.match(choir,/bodyLevel\*1\.45/);
+ assert.match(choir,/v\.out\.gain\.setTargetAtTime\(sharedVoiceLevel\*clamp\(lightBed\+gate\/\.75/);
+ assert.match(choir,/sharedVoiceLevel\*clamp\(bodyLevel\/\.48,0,1\)/);
 });
 test('closed audio-contour smoothing rounds impulses and blink envelope boundaries',()=>{
  const fn=src.slice(src.indexOf('function smoothCyclicAudioContour('),src.indexOf('function organismMotionPickups('));
