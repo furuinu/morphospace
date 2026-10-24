@@ -601,6 +601,39 @@ test('metallic light calls soften above 3 kHz without filtering bass or body',()
  assert.match(sample,/1700\+2800\*breathEnvelope\+170\*pulse/);
  assert.match(choir,/state\.body\.out\.gain\.setTargetAtTime\(bodyLevel/);
 });
+test('closed audio-contour smoothing rounds impulses and blink envelope boundaries',()=>{
+ const fn=src.slice(src.indexOf('function smoothCyclicAudioContour('),src.indexOf('function organismMotionPickups('));
+ const sandbox=vm.createContext({Float64Array,Float32Array,Math});
+ vm.runInContext(fn,sandbox);
+ const impulse=Array.from({length:64},(_,j)=>j===0?1:0),curve=sandbox.smoothCyclicAudioContour(impulse,3);
+ assert.equal(curve.length,64);
+ assert.ok(curve[0]<.30&&curve[0]>.05,'pointed impulse becomes a rounded peak');
+ assert.ok(curve[1]>curve[2]&&curve[2]>curve[3]&&curve[3]>0,'rounded peak has smooth shoulders');
+ assert.equal(curve[1],curve[63],'the circular contour closes without a seam');
+ assert.ok(Math.abs(curve.reduce((a,b)=>a+b,0)-1)<1e-12,'contour smoothing preserves average');
+ const envelope=x=>sandbox.roundedLightEnvelope(x,.4);
+ for(const x of [-.01,0,.001,.04,.12,.25,.39,.4,.5])assert.ok(envelope(x)>=0&&envelope(x)<=1);
+ assert.equal(envelope(0),0);assert.equal(envelope(.4),0);
+ assert.ok(envelope(.001)<envelope(.04)*.01,'light attack should have no sudden slope');
+ assert.ok(envelope(.399)<envelope(.35)*.01,'light release should have no sudden slope');
+});
+test('rounded luminous harmonic spectra do not change skin or body sources',()=>{
+ const g=graph(),tables=[];
+ g.context.createPeriodicWave=(real,imag)=>{const w={real,imag};tables.push(w);return w;};
+ const previous=g.context.createOscillator;
+ g.context.createOscillator=()=>{const osc=previous();osc.setPeriodicWave=wave=>{osc.wave=wave;osc.type='custom';};return osc;};
+ const e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ e.update([{sp,weight:1}],.5);
+ const v=[...e.voices.values()][0];
+ assert.equal(tables.length,1,'all light emitters share one smoothed wavetable');
+ assert.ok(v.lightVoices.every(p=>p.source.type==='custom'&&p.source.wave===tables[0]));
+ assert.ok(v.skinVoices.every(p=>p.source.type==='sawtooth'&&!p.source.wave));
+ assert.ok(v.layers.every(p=>p.source.type==='sawtooth'&&!p.source.wave));
+ const partials=tables[0].imag;
+ assert.ok(Math.abs(partials[8]/partials[1])<.04,'sharp high harmonics are suppressed');
+ assert.ok(Math.abs(partials[2]/partials[1])>.2,'rounded timbre still has metallic upper harmonics');
+ e.silence();
+});
 function controller(resume,savedSound=null,active=true,savedVolume=null){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
  g.context.resume=resume||(()=>{g.context.state='running';return Promise.resolve()});g.context.suspend=()=>{g.context.state='suspended';return Promise.resolve()};
