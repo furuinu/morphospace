@@ -593,8 +593,8 @@ test('20 percent blinking voices preserve independent bass and body-driven rhyth
  assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);
  assert.match(choir,/state\.pulse\.out\.connect\(bassWarmth\);bassWarmth\.connect\(bassPresence\);bassPresence\.connect\(state\.master\)/);
  assert.match(choir,/bassWarmth\.frequency\.value=330/);
- assert.match(choir,/bassPresence\.gain\.value=\.22/);
- assert.match(choir,/pulseEnvelope\*\.055\*state\.grooveAccent/);
+ assert.match(choir,/bassPresence\.gain\.value=0/);
+ assert.match(choir,/sharedVoiceLevel\*clamp\(pulseEnvelope\*state\.grooveAccent,0,1\)/);
  assert.match(choir,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
  assert.match(choir,/tune\(state\.body,bodyPitch/,'body voice follows its existing bending law');
  assert.match(choir,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
@@ -616,7 +616,7 @@ test('pulse and luminous syllables follow live crests with independent gains',()
  assert.match(choir,/light>\.38&&previous<=\.38/);
  assert.doesNotMatch(choir,/t-state\.grooveTime>\.65/);
  assert.doesNotMatch(choir,/t-state\.lightLastHit\[i\]>\.92/);
- assert.match(choir,/pulseEnvelope\*\.055\*state\.grooveAccent/);
+ assert.match(choir,/sharedVoiceLevel\*clamp\(pulseEnvelope\*state\.grooveAccent,0,1\)/);
  assert.match(choir,/v\.out\.gain\.setTargetAtTime\(\.07\*\(lightBed\+gate/);
  assert.match(choir,/bodyLevel\*1\.45/);
 });
