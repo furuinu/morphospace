@@ -86,11 +86,15 @@ test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
   assert.match(app, /voice\.exciter\.stop\(\)/);
 });
 
-test('choir mode routes to articulating vowel-consonant synthesis rather than pure beep choir',()=>{
-  assert.match(app, /function update\(individuals,volume,gentleChoir=false\)/);
-  assert.match(app, /const gentleChoir=voiceSample\.mode==='choir'/);
-  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\?0:Number\(\$\('viewerSoundVolume'\)\.value\)\/100,gentleChoir\)/);
-  assert.match(app, /if\(gentleChoir\)stopPureChoir\(\);else updatePureChoir\(quiet\)/);
-  assert.match(app, /v\.harmony=gentleChoir\?vocalHarmonyFamilies\.choral/);
-  assert.match(app, /gentleChoir\?\.003:\.028/);
+test('choir restores body pulse light timing with articulated voices',()=>{
+  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\|\|voiceSample\.mode==='choir'\?0/);
+  assert.match(app, /updateVoiceSample\(quiet\);updatePureChoir\(quiet\)/);
+  assert.match(app, /state\.pulse=giveVocalSource\(makeVoice\(9,450,'lowpass'\),'pulse'\)/);
+  assert.match(app, /const v=giveVocalSource\(makeVoice\(8,/);
+  assert.match(app, /for\(const partial of v\.oscillators\)partial\.amp\.disconnect\(\)/);
+  assert.match(app, /const pulseVowel=state\.pulse\.vowelBands/);
+  assert.match(app, /const lightVowel=v\.vowelBands/);
+  assert.match(app, /if\(!v\.exciter&&typeof ctx\.createPeriodicWave/);
+  assert.match(app, /const harmonyPitch=\(role,octave=0\)/);
+  assert.match(app, /const responseWindow=voiceDNA\.response===0/);
 });
