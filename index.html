@@ -6556,7 +6556,7 @@ function createBioticAudioEngine(context){
     const hz=clamp(fundamental*Math.pow(2,(vibrato+layer.detune)/12),285,710);
     // Short portamento only masks clicks at a syllable boundary, never creates an alarm sweep.
     smooth(layer.source.frequency,hz,now,.024);
-    const gain=envelope*shape.voiced*overlapTrim*[.095,.078,.062][i]*(3/(2+v.voiceCount))*(.85+.15*motion)*(.85+.15*activity);
+    const gain=envelope*shape.voiced*overlapTrim*[.095,.078,.062][i]*(3/(2+v.voiceCount))*(.85+.15*motion)*(.85+.15*activity)*(1-.18*Math.min(1,maxBlink));
     smooth(layer.gain.gain,gain,now,.045);
     smooth(layer.nasal.frequency,choice.consonant==='m'?310:450,now,.06);
     smooth(layer.nasalGain.gain,envelope*shape.nasal*overlapTrim*.018,now,.04);
@@ -6619,7 +6619,7 @@ function tickBioticAudio(){
  const engine=bioticAudio.engine;
  if(engine.context.state!=='running'){stopBioticAudio('活動音を一時停止しています。画面タップで再開します。');return;}
  const quiet=!!(nanoAction||nanoOperationBusy||stockDialog.open||captureShareIsOpen||(videoResult&&$('videoSaveDialog').open));
- const m=viewer.morph,visual=(sp,emission)=>({time:typeof bodyTime==='number'?bodyTime:0,surfaceTime:typeof rigTime==='number'?rigTime:0,motion:$('motion').checked?Number($('motionAmp').value)/100:0,emission:emission||(typeof viewerEmissionValues==='function'?viewerEmissionValues(sp,true):undefined)});
+ const m=viewer.morph,visual=(sp,emission)=>({time:typeof bodyTime==='number'?bodyTime:0,surfaceTime:typeof bodyTime==='number'?bodyTime:0,motion:$('motion').checked?Number($('motionAmp').value)/100:0,emission:emission||(typeof viewerEmissionValues==='function'?viewerEmissionValues(sp,true):undefined)});
  const individuals=m?[{sp:m.source,weight:1-m.t,visual:visual(m.source,m.emissionA)},{sp:m.target,weight:m.t,visual:visual(m.target,m.emissionB)}]:[{sp:spec,weight:1,visual:visual(spec)}];
  try{engine.update(individuals,quiet?0:Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
