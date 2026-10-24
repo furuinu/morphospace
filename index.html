@@ -6774,7 +6774,7 @@ function createBioticAudioEngine(context){
  return{context,output:master,sampleInput:limiter,waveform,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
 }
 const bioticAudio={engine:null,enabled:false,starting:false,revision:0,timer:null,suspendTimer:null,backgroundAt:0,wakeLock:null};
-async async function requestBioticWakeLock(){
+async function requestBioticWakeLock(){
  if(!bioticAudio.enabled||document.hidden||!navigator.wakeLock?.request||bioticAudio.wakeLock)return;
  try{const lock=await navigator.wakeLock.request('screen');
   if(bioticAudio.enabled&&!document.hidden)bioticAudio.wakeLock=lock;else await lock.release();
@@ -7308,7 +7308,7 @@ function tickBioticAudio(){
  const individuals=m?[{sp:m.source,weight:1-m.t,visual:visual(m.source,m.emissionA)},{sp:m.target,weight:m.t,visual:visual(m.target,m.emissionB)}]:[{sp:spec,weight:1,visual:visual(spec)}];
  try{engine.update(individuals,quiet||voiceSample.mode==='sample'||voiceSample.mode==='choir'?0:Number($('viewerSoundVolume').value)/100);updateVoiceSample(quiet);updatePureChoir(quiet)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
-async async function startBioticAudio(){
+async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;
  const revision=++bioticAudio.revision;bioticAudio.starting=true;bioticAudio.enabled=false;
  if(bioticAudio.timer!==null)clearInterval(bioticAudio.timer);bioticAudio.timer=null;
