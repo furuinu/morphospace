@@ -135,3 +135,12 @@ test('articulated choir remains separate from original acid choir',()=>{
  assert.match(app, /speechMode\?lightPhoneme\.v:syllableSequence\[lightStep\]/);
  assert.match(app, /voiceSample\.mode==='speech'\)\?0/);
 });
+
+test('articulated choir distinguishes nasal and fricative consonants',()=>{
+ assert.match(app,/const articulate=\(v,phoneme,attack\)=>/);
+ assert.match(app,/v\.consonantFilter\.frequency\.setTargetAtTime/);
+ assert.match(app,/v\.nasalGain\.gain\.setTargetAtTime/);
+ assert.match(app,/if\(speechMode\)articulate\(state\.body,bodyPhoneme/);
+ assert.match(app,/if\(speechMode\)articulate\(state\.pulse,pulsePhoneme/);
+ assert.match(app,/if\(speechMode\)articulate\(v,lightPhoneme/);
+});
