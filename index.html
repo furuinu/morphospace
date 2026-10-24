@@ -6301,42 +6301,64 @@ function createBioticAudioEngine(context){
  function vocalHarmonyNote(v,phrase,voice,step,anchor){
   if(voice===0)return{...anchor,harmonyTension:false,interval:0};
   const rule=v.harmony,scale=v.profile.scale,len=scale.length;
-  // Tension happens on the middle syllable, followed by a return to the stable voicing.
+  // Keep all the inherited modal patterns. The former Balkan family alone now
+  // makes gentle consonant changes rather than deliberate chromatic seconds.
   const tension=step%3===1&&(phrase+v.dna.motif)%3!==0;
-  const interval=(tension?rule.tension:rule.stable)[voice-1];
+  const intervals=tension?rule.tension:rule.stable;
   const low=[62,67,72][voice],high=[69,74,77][voice],middle=(low+high)/2;
   const toneAt=degree=>12*Math.floor(degree/len)+scale[((degree%len)+len)%len];
-  const base=toneAt(anchor.degree),target=anchor.midi+interval;
+  const base=toneAt(anchor.degree),target=anchor.midi+intervals[voice-1];
   let best=clamp(target,low,high),score=Infinity;
-  // Voice-lead to the closest inherited scale tone without exceeding the voice range.
-  // The former Bulgarian family alone uses a consonance filter: no seconds,
-  // sevenths, tritones or crossing between the answering choral voices.
-  const isChoral=rule.key==='choral';
-  const consonant=semitones=>{
-   const interval=((semitones%12)+12)%12;
-   return [0,3,4,5,7,8,9].some(value=>Math.abs(interval-value)<.12);
-  };
-  const previous=voice>0?v.layers[voice].noteMidi:0;
-  const lowerVoice=voice===2?v.layers[1].noteMidi:0;
-  for(let offset=-len;offset<=len*2;offset++){
-   const candidate=anchor.midi+toneAt(anchor.degree+offset)-base;
-   if(candidate<low-.0001||candidate>high+.0001)continue;
-   if(isChoral&&!consonant(candidate-anchor.midi))continue;
-   if(isChoral&&voice===2&&(candidate<lowerVoice-.001||!consonant(candidate-lowerVoice)))continue;
-   const cost=Math.abs(candidate-target)+Math.abs(candidate-middle)*.035+
-    (isChoral&&previous>0?Math.abs(candidate-previous)*.09:0);
-   if(cost<score){score=cost;best=candidate;}
-  }
-  // A very narrow or unusual scale may leave no available choral note.
-  // In that case prioritise a quiet consonant pitch over the dissonant fallback.
-  if(isChoral&&score===Infinity){
-   for(let offset=0;offset<=12;offset++){
-    const candidate=low+offset;
-    if(candidate>high+.001)break;
-    if(!consonant(candidate-anchor.midi))continue;
-    if(voice===2&&(candidate<lowerVoice-.001||!consonant(candidate-lowerVoice)))continue;
-    const cost=Math.abs(candidate-target)+Math.abs(candidate-middle)*.035+
-     (previous>0?Math.abs(candidate-previous)*.09:0);
+  if(rule.key==='choral'){
+   // Choose BOTH upper voices as one chord, so neither can collide with the
+   // melody or each other even when the allowed octave ranges are narrow.
+   const key=phrase+':'+step+':'+anchor.midi.toFixed(5);
+   if(v.choralVoicing?.key!==key){
+    const consonant=semitones=>{
+     const interval=((semitones%12)+12)%12;
+     return [0,3,4,5,7,8,9].some(value=>Math.abs(interval-value)<.12);
+    };
+    const available=index=>{
+     const lo=[62,67,72][index],hi=[69,74,77][index],notes=[];
+     for(let shift=-len;shift<=len*2;shift++){
+      const note=anchor.midi+toneAt(anchor.degree+shift)-base;
+      if(note>=lo-.001&&note<=hi+.001&&consonant(note-anchor.midi)&&
+         !notes.some(x=>Math.abs(note-x)<.001))notes.push(note);
+     }
+     return notes;
+    };
+    const preferred=intervals;
+    let selected=null,least=Infinity;
+    const consider=(alto,soprano,chromatic=false)=>{
+     if(!consonant(alto-anchor.midi)||!consonant(soprano-anchor.midi))return;
+     if(soprano<alto-.001||!consonant(soprano-alto))return;
+     if(alto<67-.001||alto>74+.001||soprano<72-.001||soprano>77+.001)return;
+     const previousAlto=v.layers[1].noteMidi,previousSoprano=v.layers[2].noteMidi;
+     const deviation=Math.abs(alto-(anchor.midi+preferred[0]))+
+      Math.abs(soprano-(anchor.midi+preferred[1]));
+     const leading=(previousAlto>0?Math.abs(alto-previousAlto):0)+
+      (previousSoprano>0?Math.abs(soprano-previousSoprano):0);
+     const cost=deviation+leading*.09+(chromatic?8:0);
+     if(cost<least){least=cost;selected=[alto,soprano];}
+    };
+    const altos=available(1),sopranos=available(2);
+    for(const alto of altos)for(const soprano of sopranos)consider(alto,soprano);
+    // Rare non-triadic scales may not contain any fully consonant triad
+    // within these voice ranges. In this family, consonance has priority.
+    if(!selected){
+     for(const pair of [[7,12],[4,9],[4,7],[3,7],[5,12],[3,8]]){
+      consider(anchor.midi+pair[0],anchor.midi+pair[1],true);
+     }
+    }
+    v.choralVoicing={key,notes:selected||[clamp(anchor.midi+7,67,74),clamp(anchor.midi+12,72,77)]};
+   }
+   best=v.choralVoicing.notes[voice-1];
+  }else{
+   // Other scale families are untouched, including their inherited modal colour.
+   for(let offset=-len;offset<=len*2;offset++){
+    const candidate=anchor.midi+toneAt(anchor.degree+offset)-base;
+    if(candidate<low-.0001||candidate>high+.0001)continue;
+    const cost=Math.abs(candidate-target)+Math.abs(candidate-middle)*.035;
     if(cost<score){score=cost;best=candidate;}
    }
   }
