@@ -6102,7 +6102,8 @@ const viewerTimerCircumference=2*Math.PI*24;
 function updateViewerCountdown(){
  const timer=$('viewerTimer'),arc=$('viewerTimerArc'),digits=$('viewerTimerSeconds');
  if(!timer||!arc||!digits)return;
- const visible=selected>=0&&$('overlay').classList.contains('open')&&!document.hidden&&viewer.seconds>0&&viewerItems().length>1;
+ const itemCount=viewer.source==='stock'?stockEntries.length:population.length;
+ const visible=selected>=0&&$('overlay').classList.contains('open')&&!document.hidden&&viewer.seconds>0&&itemCount>1;
  timer.hidden=!visible;
  if(!visible)return;
  const changing=!!(viewer.morph||viewer.preparing);
