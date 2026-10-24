@@ -75,3 +75,13 @@ test('phone-audible choir fundamental and parallel vowel formant',()=>{
   assert.match(app, /const bassPitch=Math\.max\(105,harmonyPitch\(degree,-1\)\)/);
   assert.match(app, /bassPresence\.gain\.value=\.22/);
 });
+
+test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
+  assert.match(app, /vocalExciter\.type='sawtooth'/);
+  assert.match(app, /vocalExciter\.connect\(voicedWarmth\)/);
+  assert.match(app, /const vowelBands=\[\[810,1260,2800\]/);
+  assert.match(app, /state\.body\.formants=formants/);
+  assert.match(app, /const vowelIndex=\(seed\+Math\.floor\(t\/voiceDNA\.phraseLength\)\)%state\.body\.vowelBands\.length/);
+  assert.match(app, /state\.body\.exciter\.frequency\.setTargetAtTime/);
+  assert.match(app, /voice\.exciter\.stop\(\)/);
+});
