@@ -73,7 +73,7 @@ test('phone-audible choir fundamental and parallel vowel formant',()=>{
   assert.match(app, /vocalExciterGain\.connect\(filter\);filter\.connect\(gain\);gain\.connect\(state\.body\.out\)/);
   assert.match(app, /state\.body\.vowelFormant\.frequency\.setTargetAtTime/);
   assert.match(app, /const bassPitch=clamp\(harmonyPitch\(degree,0\)/);
-  assert.match(app, /bassPresence\.gain\.value=\.22/);
+  assert.match(app, /bassPresence\.gain\.value=0/);
 });
 
 test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
@@ -81,7 +81,7 @@ test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
   assert.match(app, /vocalExciter\.connect\(voicedWarmth\)/);
   assert.match(app, /const vowelBands=\[\[810,1260,2800\]/);
   assert.match(app, /state\.body\.formants=formants/);
-  assert.match(app, /const vowelIndex=\(seed\+Math\.floor\(t\/voiceDNA\.phraseLength\)\)%state\.body\.vowelBands\.length/);
+  assert.match(app, /const vowelIndex=bodySyllables\[/);
   assert.match(app, /state\.body\.exciter\.frequency\.setTargetAtTime/);
   assert.match(app, /voice\.exciter\.stop\(\)/);
 });
@@ -105,4 +105,13 @@ test('legacy vocal registers retain body pulse light onset relationships',()=>{
   assert.match(app, /const lightPitch=clamp\(harmonyPitch\(voiceRole,0\),legacyHz\(67\),legacyHz\(77\)\)/);
   assert.match(app, /const responseWindow=voiceDNA\.response===0/);
   assert.match(app, /if\(emission&&emission\.strength>0&&emission\.mode!==0&&light>\.38&&previous<=\.38\)/);
+});
+
+test('uniform vocal baseline and soft organ syllables',()=>{
+ assert.match(app, /const sharedVoiceLevel=\.20/);
+ assert.match(app, /voicing\.gain\.value=\.15/);
+ assert.match(app, /const bodySyllables=\[0,3,4,1\]/);
+ assert.match(app, /const pulseSyllables=\[4,3,0,4\]/);
+ assert.match(app, /const lightSyllables=\[\[2,1,2\]/);
+ assert.match(app, /const lightVowel=v\.vowelBands\[syllableSequence\[lightStep\]\]/);
 });
