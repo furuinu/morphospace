@@ -289,15 +289,19 @@ test('vocal scale and motif genes influence the pitches heard',()=>{
  assert.notEqual(original,notes({mode:8}));
  assert.notEqual(original,notes({motif:197}));
 });
-test('modal harmony families cover Japanese, pentatonic, Arabic and Balkan-inspired counterpoint',()=>{
+test('all inherited modes remain available, but Balkan clusters are replaced by a consonant choral family',()=>{
  const graph1=graph(),engine=ctx.createBioticAudioEngine(graph1.context);
  const names=new Set(Array.from({length:18},(_,i)=>engine.harmonyForMode(i).key));
- assert.ok(['japanese','pentatonic','arabic','bulgarian','microtonal','modal'].every(name=>names.has(name)));
+ assert.ok(['japanese','pentatonic','arabic','choral','microtonal','modal'].every(name=>names.has(name)));
+ assert.equal(names.has('bulgarian'),false,'no former dissonant Balkan harmony');
+ assert.equal(names.size,6,'the six mode families retain their diversity');
  assert.equal(engine.harmonyForMode(0).key,'pentatonic');
  assert.equal(engine.harmonyForMode(9).key,'japanese');
  assert.equal(engine.harmonyForMode(16).key,'arabic');
- assert.equal(engine.harmonyForMode(7).key,'bulgarian');
- assert.ok(engine.harmonyForMode(7).stable[1]>engine.harmonyForMode(7).tension[1]);
+ assert.equal(engine.harmonyForMode(7).key,'choral');
+ assert.equal(engine.harmonyForMode(15).key,'choral');
+ assert.deepEqual(plain(engine.harmonyForMode(7).stable),[7,12]);
+ assert.deepEqual(plain(engine.harmonyForMode(7).tension),[4,9]);
 });
 test('vocal response voices inherit scale intervals, with bounded tension and release',()=>{
  const signatures=new Set(),heard=new Set();
@@ -321,24 +325,58 @@ test('vocal response voices inherit scale intervals, with bounded tension and re
  assert.ok(signatures.size>=30,'individual harmonic voicings should not converge');
  assert.ok(heard.size>=4,'tensions must occur across several tonal families');
 });
-test('Bulgarian-inspired close seconds resolve on a following syllable',()=>{
- let close=0,resolved=0;
- for(const seed of [1,3,5,7,9,11,13,15,17,19,21]){
-  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
-  // The neutral fallback palette shifts the sound mode by 7.
-  sp.genome.soundDNA.mode=0;
-  for(let i=0;i<240;i++){
-   g.context.currentTime=i*.13;
-   e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
-   const v=[...e.voices.values()][0];
-   if(v.harmony.key!=='bulgarian')continue;
-   const diff=v.layers[2].noteMidi-v.layers[1].noteMidi;
-   if(v.layers[2].harmonyTension&&diff>=1&&diff<=2.01)close++;
-   if(!v.layers[2].harmonyTension&&diff>=3)resolved++;
+test('reassigned chorale modes avoid seconds, sevenths and tritone collisions across three voices',()=>{
+ const allowed=[0,3,4,5,7,8,9],acceptable=d=>{
+  const semis=((d%12)+12)%12;
+  return allowed.some(p=>Math.abs(semis-p)<.12);
+ };
+ const intervalSignatures=new Set(),modes=new Set(),total=0;
+ let chords=0;
+ for(const mode of [7,15]){
+  for(const seed of [1,3,5,7,9,11,13,15,17,19,21,42,82,731029,571938,91275]){
+   const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+   // Synthetic specimens use a fixed fallback hue offset of +7 modes.
+   sp.genome.soundDNA.mode=(mode-7+18)%18;
+   for(let i=0;i<120;i++){
+    g.context.currentTime=i*.137;
+    e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+    const v=[...e.voices.values()][0];
+    assert.equal(v.harmony.key,'choral');
+    assert.equal(v.profile.mode,mode);
+    const [lead,alto,soprano]=v.layers.map(x=>x.noteMidi);
+    assert.ok(acceptable(alto-lead),'middle response must be consonant to the melody');
+    assert.ok(acceptable(soprano-lead),'upper response must be consonant to the melody');
+    assert.ok(soprano>=alto-.001,'choral voices must not cross');
+    assert.ok(acceptable(soprano-alto),'upper voices must never clash a semitone, whole tone, or tritone apart');
+    if(i%3===0)intervalSignatures.add([mode,(alto-lead).toFixed(2),(soprano-alto).toFixed(2)].join(':'));
+    chords++;
+   }
+   modes.add(mode);
   }
  }
- assert.ok(close>0,'intentional close seconds should be heard');
- assert.ok(resolved>0,'the close-interval friction must return to a wider spacing');
+ assert.equal(modes.size,2);
+ assert.ok(chords>=2000);
+ assert.ok(intervalSignatures.size>=8,'choral voicings still vary by organism and phrase');
+});
+test('non-choral scale rules keep their existing counterpoint and rhythmic expression',()=>{
+ const seeds=[1,2,5,42,73,181,729];
+ for(const seed of seeds){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+  sp.genome.soundDNA.mode=0;
+  g.context.currentTime=.5;e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+  const v=[...e.voices.values()][0],mode=v.profile.mode;
+  assert.equal(mode,7); // fallback base mode for mode=0 is 7, verify mapping above
+  assert.equal(v.harmony.key,'choral');
+  assert.ok(v.layers[0].source.starts.length===1);
+  assert.ok(v.lightVoices.length===4&&v.skinVoices.length===2);
+ }
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ sp.genome.soundDNA.mode=2; // original mode 9: Japanese fourth-based family
+ e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+ const v=[...e.voices.values()][0];
+ assert.equal(v.harmony.key,'japanese');
+ assert.deepEqual(plain(v.harmony.stable),[5,12]);
+ assert.deepEqual(plain(v.harmony.tension),[7,9]);
 });
 test('peristaltic slow vowels and finer articulated tissue rhythms share the vocal reverb',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
