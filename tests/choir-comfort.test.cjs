@@ -124,3 +124,14 @@ test('formant vowels and consonant transients are audible on all vocal organs',(
  assert.match(app,/state\.pulse\.consonantGain\.gain\.setTargetAtTime/);
  assert.match(app,/v\.consonantGain\.gain\.setTargetAtTime/);
 });
+
+test('articulated choir remains separate from original acid choir',()=>{
+ assert.match(app, /<option value="choir" selected>公開用・合唱ボイス/);
+ assert.match(app, /<option value="speech">発語合唱ボイス/);
+ assert.match(app, /const speechMode=voiceSample\.mode==='speech'/);
+ assert.match(app, /const speechPhonemes=\[/);
+ assert.match(app, /speechMode\?bodyPhoneme\.v:vowelIndex/);
+ assert.match(app, /speechMode\?pulsePhoneme\.v:pulseSyllable/);
+ assert.match(app, /speechMode\?lightPhoneme\.v:syllableSequence\[lightStep\]/);
+ assert.match(app, /voiceSample\.mode==='speech'\)\?0/);
+});
