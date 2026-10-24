@@ -530,19 +530,28 @@ test('slider keeps its 50 percent baseline and bounded 0 to 100 percent adjustme
  e.update([{sp,weight:1}],5);assert.equal(e.output.gain.value,1.30);
  e.update([{sp,weight:1}],-5);assert.equal(e.output.gain.value,0);
 });
-test('soft ceiling protects speakers and the same safe signal is recorded',()=>{
+test('peak guard and soft ceiling protect speakers and recordings without attenuating quiet voices',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
  const limiter=g.nodes.find(n=>n.type==='limiter'),safety=g.nodes.find(n=>n.type==='safety');
- const boost=limiter?.connections[0];
+ const boost=limiter?.connections[0],peakGuard=boost?.connections[0];
  assert.ok(limiter&&safety&&boost&&boost.type==='gain');
  assert.equal(boost.gain.value,1.25,'output is boosted by precisely 25 percent');
- assert.ok(boost.connections.includes(safety),'boost must precede the soft clipping protection');
+ assert.ok(peakGuard&&peakGuard.type==='limiter'&&peakGuard!==limiter,'independent fast peak guard follows boost');
+ assert.ok(peakGuard.connections.includes(safety),'peak guard must precede shared safety ceiling');
+ assert.equal(peakGuard.threshold.value,-8);
+ assert.equal(peakGuard.ratio.value,18);
+ assert.equal(peakGuard.attack.value,.002);
+ assert.equal(peakGuard.release.value,.17);
  assert.ok(safety.connections.includes(e.waveform));
  assert.ok(e.waveform.connections.includes(g.context.destination));
- assert.equal(safety.oversample,'2x');
+ assert.equal(safety.oversample,'4x');
  assert.ok(ArrayBuffer.isView(safety.curve)&&safety.curve.length>=1024);
  let last=-2;
- for(const value of safety.curve){assert.ok(Number.isFinite(value));assert.ok(value>=last);assert.ok(Math.abs(value)<.92);last=value;}
+ for(let i=0;i<safety.curve.length;i++){
+  const value=safety.curve[i],input=2*i/(safety.curve.length-1)-1;
+  assert.ok(Number.isFinite(value));assert.ok(value>=last);assert.ok(Math.abs(value)<.95);last=value;
+  if(Math.abs(input)<=.80)assert.ok(Math.abs(value-input)<1e-6,'quiet input must retain unity gain');
+ }
  for(const volume of [0,.5,1]){
   e.update([{sp,weight:1}],volume);
   assert.equal(boost.gain.value,1.25,'volume changes must not compound the fixed boost');
@@ -552,6 +561,19 @@ test('soft ceiling protects speakers and the same safe signal is recorded',()=>{
  assert.equal(e.output.connections.length,1);
  rec.disconnect();assert.equal(safety.connections.length,1);
  assert.equal(g.track.stops,1);
+});
+test('morph source voices fade independently and wavetable updates retain their fundamental',()=>{
+ const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('const voiceSample='));
+ const sample=src.slice(src.indexOf('function renderVoiceSample('),src.indexOf('function updateVoiceSample('));
+ assert.match(choir,/v\.waveVoice=nextIndex/);
+ assert.match(choir,/v\.waveVoice!==undefined&&p\.h<=2\?1:p\.h/);
+ assert.match(src,/renderPureChoir\(quiet,pureChoir,m\.source,Math\.cos\(angle\)\)/);
+ assert.match(src,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
+ assert.match(src,/renderVoiceSample\(quiet,voiceSample,m\.source,Math\.cos\(angle\)\)/);
+ assert.match(src,/renderVoiceSample\(quiet,incomingVoiceSample,m\.target,Math\.sin\(angle\)\)/);
+ assert.doesNotMatch(sample,/stopVoiceSample\(\)/,'incoming sample setup must not mute the outgoing voice');
+ assert.match(sample,/\.85\+\.15\*\.85\*pulse/,'blink sample contribution reduced by 15 percent');
+ assert.match(choir,/\.85\*\(lightBed\+gate/,'light choir volume reduced by 15 percent');
 });
 function controller(resume,savedSound=null,active=true,savedVolume=null,legacyVolume=null){
  const g=graph(),elements={},intervals=new Map(),timeouts=[],listeners={},writes={};let timer=0;
