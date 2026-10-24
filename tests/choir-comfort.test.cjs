@@ -70,7 +70,7 @@ test('comfort stage softens the choir and preserves deliberate rests',()=>{
 test('phone-audible choir fundamental and parallel vowel formant',()=>{
   assert.match(app, /const sharedBodyPitch=Math\.max\(150,base\*noteAt/);
   assert.match(app, /vowelFormant\.type='bandpass';vowelFormant\.frequency\.value=1200/);
-  assert.match(app, /partial\.amp\.connect\(vowelFormant\)/);
+  assert.match(app, /vocalExciterGain\.connect\(filter\);filter\.connect\(gain\);gain\.connect\(state\.body\.out\)/);
   assert.match(app, /state\.body\.vowelFormant\.frequency\.setTargetAtTime/);
   assert.match(app, /const bassPitch=Math\.max\(105,harmonyPitch\(degree,-1\)\)/);
   assert.match(app, /bassPresence\.gain\.value=\.22/);
