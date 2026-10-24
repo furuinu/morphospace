@@ -6638,6 +6638,14 @@ function createBioticAudioEngine(context){
     return i<v.voiceCount?Math.max(call.envelope,motionCall):0;
    });
    const overlapTrim=1/Math.sqrt(Math.max(1,calls.reduce((total,value)=>total+value,0)));
+   // A choir can articulate different syllables at staggered times, but each
+   // responding part must hear the SAME harmonic anchor at the same moment.
+   // This shared clock is used only for the choral family; the other inherited
+   // modal and gesture rules stay untouched.
+   const leadingCall=callStates[0],leadingCount=2+((d.meter+sp.seed)%2)+(d.complexity>.76?1:0);
+   const leadingStep=Math.min(leadingCount-1,Math.floor(leadingCall.local*leadingCount));
+   const leadingGesture=v.gestureVoice===0&&gestureEnvelope*.45>leadingCall.envelope;
+   const choralStep=leadingGesture?3+Math.floor(Math.max(0,v.gestureAt)*2):leadingStep;
    v.layers.forEach((layer,i)=>{
     const envelope=calls[i],local=callStates[i].local;
     const motionCall=i===v.gestureVoice?gestureEnvelope*.45:0;
@@ -6650,8 +6658,9 @@ function createBioticAudioEngine(context){
     const choice=syllableFor(sp.seed,phrase,i,activeStep);
     layer.syllable=choice.label;
     const shape=articulation(choice.consonant,syllablePhase);
-    const phraseAnchor=vocalNoteAt(v,phrase,0,activeStep);
-    const note=vocalHarmonyNote(v,phrase,i,activeStep,phraseAnchor);
+    const harmonyStep=v.harmony.key==='choral'?choralStep:activeStep;
+    const phraseAnchor=vocalNoteAt(v,phrase,0,harmonyStep);
+    const note=vocalHarmonyNote(v,phrase,i,harmonyStep,phraseAnchor);
     layer.noteMidi=note.midi;layer.noteStep=activeStep;layer.contourId=note.contourId;
     layer.mode=note.mode;layer.phraseNumber=phrase;
     layer.harmonyTension=!!note.harmonyTension;layer.harmonicInterval=note.interval;
