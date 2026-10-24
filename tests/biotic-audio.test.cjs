@@ -31,7 +31,7 @@ test('organisms produce 1-3 staggered calls in mid, upper-mid and high ranges',(
   const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
   e.update([{sp,weight:1}],.5);const v=[...e.voices.values()][0];
   counts.add(v.voiceCount);assert.ok(v.voiceCount>=1&&v.voiceCount<=3);
-  assert.equal(v.layers.length,3);assert.equal(v.sources.length,4);
+  assert.equal(v.layers.length,3);assert.equal(v.sources.length,5);
   assert.ok(v.layers.every(layer=>layer.source.type==='sawtooth'&&layer.filters.length===3));
   assert.ok(v.sources.every(source=>source.starts.length===1));
   const initial=g.nodes.length,sounding=[0,0,0],overlap=[];
@@ -170,6 +170,85 @@ test('vocal scale and motif genes influence the pitches heard',()=>{
  const original=notes({});
  assert.notEqual(original,notes({mode:8}));
  assert.notEqual(original,notes({motif:197}));
+});
+test('modal harmony families cover Japanese, pentatonic, Arabic and Balkan-inspired counterpoint',()=>{
+ const graph1=graph(),engine=ctx.createBioticAudioEngine(graph1.context);
+ const names=new Set(Array.from({length:18},(_,i)=>engine.harmonyForMode(i).key));
+ assert.ok(['japanese','pentatonic','arabic','bulgarian','microtonal','modal'].every(name=>names.has(name)));
+ assert.equal(engine.harmonyForMode(0).key,'pentatonic');
+ assert.equal(engine.harmonyForMode(9).key,'japanese');
+ assert.equal(engine.harmonyForMode(16).key,'arabic');
+ assert.equal(engine.harmonyForMode(7).key,'bulgarian');
+ assert.ok(engine.harmonyForMode(7).stable[1]>engine.harmonyForMode(7).tension[1]);
+});
+test('vocal response voices inherit scale intervals, with bounded tension and release',()=>{
+ const signatures=new Set(),heard=new Set();
+ for(let seed=1;seed<=36;seed++){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+  const chord=[];
+  for(let t=0;t<175;t++){
+   g.context.currentTime=t*.18;
+   e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+   const v=[...e.voices.values()][0],pair=v.layers.slice(1);
+   for(const [i,layer] of pair.entries()){
+    assert.ok(Number.isFinite(layer.noteMidi));
+    assert.ok(layer.noteMidi>=[67,72][i]&&layer.noteMidi<=[74,77][i]);
+    assert.ok(Number.isFinite(layer.harmonicInterval));
+    if(layer.harmonyTension)heard.add(v.harmony.key);
+   }
+   if(t%11===0)chord.push(pair.map(x=>x.noteMidi.toFixed(2)).join(':'));
+  }
+  signatures.add(chord.join('|'));
+ }
+ assert.ok(signatures.size>=30,'individual harmonic voicings should not converge');
+ assert.ok(heard.size>=4,'tensions must occur across several tonal families');
+});
+test('Bulgarian-inspired close seconds resolve on a following syllable',()=>{
+ let close=0,resolved=0;
+ for(const seed of [1,3,5,7,9,11,13,15,17,19,21]){
+  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(seed);
+  // The neutral fallback palette shifts the sound mode by 7.
+  sp.genome.soundDNA.mode=0;
+  for(let i=0;i<240;i++){
+   g.context.currentTime=i*.13;
+   e.update([{sp,weight:1,visual:{motion:0,emission:{mode:0}}}],.5);
+   const v=[...e.voices.values()][0];
+   if(v.harmony.key!=='bulgarian')continue;
+   const diff=v.layers[2].noteMidi-v.layers[1].noteMidi;
+   if(v.layers[2].harmonyTension&&diff>=1&&diff<=2.01)close++;
+   if(!v.layers[2].harmonyTension&&diff>=3)resolved++;
+  }
+ }
+ assert.ok(close>0,'intentional close seconds should be heard');
+ assert.ok(resolved>0,'the close-interval friction must return to a wider spacing');
+});
+test('flash transducer is a short bright dry attack and never enters the long reverb send',()=>{
+ const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
+ let strongest=0,minimumBed=1,peakEvents=0,firstCount=0;
+ for(let i=0;i<340;i++){
+  const now=i*.04;g.context.currentTime=now;
+  const emission={mode:i<20?0:2,strength:i<20?1:1.1,speed:1,seed:0};
+  e.update([{sp,weight:1,visual:{time:now,motion:0,emission}}],.5);
+  const v=[...e.voices.values()][0];
+  if(i===0){
+   firstCount=g.nodes.length;
+   assert.equal(v.flashSource.type,'triangle');
+   assert.ok(v.flashOut.connections.includes(e.output));
+   assert.ok(!v.sum.connections.includes(v.flashOut));
+   assert.ok(v.flashGain.connections.includes(v.flashOut));
+   assert.ok(v.flashFilter.frequency.value>=500);
+  }
+  assert.equal(g.nodes.length,firstCount,'no oscillators allocated per light event');
+  if(i<20)assert.equal(v.blinkEvents,0);
+  strongest=Math.max(strongest,v.flashGain.gain.value);
+  if(v.blinkPulse>.2)minimumBed=Math.min(minimumBed,v.mix.gain.value);
+  peakEvents=Math.max(peakEvents,v.blinkEvents);
+ }
+ assert.ok(peakEvents>=2,'visible flashing must create distinct accents');
+ assert.ok(strongest>.015&&strongest<=.16,'transient must be clearly articulated but bounded');
+ assert.ok(minimumBed<.72,'background should duck briefly under emission accents');
+ e.silence();
+ const v=[...e.voices.values()][0];assert.equal(v,undefined);
 });
 test('deep reverb and repeats use bounded filtered feedback and share the voice recording path',()=>{
  const g=graph(),engine=ctx.createBioticAudioEngine(g.context),sp=specimen(42);
