@@ -5869,7 +5869,7 @@ function playSnowChime(index,tone,now){
  const ctx=engine.context;
  // Prevent a large snow field from producing a loud simultaneous cluster.
  if(now-snowChimeState.lastAt>.19)snowChimeState.burst=0;
- if(snowChimeState.burst>=2)return;
+ if(snowChimeState.burst>=3)return;
  snowChimeState.lastAt=now;snowChimeState.burst++;
  const hash=n=>{const x=Math.sin(n*127.1+tone*311.7)*43758.5453;return x-Math.floor(x);};
  const notes=[0,2,4,7,9,12,14,16,19,21];
@@ -5879,8 +5879,8 @@ function playSnowChime(index,tone,now){
  filter.type='lowpass';filter.frequency.value=1900+hash(index+17)*2200;filter.Q.value=.45;
  const t=ctx.currentTime+.006;
  gain.gain.setValueAtTime(.0001,t);
- gain.gain.exponentialRampToValueAtTime(.013+hash(index+19)*.009,t+.009);
- gain.gain.exponentialRampToValueAtTime(.0001,t+.22+hash(index+23)*.34);
+ gain.gain.exponentialRampToValueAtTime(.075+hash(index+19)*.035,t+.018);
+ gain.gain.exponentialRampToValueAtTime(.0001,t+.30+hash(index+23)*.30);
  gain.connect(filter);filter.connect(engine.output);
  const partials=[1,2.41,3.82],oscillators=[];
  for(let k=0;k<3;k++){
