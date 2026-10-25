@@ -6544,6 +6544,7 @@ let videoRecording=null,videoResult=null,videoResultUrl=null,videoMode='specimen
 function createBioticAudioEngine(context){
  // Breath-led organism calls: 1-3 answering voices in mid, upper-mid and high registers.
  // No alarm pitch sweep, piano, percussion or continuously stacked choir.
+ const startupGain=context.createGain();startupGain.gain.value=0;startupGain.connect(context.destination);
  const master=context.createGain(),limiter=context.createDynamicsCompressor(),boost=context.createGain(),peakGuard=context.createDynamicsCompressor(),safety=context.createWaveShaper(),waveform=context.createAnalyser();
  master.gain.value=0;limiter.threshold.value=-24;limiter.knee.value=14;limiter.ratio.value=8;limiter.attack.value=.015;limiter.release.value=.42;
  // Uniform +25% amplitude after compression, before the shared playback/recording safety ceiling.
@@ -6561,7 +6562,7 @@ function createBioticAudioEngine(context){
  const galleryVolume=context.createGain();galleryVolume.gain.value=1;
  // Recording-only snow tap: never alter the direct speaker route.
  const snowRecordingTap=context.createGain();snowRecordingTap.gain.value=1;
- waveform.connect(galleryLow);galleryLow.connect(galleryLow2);galleryLow2.connect(galleryVolume);galleryVolume.connect(context.destination);
+ waveform.connect(galleryLow);galleryLow.connect(galleryLow2);galleryLow2.connect(galleryVolume);galleryVolume.connect(startupGain);
  // Three diffuse, damped feedback lines leave a spacious decay after the source fades.
  const reverbInput=context.createGain(),reverbWet=context.createGain();
  reverbInput.gain.value=.34;reverbWet.gain.value=.38;
@@ -6572,7 +6573,7 @@ function createBioticAudioEngine(context){
   reverbInput.connect(delay);delay.connect(damping);damping.connect(loop);loop.connect(delay);
   damping.connect(reverbWet);
  }
- reverbWet.connect(context.destination);
+ reverbWet.connect(startupGain);
  const voices=new Map(),profiles=new WeakMap(),smooth=(param,value,t,tau=.07)=>param.setTargetAtTime(value,t,tau);
  const vowels=[[810,1260,2800],[520,1680,2510],[340,1990,2760],[540,1040,2460],[390,950,2350]];
  // Smooth saw-like emission spectrum: suppress piercing highs without muting bass or body.
@@ -7081,7 +7082,7 @@ function createBioticAudioEngine(context){
  }
  function silence(){smooth(master.gain,0,context.currentTime,.025);for(const voice of voices.values())retire(voice);voices.clear();}
  function recording(){const node=context.createMediaStreamDestination(),fade=context.createGain();fade.gain.value=0;safety.connect(fade);snowRecordingTap.connect(fade);fade.connect(node);const begin=()=>{const t=context.currentTime;if(typeof fade.gain.setValueAtTime==='function'&&typeof fade.gain.linearRampToValueAtTime==='function'){fade.gain.setValueAtTime(0,t);fade.gain.linearRampToValueAtTime(1,t+1.5);}else fade.gain.value=1;};return{track:node.stream.getAudioTracks()[0],begin,disconnect(){safety.disconnect(fade);snowRecordingTap.disconnect(fade);fade.disconnect();for(const track of node.stream.getTracks())track.stop()}};}
- return{context,output:master,snowRecordingTap,sampleInput:limiter,waveform,galleryLow,galleryLow2,galleryVolume,reverbInput,reverbWet,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
+ return{context,startupGain,output:master,snowRecordingTap,sampleInput:limiter,waveform,galleryLow,galleryLow2,galleryVolume,reverbInput,reverbWet,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
 }
 
 // Independent, pitched heartbeat bus. Uses the same model-space deformation pickups
@@ -7742,7 +7743,7 @@ function stopBioticAudio(message='活動音を停止しました。',withTail=fa
  const revision=++bioticAudio.revision;bioticAudio.enabled=false;bioticAudio.starting=false;
  releaseBioticWakeLock();setBioticMediaSession(false);
  if(bioticAudio.timer!==null)clearInterval(bioticAudio.timer);bioticAudio.timer=null;
- if(bioticAudio.engine){const engine=bioticAudio.engine,now=engine.context.currentTime;engine.silence();clearTimeout(bioticAudio.suspendTimer);if(withTail){engine.galleryLow.frequency.setTargetAtTime(20000,now,.05);engine.galleryLow2.frequency.setTargetAtTime(20000,now,.05);engine.galleryVolume.gain.setTargetAtTime(0,now,.24);engine.reverbInput.gain.setTargetAtTime(0,now,.22);}else{engine.galleryVolume.gain.setTargetAtTime(1,now,.05);engine.reverbInput.gain.setTargetAtTime(.34,now,.05);}bioticAudio.suspendTimer=setTimeout(()=>{if(bioticAudio.revision===revision)void engine.context.suspend().catch(()=>{})},withTail?5200:180);}
+ if(bioticAudio.engine){const engine=bioticAudio.engine,now=engine.context.currentTime;engine.startupGain.gain.cancelScheduledValues(now);engine.startupGain.gain.setTargetAtTime(0,now,.035);engine.silence();clearTimeout(bioticAudio.suspendTimer);if(withTail){engine.galleryLow.frequency.setTargetAtTime(20000,now,.05);engine.galleryLow2.frequency.setTargetAtTime(20000,now,.05);engine.galleryVolume.gain.setTargetAtTime(0,now,.24);engine.reverbInput.gain.setTargetAtTime(0,now,.22);}else{engine.galleryVolume.gain.setTargetAtTime(1,now,.05);engine.reverbInput.gain.setTargetAtTime(.34,now,.05);}bioticAudio.suspendTimer=setTimeout(()=>{if(bioticAudio.revision===revision)void engine.context.suspend().catch(()=>{})},withTail?5200:180);}
  $('viewerSoundStatus').textContent=message;
 }
 function tickBioticAudio(){
@@ -7795,6 +7796,10 @@ async function startBioticAudio(){
   if(revision!==bioticAudio.revision)return;
   if(!resumed){stopBioticAudio('自動再生が保留されました。画面をタップして再生してください。');return;}
   if(selected<0||!$('viewerSound').checked){stopBioticAudio();return;}
+  // Fade in the entire audible mix (voices, reverb and pulses) after the user gesture.
+  const startup=bioticAudio.engine.startupGain.gain,now=bioticAudio.engine.context.currentTime;
+  startup.cancelScheduledValues(now);startup.setValueAtTime(0,now);
+  startup.linearRampToValueAtTime(1,now+1.8);
   bioticAudio.enabled=true;bioticAudio.starting=false;bioticAudio.backgroundAt=Date.now();setBioticMediaSession(true);void requestBioticWakeLock();
   const identity=typeof soundMusicalProfile==='function'?soundMusicalProfile(spec):null;
   const harmonyName=identity?bioticAudio.engine.harmonyForMode(identity.mode).name:'';
