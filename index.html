@@ -6806,7 +6806,7 @@ function updateHeartbeat(individuals,quiet,level){
   heartbeatBus.gain.gain.value=0;heartbeatBus.gain.connect(engine.sampleInput);
   heartbeatBus.previous.clear();heartbeatBus.lastHit.clear();
  }
- const target=!quiet&&$('heartbeatEnabled')?.checked&&$('viewerSound').checked?level*.18:0;
+ const target=!quiet&&$('heartbeatEnabled')?.checked&&$('viewerSound').checked?level*.25:0;
  heartbeatBus.gain.gain.setTargetAtTime(target,now,.08);
  if(target<=0)return;
  for(const item of individuals){
@@ -6822,7 +6822,7 @@ function updateHeartbeat(individuals,quiet,level){
   // Movement-derived peak with a refractory period; no repeated clicks at rest.
   if(contraction<.12||now-prior<.29)continue;
   heartbeatBus.lastHit.set(key,now);
-  const strength=Math.min(1,contraction*.65)*Math.max(0,Math.min(1,item.weight))*.25;
+  const strength=Math.min(1,contraction*.65)*Math.max(0,Math.min(1,item.weight));
   const base=49+(sp.seed%23),duration=.24;
   const osc=ctx.createOscillator(),amp=ctx.createGain(),low=ctx.createBiquadFilter();
   osc.type='sine';low.type='lowpass';low.frequency.value=170;
