@@ -162,11 +162,12 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
  assert.equal(result.source,result.a);assert.equal(result.target,result.b);assert.equal(result.reset,0);assert.equal(result.separate,true);
 });
 
-test('texture weights advance each render tick even when the original geometry upload is throttled',()=>{
- const {f,events}=runtime();f.interpolateMorphBatch=()=>{};
- f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17)}],elapsed:.1,lastUpload:.1,t:0,fromDistance:20,toDistance:30};
- f.tickViewer(1/120);const a=f.v.morph.t;assert.equal(events.filter(e=>e==='upload').length,0);
- f.tickViewer(1/120);assert.ok(f.v.morph.t>a);assert.equal(events.filter(e=>e==='upload').length,0);
+test('texture weights and geometry uploads advance together on each morph frame',()=>{
+ const {f,events}=runtime();let interpolations=0;f.interpolateMorphBatch=()=>{interpolations++};
+ f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17),buffer:'morph-buffer'}],elapsed:.1,lastUpload:.1,t:0,fromDistance:20,toDistance:30};
+ f.tickViewer(1/120);const a=f.v.morph.t;assert.equal(events.filter(e=>e==='upload').length,1);
+ f.tickViewer(1/120);assert.ok(f.v.morph.t>a);assert.equal(events.filter(e=>e==='upload').length,2);
+ assert.equal(interpolations,2);
 });
 
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
