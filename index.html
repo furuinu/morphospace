@@ -6806,7 +6806,7 @@ function updateHeartbeat(individuals,quiet,level){
   heartbeatBus.gain.gain.value=0;heartbeatBus.gain.connect(engine.sampleInput);
   heartbeatBus.previous.clear();heartbeatBus.lastHit.clear();
  }
- const target=!quiet&&$('heartbeatEnabled')?.checked&&$('viewerSound').checked?level*.25:0;
+ const target=!quiet&&$('heartbeatEnabled')?.checked&&$('viewerSound').checked?level*.60:0;
  heartbeatBus.gain.gain.setTargetAtTime(target,now,.08);
  if(target<=0)return;
  for(const item of individuals){
