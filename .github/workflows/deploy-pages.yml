@@ -29,6 +29,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
+      - name: Validate site
+        run: |
+          test -s index.html
+          grep -q 'MORPHOSPACE' index.html
+          echo "Deploying $(grep -o 'MORPHOSPACE v[0-9.]*' index.html | head -1)"
+      - name: Check specimen restoration and colour regressions
+        run: node --test tests/*.test.cjs
       - name: Stamp unique visible version for every deployment
         env:
           BUILD_NUMBER: ${{ github.run_number }}
@@ -51,13 +58,6 @@ jobs:
           path.write_text(html, encoding='utf-8')
           print(f'Deploying MORPHOSPACE {version} ({count} labels)')
           PY
-      - name: Validate site
-        run: |
-          test -s index.html
-          grep -q 'MORPHOSPACE' index.html
-          echo "Deploying $(grep -o 'MORPHOSPACE v[0-9.]*' index.html | head -1)"
-      - name: Check specimen restoration and colour regressions
-        run: node --test tests/*.test.cjs
       - name: Configure Pages
         uses: actions/configure-pages@v6
       - name: Upload static site
