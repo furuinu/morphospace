@@ -9,7 +9,7 @@ vm.runInContext(src.slice(src.indexOf('function createBioticAudioEngine('),src.i
 vm.runInContext(src.slice(src.indexOf('function organismMotionPickups('),src.indexOf('function newPureChoirState(')),ctx);
 const run=s=>vm.runInContext(s,ctx),plain=x=>JSON.parse(JSON.stringify(x));
 function graph(){
- const nodes=[],parameters=[];const parameter=()=>{const p={value:0,events:[],setTargetAtTime(value,time,constant){assert.ok(Number.isFinite(value)&&Number.isFinite(time)&&constant>0,JSON.stringify({value,time,constant,stack:(new Error()).stack?.slice(0,1200)}));this.value=value;this.events.push({value,time,constant})}};parameters.push(p);return p};
+ const nodes=[],parameters=[];const parameter=()=>{const p={value:0,events:[],cancelScheduledValues(time){assert.ok(Number.isFinite(time));this.events=this.events.filter(e=>e.time<time);return this},setValueAtTime(value,time){assert.ok(Number.isFinite(value)&&Number.isFinite(time));this.value=value;this.events.push({value,time,type:'set'});return this},linearRampToValueAtTime(value,time){assert.ok(Number.isFinite(value)&&Number.isFinite(time));this.value=value;this.events.push({value,time,type:'ramp'});return this},setTargetAtTime(value,time,constant){assert.ok(Number.isFinite(value)&&Number.isFinite(time)&&constant>0,JSON.stringify({value,time,constant,stack:(new Error()).stack?.slice(0,1200)}));this.value=value;this.events.push({value,time,constant})}};parameters.push(p);return p};
  const node=(type)=>{const n={type,connections:[],disconnected:false,connect(other){this.connections.push(other);return other},disconnect(other){if(other)this.connections=this.connections.filter(x=>x!==other);else{this.connections=[];this.disconnected=true}}};nodes.push(n);return n};
  const source=type=>Object.assign(node(type),{frequency:parameter(),detune:parameter(),starts:[],stops:[],start(...args){assert.ok(args.every(Number.isFinite));this.starts.push(args)},stop(time){this.stops.push(time)}});
  const track={stops:0,stop(){this.stops++}};
@@ -555,7 +555,8 @@ test('peak guard and soft ceiling protect speakers and recordings without attenu
  assert.ok(e.waveform.connections.includes(e.galleryLow),'waveform must feed the first gallery low-pass');
  assert.ok(e.galleryLow.connections.includes(e.galleryLow2),'gallery low-pass stages must be cascaded');
  assert.ok(e.galleryLow2.connections.includes(e.galleryVolume),'filtered output must pass through gallery volume control');
- assert.ok(e.galleryVolume.connections.includes(g.context.destination),'gallery volume output must reach speakers');
+ assert.ok(e.galleryVolume.connections.includes(e.startupGain),'gallery volume must pass through startup fade');
+  assert.ok(e.startupGain.connections.includes(g.context.destination),'startup fade must reach speakers');
  assert.equal(e.galleryVolume.gain.value,1,'viewer volume is unchanged by default');
  assert.equal(e.galleryLow.type,'lowpass');
  assert.equal(e.galleryLow2.type,'lowpass');
