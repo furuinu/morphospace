@@ -6834,36 +6834,37 @@ function updateHeartbeat(individuals,quiet,level){
   osc.connect(low);low.connect(amp);amp.connect(heartbeatBus.gain);
   osc.start(now);osc.stop(now+duration+.01);
   osc.onended=()=>{osc.disconnect();low.disconnect();amp.disconnect()};
-  // A pitched, bubbling vascular wash follows each physical contraction.
-  // Multiple gently detuned tones and a moving bandpass evoke liquid flow
-  // without a broadband noise generator or static hiss.
-  const wash=ctx.createGain(),filter=ctx.createBiquadFilter();
-  filter.type='bandpass';filter.Q.value=1.15;
-  filter.frequency.setValueAtTime(310,now);
-  filter.frequency.exponentialRampToValueAtTime(640,now+.12);
-  filter.frequency.exponentialRampToValueAtTime(260,now+.48);
+  // Womb-like muffled vascular wash: irregular but pitched fluid motion,
+  // not white noise or discrete electronic bubble chirps.
+  const wash=ctx.createGain(),low=ctx.createBiquadFilter(),filter=ctx.createBiquadFilter();
+  low.type='lowpass';low.frequency.value=460;low.Q.value=.45;
+  filter.type='bandpass';filter.Q.value=.65;
+  filter.frequency.setValueAtTime(185,now);
+  filter.frequency.exponentialRampToValueAtTime(330,now+.16);
+  filter.frequency.exponentialRampToValueAtTime(160,now+.65);
   wash.gain.setValueAtTime(0,now);
-  wash.gain.linearRampToValueAtTime(strength*.09,now+.075);
-  wash.gain.setTargetAtTime(.00001,now+.15,.12);
-  filter.connect(wash);wash.connect(heartbeatBus.gain);
-  const bubbles=[];
-  for(let i=0;i<3;i++){
-   const bubble=ctx.createOscillator(),voice=ctx.createGain();
-   const start=now+.025+i*.045,end=now+.48+i*.03;
-   bubble.type=i===1?'triangle':'sine';
-   const hz=145+(sp.seed%41)+i*57;
-   bubble.frequency.setValueAtTime(hz*1.22,start);
-   bubble.frequency.exponentialRampToValueAtTime(hz*.76,end);
+  wash.gain.linearRampToValueAtTime(strength*.075,now+.11);
+  wash.gain.setValueAtTime(strength*.055,now+.22);
+  wash.gain.exponentialRampToValueAtTime(.0001,now+.72);
+  filter.connect(low);low.connect(wash);wash.connect(heartbeatBus.gain);
+  let remaining=5;
+  for(let i=0;i<5;i++){
+   const osc=ctx.createOscillator(),voice=ctx.createGain();
+   const start=now+.035+i*.017,end=now+.72;
+   const base=68+(sp.seed%19)+i*17;
+   osc.type=i%2?'triangle':'sine';
+   osc.frequency.setValueAtTime(base*(1.08+i*.015),start);
+   osc.frequency.linearRampToValueAtTime(base*.83,end);
    voice.gain.setValueAtTime(0,start);
-   voice.gain.linearRampToValueAtTime(i===0?.52:.25,start+.055);
+   voice.gain.linearRampToValueAtTime(i<2?.42:.16,start+.085+i*.009);
    voice.gain.exponentialRampToValueAtTime(.0001,end);
-   bubble.connect(voice);voice.connect(filter);
-   bubble.start(start);bubble.stop(end+.01);
-   bubble.onended=()=>{bubble.disconnect();voice.disconnect()};
-   bubbles.push(bubble);
+   osc.connect(voice);voice.connect(filter);
+   osc.start(start);osc.stop(end+.01);
+   osc.onended=()=>{
+    osc.disconnect();voice.disconnect();
+    if(--remaining===0){filter.disconnect();low.disconnect();wash.disconnect();}
+   };
   }
-  bubbles[bubbles.length-1].addEventListener?.('ended',()=>{filter.disconnect();wash.disconnect()});
-
  }
 }
 const bioticAudio={engine:null,enabled:false,starting:false,revision:0,timer:null,suspendTimer:null,backgroundAt:0,wakeLock:null};
