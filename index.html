@@ -6226,13 +6226,14 @@ function drawGlassProbe(projection,w,h,f){
  gl.colorMask(true,true,true,true);gl.disableVertexAttribArray(g.post);gl.disable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
 }
 
-const viewer={full:false,source:'gallery',random:false,seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null};
+const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
 function viewerCurrentItemIndex(items){return viewer.source==='stock'?items.findIndex(item=>item.stored.id===activeStoredIndividual?.payload.record.id):(activeStoredIndividual?-1:items.findIndex(item=>item.index===selected));}
 function chooseViewerItem(items,direction=1){
  if(!items.length)return null;
  const current=viewerCurrentItemIndex(items);
  if(items.length===1&&current===0)return null;
+ if(viewer.random&&direction<0&&viewer.history.length){const key=viewer.history[viewer.history.length-1];const previous=items.find(item=>item.key===key);if(previous)return previous;}
  if(viewer.random&&direction>0){const choices=items.filter((item,i)=>i!==current);return choices[Math.floor(Math.random()*choices.length)]||null;}
  return items[current<0?(direction>0?0:items.length-1):(current+direction+items.length)%items.length];
 }
@@ -6242,7 +6243,7 @@ async function setViewerSource(source){
  try{
   if(source==='stock'){await refreshStock();if(viewer.revision!==revision||selected<0)return;if(!stockEntries.length)throw Error('キャプチャーした生体がありません。captureで保存してください。');}
   if(viewer.revision!==revision||selected<0)return;
-  viewer.source=source==='stock'?'stock':'gallery';viewer.prepareError=null;$('viewerSource').value=viewer.source;viewerMetadata();
+  viewer.source=source==='stock'?'stock':'gallery';viewer.history=[];viewer.prepareError=null;$('viewerSource').value=viewer.source;viewerMetadata();
   if(viewerCurrentItemIndex(viewerItems())<0)startViewerMorph(1);
  }catch(error){if(viewer.revision!==revision)return;viewer.source=previous;$('viewerSource').value=previous;$('viewerTransition').textContent=error.message;$('viewerPlaylistStatus').textContent=error.message;}
 }
@@ -6279,7 +6280,7 @@ function queueViewerPreparation(direction=1){
  const item=chooseViewerItem(items,direction);if(!item){discardViewerPreparation();return null;}
  const {index,record,stored}=item;
  discardViewerPreparation();
- const job={index,record,stored,itemKey:item.key,direction,source:spec,revision:viewer.revision,key,resources:[],tasks:[],ready:false,worker:null};viewer.pending=job;
+ const job={index,record,stored,itemKey:item.key,direction,source:spec,sourceItemKey:items[viewerCurrentItemIndex(items)]?.key||null,revision:viewer.revision,key,resources:[],tasks:[],ready:false,worker:null};viewer.pending=job;
  try{
   if(typeof Worker!=='function'||!VIEWER_CORE_SOURCE)throw Error('バックグラウンドでの形状準備を利用できません');
   if(!viewerWorkerURL)viewerWorkerURL=URL.createObjectURL(new Blob([viewerWorkerSource(VIEWER_CORE_SOURCE)],{type:'text/javascript'}));
@@ -6323,7 +6324,7 @@ function activateViewerPreparation(){
  viewer.pending=null;viewer.preparing=false;
  const zoom=spec.viewDistance/(spec.baseViewDistance*viewer.fit);
  viewer.morph={index:job.index,source:spec,target:job.target,targetMeshes:job.targetMeshes,targetDistance:job.distance,originalMeshes:meshes,originalRigs:rigMeshes,batches:job.batches,elapsed:0,t:0,lastUpload:-1,fromDistance:spec.viewDistance,toDistance:job.distance*viewer.fit*zoom,patternA:viewerPatternValues(spec.palette),patternB:viewerPatternValues(job.target.palette,textureMorphUniforms(renderer.vars)),emissionA:viewerEmissionValues(spec,true),emissionB:viewerEmissionValues(job.target,false)};
- viewer.morph.stored=job.stored;viewer.morph.record=job.record;
+ viewer.morph.stored=job.stored;viewer.morph.record=job.record;viewer.morph.direction=job.direction;viewer.morph.itemKey=job.itemKey;viewer.morph.sourceItemKey=job.sourceItemKey;
  meshes={shell:job.batches[0],parts:job.batches.slice(1).map(mesh=>({mesh,kind:'opaque'})),cilia:[]};rigMeshes=[];
  $('viewerTransition').textContent=recordDisplayName(currentIndividual())+' → '+recordDisplayName(job.record);
 }
@@ -6391,6 +6392,7 @@ function cancelViewerMorph(commit=false){
  const m=viewer.morph;if(!m)return;viewer.morph=null;
  for(const batch of m.batches)retireViewerMesh(batch);
  if(commit){
+  if(viewer.random){if(m.direction<0&&viewer.history[viewer.history.length-1]===m.itemKey)viewer.history.pop();else if(m.direction>0&&m.sourceItemKey){viewer.history.push(m.sourceItemKey);if(viewer.history.length>256)viewer.history.shift();}}
   retireViewerMeshes(m.originalMeshes,m.originalRigs);activeStoredIndividual=m.stored||null;selected=m.stored?0:m.index;
   applyUploadedSpecimen(m.target,false,true,{meshes:m.targetMeshes,distance:m.targetDistance});spec.viewDistance=m.toDistance;
   if(!m.stored){detailSpecimens[m.index]=m.target;detailCacheOrder=detailCacheOrder.filter(i=>i!==m.index);detailCacheOrder.push(m.index);while(detailCacheOrder.length>2)detailSpecimens[detailCacheOrder.shift()]=null;}
@@ -6402,7 +6404,7 @@ function cancelViewerMorph(commit=false){
 function pauseViewerTransition(){viewer.revision++;viewer.preparing=false;discardViewerPreparation();cancelViewerMorph(false);viewer.elapsed=0;$('viewerTransition').textContent='';updateViewerCountdown()}
 function stopViewer(){
  viewerTap=null;setViewerNavigationVisible(true);$('viewerSettings').open=false;
- viewer.source='gallery';$('viewerSource').value='gallery';
+ viewer.source='gallery';$('viewerSource').value='gallery';viewer.history=[];
  viewer.revision++;viewer.preparing=false;viewer.prepareError=null;discardViewerPreparation();cancelViewerMorph(false);drainViewerRetired(Infinity);viewer.seconds=30;viewer.elapsed=0;$('viewerInterval').value='30';$('viewerTimer').hidden=true;
  if(viewer.full){$('overlay').classList.remove('viewer-full');viewer.full=false;if(spec)spec.viewDistance/=viewer.fit;viewer.fit=1;$('viewerFullscreen').textContent='鑑賞へ';$('viewerFullscreen').setAttribute('aria-label','全画面鑑賞へ戻る');$('viewerFullscreen').setAttribute('aria-pressed','false')}
 }
@@ -6460,7 +6462,7 @@ $('viewerVideoNoise').onchange=()=>{try{localStorage.setItem('morphospace-viewer
 try{const value=localStorage.getItem('morphospace-viewer-video-noise');if(value==='0'||value==='1')$('viewerVideoNoise').checked=value==='1'}catch(error){}
 $('viewerFullscreen').onclick=()=>setViewerFullscreen(!viewer.full);
 $('viewerSource').onchange=()=>{void setViewerSource($('viewerSource').value)};
-$('viewerRandom').onchange=()=>{pauseViewerTransition();viewer.random=$('viewerRandom').checked;viewer.prepareError=null;try{localStorage.setItem('morphospace-viewer-random',viewer.random?'1':'0')}catch(error){}};
+$('viewerRandom').onchange=()=>{pauseViewerTransition();viewer.random=$('viewerRandom').checked;viewer.history=[];viewer.prepareError=null;try{localStorage.setItem('morphospace-viewer-random',viewer.random?'1':'0')}catch(error){}};
 try{viewer.random=localStorage.getItem('morphospace-viewer-random')==='1';$('viewerRandom').checked=viewer.random}catch(error){}
 $('viewerInterval').onchange=()=>{viewer.seconds=Number($('viewerInterval').value);viewer.elapsed=0;updateViewerCountdown()};
 $('viewerPrevious').onclick=()=>startViewerMorph(-1);$('viewerNext').onclick=()=>startViewerMorph(1);
