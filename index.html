@@ -6834,37 +6834,34 @@ function updateHeartbeat(individuals,quiet,level){
   osc.connect(low);low.connect(amp);amp.connect(heartbeatBus.gain);
   osc.start(now);osc.stop(now+duration+.01);
   osc.onended=()=>{osc.disconnect();low.disconnect();amp.disconnect()};
-  // Womb-like muffled vascular wash: irregular but pitched fluid motion,
-  // not white noise or discrete electronic bubble chirps.
-  const wash=ctx.createGain(),fluidLow=ctx.createBiquadFilter(),filter=ctx.createBiquadFilter();
-  fluidLow.type='lowpass';fluidLow.frequency.value=460;fluidLow.Q.value=.45;
-  filter.type='bandpass';filter.Q.value=.65;
-  filter.frequency.setValueAtTime(185,now);
-  filter.frequency.exponentialRampToValueAtTime(330,now+.16);
-  filter.frequency.exponentialRampToValueAtTime(160,now+.65);
-  wash.gain.setValueAtTime(0,now);
-  wash.gain.linearRampToValueAtTime(strength*.075,now+.11);
-  wash.gain.setValueAtTime(strength*.055,now+.22);
-  wash.gain.exponentialRampToValueAtTime(.0001,now+.72);
-  filter.connect(fluidLow);fluidLow.connect(wash);wash.connect(heartbeatBus.gain);
-  let remaining=5;
-  for(let i=0;i<5;i++){
-   const osc=ctx.createOscillator(),voice=ctx.createGain();
-   const start=now+.035+i*.017,end=now+.72;
-   const base=68+(sp.seed%19)+i*17;
-   osc.type=i%2?'triangle':'sine';
-   osc.frequency.setValueAtTime(base*(1.08+i*.015),start);
-   osc.frequency.linearRampToValueAtTime(base*.83,end);
-   voice.gain.setValueAtTime(0,start);
-   voice.gain.linearRampToValueAtTime(i<2?.42:.16,start+.085+i*.009);
-   voice.gain.exponentialRampToValueAtTime(.0001,end);
-   osc.connect(voice);voice.connect(filter);
-   osc.start(start);osc.stop(end+.01);
-   osc.onended=()=>{
-    osc.disconnect();voice.disconnect();
-    if(--remaining===0){filter.disconnect();fluidLow.disconnect();wash.disconnect();}
-   };
+  // Womb-like blood-flow wash: shaped broadband turbulence, heavily low-passed.
+  // Deterministic, reused buffer; pulse envelope follows the actual contraction.
+  if(!heartbeatBus.flowBuffer||heartbeatBus.flowBuffer.sampleRate!==ctx.sampleRate){
+   const length=Math.max(1,Math.floor(ctx.sampleRate*1.1));
+   const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+   const data=buffer.getChannelData(0);
+   let seed=0x6d2b79f5;
+   for(let i=0;i<length;i++){
+    seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
+    data[i]=((seed>>>0)/2147483648-1)*.75;
+   }
+   heartbeatBus.flowBuffer=buffer;
   }
+  const flow=ctx.createBufferSource(),flowLow=ctx.createBiquadFilter(),
+        flowBody=ctx.createBiquadFilter(),flowAmp=ctx.createGain();
+  flow.buffer=heartbeatBus.flowBuffer;
+  flowLow.type='lowpass';flowLow.frequency.value=760;flowLow.Q.value=.55;
+  flowBody.type='highpass';flowBody.frequency.value=115;flowBody.Q.value=.5;
+  flowAmp.gain.setValueAtTime(.00001,now);
+  flowAmp.gain.linearRampToValueAtTime(strength*.18,now+.11);
+  flowAmp.gain.setValueAtTime(strength*.14,now+.19);
+  flowAmp.gain.exponentialRampToValueAtTime(.0001,now+.74);
+  flow.connect(flowBody);flowBody.connect(flowLow);flowLow.connect(flowAmp);
+  flowAmp.connect(heartbeatBus.gain);
+  flow.start(now);flow.stop(now+.76);
+  flow.onended=()=>{
+   flow.disconnect();flowBody.disconnect();flowLow.disconnect();flowAmp.disconnect();
+  };
  }
 }
 const bioticAudio={engine:null,enabled:false,starting:false,revision:0,timer:null,suspendTimer:null,backgroundAt:0,wakeLock:null};
