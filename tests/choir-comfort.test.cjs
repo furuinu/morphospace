@@ -28,10 +28,10 @@ test('light voices respond within shared pitch-center design', () => {
 test('body and light motion coupling and independent recording remain', () => {
   assert.match(app, /function organismMotionPickups\(/);
   assert.match(app, /function roundedLightEnvelope\(/);
-  assert.match(app, /function renderVoiceSample\(/);
+  assert.doesNotMatch(app, /function renderVoiceSample\(/);
   assert.match(app, /function updatePureChoir\(/);
   assert.match(app, /function tickBioticAudio\(/);
-  assert.match(app, /voiceSample\.mode==='sample'/);
+  assert.doesNotMatch(app, /voiceSample\.mode==='sample'/);
 });
 
 test('seeded vocal character remains deterministic and bounded', () => {
@@ -87,8 +87,7 @@ test('hybrid choir uses a voiced glottal source and three vowel formants',()=>{
 });
 
 test('choir restores body pulse light timing with articulated voices',()=>{
-  assert.match(app, /engine\.update\(individuals,quiet\|\|voiceSample\.mode==='sample'\|\|\(voiceSample\.mode==='choir'\|\|voiceSample\.mode==='speech'\)\?0/);
-  assert.match(app, /updateVoiceSample\(quiet\);updatePureChoir\(quiet\)/);
+  assert.match(app, /engine\.update\(individuals,0\);updatePureChoir\(quiet\)/);
   assert.match(app, /state\.pulse=giveVocalSource\(makeVoice\(9,450,'lowpass'\),'pulse'\)/);
   assert.match(app, /const v=giveVocalSource\(makeVoice\(8,/);
   assert.match(app, /for\(const partial of v\.oscillators\)partial\.amp\.disconnect\(\)/);
@@ -125,15 +124,11 @@ test('formant vowels and consonant transients are audible on all vocal organs',(
  assert.match(app,/v\.consonantGain\.gain\.setTargetAtTime/);
 });
 
-test('articulated choir remains separate from original acid choir',()=>{
- assert.match(app, /<option value="choir" selected>公開用・合唱ボイス/);
- assert.match(app, /<option value="speech">発語合唱ボイス/);
- assert.match(app, /const speechMode=voiceSample\.mode==='speech'/);
- assert.match(app, /const speechPhonemes=\[/);
- assert.match(app, /speechMode\?bodyPhoneme\.v:vowelIndex/);
- assert.match(app, /speechMode\?pulsePhoneme\.v:pulseSyllable/);
- assert.match(app, /speechMode\?lightPhoneme\.v:syllableSequence\[lightStep\]/);
- assert.match(app, /voiceSample\.mode==='speech'\)\?0/);
+test('official choir is the sole visible voice mode',()=>{
+ assert.doesNotMatch(app,/id="voiceSampleMode"/);
+ assert.match(app,/const speechMode=false/);
+ assert.match(app,/function renderPureChoir\(/);
+ assert.doesNotMatch(app,/function renderVoiceSample\(/);
 });
 
 test('articulated choir distinguishes nasal and fricative consonants',()=>{
@@ -153,14 +148,10 @@ test('speech articulator and phonemes are initialized before first BODY sound',(
  assert.ok(render.indexOf('const articulate=(v,phoneme,attack)=>')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
 });
 
-test('recording/upload UI is hidden while legacy audio hooks remain available',()=>{
- assert.doesNotMatch(app, /<option value="sample">録音・アップロード音源<\/option>/);
- assert.match(app, /<div class="buttons" hidden style="display:none;margin-top:8px" aria-hidden="true"><button type="button" class="btn" id="voiceRecordStart">/);
- assert.match(app, /id="voiceSampleFile" type="file"[^>]*hidden/);
- assert.match(app, /id="voiceSamplePreview" playsinline style="display:none" hidden/);
- assert.match(app, /<option value="choir" selected>/);
- assert.match(app, /<option value="speech">/);
- assert.match(app, /<option value="synth">/);
+test('recording and upload experiments are absent from the production page',()=>{
+ for(const id of ['voiceRecordStart','voiceRecordStop','voiceSampleFile','voiceSamplePreview','voiceSampleUpload','voiceSampleMode'])assert.doesNotMatch(app,new RegExp('id="'+id+'"'));
+ assert.doesNotMatch(app,/navigator\.mediaDevices\.getUserMedia/);
+ assert.match(app,/id="heartbeatEnabled"[^>]*hidden/);
 });
 
 test('choir modes include separate damped echo and diffuse reverb with dry voice retained',()=>{
