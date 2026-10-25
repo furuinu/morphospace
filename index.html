@@ -5904,7 +5904,7 @@ function playSnowChime(index,tone,now,manual=false){
   amp.gain.setValueAtTime(.0001,t);
   amp.gain.exponentialRampToValueAtTime(levels[k],t+.012);
   amp.gain.exponentialRampToValueAtTime(.0001,t+decays[k]);
-  osc.connect(amp);amp.connect(engine.snowInput);
+  osc.connect(amp);amp.connect(ctx.destination);amp.connect(engine.snowInput);
   osc.start(t);osc.stop(t+decays[k]+.02);
   osc.onended=()=>{try{osc.disconnect();amp.disconnect()}catch(e){}};
 
@@ -6514,9 +6514,8 @@ function createBioticAudioEngine(context){
  galleryLow2.type='lowpass';galleryLow2.frequency.value=20000;galleryLow2.Q.value=.55;
  const galleryVolume=context.createGain();galleryVolume.gain.value=1;
  // Snow chimes share the protected playback and recording bus.
- const snowInput=context.createGain(),snowBackground=context.createGain();
- snowInput.gain.value=1;snowBackground.gain.value=document.hidden?1:0;
- snowInput.connect(peakGuard);snowInput.connect(snowBackground);snowBackground.connect(context.destination);
+ // Keep snow chimes on their original direct speaker path; tap them only during export.
+ const snowInput=context.createGain();snowInput.gain.value=1;
  waveform.connect(galleryLow);galleryLow.connect(galleryLow2);galleryLow2.connect(galleryVolume);galleryVolume.connect(context.destination);
  // Three diffuse, damped feedback lines leave a spacious decay after the source fades.
  const reverbInput=context.createGain(),reverbWet=context.createGain();
@@ -7036,8 +7035,8 @@ function createBioticAudioEngine(context){
   smooth(master.gain,clamp(volume,0,1)*(gentleChoir?.95:1.30),now,.09);
  }
  function silence(){smooth(master.gain,0,context.currentTime,.025);for(const voice of voices.values())retire(voice);voices.clear();}
- function recording(){const node=context.createMediaStreamDestination(),fade=context.createGain();if(typeof fade.gain.setValueAtTime==='function'&&typeof fade.gain.linearRampToValueAtTime==='function'){fade.gain.setValueAtTime(0,context.currentTime);fade.gain.linearRampToValueAtTime(1,context.currentTime+1.5);}else{fade.gain.value=1;}safety.connect(fade);fade.connect(node);return{track:node.stream.getAudioTracks()[0],disconnect(){safety.disconnect(fade);fade.disconnect();node.disconnect();for(const track of node.stream.getTracks())track.stop()}};}
- return{context,output:master,snowInput,snowBackground,sampleInput:limiter,waveform,galleryLow,galleryLow2,galleryVolume,reverbInput,reverbWet,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
+ function recording(){const node=context.createMediaStreamDestination(),fade=context.createGain();if(typeof fade.gain.setValueAtTime==='function'&&typeof fade.gain.linearRampToValueAtTime==='function'){fade.gain.setValueAtTime(0,context.currentTime);fade.gain.linearRampToValueAtTime(1,context.currentTime+1.5);}else{fade.gain.value=1;}safety.connect(fade);snowInput.connect(fade);fade.connect(node);return{track:node.stream.getAudioTracks()[0],disconnect(){safety.disconnect(fade);snowInput.disconnect(fade);fade.disconnect();node.disconnect();for(const track of node.stream.getTracks())track.stop()}};}
+ return{context,output:master,snowInput,sampleInput:limiter,waveform,galleryLow,galleryLow2,galleryVolume,reverbInput,reverbWet,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
 }
 
 // Independent, pitched heartbeat bus. Uses the same model-space deformation pickups
@@ -7910,7 +7909,6 @@ $('viewerSoundVolume').oninput=()=>{try{localStorage.setItem('morphospace-sound-
 try{const saved=localStorage.getItem('morphospace-sound-volume-v2');if(saved!==null&&Number.isFinite(Number(saved)))$('viewerSoundVolume').value=String(clamp(Number(saved),0,100))}catch(error){}
 document.addEventListener('visibilitychange',()=>{
  bioticAudio.backgroundAt=Date.now();
- if(bioticAudio.engine?.snowBackground){const e=bioticAudio.engine;e.snowBackground.gain.setTargetAtTime(document.hidden?1:0,e.context.currentTime,.04);}
  if(document.hidden)releaseBioticWakeLock();
  else if(bioticAudio.enabled){void requestBioticWakeLock();if(bioticAudio.engine?.context.state!=='running')void bioticAudio.engine?.context.resume().catch(()=>{});}
  else if($('viewerSound').checked)void maybeStartBioticAudio();
