@@ -5392,8 +5392,9 @@ function interpolateMorphBatch(batch,t){
   const k=i%17;
   const v=a[i]+(b[i]-a[i])*f;
   if(k<3){
-   const j=Math.floor(i/17),phase=j*.61803398875+k*2.17;
-   out[i]=v*fade+tremor*Math.sin(phase+f*37)*(Math.abs(b[i]-a[i])+.12);
+   const j=(i/17)|0;
+   const wave=((j*13+k*7)%23-11)/11;
+   out[i]=v*fade+tremor*wave*(Math.abs(b[i]-a[i])+.12);
   }else out[i]=v;
  }
  return batch;
