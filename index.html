@@ -6850,17 +6850,31 @@ function updateHeartbeat(individuals,quiet,level){
   const flow=ctx.createBufferSource(),flowLow=ctx.createBiquadFilter(),
         flowBody=ctx.createBiquadFilter(),flowAmp=ctx.createGain();
   flow.buffer=heartbeatBus.flowBuffer;
-  flowLow.type='lowpass';flowLow.frequency.value=760;flowLow.Q.value=.55;
-  flowBody.type='highpass';flowBody.frequency.value=115;flowBody.Q.value=.5;
-  flowAmp.gain.setValueAtTime(.00001,now);
-  flowAmp.gain.linearRampToValueAtTime(strength*.18,now+.11);
-  flowAmp.gain.setValueAtTime(strength*.14,now+.19);
-  flowAmp.gain.exponentialRampToValueAtTime(.0001,now+.74);
-  flow.connect(flowBody);flowBody.connect(flowLow);flowLow.connect(flowAmp);
-  flowAmp.connect(heartbeatBus.gain);
-  flow.start(now);flow.stop(now+.76);
+  // Two-stage gentle low-pass softens the hiss into a rounded, muffled wash.
+  const flowSoft=ctx.createBiquadFilter();
+  flowLow.type='lowpass';flowLow.frequency.value=540;flowLow.Q.value=.5;
+  flowSoft.type='lowpass';flowSoft.frequency.value=680;flowSoft.Q.value=.5;
+  flowBody.type='highpass';flowBody.frequency.value=85;flowBody.Q.value=.5;
+  // Longer rounded swell with a curved, accelerating tail (parabolic fall).
+  const flowDuration=1.35,peakAt=.19,peak=strength*.21;
+  const curve=new Float32Array(96);
+  for(let i=0;i<curve.length;i++){
+   const u=i/(curve.length-1);
+   if(u<peakAt/flowDuration){
+    const v=u*flowDuration/peakAt;
+    curve[i]=.0001+peak*(v*v*(3-2*v));
+   }else{
+    const v=(u*flowDuration-peakAt)/(flowDuration-peakAt);
+    curve[i]=.0001+peak*Math.pow(1-v*v,2);
+   }
+  }
+  flowAmp.gain.setValueCurveAtTime(curve,now,flowDuration);
+  flow.connect(flowBody);flowBody.connect(flowLow);flowLow.connect(flowSoft);
+  flowSoft.connect(flowAmp);flowAmp.connect(heartbeatBus.gain);
+  flow.start(now);flow.stop(now+flowDuration+.015);
   flow.onended=()=>{
-   flow.disconnect();flowBody.disconnect();flowLow.disconnect();flowAmp.disconnect();
+   flow.disconnect();flowBody.disconnect();flowLow.disconnect();
+   flowSoft.disconnect();flowAmp.disconnect();
   };
  }
 }
