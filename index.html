@@ -6425,7 +6425,10 @@ function tickViewer(elapsed){
   m.elapsed+=Math.min(elapsed,.12);const p=Math.min(1,m.elapsed/2.8);m.t=p*p*p*(p*(p*6-15)+10);
   spec.viewDistance=m.fromDistance+(m.toDistance-m.fromDistance)*m.t;
   if(p===1){cancelViewerMorph(true);return}
-  if(m.elapsed-m.lastUpload>=1/30||p===1){for(const b of m.batches){interpolateMorphBatch(b,m.t);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}m.lastUpload=m.elapsed}
+  // Keep geometry interpolation synchronized with the displayed frame. A 30 Hz
+  // upload cap caused visible stair-stepping on 60/120 Hz Safari displays.
+  // Avoid allocating intermediate arrays: interpolate into the existing batch data.
+  for(const b of m.batches){interpolateMorphBatch(b,m.t);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
  }else if(viewer.seconds&&!viewer.preparing){viewer.elapsed+=Math.min(elapsed,.2);if(viewer.elapsed>=viewer.seconds){viewer.elapsed=0;startViewerMorph(1)}}
 }
 function setViewerZoomValue(value){if(!spec)return;const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,clamp(Number(value),0,100)/100));render()}
