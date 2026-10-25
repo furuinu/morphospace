@@ -8090,7 +8090,7 @@ function beginVideoRecording(){
  recorder.ondataavailable=e=>{if(e.data&&e.data.size)job.chunks.push(e.data)};
  recorder.onerror=e=>{job.failed=true;job.message='動画エンコードに失敗しました：'+(e.error?.message||'不明なエラー');finishVideoRecording(job.message)};
  recorder.onstop=()=>job.onDone();
- try{recorder.start(1000);composeVideoFrame(job)}
+ try{recorder.start(1000);job.audio?.begin?.();composeVideoFrame(job)}
  catch(error){job.failed=true;finishVideoRecording('録画を開始できません：'+(error.message||error));return}
  videoControls(true);
  $('videoProgress').value=0;
