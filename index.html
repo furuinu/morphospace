@@ -5366,9 +5366,9 @@ function createMorphBatches(from,to,batchTriangles=12000){
    // Degenerate the non-native surface at its opposite endpoint. This keeps
    // the source skin intact at t=0 and the target skin intact at t=1, rather
    // than leaving projected foreign triangles visible as sudden holes/faces.
-   const center=[0,0,0]; // Shared collapse anchor preserves welded edges across adjacent faces.
+   // The common origin avoids per-face allocations and preserves shared edges.
    for(let corner=0;corner<3;corner++)for(let k=0;k<17;k++){
-    const original=originals[corner][k],projected=k<3?center[k]:projections[corner][k];
+    const original=originals[corner][k],projected=k<3?0:projections[corner][k];
     start.push(reverse?projected:original);end.push(reverse?original:projected);
    }
    if(start.length>=batchTriangles*3*17)flush();
