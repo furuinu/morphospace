@@ -6467,8 +6467,13 @@ function tickViewer(elapsed){
   // Keep geometry interpolation synchronized with the displayed frame. A 30 Hz
   // upload cap caused visible stair-stepping on 60/120 Hz Safari displays.
   // Avoid allocating intermediate arrays: interpolate into the existing batch data.
-  const factors=morphFrameFactors(m.t);
-  for(const b of m.batches){interpolateMorphBatch(b,m.t,factors);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
+  // Repeated render ticks with the same eased time do not change any vertex.
+  // Skip redundant full-buffer GPU transfers, including the initial t=0 frame.
+  if(m.t!==m.lastUpload){
+   const factors=morphFrameFactors(m.t);
+   for(const b of m.batches){interpolateMorphBatch(b,m.t,factors);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
+   m.lastUpload=m.t;
+  }
  }else if(viewer.seconds&&!viewer.preparing){viewer.elapsed+=Math.min(elapsed,.2);if(viewer.elapsed>=viewer.seconds){viewer.elapsed=0;startViewerMorph(1)}}
 }
 function setViewerZoomValue(value){if(!spec)return;const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,clamp(Number(value),0,100)/100));render()}
