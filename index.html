@@ -5356,7 +5356,23 @@ function createMorphBatches(from,to,batchTriangles=12000){
  const batches=[];let start=[],end=[];
  function flush(){if(!start.length)return;const n=start.length/17,tri=new Uint16Array(n),edges=new Uint16Array(n*2);for(let i=0;i<n;i++){tri[i]=i;edges[i*2]=i;edges[i*2+1]=i-i%3+(i+1)%3}const a=new Float32Array(start);batches.push({start:a,end:new Float32Array(end),data:new Float32Array(a),tri,edges,stride:17});start=[];end=[]}
  function map(surfaces,own,other,reverse){
-  for(const mesh of surfaces){const mapped=new Map();for(const v of mesh.tri){let match=mapped.get(v);if(!match){const i=v*17;match=nearest(other.root,[mesh.data[i]/own.extent,mesh.data[i+1]/own.extent,mesh.data[i+2]/own.extent]);mapped.set(v,match)}const original=mesh.data.subarray(v*17,v*17+17),projected=match.mesh.data.subarray(match.i,match.i+17);for(let k=0;k<17;k++){start.push(reverse?projected[k]:original[k]);end.push(reverse?original[k]:projected[k])}if(start.length===batchTriangles*3*17)flush()}}
+  for(const mesh of surfaces){const mapped=new Map();for(let face=0;face<mesh.tri.length;face+=3){
+   const originals=[],projections=[];
+   for(let corner=0;corner<3;corner++){
+    const v=mesh.tri[face+corner];let match=mapped.get(v);
+    if(!match){const i=v*17;match=nearest(other.root,[mesh.data[i]/own.extent,mesh.data[i+1]/own.extent,mesh.data[i+2]/own.extent]);mapped.set(v,match)}
+    originals.push(mesh.data.subarray(v*17,v*17+17));projections.push(match.mesh.data.subarray(match.i,match.i+17));
+   }
+   // Degenerate the non-native surface at its opposite endpoint. This keeps
+   // the source skin intact at t=0 and the target skin intact at t=1, rather
+   // than leaving projected foreign triangles visible as sudden holes/faces.
+   const center=[0,1,2].map(axis=>(projections[0][axis]+projections[1][axis]+projections[2][axis])/3);
+   for(let corner=0;corner<3;corner++)for(let k=0;k<17;k++){
+    const original=originals[corner][k],projected=k<3?center[k]:projections[corner][k];
+    start.push(reverse?projected:original);end.push(reverse?original:projected);
+   }
+   if(start.length>=batchTriangles*3*17)flush();
+  }}
  }
  map(from,ca,cb,false);flush();map(to,cb,ca,true);flush();return batches;
 }
