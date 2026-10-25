@@ -572,7 +572,11 @@ test('peak guard and soft ceiling protect speakers and recordings without attenu
   assert.equal(boost.gain.value,1.25,'volume changes must not compound the fixed boost');
  }
  const rec=e.recording();assert.equal(rec.track,g.track);
- assert.ok(safety.connections.some(n=>n.type==='recording'));
+ const fade=safety.connections.find(n=>n.type==='gain'&&n.connections.some(x=>x.type==='recording'));
+ assert.ok(fade,'recording must pass through a separate fade gain');
+ assert.ok(e.snowRecordingTap.connections.includes(fade),'marine snow must reach recording through an isolated tap');
+ rec.begin();
+ assert.equal(fade.gain.value,1,'test AudioParam mock uses immediate fade fallback');
  assert.equal(e.output.connections.length,1);
  rec.disconnect();assert.equal(safety.connections.length,1);
  assert.equal(g.track.stops,1);
