@@ -5345,7 +5345,7 @@ const VIEWER_CORE_SOURCE=typeof document!=='undefined'&&document.currentScript?d
 const canvas=$('glview'),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true})||canvas.getContext('webgl',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true});
 let genomes=[],population=[],pedigree={},parentSlots={A:null,B:null},generation=0,collectionMode='wild',currentBuildContext=null,previewSpecimens=[],detailSpecimens=[],detailCacheOrder=[];
 let activeStoredIndividual=null;
-let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
+let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,cameraOrbitPhase=0,cameraRoll=0,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
 const EMIT_COUNT=4;
 const EMIT_COLORS=[[.28,.90,1.0],[.10,1,.70],[.65,.34,1],[1,.68,.12],[1,.28,.66],[.62,1,.20],[.92,.97,1]];
 function emissionFounderDNA(seed){
@@ -6199,7 +6199,7 @@ window.addEventListener('keydown',event=>{if(event.key!=='Escape'||selected<0||!
 
 function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if(typeof thumbSize!=='number'||!Number.isFinite(thumbSize))thumbSize=0;if(!gl||!renderer||!meshes)return;let rect=canvas.getBoundingClientRect();let w=thumbSize||Math.max(1,Math.round(rect.width*Math.min(devicePixelRatio||1,1.35))),h=recordHeight||thumbSize||Math.max(1,Math.round(rect.height*Math.min(devicePixelRatio||1,1.35)));
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const lens=postEffects?ensureLensFlare(w,h):null;gl.bindFramebuffer(gl.FRAMEBUFFER,lens?lens.targets[0].framebuffer:null);gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);drawStudioGL();gl.useProgram(renderer.program);
- let pr=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4)),cam=mul4(translate(-spec.viewDistance),mul4(rotX(-modelPitch),mul4(rotY(-modelYaw),translate3(-panX,-panY,0))));let base=scale3(1,1,1);let u=renderer.vars;
+ let pr=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4)),cam=mul4(translate(-spec.viewDistance),mul4(rotZ(-cameraRoll),mul4(rotX(-modelPitch),mul4(rotY(-modelYaw),translate3(-panX,-panY,0)))));let base=scale3(1,1,1);let u=renderer.vars;
  const capturePose=nanoRenderPose&&recordHeight>0&&!videoRecording?nanoRenderPose:null;
  if(u.uCapture)gl.uniform4f(u.uCapture,capturePose?(capturePose.frame.tipX-.5)*2:0,capturePose?(.5-capturePose.frame.tipY)*2:0,capturePose?(capturePose.frame.radius??.05)*2:.10,capturePose?capturePose.frame.bodyPressure:0);
  if(u.uCaptureAspect)gl.uniform1f(u.uCaptureAspect,w/h);
@@ -7754,7 +7754,14 @@ function frame(now){if(animating){
   tickViewer(elapsed);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/200);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);if(viewer.morph)stepBiomeSystem(viewer.morph.target.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);}
-  if(videoRecording?videoRecording.autoOrbit:auto)modelYaw+=Math.min(elapsed,.15)*.085;
+  if(videoRecording?videoRecording.autoOrbit:auto){
+   // Smooth 90-degree right/left orbital sweep, with a gentle five-degree bank.
+   cameraOrbitPhase+=Math.min(elapsed,.15)*.085;
+   const sweep=Math.sin(cameraOrbitPhase);
+   modelYaw=sweep*Math.PI/2;
+   modelPitch=-25*Math.PI/180;
+   cameraRoll=5*Math.PI/180*Math.sin(cameraOrbitPhase);
+  }else cameraRoll=0;
   // Animate the entire existing body by low-frequency torsion in the vertex shaders.
   // No new appendage geometry, CPU remeshing, or per-frame buffer transfers.
   try{if(videoRecording){render(videoRecording.width,true,videoRecording.height);captureVideoFrame(now)}else render()}catch(error){if(videoRecording)finishVideoRecording("描画エラーで録画を終了しました");fail(error);animating=false}
