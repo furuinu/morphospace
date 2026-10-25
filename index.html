@@ -5380,18 +5380,19 @@ function createMorphBatches(from,to,batchTriangles=12000){
  }
  map(from,ca,cb,false);flush('outgoing');map(to,cb,ca,true);flush('incoming');return batches;
 }
-function interpolateMorphBatch(batch,t){
- const f=Math.max(0,Math.min(1,t)),a=batch.start,b=batch.end,out=batch.data;
+function morphFrameFactors(t){
+ const f=Math.max(0,Math.min(1,t)),edge=.08;
+ const envelope=Math.sin(Math.PI*f)**2;
+ return {f,incomingFade:Math.min(1,f/edge),outgoingFade:Math.min(1,(1-f)/edge),tremor:envelope*.075*Math.sin(f*114*Math.PI)};
+}
+function interpolateMorphBatch(batch,t,factors){
+ const {f,incomingFade,outgoingFade,tremor}=factors||morphFrameFactors(t),a=batch.start,b=batch.end,out=batch.data;
  // Corresponding vertices travel across the organism rather than scaling
  // each whole surface into/out of the origin for the entire transition.
  // Foreign topology only collapses in the first/last 8% to hide seams.
- const incoming=batch.side==='incoming',outgoing=batch.side==='outgoing';
- const edge=.08;
- const fade=incoming?Math.min(1,f/edge):outgoing?Math.min(1,(1-f)/edge):1;
- const envelope=Math.sin(Math.PI*f)**2;
- // Brief, deterministic muscular tremor peaks during topology destruction.
- // No random allocations or time-dependent discontinuities at the endpoints.
- const tremor=envelope*.075*Math.sin(f*114*Math.PI);
+ const fade=batch.side==='incoming'?incomingFade:batch.side==='outgoing'?outgoingFade:1;
+ // Frame-wide trigonometry is shared by all batches; keep the same tremor
+ // and vertex interpolation at every time value.
  // Process the 17-float vertex layout directly: avoid division/modulo
  // and branches for every attribute, preserving the exact interpolation.
  for(let i=0,j=0;i<out.length;i+=17,j++){
@@ -6466,7 +6467,8 @@ function tickViewer(elapsed){
   // Keep geometry interpolation synchronized with the displayed frame. A 30 Hz
   // upload cap caused visible stair-stepping on 60/120 Hz Safari displays.
   // Avoid allocating intermediate arrays: interpolate into the existing batch data.
-  for(const b of m.batches){interpolateMorphBatch(b,m.t);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
+  const factors=morphFrameFactors(m.t);
+  for(const b of m.batches){interpolateMorphBatch(b,m.t,factors);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
  }else if(viewer.seconds&&!viewer.preparing){viewer.elapsed+=Math.min(elapsed,.2);if(viewer.elapsed>=viewer.seconds){viewer.elapsed=0;startViewerMorph(1)}}
 }
 function setViewerZoomValue(value){if(!spec)return;const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,clamp(Number(value),0,100)/100));render()}
