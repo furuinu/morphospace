@@ -5894,7 +5894,7 @@ function playSnowChime(index,tone,now,manual=false){
  }
  if(!candidates.length)return;
  const base=candidates[Math.abs(index*7+Math.floor(tone*100))%candidates.length];
- const ratios=[1,1.51,2.23,3.17],levels=[.065,.024,.008,.0025],decays=[3.2,2.1,1.15,.60];
+ const ratios=[1,1.51,2.23,3.17],levels=[.0455,.0168,.0056,.00175],decays=[3.2,2.1,1.15,.60];
  const audibleCeiling=Math.min(11000,ctx.sampleRate*.45);
  for(let k=0;k<ratios.length;k++){
   const frequency=base*ratios[k];
