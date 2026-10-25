@@ -552,7 +552,11 @@ test('peak guard and soft ceiling protect speakers and recordings without attenu
  assert.equal(peakGuard.attack.value,.002);
  assert.equal(peakGuard.release.value,.17);
  assert.ok(safety.connections.includes(e.waveform));
- assert.ok(e.waveform.connections.includes(g.context.destination));
+ assert.ok(e.waveform.connections.includes(e.galleryLow),'waveform must feed the first gallery low-pass');
+ assert.ok(e.galleryLow.connections.includes(e.galleryLow2),'gallery low-pass stages must be cascaded');
+ assert.ok(e.galleryLow2.connections.includes(g.context.destination),'filtered output must reach speakers');
+ assert.equal(e.galleryLow.type,'lowpass');
+ assert.equal(e.galleryLow2.type,'lowpass');
  assert.equal(safety.oversample,'4x');
  assert.ok(ArrayBuffer.isView(safety.curve)&&safety.curve.length>=1024);
  let last=-2;
