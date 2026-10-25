@@ -6823,17 +6823,23 @@ function updateHeartbeat(individuals,quiet,level){
   if(contraction<.12||now-prior<.29)continue;
   heartbeatBus.lastHit.set(key,now);
   const strength=Math.min(1,contraction*.65)*Math.max(0,Math.min(1,item.weight));
-  const base=49+(sp.seed%23),duration=.24;
-  const osc=ctx.createOscillator(),amp=ctx.createGain(),low=ctx.createBiquadFilter();
-  osc.type='sine';low.type='lowpass';low.frequency.value=170;
-  osc.frequency.setValueAtTime(base*1.25,now);
-  osc.frequency.exponentialRampToValueAtTime(base,now+.105);
-  amp.gain.setValueAtTime(0,now);
-  amp.gain.linearRampToValueAtTime(strength*.42,now+.024);
-  amp.gain.exponentialRampToValueAtTime(.0001,now+duration);
-  osc.connect(low);low.connect(amp);amp.connect(heartbeatBus.gain);
-  osc.start(now);osc.stop(now+duration+.01);
-  osc.onended=()=>{osc.disconnect();low.disconnect();amp.disconnect()};
+  const base=49+(sp.seed%23);
+  // Two-part lub-dub: a full first beat followed by a softer, shorter second beat.
+  // Both belong to one contraction; the refractory period remains unchanged.
+  for(const beat of [{offset:0,level:.42,duration:.24,pitch:1.25},
+                     {offset:.155,level:.16,duration:.17,pitch:1.45}]){
+   const start=now+beat.offset,end=start+beat.duration;
+   const osc=ctx.createOscillator(),amp=ctx.createGain(),low=ctx.createBiquadFilter();
+   osc.type='sine';low.type='lowpass';low.frequency.value=170;
+   osc.frequency.setValueAtTime(base*beat.pitch,start);
+   osc.frequency.exponentialRampToValueAtTime(base*.94,start+Math.min(.105,beat.duration*.7));
+   amp.gain.setValueAtTime(0,start);
+   amp.gain.linearRampToValueAtTime(strength*beat.level,start+.022);
+   amp.gain.exponentialRampToValueAtTime(.0001,end);
+   osc.connect(low);low.connect(amp);amp.connect(heartbeatBus.gain);
+   osc.start(start);osc.stop(end+.01);
+   osc.onended=()=>{osc.disconnect();low.disconnect();amp.disconnect()};
+  }
   // Womb-like blood-flow wash: shaped broadband turbulence, heavily low-passed.
   // Deterministic, reused buffer; pulse envelope follows the actual contraction.
   if(!heartbeatBus.flowBuffer||heartbeatBus.flowBuffer.sampleRate!==ctx.sampleRate){
