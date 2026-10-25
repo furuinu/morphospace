@@ -6,7 +6,19 @@ const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],
 test('morph preserves every triangle of unequal topology at both endpoints with safe WebGL1 indices',()=>{
  const result=ctx.createMorphBatches([a],[b],1);assert.equal(result.length,3);
  const sourceBefore=Array.from(a.data),targetBefore=Array.from(b.data);
- for(const batch of result){assert.ok(Math.max(...batch.tri)<65536);ctx.interpolateMorphBatch(batch,0);assert.deepEqual(Array.from(batch.data),Array.from(batch.start));ctx.interpolateMorphBatch(batch,1);for(let i=0;i<batch.data.length;i++)assert.ok(Math.abs(batch.data[i]-batch.end[i])<1e-6);ctx.interpolateMorphBatch(batch,.5);for(let i=0;i<batch.data.length;i++)assert.ok(Math.abs(batch.data[i]-(batch.start[i]+batch.end[i])*.5)<1e-6)}
+ for(const batch of result){
+  assert.ok(Math.max(...batch.tri)<65536);
+  for(const t of [0,.02,.1,.5,.9,.98,1]){
+   ctx.interpolateMorphBatch(batch,t);
+   assert.ok(Array.from(batch.data).every(Number.isFinite));
+   for(let i=0;i<batch.data.length;i++)if(i%17>=3)assert.ok(Math.abs(batch.data[i]-(batch.start[i]+(batch.end[i]-batch.start[i])*t))<1e-5);
+  }
+  ctx.interpolateMorphBatch(batch,batch.side==='incoming'?1:0);
+  const native=batch.side==='incoming'?batch.end:batch.start;
+  for(let i=0;i<batch.data.length;i++)assert.ok(Math.abs(batch.data[i]-native[i])<1e-5);
+  ctx.interpolateMorphBatch(batch,batch.side==='incoming'?0:1);
+  for(let i=0;i<batch.data.length;i++)if(i%17<3)assert.ok(Math.abs(batch.data[i])<1e-5);
+ }
  const faces=result.slice(1).map(x=>Array.from(x.end).filter((_,i)=>i%17<3).join(','));assert.equal(new Set(faces).size,2);
  assert.deepEqual(Array.from(a.data),sourceBefore);assert.deepEqual(Array.from(b.data),targetBefore);
 });
