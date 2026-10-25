@@ -29,6 +29,28 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
+      - name: Stamp unique visible version for every deployment
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          BUILD_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          match = re.search(r'<span class="version-label">v(\d+)\.(\d+)\.(\d+)</span>', html)
+          if not match:
+              raise SystemExit('Visible MORPHOSPACE version label missing')
+          base = '.'.join(match.groups())
+          version = f'v{base}.{os.environ["BUILD_NUMBER"]}.{os.environ["BUILD_ATTEMPT"]}'
+          html, count = re.subn(r'v' + re.escape(base) + r'(?![\d.])', version, html)
+          if count < 4:
+              raise SystemExit(f'Expected visible version references, found {count}')
+          path.write_text(html, encoding='utf-8')
+          print(f'Deploying MORPHOSPACE {version} ({count} labels)')
+          PY
       - name: Validate site
         run: |
           test -s index.html
