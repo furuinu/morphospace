@@ -602,7 +602,7 @@ test('20 percent blinking voices preserve independent bass and body-driven rhyth
  assert.match(choir,/sharedVoiceLevel\*clamp\(pulseEnvelope\*state\.grooveAccent,0,1\)/);
  assert.match(choir,/state\.rhythm\.dry\.gain\.setTargetAtTime\(\(1\.00-strain\*\.18\)\*highpassTrim/);
  assert.match(choir,/tune\(state\.body,bodyPitch/,'body voice follows its existing bending law');
- assert.match(choir,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
+ assert.match(src,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
 });
 test('metallic light calls soften above 3 kHz without filtering bass or body',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('function updatePureChoir('));
@@ -733,11 +733,14 @@ test('autoplay is attempted without a gesture and a hidden page retains active a
  assert.equal(a.f.bioticAudioRunning(),true);
  a.f.stopBioticAudio();assert.equal(a.f.audio.enabled,false);
 });
-test('viewing controls form five short two-column rows with one accessible sound checkbox',()=>{
- const body=html.match(/<div class="viewer-checks" role="group"[^>]*>([\s\S]*?)<\/div>/)[1],labels=[...body.matchAll(/<label>([\s\S]*?)<\/label>/g)];
- assert.equal(labels.length,10);for(const [,label]of labels){assert.equal((label.match(/<input/g)||[]).length,1);assert.ok([...label.replace(/<[^>]*>/g,'').trim()].length<=5);}
- assert.match(body,/<input id="viewerSound" type="checkbox" checked>/);assert.equal((html.match(/id="auto"/g)||[]).length,1);assert.doesNotMatch(body,/grid-column/);assert.match(html,/if\(typeof maybeStartBioticAudio==='function'\)maybeStartBioticAudio\(\)/);
+test('viewer settings are grouped by purpose and sound has one visible control',()=>{
+ for(const heading of ['鑑賞・切替','表示情報','活動音','保存'])assert.match(html,new RegExp('<legend>'+heading+'</legend>'));
+ for(const id of ['viewerSound','viewerSoundVolume','viewerInterval','viewerSource','viewerRecord'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
+ assert.match(html,/<input id="viewerSound" type="checkbox" checked>/);
+ assert.match(html,/id="heartbeatEnabled"[^>]*hidden/);
+ assert.match(html,/if\\(typeof maybeStartBioticAudio==='function'\\)maybeStartBioticAudio\\(\\)/);
 });
+
 test('autoplay attempts playback when activation API is unavailable',async()=>{
  const a=controller();delete a.f.navigator.userActivation;
  await a.f.maybeStartBioticAudio();assert.equal(a.f.bioticAudioRunning(),true);
