@@ -285,6 +285,15 @@ body{color:#eaf4f4;background:#090e18}
  .overlay.viewer-full .viewer-caption{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
  .overlay.viewer-full #viewerEcology{max-height:12dvh}
 }
+
+/* Group viewer controls by user intent without changing control IDs. */
+.viewer-setting-group{border:1px solid rgba(146,183,190,.28);border-radius:10px;padding:10px 12px;margin:0 0 12px;min-width:0}
+.viewer-setting-group legend{padding:0 6px;font-weight:700;font-size:12px;letter-spacing:.04em}
+.viewer-setting-group .viewer-interval{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;min-width:0}
+.viewer-setting-group .viewer-interval select{max-width:58%;min-width:0}
+.viewer-setting-group .viewer-interval input[type=range]{flex:1;min-width:70px}
+.viewer-setting-group .viewer-checks{margin-top:8px}
+.viewer-settings-help{font-size:11px;line-height:1.6;opacity:.8}
 </style></head><body><div class="wrap"><header><div><h1>MORPHOSPACE 64 <span class="version-label">v15.14.61</span></h1><p class="sub"><span>味と香りのクオリアに潜む生物たち。</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
@@ -301,20 +310,23 @@ body{color:#eaf4f4;background:#090e18}
 </div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作">
  <button class="btn" type="button" id="viewerFullscreen" aria-pressed="false" aria-label="全画面鑑賞へ戻る">鑑賞へ</button>
  <details id="viewerSettings"><summary class="btn">設定</summary><div class="viewer-settings-body">
-  <label class="viewer-interval">切替間隔<select id="viewerInterval"><option value="0">停止</option><option value="5">5秒</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option></select></label>
-  <label class="viewer-interval" style="margin-top:12px">鑑賞対象<select id="viewerSource"><option value="gallery">現在の図鑑</option><option value="stock">キャプチャーした生体のみ</option></select></label>
-  <p id="viewerPlaylistStatus" role="status" aria-live="polite"></p>
-  <div class="viewer-checks" role="group" aria-label="鑑賞の表示と再生">
-   <label><input id="viewerShowTitle" type="checkbox" checked>タイトル</label><label><input id="viewerShowSubtitle" type="checkbox" checked>副題</label>
-   <label><input id="viewerShowName" type="checkbox" checked>生体名</label><label><input id="viewerShowScientific" type="checkbox" checked>学名</label>
-   <label><input id="viewerShowTaxonomy" type="checkbox" checked>分類</label><label><input id="viewerShowEcology" type="checkbox" checked>生態</label>
-   <label><input id="viewerVideoNoise" type="checkbox" checked>映像ノイズ</label><label><input id="viewerSound" type="checkbox" checked>活動音</label>
-   <label><input id="viewerRandom" type="checkbox">ランダム</label><label><input id="auto" type="checkbox" checked>自動回転</label>
-  </div>
-  <label class="viewer-interval" style="margin-top:10px">音量<input id="viewerSoundVolume" type="range" min="0" max="100" step="1" value="50" aria-label="活動音の音量" title="初期値50%。前回より音量25%増。最大100%まで増幅可能"></label>
-  <input id="heartbeatEnabled" type="checkbox" checked hidden aria-hidden="true">
-  <p id="viewerSoundStatus" role="status" aria-live="polite">活動音はオンです。生体を開くと発声します。点滅と蠕動も声で表現します。</p>
-  <p>画面タップで操作を表示・非表示。「詳細」で生体情報・交配を操作できます。「← 一覧」で図鑑へ戻ります。設定は枠外タップで閉じ、次の個体へは約3秒かけてモーフィングします。</p><button type="button" class="btn viewer-record" id="viewerRecord">鑑賞画面を動画に保存</button>
+  <fieldset class="viewer-setting-group"><legend>鑑賞・切替</legend>
+   <label class="viewer-interval">切替間隔<select id="viewerInterval"><option value="0">停止</option><option value="5">5秒</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option></select></label>
+   <label class="viewer-interval">鑑賞対象<select id="viewerSource"><option value="gallery">現在の図鑑</option><option value="stock">キャプチャーした生体のみ</option></select></label>
+   <p id="viewerPlaylistStatus" role="status" aria-live="polite"></p>
+   <div class="viewer-checks" role="group" aria-label="再生と映像"><label><input id="viewerRandom" type="checkbox">ランダム再生</label><label><input id="auto" type="checkbox" checked>カメラ自動回転</label><label><input id="viewerVideoNoise" type="checkbox" checked>映像ノイズ</label></div>
+  </fieldset>
+  <fieldset class="viewer-setting-group"><legend>表示情報</legend>
+   <div class="viewer-checks" role="group" aria-label="表示する情報"><label><input id="viewerShowTitle" type="checkbox" checked>タイトル</label><label><input id="viewerShowSubtitle" type="checkbox" checked>副題</label><label><input id="viewerShowName" type="checkbox" checked>生体名</label><label><input id="viewerShowScientific" type="checkbox" checked>学名</label><label><input id="viewerShowTaxonomy" type="checkbox" checked>分類</label><label><input id="viewerShowEcology" type="checkbox" checked>生態</label></div>
+  </fieldset>
+  <fieldset class="viewer-setting-group"><legend>活動音</legend>
+   <div class="viewer-checks"><label><input id="viewerSound" type="checkbox" checked>活動音を再生</label></div>
+   <label class="viewer-interval">音量<input id="viewerSoundVolume" type="range" min="0" max="100" step="1" value="50" aria-label="活動音の音量"></label>
+   <input id="heartbeatEnabled" type="checkbox" checked hidden aria-hidden="true">
+   <p id="viewerSoundStatus" role="status" aria-live="polite">活動音はオンです。生体を開くと発声します。</p>
+  </fieldset>
+  <fieldset class="viewer-setting-group"><legend>保存</legend><button type="button" class="btn viewer-record" id="viewerRecord">鑑賞画面を動画に保存</button></fieldset>
+  <p class="viewer-settings-help">画面タップで操作を表示・非表示。設定は枠外タップで閉じます。次の個体への変化には約3秒かかります。</p>
  </div></details>
  <button class="btn" id="viewerPrevious" type="button" aria-label="前の生物へ">‹</button><button class="btn" id="viewerNext" type="button" aria-label="次の生物へ">›</button>
 </div><div class="scene"><div class="scene-alert" hidden="" id="sceneAlert">描画を準備中…</div><canvas aria-label="指で回転する立体標本。タップで操作を表示・非表示" tabindex="0" aria-keyshortcuts="Enter Space" id="glview"></canvas><canvas aria-hidden="true" id="rigCanvas"></canvas>
@@ -7315,7 +7327,7 @@ function stopPureChoir(){
 }
 function renderPureChoir(quiet,state,sp,fade=1){
  const engine=bioticAudio.engine;
- if(!engine||!bioticAudioRunning()||false)return;
+ if(!engine||!bioticAudioRunning())return;
  const ctx=engine.context,seed=sp.seed>>>0;
  const speechMode=false;
  const voiceDNA=vocalCharacterDNA(sp);
@@ -7695,7 +7707,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
 }
 // Synchronous, equal-power fade follows the 2.8-second eased visual morph.
 function updatePureChoir(quiet=false){
- if(!bioticAudio.engine||!bioticAudioRunning()||false){stopPureChoir();return;}
+ if(!bioticAudio.engine||!bioticAudioRunning()){stopPureChoir();return;}
  const m=viewer.morph;
  if(m?.source&&m?.target){
   if(incomingPureChoirTarget!==m.target){
