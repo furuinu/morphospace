@@ -554,7 +554,9 @@ test('peak guard and soft ceiling protect speakers and recordings without attenu
  assert.ok(safety.connections.includes(e.waveform));
  assert.ok(e.waveform.connections.includes(e.galleryLow),'waveform must feed the first gallery low-pass');
  assert.ok(e.galleryLow.connections.includes(e.galleryLow2),'gallery low-pass stages must be cascaded');
- assert.ok(e.galleryLow2.connections.includes(g.context.destination),'filtered output must reach speakers');
+ assert.ok(e.galleryLow2.connections.includes(e.galleryVolume),'filtered output must pass through gallery volume control');
+ assert.ok(e.galleryVolume.connections.includes(g.context.destination),'gallery volume output must reach speakers');
+ assert.equal(e.galleryVolume.gain.value,1,'viewer volume is unchanged by default');
  assert.equal(e.galleryLow.type,'lowpass');
  assert.equal(e.galleryLow2.type,'lowpass');
  assert.equal(safety.oversample,'4x');
