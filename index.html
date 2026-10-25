@@ -6836,8 +6836,8 @@ function updateHeartbeat(individuals,quiet,level){
   osc.onended=()=>{osc.disconnect();low.disconnect();amp.disconnect()};
   // Womb-like muffled vascular wash: irregular but pitched fluid motion,
   // not white noise or discrete electronic bubble chirps.
-  const wash=ctx.createGain(),low=ctx.createBiquadFilter(),filter=ctx.createBiquadFilter();
-  low.type='lowpass';low.frequency.value=460;low.Q.value=.45;
+  const wash=ctx.createGain(),fluidLow=ctx.createBiquadFilter(),filter=ctx.createBiquadFilter();
+  fluidLow.type='lowpass';fluidLow.frequency.value=460;fluidLow.Q.value=.45;
   filter.type='bandpass';filter.Q.value=.65;
   filter.frequency.setValueAtTime(185,now);
   filter.frequency.exponentialRampToValueAtTime(330,now+.16);
@@ -6846,7 +6846,7 @@ function updateHeartbeat(individuals,quiet,level){
   wash.gain.linearRampToValueAtTime(strength*.075,now+.11);
   wash.gain.setValueAtTime(strength*.055,now+.22);
   wash.gain.exponentialRampToValueAtTime(.0001,now+.72);
-  filter.connect(low);low.connect(wash);wash.connect(heartbeatBus.gain);
+  filter.connect(fluidLow);fluidLow.connect(wash);wash.connect(heartbeatBus.gain);
   let remaining=5;
   for(let i=0;i<5;i++){
    const osc=ctx.createOscillator(),voice=ctx.createGain();
@@ -6862,7 +6862,7 @@ function updateHeartbeat(individuals,quiet,level){
    osc.start(start);osc.stop(end+.01);
    osc.onended=()=>{
     osc.disconnect();voice.disconnect();
-    if(--remaining===0){filter.disconnect();low.disconnect();wash.disconnect();}
+    if(--remaining===0){filter.disconnect();fluidLow.disconnect();wash.disconnect();}
    };
   }
  }
