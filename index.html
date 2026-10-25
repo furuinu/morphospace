@@ -7036,7 +7036,7 @@ function createBioticAudioEngine(context){
   smooth(master.gain,clamp(volume,0,1)*(gentleChoir?.95:1.30),now,.09);
  }
  function silence(){smooth(master.gain,0,context.currentTime,.025);for(const voice of voices.values())retire(voice);voices.clear();}
- function recording(){const node=context.createMediaStreamDestination(),fade=context.createGain();fade.gain.setValueAtTime(0,context.currentTime);fade.gain.linearRampToValueAtTime(1,context.currentTime+1.5);safety.connect(fade);fade.connect(node);return{track:node.stream.getAudioTracks()[0],disconnect(){safety.disconnect(fade);fade.disconnect();node.disconnect();for(const track of node.stream.getTracks())track.stop()}};}
+ function recording(){const node=context.createMediaStreamDestination(),fade=context.createGain();if(typeof fade.gain.setValueAtTime==='function'&&typeof fade.gain.linearRampToValueAtTime==='function'){fade.gain.setValueAtTime(0,context.currentTime);fade.gain.linearRampToValueAtTime(1,context.currentTime+1.5);}else{fade.gain.value=1;}safety.connect(fade);fade.connect(node);return{track:node.stream.getAudioTracks()[0],disconnect(){safety.disconnect(fade);fade.disconnect();node.disconnect();for(const track of node.stream.getTracks())track.stop()}};}
  return{context,output:master,snowInput,snowBackground,sampleInput:limiter,waveform,galleryLow,galleryLow2,galleryVolume,reverbInput,reverbWet,voices,update,silence,recording,harmonyForMode:vocalHarmonyForMode};
 }
 
