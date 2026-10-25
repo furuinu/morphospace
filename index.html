@@ -5599,7 +5599,7 @@ function refreshAnimatedSpecimen(forceStatic=false){if(selected<0||!gl||!rendere
 // All visible cilia are animated by the GPU every rendered frame.
 // The parent body can be regenerated at lower frequency without interrupting them.
 let viewerReturnFocus=null;
-function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
+function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;scheduleViewerFrame();rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
 const rigCanvas=$('rigCanvas');
 let lastSceneViewProj=null;
 function drawRigOverlay(mvp,w,h){
@@ -6443,7 +6443,7 @@ $('viewerPrevious').onclick=()=>startViewerMorph(-1);$('viewerNext').onclick=()=
 for(const id of ['viewerShowName','viewerShowEcology','viewerShowTitle','viewerShowSubtitle','viewerShowScientific','viewerShowTaxonomy'])$(id).onchange=()=>{viewerMetadata();try{localStorage.setItem('morphospace-viewer-text',JSON.stringify(['viewerShowName','viewerShowEcology','viewerShowTitle','viewerShowSubtitle','viewerShowScientific','viewerShowTaxonomy'].map(id=>$(id).checked)))}catch(error){}};
 try{const v=JSON.parse(localStorage.getItem('morphospace-viewer-text'));if(Array.isArray(v))['viewerShowName','viewerShowEcology','viewerShowTitle','viewerShowSubtitle','viewerShowScientific','viewerShowTaxonomy'].forEach((id,i)=>{if(typeof v[i]==='boolean')$(id).checked=v[i]})}catch(error){}
 window.addEventListener('resize',()=>{if(viewer.full&&spec){const old=viewer.fit;viewer.fit=viewerFit();const scale=viewer.fit/old;spec.viewDistance*=scale;if(viewer.morph){viewer.morph.fromDistance*=scale;viewer.morph.toDistance*=scale}}});
-document.addEventListener('visibilitychange',()=>{viewer.elapsed=0;lastFrame=performance.now();updateViewerCountdown()});
+document.addEventListener('visibilitychange',()=>{viewer.elapsed=0;lastFrame=performance.now();updateViewerCountdown();if(document.hidden){if(viewerFrameHandle){cancelAnimationFrame(viewerFrameHandle);viewerFrameHandle=0;}}else scheduleViewerFrame()});
 window.addEventListener('keydown',event=>{if(event.key!=='Escape'||selected<0||!$('overlay').classList.contains('open')||nanoAction||nanoOperationBusy||videoRecording||stockDialog.open||captureShareIsOpen||$('videoSaveDialog').open)return;event.preventDefault();event.stopImmediatePropagation();if($('viewerSettings').open)$('viewerSettings').open=false;else close();},true);
 
 function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if(typeof thumbSize!=='number'||!Number.isFinite(thumbSize))thumbSize=0;if(!gl||!renderer||!meshes)return;let rect=canvas.getBoundingClientRect();let w=thumbSize||Math.max(1,Math.round(rect.width*Math.min(devicePixelRatio||1,1.35))),h=recordHeight||thumbSize||Math.max(1,Math.round(rect.height*Math.min(devicePixelRatio||1,1.35)));
@@ -8123,7 +8123,12 @@ async function shareRecordedVideo(){
 }
 
 let framesInWindow=0,fpsWindowTime=0;
-function frame(now){if(animating){
+let viewerFrameHandle=0;
+function scheduleViewerFrame(){
+ if(!animating||viewerFrameHandle||document.hidden||selected<0)return;
+ viewerFrameHandle=requestAnimationFrame(frame);
+}
+function frame(now){viewerFrameHandle=0;if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
  if(selected>=0&&!nanoAction&&!stockDialog.open&&(!captureShareIsOpen||videoRecording)){
   environmentTime+=Math.min(elapsed,.18);
@@ -8150,9 +8155,9 @@ function frame(now){if(animating){
   }
  }
  updateViewerCountdown();
- requestAnimationFrame(frame);
+ scheduleViewerFrame();
 }}
-function close(){if(videoRecording||nanoAction)return;if(typeof bioticAudio!=='undefined')stopBioticAudio('残響を残して停止しました。',true);stopViewer();selected=-1;activeStoredIndividual=null;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';const target=viewerReturnFocus;viewerReturnFocus=null;if(target instanceof HTMLElement&&target.isConnected&&!target.closest('dialog')&&target!==document.body)target.focus({preventScroll:true});else $('gallery').querySelector('.item')?.focus({preventScroll:true});if(collectionMode==='shared')void completeSharedGallery(population);}
+function close(){if(videoRecording||nanoAction)return;if(typeof bioticAudio!=='undefined')stopBioticAudio('残響を残して停止しました。',true);stopViewer();selected=-1;if(viewerFrameHandle){cancelAnimationFrame(viewerFrameHandle);viewerFrameHandle=0;}activeStoredIndividual=null;auto=false;$('overlay').classList.remove('open');document.body.style.overflow='';const target=viewerReturnFocus;viewerReturnFocus=null;if(target instanceof HTMLElement&&target.isConnected&&!target.closest('dialog')&&target!==document.body)target.focus({preventScroll:true});else $('gallery').querySelector('.item')?.focus({preventScroll:true});if(collectionMode==='shared')void completeSharedGallery(population);}
 function saveDownload(blob,name){let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 function paletteBound(v){return Math.max(0,Math.min(1,v))}
 function drawStudioBackground(ctx,w,h){
@@ -8940,7 +8945,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
   $('status').textContent='v15.14.61 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
-  animating=true;requestAnimationFrame(frame);bootMorphospace()
+  animating=true;scheduleViewerFrame();bootMorphospace()
  }catch(e){fail(e);bootMorphospace()}
 }
 
