@@ -5395,18 +5395,12 @@ function interpolateMorphBatch(batch,t,factors){
  // and vertex interpolation at every time value.
  // Process the 17-float vertex layout directly: avoid division/modulo
  // and branches for every attribute, preserving the exact interpolation.
- // Only one phase modulo per vertex, instead of three; the integer
- // phase advances by 13 modulo 23, preserving the exact deterministic tremor.
- let phase=0;
- for(let i=0;i<out.length;i+=17){
+ for(let i=0,j=0;i<out.length;i+=17,j++){
   for(let k=0;k<3;k++){
-   const av=a[i+k],delta=b[i+k]-av;
-   const phaseK=phase+k*7;
-   const wave=((phaseK>=23?phaseK-23:phaseK)-11)/11;
-   out[i+k]=(av+delta*f)*fade+tremor*wave*(Math.abs(delta)+.12);
+   const av=a[i+k],bv=b[i+k],wave=((j*13+k*7)%23-11)/11;
+   out[i+k]=(av+(bv-av)*f)*fade+tremor*wave*(Math.abs(bv-av)+.12);
   }
   for(let k=3;k<17;k++)out[i+k]=a[i+k]+(b[i+k]-a[i+k])*f;
-  phase+=13;if(phase>=23)phase-=23;
  }
  return batch;
 }
