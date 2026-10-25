@@ -738,7 +738,7 @@ test('viewer settings are grouped by purpose and sound has one visible control',
  for(const id of ['viewerSound','viewerSoundVolume','viewerInterval','viewerSource','viewerRecord'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
  assert.match(html,/<input id="viewerSound" type="checkbox" checked>/);
  assert.match(html,/id="heartbeatEnabled"[^>]*hidden/);
- assert.match(html,/if\\(typeof maybeStartBioticAudio==='function'\\)maybeStartBioticAudio\\(\\)/);
+ assert.ok(html.includes("if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio()"));
 });
 
 test('autoplay attempts playback when activation API is unavailable',async()=>{
