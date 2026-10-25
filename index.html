@@ -5388,14 +5388,14 @@ function interpolateMorphBatch(batch,t){
  // Brief, deterministic muscular tremor peaks during topology destruction.
  // No random allocations or time-dependent discontinuities at the endpoints.
  const tremor=envelope*.075*Math.sin(f*114*Math.PI);
- for(let i=0;i<out.length;i++){
-  const k=i%17;
-  const v=a[i]+(b[i]-a[i])*f;
-  if(k<3){
-   const j=(i/17)|0;
-   const wave=((j*13+k*7)%23-11)/11;
-   out[i]=v*fade+tremor*wave*(Math.abs(b[i]-a[i])+.12);
-  }else out[i]=v;
+ // Process the 17-float vertex layout directly: avoid division/modulo
+ // and branches for every attribute, preserving the exact interpolation.
+ for(let i=0,j=0;i<out.length;i+=17,j++){
+  for(let k=0;k<3;k++){
+   const av=a[i+k],bv=b[i+k],wave=((j*13+k*7)%23-11)/11;
+   out[i+k]=(av+(bv-av)*f)*fade+tremor*wave*(Math.abs(bv-av)+.12);
+  }
+  for(let k=3;k<17;k++)out[i+k]=a[i+k]+(b[i+k]-a[i+k])*f;
  }
  return batch;
 }
