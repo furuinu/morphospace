@@ -700,36 +700,20 @@ test('late resume and rejected audio permission never restart a stopped sound en
  const b=controller(()=>Promise.reject(Error('unavailable')));b.f.$('viewerSound').checked=true;
  await b.f.startBioticAudio();assert.equal(b.f.audio.enabled,false);assert.equal(b.intervals.size,0);assert.match(b.f.$('viewerSoundStatus').textContent,/画面タップで再生/);assert.equal(b.f.$('viewerSound').disabled,false);
 });
-test('sound defaults on, respects a manual off until next visit and waveform follows audible playback',async()=>{
+test('sound defaults on and stays off after manual disable for the current visit',async()=>{
  assert.match(html,/<input id="viewerSound" type="checkbox" checked>活動音/);
- assert.match(html,/<canvas id="audioWaveform"[^>]+ hidden>/);
+ assert.doesNotMatch(html,/<canvas id="audioWaveform"/);
  const a=controller(undefined,'0'),f=a.f;
- assert.equal(f.$('viewerSound').checked,true,'legacy off choice must not suppress the new default');
- assert.equal(f.$('audioWaveform').hidden,false);
- assert.equal(f.audio.engine,null);
+ assert.equal(f.$('viewerSound').checked,true);
  await f.maybeStartBioticAudio();
  assert.equal(f.bioticAudioRunning(),true);
- assert.equal(f.$('audioWaveform').hidden,false);
  f.$('viewerSound').checked=false;f.$('viewerSound').onchange();
  assert.equal(f.audio.enabled,false);
- assert.equal(f.$('audioWaveform').hidden,true);
- assert.equal(f.syncBioticWaveformVisibility(),false);
  assert.equal(a.intervals.size,0);
- assert.equal(a.writes['morphospace-sound-enabled'],undefined);
  f.maybeStartBioticAudio();
- assert.equal(f.audio.enabled,false,'manual off must not autostart on following gestures in this visit');
- const b=controller(undefined,'0');assert.equal(b.f.$('viewerSound').checked,true);
- assert.equal(b.f.$('audioWaveform').hidden,false);
- assert.equal(b.f.audio.engine,null);
-});
-test('checked audio retains a silent indicator when playback stops',async()=>{
- const a=controller(),f=a.f;
- f.$('viewerSound').checked=true;
- await f.startBioticAudio();assert.equal(f.$('audioWaveform').hidden,false);
- f.animating=false;f.stopBioticAudio();
- assert.equal(f.$('audioWaveform').hidden,false);
- f.$('viewerSound').checked=true;assert.equal(f.syncBioticWaveformVisibility(),true);
- f.$('viewerSound').checked=false;assert.equal(f.syncBioticWaveformVisibility(),false);
+ assert.equal(f.audio.enabled,false);
+ const b=controller(undefined,'0');
+ assert.equal(b.f.$('viewerSound').checked,true);
 });
 test('camera, high-pass trim and particle diffusion have explicit regression guards',()=>{
  assert.match(src,/modelPitch=-0\.703599/,'camera must look down an extra 30 degrees');
@@ -738,7 +722,7 @@ test('camera, high-pass trim and particle diffusion have explicit regression gua
  assert.match(src,/state\.rhythm\.wet\.gain\.setTargetAtTime\(\(\.005\+strain\*\.015\)\*highpassTrim/);
  assert.match(src,/p\+=snowBrownian\(aSnowPos,aSnowInfo\.y,t\)/);
  assert.doesNotMatch(src,/return snowBrownian\(out,data,j,t\)/,'nano-action flow keeps physically advected trajectories');
- assert.match(src,/if\(peak<\.0002\)\{ctx\.moveTo\(0,mid\);ctx\.lineTo\(w,mid\)/);
+ assert.doesNotMatch(src,/function drawBioticWaveform\(/,'waveform drawing was removed');
 });
 test('autoplay is attempted without a gesture and a hidden page retains active audio',async()=>{
  const a=controller(undefined,null,false);
