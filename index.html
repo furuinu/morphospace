@@ -7765,7 +7765,7 @@ function tickBioticAudio(){
  bioticAudio.galleryTick=ctxNow;
  for(const filter of [engine.galleryLow,engine.galleryLow2])filter.frequency.setTargetAtTime(20000,ctxNow,.12);
  engine.galleryVolume.gain.setTargetAtTime(1,ctxNow,.12);
- try{engine.update(individuals,quiet?0:Number($('viewerSoundVolume').value)/100);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
+ try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
 async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;
