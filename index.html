@@ -312,16 +312,7 @@ body{color:#eaf4f4;background:#090e18}
    <label><input id="viewerRandom" type="checkbox">ランダム</label><label><input id="auto" type="checkbox" checked>自動回転</label>
   </div>
   <label class="viewer-interval" style="margin-top:10px">音量<input id="viewerSoundVolume" type="range" min="0" max="100" step="1" value="50" aria-label="活動音の音量" title="初期値50%。前回より音量25%増。最大100%まで増幅可能"></label>
-  <label style="display:inline-flex;align-items:center;gap:6px;font-size:11px;margin:8px 0"><input id="heartbeatEnabled" type="checkbox" checked>微細な鼓動（独立チャンネル）</label>
-  <div id="voiceSamplePanel" style="padding:10px;border:1px solid #cbd6d1;border-radius:9px;margin-top:10px">
-   <label class="viewer-interval">音源<select id="voiceSampleMode"><option value="choir" selected>公開用・合唱ボイス（素材不要）</option><option value="speech">発語合唱ボイス（全声部が発音）</option><option value="synth">従来の自動生成ボイス</option></select></label>
-   <div class="buttons" hidden style="display:none;margin-top:8px" aria-hidden="true"><button type="button" class="btn" id="voiceRecordStart">● 録音</button><button type="button" class="btn" id="voiceRecordStop" disabled>■ 停止</button><button type="button" class="btn" id="voiceSampleUpload">音声をまとめて選択</button><button type="button" class="btn" id="voiceSampleClear">解除</button></div>
-   <input id="voiceSampleFile" type="file" accept="audio/*,.wav,.mp3,.m4a" multiple hidden>
-   <audio id="voiceSamplePreview" playsinline style="display:none" hidden></audio>
-   <p id="voiceSampleStatus" role="status" aria-live="polite" style="font-size:11px">音源を切り替えて生体の発声を比較できます。</p>
-  </div>
-  
-  <button type="button" class="btn" id="snowBeepTest">マリンスノー音声テスト</button><p id="snowBeepDiag" role="status" style="font-size:11px">明滅イベント: 0 / 発音: 0</p>
+  <input id="heartbeatEnabled" type="checkbox" checked hidden aria-hidden="true">
   <p id="viewerSoundStatus" role="status" aria-live="polite">活動音はオンです。生体を開くと発声します。点滅と蠕動も声で表現します。</p>
   <p>画面タップで操作を表示・非表示。「詳細」で生体情報・交配を操作できます。「← 一覧」で図鑑へ戻ります。設定は枠外タップで閉じ、次の個体へは約3秒かけてモーフィングします。</p><button type="button" class="btn viewer-record" id="viewerRecord">鑑賞画面を動画に保存</button>
  </div></details>
@@ -332,7 +323,7 @@ body{color:#eaf4f4;background:#090e18}
 <div class="viewer-caption"><div class="viewer-name"><h2 id="viewerName"></h2></div><p id="viewerScientific"></p><p id="viewerTaxonomy"></p><p id="viewerEcology"></p></div>
 <div class="viewer-state"><span id="viewerPosition"></span><span id="viewerTransition" role="status"></span></div>
 <div class="viewer-countdown" id="viewerTimer" role="timer" aria-label="次の生体まで30秒" aria-live="off" hidden><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle class="countdown-track" cx="32" cy="32" r="24"/><circle class="countdown-arc" id="viewerTimerArc" cx="32" cy="32" r="24"/></svg><span class="countdown-seconds" id="viewerTimerSeconds" aria-hidden="true">30</span></div>
-<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><div class="control"><span>DOF診断</span><select id="dofDebug"><option value="0">通常表示</option><option value="1">深度マップ</option><option value="2">ぼけ量マップ</option></select><output id="dofState">状態確認中</output></div><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.14.61 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close" type="button" aria-label="生体一覧へ戻る" title="生体一覧へ戻る">← 一覧</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="checks"><label><input id="macroDof" type="checkbox" checked/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><select id="dofDebug" hidden aria-hidden="true"><option value="0" selected>通常表示</option></select><output id="dofState" hidden></output><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite">枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="control" style="display:none"><span>前面外皮の透過</span><input id="transparency" max="98" min="0" type="range" value="100"/><output id="transNum">100%</output></div><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button></div></section><div class="note">MORPHOSPACE v15.14.61 — QUALIA ECOLOGY</div></div></div><button class="btn x floating-close" id="close" type="button" aria-label="生体一覧へ戻る" title="生体一覧へ戻る">← 一覧</button><div class="capture-dock" role="group" aria-label="捕獲と共有"><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
 <dialog id="aboutDialog" aria-labelledby="aboutTitle">
  <div class="about-heading"><h2 id="aboutTitle">MORPHOSPACEとは</h2><button type="button" id="aboutClose" class="about-close" aria-label="解説を閉じる" autofocus>×</button></div>
  <article class="about-document" tabindex="0" aria-label="MORPHOSPACEの解説">
@@ -5905,8 +5896,7 @@ function drawStudioGL(){
 const snowChimeState={previous:new Float64Array(0),visible:new Uint8Array(0),lastAt:-100,burst:0,events:0,played:0,automatic:0};
 function playSnowChime(index,tone,now,manual=false){
  snowChimeState.events++;
- const diag=document.getElementById("snowBeepDiag");
- if(diag)diag.textContent="明滅イベント: "+snowChimeState.events+" / 発音: "+snowChimeState.played+" / 音声: "+(bioticAudio?.engine?.context?.state||"未起動");
+ 
  const engine=typeof bioticAudio!=='undefined'?bioticAudio.engine:null;
  if(!engine||engine.context.state!=='running')return;
  const ctx=engine.context;
@@ -5950,33 +5940,6 @@ function playSnowChime(index,tone,now,manual=false){
  }
 
 }
-// Independent low-frequency diagnostic: bypasses organism synthesis and the shared audio graph.
-const audioProbeButton=document.createElement('button');
-audioProbeButton.type='button';audioProbeButton.className='btn';
-audioProbeButton.textContent='440Hz 出力テスト';
-const audioProbeStatus=document.createElement('p');
-audioProbeStatus.setAttribute('role','status');audioProbeStatus.style.fontSize='11px';
-audioProbeStatus.textContent='未実行';
-document.getElementById('snowBeepTest')?.insertAdjacentElement('afterend',audioProbeButton);
-audioProbeButton.insertAdjacentElement('afterend',audioProbeStatus);
-audioProbeButton.addEventListener('click',()=>{
- try{
-  const C=window.AudioContext||window.webkitAudioContext;
-  if(!C)throw Error('AudioContext 非対応');
-  const context=new C(),osc=context.createOscillator(),gain=context.createGain();
-  osc.type='sine';osc.frequency.value=440;gain.gain.value=.16;
-  osc.connect(gain);gain.connect(context.destination);
-  osc.start();osc.stop(context.currentTime+.6);
-  audioProbeStatus.textContent='再生要求中: '+context.state+' / '+context.sampleRate+'Hz';
-  void context.resume().then(()=>{audioProbeStatus.textContent='440Hz テスト: '+context.state+' / '+context.sampleRate+'Hz';}).catch(e=>{audioProbeStatus.textContent='再生失敗: '+e.message;});
-  osc.onended=()=>{osc.disconnect();gain.disconnect();void context.close().catch(()=>{});};
- }catch(e){audioProbeStatus.textContent='出力テスト失敗: '+e.message;}
-});
-document.getElementById('snowBeepTest')?.addEventListener('click',async()=>{
- if(!bioticAudio.engine){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;bioticAudio.engine=createBioticAudioEngine(new C({latencyHint:'interactive'}));}
- await bioticAudio.engine.context.resume();
- playSnowChime(-1,.95,environmentTime,true);
-});
 // Background tabs do not render frames, so keep sparse snow-chime events on the audio timer.
 let snowBackgroundNext=0;
 function tickBackgroundSnowChime(){
@@ -6087,8 +6050,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
    if(!snowChimeState.visible[i])playSnowChime(i,tone,environmentTime);
    snowChimeState.visible[i]=1;
   }
-  const diag=document.getElementById('snowBeepDiag');
-  if(diag)diag.textContent='画面内で明滅中: '+visibleFlashes+' / 自動発音: '+snowChimeState.automatic+' / 音声: '+(bioticAudio?.engine?.context?.state||'未起動');
+  
  }
  if(renderer.snowSparkProgram){
   const s=renderer.snowSparkVars;
@@ -7353,9 +7315,9 @@ function stopPureChoir(){
 }
 function renderPureChoir(quiet,state,sp,fade=1){
  const engine=bioticAudio.engine;
- if(!engine||!bioticAudioRunning()||(voiceSample.mode!=='choir'&&voiceSample.mode!=='speech'))return;
+ if(!engine||!bioticAudioRunning()||false)return;
  const ctx=engine.context,seed=sp.seed>>>0;
- const speechMode=voiceSample.mode==='speech';
+ const speechMode=false;
  const voiceDNA=vocalCharacterDNA(sp);
  if(state.context!==ctx){
   state.context=ctx;
@@ -7733,7 +7695,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
 }
 // Synchronous, equal-power fade follows the 2.8-second eased visual morph.
 function updatePureChoir(quiet=false){
- if(!bioticAudio.engine||!bioticAudioRunning()||(voiceSample.mode!=='choir'&&voiceSample.mode!=='speech')){stopPureChoir();return;}
+ if(!bioticAudio.engine||!bioticAudioRunning()||false){stopPureChoir();return;}
  const m=viewer.morph;
  if(m?.source&&m?.target){
   if(incomingPureChoirTarget!==m.target){
@@ -7752,131 +7714,6 @@ function updatePureChoir(quiet=false){
   renderPureChoir(quiet,pureChoir,spec,1);
  }
 }
-const voiceSample={mode:'choir',buffer:null,source:null,gain:null,context:null,recorder:null,stream:null,chunks:[],url:null,bank:[],activeSeed:null,grainTime:0,grainPosition:0};
-let incomingVoiceSample=null,incomingVoiceSampleTarget=null;
-function retireVoiceSample(state){
- if(!state?.gain||!state.context)return;
- state.gain.gain.setTargetAtTime(0,state.context.currentTime,.035);
- setTimeout(()=>{try{state.gain.disconnect();state.filter?.disconnect()}catch(e){}},240);
-}
-function stopVoiceSample(){if(voiceSample.source){try{voiceSample.source.stop()}catch(e){}try{voiceSample.source.disconnect()}catch(e){}voiceSample.source=null}if(voiceSample.gain)voiceSample.gain.gain.value=0;voiceSample.grainTime=0;voiceSample.grainPosition=0;if(incomingVoiceSample){retireVoiceSample(incomingVoiceSample);incomingVoiceSample=null;incomingVoiceSampleTarget=null;}}
-// Recorded voices use the same visual motion clock as the procedural choir.
-function renderVoiceSample(quiet,state,sp,fade=1){
- const engine=bioticAudio.engine;
- if(!engine||!bioticAudioRunning()||voiceSample.mode!=='sample'||!voiceSample.buffer)return;
- const ctx=engine.context;
- if(voiceSample.bank.length){
-  const seed=sp?.seed??0;
-  if(state.activeSeed!==seed){
-   state.activeSeed=seed;state.grainTime=0;state.grainPosition=0;
-   const status=$('voiceSampleStatus');if(status)status.textContent='混合ボイス：'+voiceSample.bank.length+'素材から同時に3声を生成';
-  }
- }
- if(state.context!==ctx){
-  // Each morph endpoint owns its own grain scheduler; do not reset the other endpoint.
-  if(state.gain){try{state.gain.disconnect();state.filter?.disconnect()}catch(error){}}
-  state.gain=ctx.createGain();state.gain.gain.value=0;
-  state.filter=ctx.createBiquadFilter();state.filter.type='lowpass';state.filter.frequency.value=6000;
-  state.gain.connect(state.filter);state.filter.connect(engine.sampleInput);
-  state.context=ctx;
- }
- const t=typeof bodyTime==='number'?bodyTime:ctx.currentTime;
- const motion=$('motion').checked?Number($('motionAmp').value)/100:0;
- const energy=Math.max(.15,Math.min(1.5,motion*(sp?.genome?.dev?.motionEnergy||1)));
- const emission=typeof viewerEmissionValues==='function'?viewerEmissionValues(sp,true):null;
- const blinkSpeed=emission?.speed||.5,blinkMode=emission?.mode||0;
- // Four asynchronous luminous organs create syllabic attacks, while the body carries breath.
- let pulse=0;
- for(let i=0;i<4;i++){
-  const phase=t*(.8+blinkSpeed*2.1)*(1+i*.115)+i*1.67+(sp.seed%17)*.21;
-  const light=Math.pow(Math.max(0,Math.sin(phase*(blinkMode===0?1:1.25))),6);
-  pulse=Math.max(pulse,light);
- }
- const breath=.5+.5*Math.sin(t*(.55+energy*.45)+sp.seed*.001);
- const surface=Math.sin(t*(4.3+energy*3.2)+Math.sin(t*.77)*1.4);
- const vibratoCents=(3+energy*24)*surface*(.4+.6*breath);
- const melody=soundMusicalProfile(sp);
- const beat=((t*melody.tempo)%melody.beats+melody.beats)%melody.beats;
- let note=melody.events[0];
- for(const e of melody.events){if(e.start<=beat)note=e;else break;}
- const scale=melody.scale;
- const index=((note.degree%scale.length)+scale.length)%scale.length;
- const semitone=12*Math.floor(note.degree/scale.length)+scale[index]-scale[0];
- const octaveBounded=Math.max(-7,Math.min(7,semitone));
- const pitch=Math.pow(2,(octaveBounded*100+vibratoCents)/1200);
- // Overlap-add granular pitch shift: playback cursor progresses at original speed,
- // while each short, windowed grain reads at the target pitch ratio.
- // Grain scheduling is ahead of the 25ms visual timer to avoid gaps on mobile Safari.
- // Longer, 75%-overlapped Hann grains reduce audible segmentation of vowels.
- // A 250ms scheduling horizon tolerates Safari main-thread rendering jitter.
- const grainLength=.36,hop=.09,lookahead=.32;
- if(!state.grainTime||state.grainTime<ctx.currentTime-.12){
-  state.grainTime=ctx.currentTime+.012;
-  state.grainPosition=(ctx.currentTime*.173)%voiceSample.buffer.duration;
- }
- let scheduled=0;
- while(state.grainTime<ctx.currentTime+lookahead&&scheduled++<8){
-  const when=state.grainTime;
-  const bank=voiceSample.bank.length?voiceSample.bank:[{buffer:voiceSample.buffer}];
-  // Three simultaneous sample layers share one melodic note and one articulation envelope.
-  // Deterministic rotating selection makes a composite timbre, not three independent songs.
-  const layers=Math.min(3,bank.length),phraseIndex=Math.floor(when/5.5),seed=(sp?.seed??0)>>>0;
-  for(let layer=0;layer<layers;layer++){
-   const hash=(Math.imul((phraseIndex+1)*7+layer*101+seed,2654435761)>>>0);
-   const item=bank[hash%bank.length],src=ctx.createBufferSource(),env=ctx.createGain();
-   src.buffer=item.buffer;src.loop=true;
-   src.playbackRate.value=pitch*Math.pow(2,([-.035,0,.035][layer]||0)/12);
-   const offset=(state.grainPosition+(hash%1000)/1000*.08)%item.buffer.duration;
-   const steps=16;
-   env.gain.setValueAtTime(0,when);
-   for(let k=1;k<=steps;k++){
-    const window=.5-.5*Math.cos(2*Math.PI*k/steps);
-    env.gain.linearRampToValueAtTime(window*.25/layers,when+grainLength*k/steps);
-   }
-   src.connect(env);env.connect(state.gain);
-   src.start(when,offset);src.stop(when+grainLength+.008);
-   src.onended=()=>{try{src.disconnect();env.disconnect()}catch(e){}};
-  }
-  state.grainTime+=hop;
-  state.grainPosition=(state.grainPosition+hop)%voiceSample.buffer.duration;
- }
- // Keep a low, living breath floor; light pulses articulate without fully muting long notes.
- // Strong audible contrast: separated syllabic calls rather than near-continuous loop.
- // Smooth attack/release prevents clicks; occasional sustained phrases follow body motion.
- // Long breath phrases with a soft underlying voice; luminous pulses add articulation
- // rather than repeatedly chopping the entire choir to silence.
- const cycle=(t*(.33+blinkSpeed*.24)+sp.seed*.001)%7;
- const fadeIn=Math.min(1,cycle/1.3),fadeOut=Math.min(1,(7-cycle)/1.5);
- const breathEnvelope=Math.max(0,Math.min(fadeIn,fadeOut));
- const phrase=.24+.76*breathEnvelope*(.78+.22*breath);
- const articulation=.85+.15*.20*pulse;
- const level=quiet?0:phrase*articulation*.73*fade*Number($('viewerSoundVolume').value)/100;
- state.gain.gain.setTargetAtTime(level,ctx.currentTime,.16);
- state.filter.frequency.setTargetAtTime(1700+2800*breathEnvelope+170*pulse,ctx.currentTime,.12);
-}
-function updateVoiceSample(quiet=false){
- if(!bioticAudio.engine||!bioticAudioRunning()||voiceSample.mode!=='sample'||!voiceSample.buffer){stopVoiceSample();return;}
- const m=viewer.morph;
- if(m?.source&&m?.target){
-  if(incomingVoiceSampleTarget!==m.target){
-   if(incomingVoiceSample)retireVoiceSample(incomingVoiceSample);
-   incomingVoiceSample={context:null,gain:null,filter:null,activeSeed:null,grainTime:0,grainPosition:0};
-   incomingVoiceSampleTarget=m.target;
-  }
-  const angle=clamp(m.t,0,1)*Math.PI/2;
-  renderVoiceSample(quiet,voiceSample,m.source,Math.cos(angle));
-  renderVoiceSample(quiet,incomingVoiceSample,m.target,Math.sin(angle));
- }else{
-  if(incomingVoiceSample){
-   if(incomingVoiceSampleTarget===spec){
-    retireVoiceSample({gain:voiceSample.gain,filter:voiceSample.filter,context:voiceSample.context});
-    Object.assign(voiceSample,incomingVoiceSample);
-   }else retireVoiceSample(incomingVoiceSample);
-   incomingVoiceSample=null;incomingVoiceSampleTarget=null;
-  }
-  renderVoiceSample(quiet,voiceSample,spec,1);
- }
-}
 function stopBioticAudio(message='活動音を停止しました。',withTail=false){
  if(typeof heartbeatBus!=='undefined'){
   if(heartbeatBus.gain&&heartbeatBus.context)heartbeatBus.gain.gain.setTargetAtTime(0,heartbeatBus.context.currentTime,.02);
@@ -7887,7 +7724,7 @@ function stopBioticAudio(message='活動音を停止しました。',withTail=fa
   heartbeatBus.flows.clear();
  }
  bioticAudio.gallerySpec=null;
- stopVoiceSample();stopPureChoir();
+ stopPureChoir();
  const revision=++bioticAudio.revision;bioticAudio.enabled=false;bioticAudio.starting=false;
  releaseBioticWakeLock();setBioticMediaSession(false);
  if(bioticAudio.timer!==null)clearInterval(bioticAudio.timer);bioticAudio.timer=null;
@@ -7916,7 +7753,7 @@ function tickBioticAudio(){
  bioticAudio.galleryTick=ctxNow;
  for(const filter of [engine.galleryLow,engine.galleryLow2])filter.frequency.setTargetAtTime(20000,ctxNow,.12);
  engine.galleryVolume.gain.setTargetAtTime(1,ctxNow,.12);
- try{engine.update(individuals,quiet||voiceSample.mode==='sample'||(voiceSample.mode==='choir'||voiceSample.mode==='speech')?0:Number($('viewerSoundVolume').value)/100);updateVoiceSample(quiet);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
+ try{engine.update(individuals,quiet?0:Number($('viewerSoundVolume').value)/100);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
 async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;
@@ -9074,89 +8911,6 @@ canvas.addEventListener('webglcontextlost',e=>{
  window.addEventListener('keydown',event=>{if(dialog.open&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();dialog.close()}},true);
 })();
 
-(function(){
- const status=$('voiceSampleStatus'),preview=$('voiceSamplePreview'),file=$('voiceSampleFile');
- const message=t=>{status.textContent=t};
- async function load(blob){
-  if(!blob||blob.size>30*1024*1024){message('30MB以下の音声を選択してください。');return;}
-  try{
-   const Context=window.AudioContext||window.webkitAudioContext;
-   if(!Context)throw Error('音声デコード非対応');
-   const context=bioticAudio.engine?.context||new Context();
-   const buffer=await context.decodeAudioData(await blob.arrayBuffer());
-   if(!buffer.duration)throw Error('空の音声です');
-   stopVoiceSample();voiceSample.bank=[];voiceSample.activeSeed=null;voiceSample.buffer=buffer;
-   if(voiceSample.url)URL.revokeObjectURL(voiceSample.url);
-   voiceSample.url=URL.createObjectURL(blob);preview.src=voiceSample.url;preview.hidden=false;
-   $('voiceSampleMode').value='sample';voiceSample.mode='sample';
-   message('読み込み完了：'+buffer.duration.toFixed(1)+'秒。生体の動きで音量とビブラートが変化します。');
-   if(context!==bioticAudio.engine?.context)void context.close();
-   if(bioticAudioRunning())tickBioticAudio();else message('音源を読み込みました。画面をタップして活動音を再開してください。');
-  }catch(e){message('音声を読み込めません：'+e.message);}
- }
- async function loadMany(blobs){
-  const unique=[...new Map(blobs.map(b=>[b.name.replace(/ \\(\\d+\\)(?=\\.mp3$)/i,''),b])).values()];
-  if(unique.length===1){voiceSample.bank=[];voiceSample.activeSeed=null;await load(unique[0]);return;}
-  const Context=window.AudioContext||window.webkitAudioContext;
-  if(!Context){message('音声デコード非対応');return;}
-  const context=bioticAudio.engine?.context||new Context();
-  const bank=[];let failures=0;
-  for(const blob of unique){
-   if(blob.size>30*1024*1024){failures++;continue;}
-   try{const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(buffer.duration)bank.push({name:blob.name,buffer});else failures++;}
-   catch(e){failures++;}
-  }
-  if(context!==bioticAudio.engine?.context)void context.close();
-  if(!bank.length){message('音源を読み込めませんでした。');return;}
-  stopVoiceSample();voiceSample.bank=bank;voiceSample.activeSeed=null;voiceSample.buffer=bank[0].buffer;
-  if(voiceSample.url)URL.revokeObjectURL(voiceSample.url);
-  voiceSample.url=URL.createObjectURL(unique[0]);preview.src=voiceSample.url;preview.hidden=false;
-  voiceSample.mode='sample';$('voiceSampleMode').value='sample';
-  message(bank.length+'種類を読み込みました。生体ごとに音源を自動選択します。'+(failures?' 読込失敗：'+failures:''));
-  if(bioticAudioRunning())tickBioticAudio();
- }
- $('voiceSampleMode').onchange=e=>{voiceSample.mode=e.target.value;stopVoiceSample();stopPureChoir();if(bioticAudioRunning())tickBioticAudio()};
- $('voiceSampleUpload').onclick=()=>file.click();
- file.onchange=()=>{if(file.files?.length)void loadMany([...file.files]);file.value=''};
- $('voiceSampleClear').onclick=()=>{stopVoiceSample();voiceSample.buffer=null;voiceSample.bank=[];voiceSample.activeSeed=null;voiceSample.mode='choir';$('voiceSampleMode').value='choir';if(voiceSample.url)URL.revokeObjectURL(voiceSample.url);voiceSample.url=null;preview.removeAttribute('src');preview.hidden=true;message('録音音源を解除しました。');if(bioticAudioRunning())tickBioticAudio()};
- let recordingPreviousSession=null;
- function restoreRecordingSession(){
-  if(navigator.audioSession&&recordingPreviousSession!==null){
-   try{navigator.audioSession.type=recordingPreviousSession}catch(e){console.info('AudioSession restore:',e)}
-  }
-  recordingPreviousSession=null;
- }
- $('voiceRecordStart').onclick=async()=>{
-  let stream=null;
-  try{
-   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('このブラウザは録音に対応していません');
-   stopBioticAudio('録音中は活動音を停止します。');
-   preview.pause();
-   if(navigator.audioSession){
-    try{recordingPreviousSession=navigator.audioSession.type;navigator.audioSession.type='play-and-record';}
-    catch(e){console.info('AudioSession capture switch unavailable:',e)}
-   }
-   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
-   voiceSample.stream=stream;
-   const recorder=new MediaRecorder(stream);voiceSample.recorder=recorder;voiceSample.chunks=[];
-   recorder.ondataavailable=e=>{if(e.data.size)voiceSample.chunks.push(e.data)};
-   recorder.onerror=e=>message('録音エラー：'+(e.error?.message||'録音を継続できません'));
-   recorder.onstop=()=>{
-    stream.getTracks().forEach(t=>t.stop());voiceSample.stream=null;
-    restoreRecordingSession();$('voiceRecordStart').disabled=false;$('voiceRecordStop').disabled=true;
-    if(voiceSample.chunks.length)void load(new Blob(voiceSample.chunks,{type:recorder.mimeType||'audio/mp4'}));
-    else message('録音データがありません。もう一度お試しください。');
-   };
-   recorder.start();$('voiceRecordStart').disabled=true;$('voiceRecordStop').disabled=false;message('録音中…停止ボタンで確定します。');
-  }catch(e){
-   if(stream)stream.getTracks().forEach(t=>t.stop());
-   voiceSample.stream=null;restoreRecordingSession();
-   $('voiceRecordStart').disabled=false;$('voiceRecordStop').disabled=true;
-   message('録音できません：'+e.message);
-  }
- };
- $('voiceRecordStop').onclick=()=>{if(voiceSample.recorder?.state==='recording')voiceSample.recorder.stop()};
-})();
 </script></body></html>
 
 
