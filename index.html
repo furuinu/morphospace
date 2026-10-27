@@ -2364,7 +2364,13 @@ const COLOR_DESIGNS=[
  {name:'眼状環紋型',description:'無地の外皮・大きな多重環・微細な斑点',areas:[.40,.20,.16,.11,.08,.05]},
  {name:'葉脈樹状型',description:'広い地色・分岐する脈・対照色の葉縁',areas:[.43,.20,.14,.10,.08,.05]},
  {name:'分節帯状型',description:'成長軸に沿う多色の帯・節境界・末端色',areas:[.25,.23,.20,.15,.10,.07]},
- {name:'群体多色型',description:'成長核ごとの色・融合部の縁・局所的な点紋',areas:[.23,.21,.18,.16,.13,.09]}
+ {name:'群体多色型',description:'成長核ごとの色・融合部の縁・局所的な点紋',areas:[.23,.21,.18,.16,.13,.09]},
+ {name:'色素斑点型',description:'動的な斑点',areas:[.48,.23,.13,.08,.05,.03]},
+ {name:'不定形斑紋型',description:'融合する色素領域',areas:[.37,.27,.17,.10,.06,.03]},
+ {name:'迷路縞紋型',description:'蛇行縞模様',areas:[.34,.25,.18,.12,.07,.04]},
+ {name:'血管分岐型',description:'脈動する血管',areas:[.48,.21,.15,.09,.05,.02]},
+ {name:'樹状葉脈型',description:'分岐する葉脈',areas:[.45,.23,.16,.09,.05,.02]},
+ {name:'偏心多重斑紋型',description:'多重の不定形斑点',areas:[.35,.23,.18,.12,.08,.04]}
 ];
 function chromaticDistance(a,b){
  const x=rgbToHsv(a),y=rgbToHsv(b);
@@ -2388,7 +2394,7 @@ function designPalette(hexes,seed,rows,pattern){
   (w[3]+w[0])*.5,w[4]*1.1,w[1]*.65+w[4]*.2,w[2]*.9];
  const sum=chances.reduce((a,b)=>a+b,0);
  const draw=(((Math.abs(Math.floor(pattern.family||0))*13)%22)+.5)/22*sum;
- let grammar=7,cumulative=0;for(let i=0;i<8;i++){cumulative+=chances[i];if(draw<cumulative){grammar=i;break;}}
+ let grammar=7,cumulative=0;for(let i=0;i<8;i++){cumulative+=chances[i];if(draw<cumulative){grammar=i;break;}} if((pattern.family|0)>=16)grammar=8+((pattern.family|0)-16);
  const scheme=COLOR_DESIGNS[grammar],rgb=hexes.map(hexToRgb),hs=rgb.map(rgbToHsv);
  const available=new Set([0,1,2,3,4,5]),order=[];
  // Select neighbours by their actual colour contrast. Tonal categories never impose a dull base.
@@ -4512,7 +4518,7 @@ vec3 surfaceGradient(vec3 point,float time){
  return side*gradient.x/max(.01,uChromaAxis.w)+axis*gradient.y/max(.01,uChromaOrigin.w)+depth*gradient.z/max(.01,uChromaScale.x);
 }
 `;
-function nextSurfaceNames(source){return source.replace(/\b(uSurface[012]|uChroma(?:A|B|Origin|Axis|Scale)|chromaticPoint|pigmentLine|pigmentCell|surfaceBoundary|surfaceRidge|surfaceHeight|surfaceGradient|surfaceDisplacement|surfaceNormal)\b/g,name=>name.startsWith('u')?'uNext'+name.slice(1):'next'+name[0].toUpperCase()+name.slice(1));}
+function nextSurfaceNames(source){return source.replace(/\b(uSurface[012]|uChroma(?:A|B|Origin|Axis|Scale)|chromaticPoint|pigmentLine|pigmentCell|surfaceBoundary|surfaceRidge|surfaceHeight|surfaceGradient|surfaceDisplacement|surfaceNormal|livingHash|livingNoise|livingSpot|livingVein|livingInk)\b/g,name=>name.startsWith('u')?'uNext'+name.slice(1):'next'+name[0].toUpperCase()+name.slice(1));}
 const surfaceMorphVertexGLSL=surfaceRelationGLSL+nextSurfaceNames(surfaceRelationGLSL.replace('uniform highp float uMirrorSign;',''))+`
 uniform highp float uTextureMix;
 vec3 surfaceMotion(vec3 p,vec3 n,float t,float amp){
@@ -4591,6 +4597,11 @@ vec3 surfaceNormal(vec3 point,vec3 normal){
  g/=max(1.,length(g)/.85);
  return normalize(n-g);
 }
+float livingHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float livingNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(livingHash(i),livingHash(i+vec2(1.,0.)),f.x),mix(livingHash(i+vec2(0.,1.)),livingHash(i+vec2(1.,1.)),f.x),f.y);}
+float livingSpot(vec2 p,float scale,float t){vec2 q=p*scale,id=floor(q),f=fract(q)-.5;vec2 c=(vec2(livingHash(id+2.1),livingHash(id+9.7))-.5)*.38;float radius=mix(.045,.38,.5+.5*sin(t*1.3+livingHash(id+6.3)*6.2831853));return 1.-smoothstep(radius-.025,radius+.025,length(f-c));}
+float livingVein(vec2 p,float t,float freq){float x=abs(p.x),y=p.y;float trunk=1.-smoothstep(.018,.045,abs(p.x-.07*sin(y*7.+t*.25)));float b=abs(fract(y*freq-x*1.65+.12*sin(x*9.+y*5.))-.5);float f=abs(fract(y*freq*2.7-x*3.8+.16*sin(y*13.+x*7.))-.5);return max(trunk,max((1.-smoothstep(.012,.04,b))*smoothstep(.035,.13,x),(1.-smoothstep(.013,.03,f))*.25));}
+float livingInk(vec2 p,float t){vec2 q=p+vec2(.14*sin(p.y*4.+t*.28),.13*cos(p.x*4.-t*.23));return livingNoise(q*3.3)+.45*livingNoise(q*7.7+2.1);}
 vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
  vec3 p=chromaticPoint(point);
  float x=p.x,y=p.y,z=p.z,phase=uChromaA.y,kind=uChromaA.x;
@@ -4665,6 +4676,17 @@ vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
   color=mix(color,uPal3,smoothstep(.86,.88,belt));
   color=mix(color,uPal5,pigmentLine(belt-.23,.010));
   color=mix(color,uPal5,smoothstep(.88,.98,abs(y)));
+ }else if(kind<13.5){
+  float t=uTime*uSurfaceActivity;vec2 uv=p.xy;
+  float ink=livingInk(uv,t),cellSpot=livingSpot(uv,uChromaB.y*1.4,t);
+  float wave=.5+.5*sin(t*1.8-uv.y*7.+uv.x*2.+phase);
+  if(kind<8.5){color=mix(uPal0,uPal1,cellSpot);color=mix(color,uPal4,livingSpot(uv*1.7+2.8,uChromaB.y,t+1.7)*.28);}
+  else if(kind<9.5){float field=ink+.09*sin(t*.85-uv.y*4.5+phase);color=mix(uPal0,uPal1,smoothstep(.54,.72,field));color=mix(color,uPal2,smoothstep(.78,.92,field)*.8);}
+  else if(kind<10.5){float stripe=sin((uv.x*2.8+uv.y*2.1+ink*2.6)*5.+phase+t*.35);color=mix(uPal0,uPal1,smoothstep(-.22,.24,stripe));color=mix(color,uPal2,smoothstep(.72,.93,stripe)*.65);}
+  else if(kind<11.5){float vessel=livingVein(uv,t,3.2+uChromaA.z*.18);color=mix(uPal0,uPal1,vessel*(.7+.3*sin(t*2.2-length(uv)*8.+phase)));color=mix(color,uPal3,vessel*vessel*.37);}
+  else if(kind<12.5){float vein=livingVein(uv,t*.18,4.2+uChromaA.z*.12);color=mix(uPal0,uPal1,smoothstep(.2,.75,abs(uv.x))*.36);color=mix(color,uPal2,vein);color=mix(color,uPal4,vein*.28);}
+  else{vec2 c=pigmentCell(uv+vec2(.12*sin(uv.y*5.+t*.17),.09*cos(uv.x*6.-t*.21)),uChromaB.y*.62,phase);float rad=length((c-vec2(.1*sin(t*.57+phase),.08*cos(t*.43+phase)))*vec2(.85,1.13))*(1.+.16*ink);float breath=.03*sin(t*1.1+phase);color=mix(uPal0,uPal1,1.-smoothstep(.35+breath,.38+breath,rad));color=mix(color,uPal2,1.-smoothstep(.27+breath,.29+breath,rad));color=mix(color,uPal3,1.-smoothstep(.18-breath,.20-breath,rad));color=mix(color,uPal4,1.-smoothstep(.08+breath,.11+breath,rad));}
+  color=mix(color,uPal5,cellSpot*wave*.13);
  }else{
   // Colony patches were assigned to actual developmental nuclei in the shared mesh.
   color=undercoat;
@@ -4673,6 +4695,7 @@ vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
   float veins=pigmentLine(sin((x+y*.65)*uChromaB.z+sin(z*4.+phase)),.025);
   color=mix(color,uPal3,veins*smoothstep(.70,.94,r)*.88);
  }
+ if(kind<7.5&&uSurfaceActivity>.5){float wave=.5+.5*sin(uTime*1.15-y*5.3+phase);color=mix(color,uPal5,livingSpot(p.xy,uChromaB.y*2.1,uTime)*wave*.19);}
  // Separate organ meshes retain their assigned pigment; articulated outer skin has role 8.
  if(vRole>.5&&vRole<7.5){
   float tip=smoothstep(.76,.95,vAlong);
