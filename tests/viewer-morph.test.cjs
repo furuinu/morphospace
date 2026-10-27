@@ -44,7 +44,7 @@ test('captured-only playback adopts saved identities without changing the galler
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
  const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
  f.startViewerMorph();assert.equal(workers[0].request.record.seed,102);deliver(f,workers[0],{seed:102,style:0,genome:{},parts:[],rigs:[],palette:{}});
- f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);
+ f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);assert.ok(f.v.morph,'Completed endpoint remains visible for one frame');f.tickViewer(.016);
  assert.equal(f.activeStoredIndividual,second);assert.equal(f.spec.seed,102);assert.equal(f.detailSpecimens[0],cached);assert.equal(JSON.stringify(f.population),population);assert.equal(f.v.source,'stock');
  f.queueViewerPreparation();assert.equal(workers[1].request.record.seed,101);
 });
@@ -59,7 +59,7 @@ test('random next excludes the current organism and holds one choice throughout 
 });
 test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
  const {f,workers}=runtime();f.stockEntries=[stored('only',101)];f.v.source='stock';f.startViewerMorph();assert.equal(workers[0].request.record.seed,101);
- deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);
+ deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();f.v.morph.elapsed=2.79;f.tickViewer(.1);assert.ok(f.v.morph,'Completed endpoint remains visible for one frame');f.tickViewer(.016);
  f.startViewerMorph();f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.activeStoredIndividual,f.stockEntries[0]);
 });
 test('captured-only selection reports an empty archive and ignores a load superseded by closing',async()=>{
@@ -128,7 +128,8 @@ test('countdown hides on stopped interval, missing next specimen or hidden tab; 
  assert.equal(f.v.seconds,30);
 });
 test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
- const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};f.interpolateMorphBatch=()=>{throw Error('Unneeded final interpolation')};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
+ const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};const finalInterpolation=[];f.interpolateMorphBatch=(batch,t)=>{finalInterpolation.push(t)};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
+ assert.ok(f.v.morph,'Fully interpolated coating must render before adoption');assert.deepEqual(finalInterpolation,[1]);f.tickViewer(.016);
  assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.meshes,prepared);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='apply').length,1);assert.deepEqual(events,['apply','metadata']);assert.ok(f.v.retired.some(m=>m.buffer==='transient'));f.drainViewerRetired();assert.ok(events.includes('delete:transient'));assert.ok(!events.includes('delete:prepared'));
 });
 
