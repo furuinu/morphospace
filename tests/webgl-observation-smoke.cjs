@@ -51,7 +51,7 @@ const path=require('node:path');
    const cycleOptions=choices('viewerBackgroundInterval').map(Number);
    const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
    if(!equal(viewerOptions,[0,10,20,30,60,90,120]))throw Error('Viewer interval options incorrect');
-   if(!equal(backgroundOptions,['deepsea','predawn','sunrise','twilight','nebula']))throw Error('Five atmospheric backgrounds missing');
+   if(!equal(backgroundOptions,['deepsea','predawn','sunrise','twilight','nebula','moonlit']))throw Error('Six atmospheric backgrounds missing');
    if(!equal(cycleOptions,[0,30,60,90,120,150,180]))throw Error('Background cycle options incorrect');
    if($('viewerBackground').value!=='deepsea'||$('viewerBackgroundInterval').value!=='60'||!$('viewerBackgroundRandom').checked)
     throw Error('Background defaults must be deepsea / 60s / random');
@@ -136,7 +136,7 @@ const path=require('node:path');
    return samples;
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: three distinct GPU colour zones, central light falloff and five atmospheric palettes',backgroundPixels);
+  console.log('PASS: three distinct GPU colour zones, central light falloff and six atmospheric palettes',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
