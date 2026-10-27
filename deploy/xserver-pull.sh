@@ -47,7 +47,9 @@ PY
 # Preserve existing index on failure; no deletion of other site files.
 cp -p "$TARGET/index.html" "$TARGET/.morphospace-index-backup.html" 2>/dev/null || true
 cp "$TMP/index.html" "$TARGET/.morphospace-index-next.html"
+chmod 644 "$TARGET/.morphospace-index-next.html"
 mv -f "$TARGET/.morphospace-index-next.html" "$TARGET/index.html"
 printf '%s\n' "$SHA" > "$TMP/deployed-sha"
 cp "$TMP/deployed-sha" "$TARGET/.morphospace-deployed-sha"
+chmod 644 "$TARGET/.morphospace-deployed-sha"
 echo "$LOG_PREFIX deployed $SHA"
