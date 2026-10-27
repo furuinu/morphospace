@@ -4563,7 +4563,7 @@ void main(){
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n + motion*.17,0.0)).xyz);
  vView=normalize(uCameraPos-eye.xyz);
- vColor=aColor;vRole=role;vObj=aPos;vAlong=u;vTriNormal=n;
+ vColor=aColor;vRole=role;vObj=aPos;vAlong=u;vTriNormal=normalize(aNormal);vTriNormal=normalize(aNormal);vTriNormal=n;
  vGlow=vec2(aParams.z,.5+.5*sin(uTime*1.15+aParams.w+phase));
  gl_Position=captureClip(uMvp*vec4(p,1.0));
 }`;
@@ -4941,7 +4941,7 @@ void main(){
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n+movement*.16,0.0)).xyz);
- vColor=aColor;vRole=role;vObj=aPos;vAlong=clamp(aParams.y,0.0,1.0);
+ vColor=aColor;vRole=role;vObj=aPos;vAlong=clamp(aParams.y,0.0,1.0);vTriNormal=normalize(aNormal);
  vGlow=vec2(aParams.z,.5+.5*sin(uTime*1.15+aParams.w+phase));
  vView=normalize(uCameraPos-eye.xyz);
  gl_Position=captureClip(uMvp*vec4(p,1.0));
