@@ -313,10 +313,16 @@ body{color:#eaf4f4;background:#090e18}
  <button class="btn" type="button" id="viewerFullscreen" aria-pressed="false" aria-label="全画面鑑賞へ戻る">鑑賞へ</button>
  <details id="viewerSettings"><summary class="btn">設定</summary><div class="viewer-settings-body">
   <fieldset class="viewer-setting-group"><legend>鑑賞・切替</legend>
-   <label class="viewer-interval">切替間隔<select id="viewerInterval"><option value="0">停止</option><option value="5">5秒</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option></select></label>
+   <label class="viewer-interval">生体の切替<select id="viewerInterval"><option value="0">なし</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option><option value="90">90秒</option><option value="120">120秒</option></select></label>
    <label class="viewer-interval">鑑賞対象<select id="viewerSource"><option value="gallery">現在の図鑑</option><option value="stock">キャプチャーした生体のみ</option></select></label>
    <p id="viewerPlaylistStatus" role="status" aria-live="polite"></p>
    <div class="viewer-checks" role="group" aria-label="再生と映像"><label><input id="viewerRandom" type="checkbox">ランダム再生</label><label><input id="auto" type="checkbox" checked>カメラ自動回転</label><label><input id="viewerVideoNoise" type="checkbox" checked>映像ノイズ</label></div>
+  </fieldset>
+  <fieldset class="viewer-setting-group" aria-label="背景の設定"><legend>背景・光の環境</legend>
+   <label class="viewer-interval">背景<select id="viewerBackground"><option value="deepsea" selected>薄く照らされた深海</option><option value="predawn">夜明け前の霧</option><option value="sunrise">朝焼け</option><option value="twilight">夕焼けから闇に至る</option><option value="nebula">星がうまれる星雲ガス</option></select></label>
+   <label class="viewer-interval">背景の変化サイクル<select id="viewerBackgroundInterval"><option value="0">なし</option><option value="30">30秒</option><option value="60" selected>60秒</option><option value="90">90秒</option><option value="120">120秒</option><option value="150">150秒</option><option value="180">180秒</option></select></label>
+   <div class="viewer-checks"><label><input id="viewerBackgroundRandom" type="checkbox" checked>ランダムに背景を変化</label></div>
+   <p class="viewer-settings-help">背景の変化は生体の切替とは独立しています。ランダムOFFで選択した背景に固定します。</p>
   </fieldset>
   <fieldset class="viewer-setting-group"><legend>表示情報</legend>
    <div class="viewer-checks" role="group" aria-label="表示する情報"><label><input id="viewerShowTitle" type="checkbox" checked>タイトル</label><label><input id="viewerShowSubtitle" type="checkbox" checked>副題</label><label><input id="viewerShowName" type="checkbox" checked>生体名</label><label><input id="viewerShowScientific" type="checkbox" checked>学名</label><label><input id="viewerShowTaxonomy" type="checkbox" checked>分類</label><label><input id="viewerShowEcology" type="checkbox" checked>生態</label></div>
