@@ -8410,13 +8410,15 @@ function drawStudioBackground(ctx,w,h){
  const profile=currentBackgroundProfile();
  const rgb=v=>v.map(c=>Math.round(clamp(c,0,1)*255)).join(',');
  const cloud=(colour,diameter)=>{
+  ctx.save();
+  ctx.translate(w*.50,h*.49);
+  ctx.scale(w,h);
+  // Create the gradient AFTER entering UV space; it must scale with BOTH
+  // viewport dimensions, not with the screen's shorter pixel dimension.
   const grad=ctx.createRadialGradient(0,0,0,0,0,diameter*.5);
   const stops=[[0,1],[.25,.91],[.50,.50],[.75,.12],[1,0]];
   for(const [p,a] of stops)grad.addColorStop(p,'rgba('+rgb(colour)+','+a+')');
-  ctx.save();
   ctx.globalCompositeOperation='screen';
-  ctx.translate(w*.50,h*.49);
-  ctx.scale(w,h);
   ctx.fillStyle=grad;ctx.fillRect(-.5,-.5,1,1);
   ctx.restore();
  };
