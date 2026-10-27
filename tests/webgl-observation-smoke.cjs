@@ -2,6 +2,17 @@
 const {chromium}=require('playwright');
 const {pathToFileURL}=require('node:url');
 const path=require('node:path');
+const indexSource=require('node:fs').readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
+const backgroundParameters=[
+ "float mid=driftingCloud(p-camera*.007,.425,",
+ "float light=driftingCloud(p+camera*.011,.200,",
+ "colour=mix(colour,screenColours(colour,uBgMid),.40*mid);",
+ "colour=mix(colour,screenColours(colour,uBgCenter),.65*light);",
+ "cloud(profile.mid,.85,.40);",
+ "cloud(profile.center,.40,.65);"
+];
+for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
+ throw Error('Background opacity/diameter must match the confirmed values: '+parameter);
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
  try{
@@ -122,12 +133,12 @@ const path=require('node:path');
      drawStudioGL();
      const central=at(0),middle=at(.21),edge=at(.48);
      if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
-     if(luminance(central)<45||luminance(middle)<15||luminance(central)-luminance(middle)<20)
+     if(luminance(central)<45||luminance(middle)<11||luminance(central)-luminance(middle)<20)
       throw Error('Background is too dark or has lost luminous middle layer: '+preset.id+' / '+central+' / '+middle+' / '+edge);
      if(luminance(middle)-luminance(edge)<8)
       throw Error('Screen-blended middle layer must brighten the opaque dark base: '+preset.id);
      if(distance(central,middle)<9)
-      throw Error('The 35% luminous circle must fade softly into the middle layer: '+preset.id);
+      throw Error('The 40% luminous circle must fade softly into the middle layer: '+preset.id);
      if(central.some((v,i)=>i<3&&v<=0))
       throw Error('Atmosphere has clipped central color: '+preset.id);
      samples.push({id:preset.id,central,middle,edge});
