@@ -157,7 +157,26 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     const last=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
     const cloudMotion=first.reduce((sum,p,i)=>sum+distance(p,last[i]),0);
     if(cloudMotion<6)throw Error('Cloud layers must actually evolve over time independently of background selection: '+cloudMotion);
-    return {samples,cloudMotion:Math.round(cloudMotion)};
+    // Compare the real GPU output with and without ray contribution. Its very
+    // low gain must be perceptible in aggregate, but never produce hard lines.
+    // Comparing increments at two times isolates the rays from moving clouds.
+    const locations=[];
+    for(const radius of [.09,.15,.22,.30,.39])
+     for(let k=0;k<12;k++)locations.push([radius,k*Math.PI/6]);
+    const rayFrame=(time,gain)=>{
+     environmentTime=time;drawStudioGL(gain);
+     return locations.map(([radius,angle])=>at(radius,angle));
+    };
+    const bare=rayFrame(32,0),glimmer=rayFrame(32,.065);
+    const bareLater=rayFrame(285,0),glimmerLater=rayFrame(285,.065);
+    const increments=(lit,dark)=>lit.map((v,i)=>v.slice(0,3).map((c,j)=>c-dark[i][j]));
+    const initial=increments(glimmer,bare),later=increments(glimmerLater,bareLater);
+    const values=initial.flat(),maxLift=Math.max(...values),changed=initial.filter(v=>v.some(c=>c>0)).length;
+    const evolution=initial.reduce((sum,v,i)=>sum+v.reduce((n,c,k)=>n+Math.abs(c-later[i][k]),0),0);
+    if(changed<3||maxLift<1)throw Error('Radial glimmer is not visibly contributing to the actual WebGL image');
+    if(maxLift>12)throw Error('Radial glimmer is too conspicuous: peak channel increase '+maxLift);
+    if(evolution<5)throw Error('Ray silhouettes remain fixed instead of gently evolving: '+evolution);
+    return {samples,cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution}};
    }finally{
     Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
     environmentTime=saved.at;
@@ -165,7 +184,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    }
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: full-strength UV-based atmospheric ellipses, cloud drift and six presets',backgroundPixels);
+  console.log('PASS: UV cloud backgrounds and very faint time-varying radial glimmer',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
