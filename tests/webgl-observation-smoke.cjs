@@ -11,7 +11,11 @@ const backgroundParameters=[
  "colour=screenColours(colour,uBgCenter*light);",
  "cloud(profile.mid,.85);",
  "cloud(profile.center,.40);",
- "ctx.scale(w,h);"
+ "ctx.scale(w,h);",
+ "float spin=t*.085;",
+ "float bend=(wander-.5)*.38;",
+ "float strength=.70+.60*wander;",
+ "function drawStudioGL(rayStrength=.03575){"
 
 ];
 for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
@@ -167,16 +171,27 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      environmentTime=time;drawStudioGL(gain);
      return locations.map(([radius,angle])=>at(radius,angle));
     };
-    const bare=rayFrame(32,0),glimmer=rayFrame(32,.065);
-    const bareLater=rayFrame(285,0),glimmerLater=rayFrame(285,.065);
     const increments=(lit,dark)=>lit.map((v,i)=>v.slice(0,3).map((c,j)=>c-dark[i][j]));
-    const initial=increments(glimmer,bare),later=increments(glimmerLater,bareLater);
-    const values=initial.flat(),maxLift=Math.max(...values),changed=initial.filter(v=>v.some(c=>c>0)).length;
-    const evolution=initial.reduce((sum,v,i)=>sum+v.reduce((n,c,k)=>n+Math.abs(c-later[i][k]),0),0);
+    const raysAt=time=>increments(rayFrame(time,.03575),rayFrame(time,0));
+    // A camera revolution is approximately 74 seconds. Look for a moving
+    // directional pattern and independent, smoothly evolving ray strengths.
+    const initial=raysAt(32),midpoint=raysAt(69),later=raysAt(106);
+    const nearby=raysAt(69.16);
+    const values=initial.flat(),maxLift=Math.max(...values);
+    const changed=initial.filter(v=>v.some(c=>c>0)).length;
+    const difference=(a,b)=>a.reduce((sum,v,i)=>sum+v.reduce((n,c,k)=>n+Math.abs(c-b[i][k]),0),0);
+    const evolution=difference(initial,midpoint)+difference(midpoint,later);
+    const nearDelta=difference(midpoint,nearby);
+    // Inspect the 12 angular positions on a middle-distance ring. Uneven
+    // evolution means the rays have moved, rather than only fading together.
+    const ring=frame=>frame.slice(24,36).map(rgb=>rgb[0]+rgb[1]+rgb[2]);
+    const a=ring(initial),b=ring(midpoint),c=ring(later);
+    const angularEvolution=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i])+Math.abs(b[i]-c[i]),0);
     if(changed<3||maxLift<1)throw Error('Radial glimmer is not visibly contributing to the actual WebGL image');
-    if(maxLift>12)throw Error('Radial glimmer is too conspicuous: peak channel increase '+maxLift);
-    if(evolution<5)throw Error('Ray silhouettes remain fixed instead of gently evolving: '+evolution);
-    return {samples,cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution}};
+    if(maxLift>7)throw Error('Radial glimmer exceeds the 45%-attenuated brightness budget: '+maxLift);
+    if(evolution<8||angularEvolution<2)throw Error('Ray angle and strength pattern fails to evolve at camera-orbit speed: '+evolution+'/'+angularEvolution);
+    if(nearDelta>25)throw Error('Radial glimmer makes abrupt rather than smooth changes: '+nearDelta);
+    return {samples,cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution,angularEvolution,nearDelta}};
    }finally{
     Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
     environmentTime=saved.at;
