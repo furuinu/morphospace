@@ -93,6 +93,47 @@ const path=require('node:path');
   await page.waitForTimeout(300);
   if(errors.length)throw new Error('Background WebGL or UI errors: '+errors.join('\n'));
   console.log('PASS: independent background controls, preset transitions and real GPU shader',backgroundTest);
+  // Read back the actual GPU background, not just preset metadata.
+  // Isolating the studio pass lets the test assess atmospheric falloff even while
+  // the specimen is moving or the lens effects are enabled.
+  const backgroundPixels=await page.evaluate(()=>{
+   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds};
+   const samples=[];
+   const sample=(x,y)=>{
+    const pixel=new Uint8Array(4);
+    gl.readPixels(Math.floor(canvas.width*x),Math.floor(canvas.height*y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+    return Array.from(pixel);
+   };
+   const luminance=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
+   try{
+    for(const preset of BACKGROUND_PRESETS){
+     backgroundCycle.from=backgroundCycle.to=preset;
+     backgroundCycle.fade=0;
+     backgroundCycle.fadeSeconds=0;
+     gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+     gl.viewport(0,0,canvas.width,canvas.height);
+     drawStudioGL();
+     const central=sample(.5,.5),edge=sample(.025,.025);
+     if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
+     if(luminance(central)-luminance(edge)<8)
+      throw Error('Atmosphere lacks central light falloff: '+preset.id+' / '+central+' / '+edge);
+     if(central.some((v,i)=>i<3&&v<=0))
+      throw Error('Atmosphere has clipped central color: '+preset.id);
+     samples.push({id:preset.id,central,edge});
+    }
+    for(let i=0;i<samples.length;i++)for(let j=i+1;j<samples.length;j++){
+     const a=samples[i].central,b=samples[j].central;
+     const difference=Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
+     if(difference<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
+    }
+   }finally{
+    Object.assign(backgroundCycle,saved);
+    render();
+   }
+   return samples;
+  });
+  if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
+  console.log('PASS: GPU atmospheric depth and five distinct low-contrast palettes',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
