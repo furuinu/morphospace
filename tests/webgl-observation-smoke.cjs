@@ -6,13 +6,16 @@ const indexSource=require('node:fs').readFileSync(path.resolve(__dirname,'../ind
 const backgroundParameters=[
  "float mid=driftingCloud(p-camera*.007,.425,",
  "float light=driftingCloud(p+camera*.011,.200,",
- "colour=mix(colour,screenColours(colour,uBgMid),.40*mid);",
- "colour=mix(colour,screenColours(colour,uBgCenter),.65*light);",
- "cloud(profile.mid,.85,.40);",
- "cloud(profile.center,.40,.65);"
+ "vec2 p=vStudioUv-vec2(.50,.49);",
+ "colour=screenColours(colour,uBgMid*mid);",
+ "colour=screenColours(colour,uBgCenter*light);",
+ "cloud(profile.mid,.85);",
+ "cloud(profile.center,.40);",
+ "ctx.scale(w,h);"
+
 ];
 for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
- throw Error('Background opacity/diameter must match the confirmed values: '+parameter);
+ throw Error('UV-size, full-strength Screen layers must match the agreed settings: '+parameter);
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
  try{
@@ -117,12 +120,10 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    };
    const luminance=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
    const distance=(a,b)=>Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
-   const w=canvas.width,h=canvas.height,unit=Math.min(w,h);
-   const at=(radius,angle=0)=>sample(w*.5+unit*radius*Math.cos(angle),h*.49+unit*radius*Math.sin(angle));
+   const w=canvas.width,h=canvas.height;
+   // Radius is measured in UVs: horizontal and vertical pixels scale separately.
+   const at=(radius,angle=0)=>sample(w*(.50+radius*Math.cos(angle)),h*(.49+radius*Math.sin(angle)));
    try{
-    const resolution=gl.getUniform(renderer.studioProgram,renderer.studioUniforms.uBgResolution);
-    if(!resolution||Math.abs(resolution[0]-w)>1||Math.abs(resolution[1]-h)>1)
-     throw Error('Background shader must use actual pixel resolution to preserve true circles');
     for(const preset of BACKGROUND_PRESETS){
      backgroundCycle.from=backgroundCycle.to=preset;
      backgroundCycle.fade=0;
@@ -133,7 +134,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      drawStudioGL();
      const central=at(0),middle=at(.21),edge=at(.48);
      if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
-     if(luminance(central)<45||luminance(middle)<11||luminance(central)-luminance(middle)<20)
+     if(luminance(central)<70||luminance(middle)<18||luminance(central)-luminance(middle)<20)
       throw Error('Background is too dark or has lost luminous middle layer: '+preset.id+' / '+central+' / '+middle+' / '+edge);
      if(luminance(middle)-luminance(edge)<8)
       throw Error('Screen-blended middle layer must brighten the opaque dark base: '+preset.id);
@@ -164,7 +165,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    }
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: short-side circular layers, true GPU cloud drift and six colour atmospheres',backgroundPixels);
+  console.log('PASS: full-strength UV-based atmospheric ellipses, cloud drift and six presets',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
