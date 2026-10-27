@@ -26,7 +26,7 @@ test('200 source palettes retain six pigments and reproducible, diverse spatial 
   }
   return {palettes:COLOR_TABLE.length,grammars:seen.size,invalid};
  })()`);
- assert.deepEqual(plain(result),{palettes:200,grammars:8,invalid:0});
+ assert.deepEqual(plain(result),{palettes:200,grammars:14,invalid:0});
 });
 
 test('pattern category controls still affect grammar selection',()=>{
@@ -42,7 +42,13 @@ test('pattern category controls still affect grammar selection',()=>{
   }
   return choices;
  })()`);
- assert.deepEqual(plain(result),[[3,4],[1,6],[2,7],[0,4],[2,5,6]]);
+ const groups=plain(result);
+ assert.equal(groups.length,5);
+ for(const g of groups){
+  assert.ok(g.some(v=>v<8),'Original grammars must remain available');
+  for(let v=8;v<14;v++)assert.ok(g.includes(v),'Added grammar '+v+' must remain reachable');
+ }
+ assert.equal(new Set(groups.map(g=>JSON.stringify(g))).size,5,'Category weights must still select distinct legacy grammars');
 });
 
 test('low and high detail share the developmental coordinate frame and pigment field',()=>{
@@ -78,7 +84,7 @@ test('shared DNA round trips and descendants generate valid inherited palettes',
   let valid=true;
   for(let i=0;i<32;i++){
    const g=crossoverGenome({genome:a},{genome:b},10001+i,i,.75).genome,p=pickPalette(g.seed,g.colorDNA,g.patternDNA);
-   if(p.design.order.length!==6||p.design.grammar<0||p.design.grammar>7)valid=false;
+   if(p.design.order.length!==6||p.design.grammar<0||p.design.grammar>13)valid=false;
   }
   return {same:JSON.stringify(original)===JSON.stringify(restored),valid};
  })()`);
