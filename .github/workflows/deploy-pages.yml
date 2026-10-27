@@ -36,6 +36,12 @@ jobs:
           echo "Deploying $(grep -o 'MORPHOSPACE v[0-9.]*' index.html | head -1)"
       - name: Check specimen restoration and colour regressions
         run: node --test tests/*.test.cjs
+      - name: Install browser for WebGL smoke test
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Compile actual WebGL shaders and open observation mode
+        run: node tests/webgl-observation-smoke.cjs
       - name: Stamp unique visible version for every deployment
         env:
           BUILD_NUMBER: ${{ github.run_number }}
