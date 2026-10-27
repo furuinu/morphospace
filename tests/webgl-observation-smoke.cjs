@@ -113,13 +113,16 @@ const path=require('node:path');
      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
      gl.viewport(0,0,canvas.width,canvas.height);
      drawStudioGL();
-     const central=sample(.5,.5),edge=sample(.025,.025);
+     const central=sample(.5,.5),middle=sample(.82,.5),edge=sample(.025,.025);
      if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
-     if(luminance(central)-luminance(edge)<8)
-      throw Error('Atmosphere lacks central light falloff: '+preset.id+' / '+central+' / '+edge);
+     if(luminance(central)-luminance(middle)<8||luminance(middle)-luminance(edge)<8)
+      throw Error('All three atmospheric colour stops must be visible: '+preset.id+' / '+central+' / '+middle+' / '+edge);
+     const colourDistance=(a,b)=>Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
+     if(colourDistance(central,middle)<12||colourDistance(middle,edge)<12)
+      throw Error('Three-tone gradient loses its middle layer: '+preset.id);
      if(central.some((v,i)=>i<3&&v<=0))
       throw Error('Atmosphere has clipped central color: '+preset.id);
-     samples.push({id:preset.id,central,edge});
+     samples.push({id:preset.id,central,middle,edge});
     }
     for(let i=0;i<samples.length;i++)for(let j=i+1;j<samples.length;j++){
      const a=samples[i].central,b=samples[j].central;
@@ -133,7 +136,7 @@ const path=require('node:path');
    return samples;
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: GPU atmospheric depth and five distinct low-contrast palettes',backgroundPixels);
+  console.log('PASS: three distinct GPU colour zones, central light falloff and five atmospheric palettes',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
