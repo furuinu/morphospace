@@ -32,13 +32,16 @@ const path=require('node:path');
   }));
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
-  // Exercise experimental mapping both OFF and ON; shader must remain usable.
-  await page.locator('#triplanarTrial').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}))});
+  // The production material projection defaults to triplanar.
+  const projection=page.locator('#triplanarTrial');
+  if(!await projection.isChecked())throw new Error('Triplanar projection must be enabled by default');
+  // The legacy mapping remains available for comparison and must compile too.
+  await projection.evaluate(el=>{el.checked=false;el.dispatchEvent(new Event('change',{bubbles:true}))});
   await page.waitForTimeout(450);
-  if(errors.length)throw new Error('Experimental triplanar WebGL errors: '+errors.join('\\n'));
-  await page.locator('#triplanarTrial').evaluate(el=>{el.checked=false;el.dispatchEvent(new Event('change',{bubbles:true}))});
-  await page.waitForTimeout(200);
-  if(errors.length)throw new Error('Observation WebGL errors: '+errors.join('\n'));
+  if(errors.length)throw new Error('Legacy projection WebGL errors: '+errors.join('\n'));
+  await projection.evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}))});
+  await page.waitForTimeout(450);
+  if(errors.length)throw new Error('Triplanar WebGL errors: '+errors.join('\n'));
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
