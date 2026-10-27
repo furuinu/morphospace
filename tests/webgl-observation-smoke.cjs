@@ -97,46 +97,61 @@ const path=require('node:path');
   // Isolating the studio pass lets the test assess atmospheric falloff even while
   // the specimen is moving or the lens effects are enabled.
   const backgroundPixels=await page.evaluate(()=>{
-   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds};
+   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime};
    const samples=[];
    const sample=(x,y)=>{
     const pixel=new Uint8Array(4);
-    gl.readPixels(Math.floor(canvas.width*x),Math.floor(canvas.height*y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+    gl.readPixels(Math.round(x),Math.round(y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
     return Array.from(pixel);
    };
    const luminance=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
+   const distance=(a,b)=>Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
+   const w=canvas.width,h=canvas.height,unit=Math.min(w,h);
+   const at=(radius,angle=0)=>sample(w*.5+unit*radius*Math.cos(angle),h*.49+unit*radius*Math.sin(angle));
    try{
+    const resolution=gl.getUniform(renderer.studioProgram,renderer.studioUniforms.uBgResolution);
+    if(!resolution||Math.abs(resolution[0]-w)>1||Math.abs(resolution[1]-h)>1)
+     throw Error('Background shader must use actual pixel resolution to preserve true circles');
     for(const preset of BACKGROUND_PRESETS){
      backgroundCycle.from=backgroundCycle.to=preset;
      backgroundCycle.fade=0;
      backgroundCycle.fadeSeconds=0;
+     environmentTime=0;
      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-     gl.viewport(0,0,canvas.width,canvas.height);
+     gl.viewport(0,0,w,h);
      drawStudioGL();
-     const central=sample(.5,.5),middle=sample(.82,.5),edge=sample(.025,.025);
+     const central=at(0),middle=at(.26),edge=at(.48);
      if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
-     if(luminance(central)-luminance(middle)<8||luminance(middle)-luminance(edge)<8)
-      throw Error('All three atmospheric colour stops must be visible: '+preset.id+' / '+central+' / '+middle+' / '+edge);
-     const colourDistance=(a,b)=>Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
-     if(colourDistance(central,middle)<12||colourDistance(middle,edge)<12)
-      throw Error('Three-tone gradient loses its middle layer: '+preset.id);
+     if(luminance(central)-luminance(edge)<8)
+      throw Error('Screen-light core must be brighter than the opaque edge: '+preset.id+' / '+central+' / '+edge);
+     if(distance(central,middle)<9)
+      throw Error('The 35% luminous circle must fade softly into the middle layer: '+preset.id);
      if(central.some((v,i)=>i<3&&v<=0))
       throw Error('Atmosphere has clipped central color: '+preset.id);
      samples.push({id:preset.id,central,middle,edge});
     }
     for(let i=0;i<samples.length;i++)for(let j=i+1;j<samples.length;j++){
      const a=samples[i].central,b=samples[j].central;
-     const difference=Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
-     if(difference<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
+     if(distance(a,b)<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
     }
+    // Check cloud deformation independently of the colour-changing preset timer.
+    backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[2];
+    const positions=[.025,.05,.08,.11,.14,.16,.18,.20,.23,.28,.30];
+    environmentTime=0;drawStudioGL();
+    const first=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
+    environmentTime=235;drawStudioGL();
+    const last=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
+    const cloudMotion=first.reduce((sum,p,i)=>sum+distance(p,last[i]),0);
+    if(cloudMotion<6)throw Error('Cloud layers must actually evolve over time independently of background selection: '+cloudMotion);
+    return {samples,cloudMotion:Math.round(cloudMotion)};
    }finally{
-    Object.assign(backgroundCycle,saved);
+    Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
+    environmentTime=saved.at;
     render();
    }
-   return samples;
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: three distinct GPU colour zones, central light falloff and six atmospheric palettes',backgroundPixels);
+  console.log('PASS: short-side circular layers, true GPU cloud drift and six colour atmospheres',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
