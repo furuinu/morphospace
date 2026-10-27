@@ -6,20 +6,20 @@ const indexSource=require('node:fs').readFileSync(path.resolve(__dirname,'../ind
 const backgroundParameters=[
  "float mid=driftingCloud(p-camera*.007,.425,",
  "float light=driftingCloud(p+camera*.011,.200,",
- "vec2 p=vStudioUv-vec2(.50,.49);",
+ "vec2 p=(vStudioUv-uBgSceneCenter+vec2(0.0,.01))*uBgSceneScale;",
  "colour=screenColours(colour,uBgMid*mid);",
- "colour=screenColours(colour,uBgCenter*light);",
+ "colour=screenColours(colour,uBgCenter*min(1.0,light*1.15));",
  "cloud(profile.mid,.85);",
  "cloud(profile.center,.40);",
  "ctx.scale(w,h);",
  "float spin=t*.085;",
- "float bend=(wander-.5)*.38;",
+ "float bend=(wander-.5)*.24;",
  "float strength=.70+.60*wander;",
- "function drawStudioGL(rayStrength=.03575){"
+ "function drawStudioGL(rayStrength=.03575,projection=null,view=null){"
 
 ];
 for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
- throw Error('UV-size, full-strength Screen layers must match the agreed settings: '+parameter);
+ throw Error('Spatial atmospheric layers must match the expected GPU shader: '+parameter);
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
  try{
@@ -115,7 +115,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // Isolating the studio pass lets the test assess atmospheric falloff even while
   // the specimen is moving or the lens effects are enabled.
   const backgroundPixels=await page.evaluate(()=>{
-   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime};
+   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime,distance:spec.viewDistance,panX,panY};
    const samples=[];
    const sample=(x,y)=>{
     const pixel=new Uint8Array(4);
@@ -125,7 +125,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    const luminance=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
    const distance=(a,b)=>Math.hypot(...a.slice(0,3).map((v,k)=>v-b[k]));
    const w=canvas.width,h=canvas.height;
-   // Radius is measured in UVs: horizontal and vertical pixels scale separately.
+   // At neutral zoom the light retains the original softly feathered gradients.
    const at=(radius,angle=0)=>sample(w*(.50+radius*Math.cos(angle)),h*(.49+radius*Math.sin(angle)));
    try{
     for(const preset of BACKGROUND_PRESETS){
@@ -152,7 +152,24 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      const a=samples[i].central,b=samples[j].central;
      if(distance(a,b)<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
     }
-    // Check cloud deformation independently of the colour-changing preset timer.
+    // GPU zoom test: radial light grows and shrinks at the organism's camera depth.
+     backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[0];
+     environmentTime=0;
+     const defaultDistance=spec.viewDistance;
+     drawStudioGL();const baseLight=luminance(at(.21));
+     spec.viewDistance=defaultDistance*.55;drawStudioGL();const nearLight=luminance(at(.21));
+     spec.viewDistance=defaultDistance*1.5;drawStudioGL();const farLight=luminance(at(.21));
+     spec.viewDistance=defaultDistance;
+     if(!(nearLight>baseLight+5&&baseLight>farLight+5))
+      throw Error('Projected light does not zoom alongside the organism: '+[nearLight,baseLight,farLight]);
+     const projection=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4));
+     const origin=backgroundSceneTransform(projection,viewerCameraMatrix());
+     panX+=Math.max(2,(spec.baseViewDistance||20)*.18);
+     const shifted=backgroundSceneTransform(projection,viewerCameraMatrix());
+     panX=saved.panX;
+     if(Math.abs(shifted.center[0]-origin.center[0])<.025)
+      throw Error('Atmospheric origin should track the world-space specimen during pan');
+     // Check cloud deformation independently of the colour-changing preset timer.
     backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[2];
     const positions=[.025,.05,.08,.11,.14,.16,.18,.20,.23,.28,.30];
     environmentTime=0;drawStudioGL();
@@ -194,12 +211,12 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     return {samples,cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution,angularEvolution,nearDelta}};
    }finally{
     Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
-    environmentTime=saved.at;
+    environmentTime=saved.at;spec.viewDistance=saved.distance;panX=saved.panX;panY=saved.panY;
     render();
    }
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: UV cloud backgrounds and very faint time-varying radial glimmer',backgroundPixels);
+  console.log('PASS: subject-space atmospheric background and soft radial glimmer',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
