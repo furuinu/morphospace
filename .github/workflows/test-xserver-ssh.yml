@@ -1,0 +1,49 @@
+name: Test XServer SSH connection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check required configuration
+        env:
+          SSH_HOST: ${{ secrets.XSERVER_HOST }}
+          SSH_PORT: ${{ secrets.XSERVER_PORT }}
+          SSH_USER: ${{ secrets.XSERVER_USER }}
+          SSH_KEY: ${{ secrets.XSERVER_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.XSERVER_DEPLOY_PATH }}
+        run: |
+          for name in SSH_HOST SSH_PORT SSH_USER SSH_KEY DEPLOY_PATH; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required GitHub Actions secret for $name"
+              exit 1
+            fi
+          done
+      - name: Test authentication and document root (read-only)
+        env:
+          SSH_HOST: ${{ secrets.XSERVER_HOST }}
+          SSH_PORT: ${{ secrets.XSERVER_PORT }}
+          SSH_USER: ${{ secrets.XSERVER_USER }}
+          SSH_KEY: ${{ secrets.XSERVER_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.XSERVER_DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/xserver_deploy_key
+          chmod 600 ~/.ssh/xserver_deploy_key
+          # Initial connectivity test only. Pin the verified host key before enabling deployment.
+          printf -v remote_cmd 'test -d %q && test -r %q && printf "SSH connection and readable document root OK\\n"' "$DEPLOY_PATH" "$DEPLOY_PATH"
+          ssh -i ~/.ssh/xserver_deploy_key \
+            -p "$SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=accept-new \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$SSH_USER@$SSH_HOST" "$remote_cmd"
