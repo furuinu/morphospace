@@ -120,10 +120,12 @@ const path=require('node:path');
      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
      gl.viewport(0,0,w,h);
      drawStudioGL();
-     const central=at(0),middle=at(.26),edge=at(.48);
+     const central=at(0),middle=at(.21),edge=at(.48);
      if(gl.getError()!==gl.NO_ERROR)throw Error('GPU error reading background '+preset.id);
-     if(luminance(central)-luminance(edge)<8)
-      throw Error('Screen-light core must be brighter than the opaque edge: '+preset.id+' / '+central+' / '+edge);
+     if(luminance(central)<45||luminance(middle)<15||luminance(central)-luminance(middle)<20)
+      throw Error('Background is too dark or has lost luminous middle layer: '+preset.id+' / '+central+' / '+middle+' / '+edge);
+     if(luminance(middle)-luminance(edge)<8)
+      throw Error('Screen-blended middle layer must brighten the opaque dark base: '+preset.id);
      if(distance(central,middle)<9)
       throw Error('The 35% luminous circle must fade softly into the middle layer: '+preset.id);
      if(central.some((v,i)=>i<3&&v<=0))
