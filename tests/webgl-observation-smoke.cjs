@@ -19,7 +19,9 @@ const path=require('node:path');
   }));
   if(!state.webgl)throw new Error('WebGL context unavailable in CI: '+JSON.stringify(state));
   if(errors.length)throw new Error('WebGL initialization errors: '+errors.join('\n'));
-  await page.locator('#gallery button.item').first().click();
+  // Trigger the gallery item's real click handler even when startup already opened the viewer.
+  // Playwright's pointer click would be intercepted by the fullscreen WebGL canvas.
+  await page.locator('#gallery button.item').first().evaluate(item=>item.click());
   await page.waitForFunction(()=>document.querySelector('#overlay')?.classList.contains('open'),{timeout:45000});
   await page.waitForTimeout(1200);
   const observation=await page.evaluate(()=>({
