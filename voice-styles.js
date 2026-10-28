@@ -12,6 +12,13 @@
   hymn:{label:'ヒム — 讃美歌風の合唱',help:'協和する四声体、ゆっくり変わる和音と滑らかな声部進行。'},
   sutra:{label:'読経 — 低い声明風の斉唱',help:'狭い音域と反復的な音節。実在の経文や祈祷文は使用しません。'}
  });
+ // Calibrated conservatively against the original. This gain is AFTER all
+ // formant and direct-source branches, before the shared safety compressor.
+ // Avoid the previous near-unity gain, which made presets much louder.
+ const STYLE_GAIN=Object.freeze({
+  original:.95,gregorian:.53,cetacean:.39,hymn:.36,sutra:.53
+ });
+ const gainFor=style=>STYLE_GAIN[Object.prototype.hasOwnProperty.call(STYLE_GAIN,style)?style:'original'];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const cycle=x=>((x%1)+1)%1;
  const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
@@ -41,6 +48,8 @@
    soften(v.directOvertone?.gain,0,now,.12);
    if(v.exciter&&v.exciter.type!=='sawtooth')v.exciter.type='sawtooth';
    soften(v.directTone?.gain,0,now,.12);
+   soften(v.consonantFilter?.frequency,2250,now,.18);
+   soften(v.voicedWarmth?.frequency,3100,now,.18);
    if(v.voicingGain)soften(v.voicingGain.gain,.42,now,.18);
    if(v.exciterGain)soften(v.exciterGain.gain,.42,now,.18);
   }
@@ -67,27 +76,40 @@
    }
   }
   const morph=clamp(.45+.20*wave+.23*coupling,0,1);
+  const human=style==='gregorian'||style==='sutra';
+  // Source-filter voice model: the glottal source must pass through the
+  // pre-existing F1/F2/F3 filters. Raw sawtooth bypass was the buzzing culprit.
   const set=(v,f,level,vowel=3,color=1,whistle=false,tau=.16)=>{
+   const voiceIndex=all.indexOf(v);
+   const individuality=human?(1.8*Math.sin(sTime*4.45*2*Math.PI+voiceIndex*.23)+
+    .95*Math.sin(sTime*.47+voiceIndex*1.17))*Math.max(.25,voiceDNA.vibrato):0;
+   f*=Math.pow(2,individuality/1200);
    if(!v)return;
    soften(v.out.gain,clamp(level,0,.27),now,tau);
    const fq=clamp(f,60,3300);
    soften(v.exciter?.frequency,fq,now,whistle?.052:.09);
    for(const partial of v.oscillators)
     soften(partial.osc.frequency,clamp(fq*partial.h,25,12500),now,.11);
-   soften(v.voicingGain?.gain,whistle?0:.42*color,now,.2);
-   soften(v.exciterGain?.gain,.42*color,now,.2);
-   const audibleCore=style==='gregorian'?.75:style==='hymn'?.52:style==='sutra'?.58:.66;
-   soften(v.directTone?.gain,whistle?.88:audibleCore,now,.11);
-   soften(v.directOvertone?.gain,whistle?.12:style==='gregorian'?.26:style==='hymn'?.19:style==='sutra'?.25:.35,now,.13);
-   soften(v.consonantGain?.gain,0,now,.08);
+   const voiced=human?.35*color:whistle?0:.42*color;
+   soften(v.voicingGain?.gain,voiced,now,.20);
+   soften(v.exciterGain?.gain,voiced,now,.20);
+   // No exposed low-frequency direct oscillator in Gregorian or sutra.
+   // Hymn receives a modest direct body; cetacean keeps audible FM whistles.
+   soften(v.directTone?.gain,human?0:whistle?.73:style==='hymn'?.29:.42,now,.12);
+   soften(v.directOvertone?.gain,human?0:whistle?.09:style==='hymn'?.09:.17,now,.13);
+   // A little filtered turbulent air models slow exhalation and consonant
+   // entrances. Reuse the existing looping noise; no per-frame AudioNodes.
+   soften(v.consonantFilter?.frequency,human?(style==='sutra'?1050:1450):2250,now,.20);
+   soften(v.consonantGain?.gain,human?clamp(level*1.15,0,.052):0,now,.13);
+   soften(v.voicedWarmth?.frequency,human?2300:3100,now,.18);
    soften(v.nasalGain?.gain,0,now,.08);
    const fset=v.vowelBands[clamp(vowel,0,4)];
    for(let j=0;j<3;j++)
-    soften(v.formants[j].frequency,clamp(fset[j]*(whistle?1:color)*(1+morph*.02),150,4200),now,.18);
+    soften(v.formants[j].frequency,clamp(fset[j]*(human?1:(whistle?1:color))*(1+morph*.02),150,4200),now,.19);
    soften(v.tone.frequency,clamp(whistle?fq:fset[0]*color,140,3900),now,.2);
   };
   const a=state.ambience;
-  soften(a.roomWet.gain,style==='gregorian'?.77:style==='hymn'?.56:style==='sutra'?.35:.63,now,.35);
+  soften(a.roomWet.gain,style==='gregorian'?.53:style==='hymn'?.45:style==='sutra'?.30:.50,now,.35);
   soften(a.echoWet.gain,style==='cetacean'?.34:style==='gregorian'?.18:.10,now,.35);
   soften(a.echoFeedback.gain,style==='cetacean'?.32:.17,now,.35);
   soften(a.dry.gain,style==='gregorian'?.63:style==='cetacean'?.67:.86,now,.35);
@@ -109,10 +131,13 @@
    const scale=seed%2?[0,1,3,5,7,8,10]:[0,2,3,5,7,9,10];
    const degree=degrees[index];
    const semi=degree<0?degree:scale[degree%scale.length];
-   const fundamental=hz(50+(seed%5)+semi);
-   const breath=shape(phase,.045,.12)*(.80+.20*morph);
-   const cents=[0,-3,2.3,-1.8,2.7,3.3],gain=[.19,.12,.11,.085,.07,.06];
-   all.forEach((v,i)=>set(v,fundamental*Math.pow(2,cents[i]/1200),breath*gain[i],i%3===0?3:4,.80,false,.2));
+   const fundamental=hz(52+(seed%4)+semi);
+   const breath=shape(phase,.065,.17)*(.80+.20*morph);
+   // Human unison: three-to-four singers, slightly different vowel colours.
+   // Do not stack six near-identical fundamental oscillators.
+   const cents=[0,-3.2,2.6,-1.4,0,0],gain=[.17,.095,.075,.055,0,0];
+   const vowels=[3,3,4,0,3,3],syll=Math.floor(phase*7);
+   all.forEach((v,i)=>set(v,fundamental*Math.pow(2,cents[i]/1200),breath*gain[i],vowels[(i+syll)%4],1,false,.22));
   }else if(style==='hymn'){
    // Bass, tenor, alto, soprano. Keep consonant I-IV-V-I phrase cycles.
    const degrees=[0,5,7,0,9,5,7,0],offset=(seed%7)*.14;
@@ -130,11 +155,12 @@
    // Narrow-range, syllabic dokkyo-inspired chant; no actual sacred words.
    const syllable=.66+((seed>>>5)%7)*.036,clock=(sTime+(seed%7)*.09)/syllable;
    const step=Math.floor(clock),pattern=[0,0,0,0,-2,0,0,1,0,0,-1,0];
-   const pitch=hz(49+(seed%5)+pattern[((step%12)+12)%12]);
-   const stroke=shape(cycle(clock),.12,.22);
-   const phrase=shape(cycle(clock/12),.035,.07);
-   const level=stroke*phrase*(.80+.20*morph),cent=[0,-2,2.1,-1.7,1.6,.7];
-   all.forEach((v,i)=>set(v,pitch*Math.pow(2,cent[i]/1200),level*[.19,.115,.095,.072,.045,.035][i],i%2?3:4,.77,false,.09));
+   const pitch=hz(51+(seed%4)+pattern[((step%12)+12)%12]);
+   const stroke=shape(cycle(clock),.15,.26);
+   const phrase=shape(cycle(clock/12),.06,.12);
+   const level=stroke*phrase*(.80+.20*morph),cent=[0,-2.4,1.8,-1,0,0];
+   const vowels=[3,4,3,0,3,1,3,4,3,0,4,3];
+   all.forEach((v,i)=>set(v,pitch*Math.pow(2,cent[i]/1200),level*[.18,.10,.070,.047,0,0][i],vowels[(step+(i%2))%vowels.length],1,false,.13));
   }else if(style==='cetacean'){
    // Lower long calls contain successive motifs: unit -> phrase -> repeated theme.
    const period=8+(seed%5)*.8,phase=cycle((sTime+(seed%11)*.15)/period);
@@ -159,5 +185,5 @@
  }
  // Internal readback is used to verify active synthesis, not just the select's label.
  function applied(state){return state?.generatedVoiceStyle||null;}
- window.MorphVoiceStyles={INFO,current,apply,applied};
+ window.MorphVoiceStyles={INFO,current,apply,applied,gainFor};
 })();
