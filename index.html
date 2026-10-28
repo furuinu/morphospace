@@ -323,7 +323,7 @@ body.boot-loading>.wrap,body.boot-loading>#overlay{visibility:hidden!important}
 #bootSplash .boot-status{font-size:12px;color:#bfd8d8;letter-spacing:.07em;min-height:1.7em;margin:2px 0 12px}
 #bootSplash .boot-progress{width:126px;height:2px;border-radius:3px;overflow:hidden;background:#183442;margin:0 auto}
 #bootSplash .boot-progress::before{content:"";display:block;height:100%;width:42%;background:linear-gradient(90deg,transparent,#6de4c7,#bcc8ff);animation:bootDnaProgress 1.8s ease-in-out infinite}
-/* Simple rotating DNA icon rather than two animated strands. */
+/* DNA is rendered as a spatial double helix during boot. */
 @keyframes bootDnaProgress{0%{transform:translateX(-140%)}100%{transform:translateX(340%)}}
 @media(prefers-reduced-motion:reduce){#bootSplash .boot-dna,#bootSplash .boot-progress::before{animation:none!important}}
 
@@ -358,12 +358,12 @@ body.boot-loading>.wrap,body.boot-loading>#overlay{visibility:hidden!important}
 .media-choice-actions .btn,.media-choice-close{min-height:46px}
 .media-choice-close{width:100%;margin-top:12px}
 @media(max-width:390px){.overlay.viewer-full .capture-dock .btn{padding:6px 5px;font-size:10px}}
-/* Simpler rotating DNA mark, followed by a deliberate sound-unlocking tap. */
+/* Deliberate observation tap remains for sound unlocking. */
 body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 #bootSplash .boot-dna{width:96px;height:96px;margin:20px 0 10px;color:#8ce9d0;animation:bootDnaSpin 4s linear infinite;transform-origin:center}
 #bootSplash .boot-dna-icon{display:none}
 #bootSplash.boot-ready{cursor:pointer;touch-action:manipulation}
-#bootSplash.boot-ready .boot-progress{display:none}
+#bootSplash.boot-ready .boot-progress{visibility:hidden}
 #bootStartButton[hidden]{display:none!important}
 #bootStartButton{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;margin-top:12px;min-height:64px;width:min(275px,85vw);background:#246f60;color:#f2fffc;border:1px solid #79d9c0;border-radius:40px;font-size:15px;font-weight:800;letter-spacing:.03em;box-shadow:0 0 24px #2eae9b33;cursor:pointer;touch-action:manipulation;animation:bootTapPulse 2.3s ease-in-out infinite}
 #bootStartButton small{font-size:10px;letter-spacing:.08em;font-weight:500;opacity:.83}
@@ -411,7 +411,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 .overlay .capture-dock .btn svg{width:23px!important;height:23px!important}
 .overlay .capture-dock .btn span{display:none!important}
 #bootStartButton{width:auto;min-width:145px;min-height:44px;padding:8px 22px;background:transparent;border:1px solid #568d89;box-shadow:none;font-size:14px}
-#bootSplash.boot-ready .boot-dna{animation-play-state:paused}
+#bootSplash.boot-ready .boot-dna{animation:none}
 /* Caption moves down to occupy the vacated controls area and rises on tap. */
 .overlay.viewer-full .viewer-caption{
  bottom:calc(132px + env(safe-area-inset-bottom,0px));
@@ -464,7 +464,145 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 @media(prefers-reduced-motion:reduce){
  .overlay.viewer-full .viewer-brand{transition:none}
 }
-</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><span class="boot-dna" aria-hidden="true"><span class="boot-dna-fallback">🧬</span><span class="boot-dna-icon">&#xf471;</span></span><p class="boot-status" id="bootStatus">DNAを結合しています</p><div class="boot-progress" aria-hidden="true"></div><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.21.4</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
+
+/* Bottom-to-top three-dimensional DNA assembly, with stable splash typography. */
+#bootSplash .boot-dna{
+ display:block;width:min(210px,64vw);height:clamp(165px,30dvh,224px);
+ margin:18px 0 10px;flex:none;animation:none!important;transform:none!important;
+ filter:drop-shadow(0 0 12px rgba(75,221,206,.20))
+}
+#bootSplash .boot-status{height:22px;min-height:22px;line-height:22px;margin:0 0 9px}
+#bootSplash .boot-progress{visibility:visible;flex:none}
+#bootSplash.boot-ready .boot-progress{visibility:hidden}
+#bootSplash .boot-action-slot{height:58px;min-height:58px;display:grid;place-items:center;flex:none}
+#bootStartButton{margin:0;animation:none}
+#bootStartButton[hidden]{display:flex!important;visibility:hidden!important;pointer-events:none}
+@media(max-height:520px){
+ #bootSplash{padding-top:12px;padding-bottom:12px}
+ #bootSplash .boot-dna{height:clamp(116px,24dvh,164px);margin:8px 0 4px}
+ #bootSplash .boot-action-slot{height:48px;min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){#bootSplash .boot-progress::before{animation:none!important}}
+
+</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">DNAを結合しています</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><script>(function(){
+'use strict';
+const canvas=document.getElementById('bootDnaCanvas'),ctx=canvas&&canvas.getContext('2d');
+if(!ctx){window.morphospaceBootDNAComplete=()=>Promise.resolve();return;}
+const PI=Math.PI,TAU=2*PI,cycle=5100,reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const smooth=x=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x);};
+let w=0,h=0,dpr=0,origin=performance.now(),amount=0,frame=0,finished=false,closing=null;
+function resize(){
+ const box=canvas.getBoundingClientRect(),width=Math.max(1,box.width),height=Math.max(1,box.height),ratio=Math.min(window.devicePixelRatio||1,2);
+ if(width!==w||height!==h||ratio!==dpr){w=width;h=height;dpr=ratio;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function phase(v){return TAU*(2.12*v+.18);}
+function step(v){return (1-v)*.91;}
+function point(v,s,p){
+ // Formation propagates from bottom (v=1) to top (v=0).
+ const joined=smooth((p-step(v))/.075),loose=1-joined,side=s?-1:1;
+ const a=phase(v)+s*PI;
+ const x=joined*.62*Math.cos(a)+loose*(side*.89+.12*Math.sin(v*10+s*.9));
+ const z=joined*.62*Math.sin(a)+loose*.20*Math.sin(v*11+s*2);
+ const y=(v-.5)*2.46,angle=-.28;
+ const rx=x*Math.cos(angle)+z*Math.sin(angle);
+ const rz=z*Math.cos(angle)-x*Math.sin(angle);
+ const k=3.7/(3.7-.30*rz),scale=Math.min(w/3.65,h/3.2);
+ return {x:w/2+rx*scale*k,y:h/2+y*scale*k+rz*scale*.12,z:rz,k};
+}
+function stroke(a,b,color,width,alpha=1){
+ ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';
+ ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+}
+function draw(p){
+ resize();ctx.clearRect(0,0,w,h);
+ const scale=Math.min(w/3.65,h/3.2);
+ const halo=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,scale*1.7);
+ halo.addColorStop(0,'rgba(37,145,156,.13)');halo.addColorStop(1,'rgba(37,145,156,0)');
+ ctx.globalAlpha=1;ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
+ const pieces=[],strands=[[],[]],n=110;
+ for(let s=0;s<2;s++){
+  for(let i=0;i<=n;i++)strands[s].push(point(i/n,s,p));
+  for(let i=0;i<n;i++){
+   const a=strands[s][i],b=strands[s][i+1];
+   pieces.push({type:'backbone',s,a,b,z:(a.z+b.z)/2});
+  }
+ }
+ // Rungs snap into place one at a time, rising from the bottom.
+ const count=23;
+ for(let i=0;i<count;i++){
+  const v=1-(i+1)/(count+1),threshold=step(v)+.04;
+  const alpha=smooth((p-threshold)/.024);
+  if(alpha<=0)returnRung();
+  else{
+   const a=point(v,0,p),b=point(v,1,p);
+   pieces.push({type:'rung',a,b,alpha,z:(a.z+b.z)/2,
+    snap:Math.max(0,1-Math.abs(p-threshold-.019)/.028)});
+  }
+ }
+ function returnRung(){} // Keep unformed rungs hidden until their own snap.
+ pieces.sort((a,b)=>a.z-b.z);
+ for(const item of pieces){
+  const {a,b}=item,front=smooth((item.z+.8)/1.6);
+  if(item.type==='rung'){
+   stroke(a,b,'rgba(16,52,75,.9)',4.9,item.alpha*.8);
+   const gradient=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+   gradient.addColorStop(0,'#76f7cc');gradient.addColorStop(.5,'#d9fff3');gradient.addColorStop(1,'#a6b8ff');
+   const k=1+.22*item.snap;
+   stroke(a,b,gradient,(2.1+front*.6)*k,item.alpha);
+   if(item.snap>.04){
+    ctx.shadowColor='#a7fff1';ctx.shadowBlur=12*item.snap;
+    stroke(a,b,'#eefff7',2.3,item.snap*.9);ctx.shadowBlur=0;
+   }
+  }else{
+   const width=(4.4+2*front)*a.k,s=item.s;
+   const dark=s?'#363a76':'#0a4e52';
+   const main=s?'rgb('+Math.round(111+64*front)+','+Math.round(126+65*front)+',255)':
+    'rgb('+Math.round(50+55*front)+','+Math.round(178+58*front)+','+Math.round(155+56*front)+')';
+   stroke(a,b,dark,width+2.7);stroke(a,b,main,width);
+   stroke({x:a.x-width*.19,y:a.y},{x:b.x-width*.19,y:b.y},
+    s?'#d0dbff':'#d8fff0',Math.max(1,width*.20),.25+.44*front);
+  }
+ }
+ // Tiny specular highlights add volume without invoking the main WebGL renderer.
+ for(let s=0;s<2;s++)for(let i=0;i<=n;i+=11){
+  const pnt=strands[s][i],r=(2.2+1.4*smooth((pnt.z+.8)/1.6))*pnt.k;
+  const g=ctx.createRadialGradient(pnt.x-r*.4,pnt.y-r*.4,.1,pnt.x,pnt.y,r*1.35);
+  if(s){g.addColorStop(0,'#fff');g.addColorStop(.42,'#b4c4ff');g.addColorStop(1,'#444a99');}
+  else{g.addColorStop(0,'#fff');g.addColorStop(.42,'#9ef7d9');g.addColorStop(1,'#186e6c');}
+  ctx.globalAlpha=.72;ctx.beginPath();ctx.arc(pnt.x,pnt.y,r,0,TAU);ctx.fillStyle=g;ctx.fill();
+ }
+ ctx.globalAlpha=1;amount=p;
+}
+function progress(now){
+ const t=((now-origin)%cycle)/cycle;
+ if(t<.08)return 0;
+ if(t<.75)return (t-.08)/.67;
+ if(t<.89)return 1;
+ return 1-smooth((t-.89)/.11);
+}
+function render(now){
+ frame=0;
+ if(!canvas.isConnected||document.getElementById('bootSplash')?.classList.contains('boot-dismissed')){
+  if(closing){closing.resolve();closing=null;}finished=true;return;
+ }
+ if(closing){
+  draw(closing.from+(1-closing.from)*smooth((now-closing.since)/Math.max(460,(1-closing.from)*1050)));
+  if(amount>=.99999){draw(1);finished=true;closing.resolve();closing=null;return;}
+ }else draw(progress(now));
+ frame=requestAnimationFrame(render);
+}
+function schedule(){if(!finished&&!frame)frame=requestAnimationFrame(render);}
+window.morphospaceBootDNAComplete=function(){
+ if(finished)return Promise.resolve();
+ if(closing)return closing.promise;
+ if(reduced){if(frame)cancelAnimationFrame(frame);frame=0;draw(1);finished=true;return Promise.resolve();}
+ let resolve;const promise=new Promise(r=>{resolve=r;});
+ closing={from:amount,since:performance.now(),promise,resolve};schedule();return promise;
+};
+if(reduced){draw(1);finished=true;}else schedule();
+window.addEventListener('resize',()=>{if(finished)draw(1);else schedule();},{passive:true});
+})();</script><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.21.5</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -9505,6 +9643,7 @@ async function finishBootSplash(){
   await bootPaintFrame();
  }
  const startButton=$('bootStartButton');
+ if(typeof window.morphospaceBootDNAComplete==='function')await window.morphospaceBootDNAComplete();
  startButton.textContent=ready?'タップで開始':'タップで一覧へ';
  startButton.hidden=false;
  setBootStage(ready?'':'3D表示を利用できません');
