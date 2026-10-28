@@ -9489,7 +9489,7 @@ canvas.addEventListener('webglcontextlost',e=>{
   const set=(v,f,level,vowel=3,color=1,whistle=false,tau=.16)=>{
    const voiceIndex=all.indexOf(v);
    const individuality=human?(1.8*Math.sin(sTime*4.45*2*Math.PI+voiceIndex*.23)+
-    .95*Math.sin(sTime*.47+voiceIndex*1.17))*Math.max(.25,voiceDNA.vibrato):0;
+    .95*Math.sin(sTime*.47+voiceIndex*1.17))*Math.max(.25,Number.isFinite(voiceDNA?.vibrato)?voiceDNA.vibrato:.5):0;
    f*=Math.pow(2,individuality/1200);
    if(!v)return;
    soften(v.out.gain,clamp(level,0,.27),now,tau);
