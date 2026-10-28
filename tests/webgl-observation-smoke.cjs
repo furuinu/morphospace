@@ -50,87 +50,36 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
-  // Browser-level audio regression: verify that a real AudioContext and live
-  // organism voice graph receive each selected style, not just the UI label.
+  // Production audio regression: this page must run only the original voice.
+  // The five experimental styles are archived as a separate JS source.
   await page.locator('#viewerSettings summary').click({force:true});
   await page.evaluate(async()=>{
-   if(!window.MorphVoiceStyles)throw Error('Missing voice style module');
-   if(!document.querySelector('#viewerVoiceStyle')?.onchange)throw Error('Voice style control is unwired');
+   if(document.querySelector('#viewerVoiceStyle'))throw Error('Experimental voice selector still present in production');
+   if(window.MorphVoiceStyles)throw Error('Experimental voice generator still loaded in production');
    if(!bioticAudioRunning())await startBioticAudio();
   });
   await page.waitForFunction(()=>bioticAudioRunning(),{timeout:8000});
-  const voiceStates=await page.evaluate(()=>{
-   const select=document.getElementById('viewerVoiceStyle'),snapshots=[];
-   for(const id of ['original','gregorian','cetacean','hymn','sutra','original']){
-    select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));
-    tickBioticAudio();
-    const v=pureChoir.body,caller=pureChoir.lights[0];
-    const result={selected:window.MorphVoiceStyles.current(),applied:window.MorphVoiceStyles.applied(pureChoir),
-     waveform:v.exciter.type,callWaveform:caller.exciter.type,
-     direct:!!v.directTone,callerDirect:!!caller.directTone};
-    if(id!=='result'&&result.selected!==id)throw Error('Voice selector ignored '+id);
-    if(result.applied!==id)throw Error('Audio engine did not apply '+id+': '+JSON.stringify(result));
-    if(id==='cetacean'&&caller.exciter.type!=='sine')throw Error('Cetacean whistle was not synthesized as a sine source');
-    if(id==='hymn'&&v.exciter.type!=='triangle')throw Error('Four-part hymn did not switch its oscillator');
-    if(id==='original'&&v.exciter.type!=='sawtooth')throw Error('Original voice waveform not restored');
-    if(id!=='original'&&!result.direct)throw Error('Audible voice core absent for '+id);
-    snapshots.push(result);
+  await page.waitForTimeout(750);
+  const originalVoice=await page.evaluate(async()=>{
+   tickBioticAudio();
+   const voice=pureChoir.body;
+   if(!voice||!voice.exciter)throw Error('Original choir is not initialized');
+   if(voice.exciter.type!=='sawtooth')throw Error('Original glottal source was modified');
+   if(voice.directTone||voice.directOvertone)throw Error('Experiment added direct-oscillator nodes');
+   const analyser=bioticAudio.engine.waveform,samples=new Float32Array(analyser.fftSize);
+   let energy=0,peak=0;
+   for(let i=0;i<40;i++){
+    analyser.getFloatTimeDomainData(samples);
+    for(const sample of samples){energy+=sample*sample;peak=Math.max(peak,Math.abs(sample))}
+    await new Promise(resolve=>setTimeout(resolve,45));
    }
-   return snapshots;
+   return{rms:Math.sqrt(energy/(40*samples.length)),peak,styleSelector:false,
+    status:document.querySelector('#viewerSoundStatus').textContent};
   });
-  console.log('PASS: actual browser AudioContext, five vocal styles and live oscillator switching',voiceStates);
-  // Measure REAL samples from the shared safety-chain analyser. Checking selected
-  // values alone missed the original problem: several presets sounded identical.
-  const audibleMeasurements=[];
-  for(const style of ['original','gregorian','cetacean','hymn','sutra']){
-   await page.evaluate(id=>{
-    const select=document.getElementById('viewerVoiceStyle');
-    select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));
-   },style);
-   await page.waitForTimeout(650);
-   const sample=await page.evaluate(async()=>{
-    const analyzer=bioticAudio.engine.waveform,context=bioticAudio.engine.context;
-    const wave=new Float32Array(analyzer.fftSize);
-    const spectral=new Float32Array(analyzer.frequencyBinCount);
-    let energy=0,reads=0;const bands=[0,0,0,0,0],frames=[];
-    for(let j=0;j<72;j++){
-     analyzer.getFloatTimeDomainData(wave);
-     const energyFrame=wave.reduce((sum,x)=>sum+x*x,0)/wave.length;
-     energy+=energyFrame;frames.push(Math.sqrt(energyFrame));reads++;
-     analyzer.getFloatFrequencyData(spectral);
-     const binHz=context.sampleRate/analyzer.fftSize;
-     for(let k=1;k<spectral.length;k++){
-      const freq=k*binHz,band=freq<260?0:freq<550?1:freq<1100?2:freq<2000?3:4;
-      const p=Number.isFinite(spectral[k])?Math.pow(10,spectral[k]/10):0;
-      bands[band]+=p;
-     }
-     await new Promise(resolve=>setTimeout(resolve,45));
-    }
-    const total=bands.reduce((a,b)=>a+b,0)||1;
-    // Compare meaningful voiced segments; do not classify a breathing rest
-    // as a permanently quieter sound preset.
-    frames.sort((a,b)=>b-a);
-    const active=frames.slice(0,Math.ceil(frames.length*.35));
-    const activeRms=Math.sqrt(active.reduce((sum,x)=>sum+x*x,0)/active.length);
-    return{rms:Math.sqrt(energy/reads),activeRms,bands:bands.map(value=>+(value/total).toFixed(5)),
-     active:pureChoir.generatedVoiceStyle,status:document.getElementById('viewerSoundStatus').textContent};
-   });
-   if(sample.active!==style)throw Error('Spectrum sampled wrong sound model '+style+' '+sample.active);
-   if(sample.rms<.00001)throw Error('No audible waveform energy for '+style+' '+JSON.stringify(sample));
-   audibleMeasurements.push({style,...sample});
-  }
-  const signature=m=>m.bands.map(x=>x.toFixed(4)).join(',');
-  if(new Set(audibleMeasurements.map(signature)).size<3)
-   throw Error('Audible style spectra lack distinct fingerprints: '+JSON.stringify(audibleMeasurements));
-  const original=audibleMeasurements.find(x=>x.style==='original');
-  console.log('LEVELS relative to original (dB; 3.2 seconds per style):',audibleMeasurements.map(x=>({
-   style:x.style,rms:+x.rms.toFixed(5),activeRms:+x.activeRms.toFixed(5),
-   deltaDb:+(20*Math.log10(x.rms/original.rms)).toFixed(2),
-   activeDeltaDb:+(20*Math.log10(x.activeRms/original.activeRms)).toFixed(2)
-  })));
-  console.log('PASS: genuine audible waveform energy and different spectral signatures',audibleMeasurements);
+  if(originalVoice.rms<.00001)throw Error('Original choir produced no signal: '+JSON.stringify(originalVoice));
+  if(errors.length)throw new Error('Original voice browser errors: '+errors.join('\n'));
+  console.log('PASS: production original-only WebAudio engine, no archived experiment loaded',originalVoice);
 
-  if(errors.length)throw new Error('Audio browser errors: '+errors.join('\n'));
   // The production material projection defaults to triplanar.
   const projection=page.locator('#triplanarTrial');
   if(!await projection.isChecked())throw new Error('Triplanar projection must be enabled by default');
