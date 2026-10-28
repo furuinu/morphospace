@@ -3,7 +3,18 @@
 Canonical repository: `furuinu/morphospace` (`main`).
 
 ## Mechanism
-The XServer cron job fetches the latest successful GitHub Pages workflow run on `main`, downloads the corresponding immutable `index.html`, checks its size and signature, then atomically replaces the site's `index.html`. The server intentionally does **not** fetch sibling JavaScript files. Accordingly, `index.html` embeds only the required `surface-reaction.js` inline; there must be no runtime `<script src="…">` dependencies. The experimental preset generator is preserved separately in `experimental/voice-styles.js` and is **not** loaded, inlined or installed on XServer. CI verifies original-only Web Audio and the retained inlined surface module. The page contains an inert HTML comment `data-bundled="voice-styles.js"` solely to satisfy the **already-installed** older cron script, which still searches for that exact text. The comment is not a script and does not load anything. It does not use inbound SSH or touch OGP data. It deploys source HTML, not the GitHub Pages workflow's build-number-stamped HTML; visible build suffix may differ from Pages.
+The existing XServer cron job downloads the latest **successful** GitHub Pages workflow revision on `main` using HTTPS. From that same immutable commit, it downloads both `about-i18n.js` and `index.html`, validates the pair, stages both, backs up any previous files and moves the JavaScript **before** the HTML. This preserves the Actions pass/fail release gate without needing Git, SSH or Node.js on XServer. Both public files and the recorded deployed SHA are mode `0644`.
+
+The `index.html` retains embedded `surface-reaction.js` and the inert old XServer compatibility marker for `voice-styles.js`. Only the local `about-i18n.js` script reference is permitted. The experimental voice-style code is not loaded. No other public files or OGP data are removed. The mirrored release is the source revision rather than the GitHub Pages build-number-stamped artifact; its visible version suffix may differ.
+
+### Upgrading an existing XServer installation (replace only the script)
+1. Download the updated `deploy/xserver-pull.sh`.
+2. Open XServer File Manager and locate the script the **existing cron command** invokes, typically `/home/hakatamasala/morphospace-deploy/xserver-pull.sh`.
+3. Upload the updated file **over the existing script at that exact path**. Do not place it under `public_html`. Do not rename it to `sync-xserver.sh`.
+4. Preserve existing cron settings (e.g. `/bin/sh /home/hakatamasala/morphospace-deploy/xserver-pull.sh >> /home/hakatamasala/morphospace-deploy/deploy.log 2>&1`). The script file itself can be mode `0600` or `0644` because it is invoked with `/bin/sh`; it does not require execute permission, but must be readable by the cron user.
+5. Invoke the script once or let the next scheduled cron run. Check its log for `deployed <SHA> (index.html + about-i18n.js; permissions 644)`. Verify `https://morphospace.masalakitchen.jp/` and the 13-language About dialog.
+
+If the installed cron command points elsewhere, replace that file rather than changing cron paths blindly. GitHub repository commits **do not** overwrite an already-installed XServer cron script.
 
 ## One-time setup
 1. Keep XServer SSH foreign-access restriction **ON**.
@@ -16,12 +27,12 @@ The XServer cron job fetches the latest successful GitHub Pages workflow run on 
 
 ## Caveats
 - The GitHub API is unauthenticated and subject to rate limits; every-five-minutes polling typically uses about 288 API requests/day. Use 10–15 minute intervals if limits are encountered.
-- This job only updates `index.html`. Any new production JavaScript module must be bundled inline into the HTML, with its source checked for identity by CI, **or** the server cron script itself must be upgraded before introducing a separate dependency. Updating this script in GitHub alone does not replace the copy already installed on XServer.
+- This job currently deploys the exact pair `index.html` and `about-i18n.js`. Additional external production dependencies require updates to both the Pages allowlist and the server pull script before deployment. Updating the script in GitHub does not replace a copy already installed on XServer.
 - Successful Pages runs are used as the release gate. An older successful commit can be selected if the newest commit fails tests; the deployment therefore may lag `main`.
 - The current shell script trusts HTTPS to GitHub and the successful workflow's head SHA. For stricter supply-chain assurance, publish a signed manifest.
-- Existing site files and future OGP storage are not deleted.
+- Existing unrelated site files and future OGP storage are not deleted. A failed download or validation leaves the previous published HTML unchanged.
 - Do not enable cron before verifying document root and dependencies.
 - `XSERVER_*` SSH Secrets are no longer needed for this pull method, but do not delete them until the migration is verified.
 
 ## Audio preset experiment (archived 2026-10-28)
-Production plays the original organism voice only. The five-style experiment, its research and old test fixtures remain as source under `experimental/voice-styles.js`, `docs/voice-styles-spec.md` and `tests/voice-styles.test.cjs`. Do not add a runtime dependency to the public page without first providing an XServer update path for sibling JS files. Once the installed cron checker can be updated, remove the inert legacy comment and relax the obsolete check.
+Production plays the original organism voice only. The five-style experiment, its research and old test fixtures remain as source under `experimental/voice-styles.js`, `docs/voice-styles-spec.md` and `tests/voice-styles.test.cjs`. The production About dialog uses the separately deployed same-origin `about-i18n.js`; other external production scripts must not be added without first updating the Pages allowlist and the XServer release script. Once all installed historical cron checkers have been updated, the inert legacy compatibility comment can be removed.
