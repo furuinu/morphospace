@@ -13,9 +13,13 @@ test('atlas and stock specimens default to immersive viewing', () => {
 });
 
 test('inspector and list navigation remain available from full-screen', () => {
- assert.match(html, /id="viewerFullscreen"[^>]*>鑑賞へ<\/button>/);
- assert.match(html, /textContent=full\?'詳細':'鑑賞へ'/);
- assert.match(html, /id="close"[^>]*aria-label="生体一覧へ戻る"[^>]*>← 一覧<\/button>/);
+ assert.match(html, /id="viewerFullscreen"[^>]*>詳細を開く<\/button>/);
+ assert.match(html, /textContent=full\?'詳細を開く':'鑑賞に戻る'/);
+ assert.match(html, /id="close"[^>]*aria-label="生体一覧へ戻る"[^>]*>[\s\S]*?<\/svg><\/button>/);
+ assert.match(html, /id="viewerDetailFold"/);
+ assert.match(html, /id="viewerAboutOpen"/);
+ assert.match(html, /id="viewerPicMov"/);
+ assert.match(html, /id="mediaChoiceDialog"/);
  assert.match(html, /if\(\$\('viewerSettings'\)\.open\)\$\('viewerSettings'\)\.open=false;else close\(\);/);
  assert.match(html, /#viewerPrevious\{left:calc\(8px \+ env\(safe-area-inset-left,0px\)\)\}/);
 });
