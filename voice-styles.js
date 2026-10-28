@@ -16,7 +16,7 @@
  // formant and direct-source branches, before the shared safety compressor.
  // Avoid the previous near-unity gain, which made presets much louder.
  const STYLE_GAIN=Object.freeze({
-  original:.95,gregorian:.81,cetacean:.15,hymn:.42,sutra:.88
+  original:.95,gregorian:.81,cetacean:.09,hymn:.23,sutra:.88
  });
  const gainFor=style=>STYLE_GAIN[Object.prototype.hasOwnProperty.call(STYLE_GAIN,style)?style:'original'];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
