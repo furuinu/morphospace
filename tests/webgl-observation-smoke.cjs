@@ -92,10 +92,11 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     const analyzer=bioticAudio.engine.waveform,context=bioticAudio.engine.context;
     const wave=new Float32Array(analyzer.fftSize);
     const spectral=new Float32Array(analyzer.frequencyBinCount);
-    let energy=0,reads=0;const bands=[0,0,0,0,0];
-    for(let j=0;j<8;j++){
+    let energy=0,reads=0;const bands=[0,0,0,0,0],frames=[];
+    for(let j=0;j<72;j++){
      analyzer.getFloatTimeDomainData(wave);
-     energy+=wave.reduce((sum,x)=>sum+x*x,0)/wave.length;reads++;
+     const energyFrame=wave.reduce((sum,x)=>sum+x*x,0)/wave.length;
+     energy+=energyFrame;frames.push(Math.sqrt(energyFrame));reads++;
      analyzer.getFloatFrequencyData(spectral);
      const binHz=context.sampleRate/analyzer.fftSize;
      for(let k=1;k<spectral.length;k++){
@@ -103,10 +104,15 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
       const p=Number.isFinite(spectral[k])?Math.pow(10,spectral[k]/10):0;
       bands[band]+=p;
      }
-     await new Promise(resolve=>setTimeout(resolve,35));
+     await new Promise(resolve=>setTimeout(resolve,45));
     }
     const total=bands.reduce((a,b)=>a+b,0)||1;
-    return{rms:Math.sqrt(energy/reads),bands:bands.map(value=>+(value/total).toFixed(5)),
+    // Compare meaningful voiced segments; do not classify a breathing rest
+    // as a permanently quieter sound preset.
+    frames.sort((a,b)=>b-a);
+    const active=frames.slice(0,Math.ceil(frames.length*.35));
+    const activeRms=Math.sqrt(active.reduce((sum,x)=>sum+x*x,0)/active.length);
+    return{rms:Math.sqrt(energy/reads),activeRms,bands:bands.map(value=>+(value/total).toFixed(5)),
      active:pureChoir.generatedVoiceStyle,status:document.getElementById('viewerSoundStatus').textContent};
    });
    if(sample.active!==style)throw Error('Spectrum sampled wrong sound model '+style+' '+sample.active);
@@ -116,9 +122,11 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   const signature=m=>m.bands.map(x=>x.toFixed(4)).join(',');
   if(new Set(audibleMeasurements.map(signature)).size<3)
    throw Error('Audible style spectra lack distinct fingerprints: '+JSON.stringify(audibleMeasurements));
-  const originalRms=audibleMeasurements.find(x=>x.style==='original').rms;
-  console.log('LEVELS relative to original (dB):',audibleMeasurements.map(x=>({
-   style:x.style,rms:+x.rms.toFixed(5),deltaDb:+(20*Math.log10(x.rms/originalRms)).toFixed(2)
+  const original=audibleMeasurements.find(x=>x.style==='original');
+  console.log('LEVELS relative to original (dB; 3.2 seconds per style):',audibleMeasurements.map(x=>({
+   style:x.style,rms:+x.rms.toFixed(5),activeRms:+x.activeRms.toFixed(5),
+   deltaDb:+(20*Math.log10(x.rms/original.rms)).toFixed(2),
+   activeDeltaDb:+(20*Math.log10(x.activeRms/original.activeRms)).toFixed(2)
   })));
   console.log('PASS: genuine audible waveform energy and different spectral signatures',audibleMeasurements);
 
