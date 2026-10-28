@@ -79,6 +79,45 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    return snapshots;
   });
   console.log('PASS: actual browser AudioContext, five vocal styles and live oscillator switching',voiceStates);
+  // Measure REAL samples from the shared safety-chain analyser. Checking selected
+  // values alone missed the original problem: several presets sounded identical.
+  const audibleMeasurements=[];
+  for(const style of ['gregorian','cetacean','hymn','sutra']){
+   await page.evaluate(id=>{
+    const select=document.getElementById('viewerVoiceStyle');
+    select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));
+   },style);
+   await page.waitForTimeout(650);
+   const sample=await page.evaluate(async()=>{
+    const analyzer=bioticAudio.engine.waveform,context=bioticAudio.engine.context;
+    const wave=new Float32Array(analyzer.fftSize);
+    const spectral=new Float32Array(analyzer.frequencyBinCount);
+    let energy=0,reads=0;const bands=[0,0,0,0,0];
+    for(let j=0;j<8;j++){
+     analyzer.getFloatTimeDomainData(wave);
+     energy+=wave.reduce((sum,x)=>sum+x*x,0)/wave.length;reads++;
+     analyzer.getFloatFrequencyData(spectral);
+     const binHz=context.sampleRate/analyzer.fftSize;
+     for(let k=1;k<spectral.length;k++){
+      const freq=k*binHz,band=freq<260?0:freq<550?1:freq<1100?2:freq<2000?3:4;
+      const p=Number.isFinite(spectral[k])?Math.pow(10,spectral[k]/10):0;
+      bands[band]+=p;
+     }
+     await new Promise(resolve=>setTimeout(resolve,35));
+    }
+    const total=bands.reduce((a,b)=>a+b,0)||1;
+    return{rms:Math.sqrt(energy/reads),bands:bands.map(value=>+(value/total).toFixed(5)),
+     active:pureChoir.generatedVoiceStyle,status:document.getElementById('viewerSoundStatus').textContent};
+   });
+   if(sample.active!==style)throw Error('Spectrum sampled wrong sound model '+style+' '+sample.active);
+   if(sample.rms<.00001)throw Error('No audible waveform energy for '+style+' '+JSON.stringify(sample));
+   audibleMeasurements.push({style,...sample});
+  }
+  const signature=m=>m.bands.map(x=>x.toFixed(4)).join(',');
+  if(new Set(audibleMeasurements.map(signature)).size<3)
+   throw Error('Audible style spectra lack distinct fingerprints: '+JSON.stringify(audibleMeasurements));
+  console.log('PASS: genuine audible waveform energy and different spectral signatures',audibleMeasurements);
+
   if(errors.length)throw new Error('Audio browser errors: '+errors.join('\n'));
   // The production material projection defaults to triplanar.
   const projection=page.locator('#triplanarTrial');
