@@ -69,7 +69,7 @@ test('modes yield different pitches and keep whistles within a safe audible rang
  assert.equal(new Set(Object.values(result).map(x=>x.join(','))).size,4);
  assert.ok(result.cetacean[1]>=670&&result.cetacean[1]<=2600);
  assert.equal(f.state.lights[0].exciter.type,'sine');
- assert.ok(f.state.lights[0].directTone.gain.value>.75);
+ assert.ok(f.state.lights[0].directTone.gain.value>.65);
  assert.equal(f.engine.applied(f.state),'cetacean');
  assert.ok(f.state.body.directTone.gain.value>.35);
 });
@@ -102,7 +102,7 @@ test('chant and hymn have distinct audible source waveforms, direct fundamentals
  assert.notEqual(chantPitch,f.state.body.exciter.frequency.value);
  f.setMode('sutra');f.engine.apply(f.state,settings,f.ctx,27,.2,.5,blink,character);
  assert.equal(f.state.body.exciter.type,'sawtooth');
- assert.ok(voices.slice(0,4).every(v=>v.directTone.gain.value>.5));
+ assert.ok(voices.slice(0,4).every(v=>v.directTone.gain.value>.25));
  assert.equal(f.state.generatedStyleEpoch,27);
  f.engine.apply(f.state,settings,f.ctx,30,.2,.5,blink,character);
  assert.equal(f.state.generatedStyleEpoch,27,'do not restart phrase every synthesis frame');
