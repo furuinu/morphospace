@@ -63,7 +63,9 @@ test('comfort stage softens the choir and preserves deliberate rests',()=>{
   assert.match(app, /state\.master\.connect\(state\.comfortLowpass\)/);
   assert.match(app, /state\.pulse\.tone\.Q\.setTargetAtTime\(clamp\(1\.1\+coupling\*\.7,\.7,2\.5\)/);
   assert.match(app, /const normalization=clamp\(Math\.sqrt\(\.42\/Math\.max\(\.22,state\.perceivedLevel\)\),\.72,1\.0\)/);
-  assert.match(app, /state\.master\.gain\.setTargetAtTime\(quiet\?0:volume\*\.95\*normalization\*fade,ctx\.currentTime,\.35\)/);
+  assert.match(app, /const styleGain=voiceMode==='original'\?\.95/);
+  assert.match(app, /state\.master\.gain\.setTargetAtTime\(quiet\?0:volume\*styleGain\*normalization\*fade,ctx\.currentTime,\.35\)/);
+  assert.match(app, /window\.MorphVoiceStyles\.apply\(state,sp,ctx,t,wave,coupling,blink,voiceDNA\)/);
   assert.match(app, /state\.comfortLowpass\?\.disconnect\(\)/);
 });
 
