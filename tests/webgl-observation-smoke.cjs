@@ -34,11 +34,10 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
    overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
    splashVisible:getComputedStyle(document.querySelector('#bootSplash')).visibility,
-   strandCount:document.querySelectorAll('#bootSplash .boot-dna .dna-a, #bootSplash .boot-dna .dna-b').length,
-   bondCount:document.querySelectorAll('#bootSplash .dna-bonds line').length
+   iconPaths:document.querySelectorAll('#bootSplash .boot-dna path').length
   }));
   if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
-    ||bootState.splashVisible!=='visible'||bootState.strandCount!==2||bootState.bondCount<8)
+    ||bootState.splashVisible!=='visible'||bootState.iconPaths<4)
    throw Error('The initial frame must show joined DNA without revealing the atlas: '+JSON.stringify(bootState));
   await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:120000});
   await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
@@ -50,7 +49,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!beforeTap.atlasHidden||!beforeTap.viewerHidden||!beforeTap.dnaVisible)
    throw Error('Startup must remain gated until user taps: '+JSON.stringify(beforeTap));
-  await page.locator('#bootStartButton').click();
+  await page.locator('#bootSplash').click({position:{x:24,y:24}});
   await page.waitForFunction(()=>!document.body.classList.contains('boot-ready')&&
     document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:15000});
   await page.waitForFunction(()=>document.querySelector('#gallery button.item')&&!document.querySelector('#generate')?.disabled,{timeout:120000});

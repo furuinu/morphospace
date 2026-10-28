@@ -80,3 +80,10 @@ test('unavailable browser storage reports an error without pretending to save',a
  await assert.rejects(store.save(entry()),/保存できません/);
  await assert.rejects(store.list(),/保存できません/);
 });
+
+test('capture card enlarges the specimen to cover its framed image with symmetric crop',()=>{
+ const text=html;
+ assert.match(text,/Math\.max\(w\/image\.width,h\/image\.height\)\*1\.02/);
+ assert.match(text,/c\.drawImage\(image,x\+\(w-iw\)\/2,y\+\(h-ih\)\/2,iw,ih\)/);
+ assert.match(text,/roundRect\(c,x,y,w,h,12\);c\.clip\(\)/);
+});
