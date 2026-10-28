@@ -43,8 +43,12 @@ p=Path(sys.argv[1])
 b=p.read_bytes()
 if len(b)<100000 or b"MORPHOSPACE" not in b or b"<html" not in b.lower():
     raise SystemExit("Downloaded HTML failed validation")
-if b'data-bundled="voice-styles.js"' not in b or b'data-bundled="surface-reaction.js"' not in b:
-    raise SystemExit("Standalone deployment missing embedded voice or surface modules")
+# An inert compatibility marker is retained for the older already-installed cron
+# script; it must not be mistaken for an executable voice preset bundle.
+if b'data-bundled="surface-reaction.js"' not in b:
+    raise SystemExit("Standalone deployment missing embedded surface module")
+if b'<script data-bundled="voice-styles.js"' in b:
+    raise SystemExit("Experimental voice preset code must not run in production")
 if b'<script src=' in b or b'<script type="module" src=' in b:
     raise SystemExit("Standalone deployment references non-synced external scripts")
 PY
