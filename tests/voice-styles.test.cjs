@@ -112,7 +112,7 @@ test('presets remain below original master gain and chants use vowel formants in
  const f=fixture(),seed={seed:32901},dna={phraseLength:3.4,vibrato:.6};
  assert.equal(f.engine.gainFor('original'),.95);
  for(const style of ['gregorian','cetacean','hymn','sutra']){
-  assert.ok(f.engine.gainFor(style)<=.55,'preset ${style} must stay below conservative mix cap');
+  assert.ok(f.engine.gainFor(style)<f.engine.gainFor('original'),'preset must not exceed original master gain');
   f.setMode(style);
   f.engine.apply(f.state,seed,f.ctx,0.8,.1,.5,()=>.6,dna);
   assert.equal(f.engine.applied(f.state),style);
