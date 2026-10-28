@@ -27,6 +27,10 @@
   const direct=ctx.createGain();direct.gain.value=0;
   voice.exciter.connect(direct);direct.connect(voice.out);
   voice.directTone=direct;
+  const harmonics=ctx.createBiquadFilter();harmonics.type='highpass';harmonics.frequency.value=180;
+  const overtone=ctx.createGain();overtone.gain.value=0;
+  voice.exciter.connect(harmonics);harmonics.connect(overtone);overtone.connect(voice.out);
+  voice.directOvertone=overtone;
  }
  function restore(state,ctx){
   const now=ctx.currentTime,a=state.ambience;
@@ -34,6 +38,7 @@
   soften(a.echoFeedback.gain,.26,now,.3);soften(a.dry.gain,.82,now,.3);
   soften(state.comfortLowpass.frequency,4600,now,.3);
   for(const v of [state.body,state.pulse,...state.lights]){
+   soften(v.directOvertone?.gain,0,now,.12);
    if(v.exciter&&v.exciter.type!=='sawtooth')v.exciter.type='sawtooth';
    soften(v.directTone?.gain,0,now,.12);
    if(v.voicingGain)soften(v.voicingGain.gain,.42,now,.18);
@@ -50,12 +55,15 @@
   }
   const all=[state.body,state.pulse,...state.lights],seed=sp.seed>>>0;
   const entering=state.generatedVoiceStyle!==style;
+  // Start a recognizable phrase on every switch instead of joining an arbitrary quiet beat.
+  if(entering)state.generatedStyleEpoch=t;
+  const sTime=Math.max(0,t-(state.generatedStyleEpoch??t));
   state.generatedVoiceStyle=style;
   if(entering){
    for(let i=0;i<all.length;i++){
     const v=all[i];
-    if(style==='cetacean'&&i>=2)sourceTone(v,ctx);
-    if(v.exciter)v.exciter.type=style==='cetacean'&&i>=2?'sine':'sawtooth';
+    sourceTone(v,ctx);
+    if(v.exciter)v.exciter.type=style==='cetacean'&&i>=2?'sine':style==='hymn'?'triangle':'sawtooth';
    }
   }
   const morph=clamp(.45+.20*wave+.23*coupling,0,1);
@@ -68,7 +76,9 @@
     soften(partial.osc.frequency,clamp(fq*partial.h,25,12500),now,.11);
    soften(v.voicingGain?.gain,whistle?0:.42*color,now,.2);
    soften(v.exciterGain?.gain,.42*color,now,.2);
-   soften(v.directTone?.gain,whistle?.7:0,now,.18);
+   const audibleCore=style==='gregorian'?.75:style==='hymn'?.52:style==='sutra'?.58:.66;
+   soften(v.directTone?.gain,whistle?.88:audibleCore,now,.11);
+   soften(v.directOvertone?.gain,whistle?.12:style==='gregorian'?.26:style==='hymn'?.19:style==='sutra'?.25:.35,now,.13);
    soften(v.consonantGain?.gain,0,now,.08);
    soften(v.nasalGain?.gain,0,now,.08);
    const fset=v.vowelBands[clamp(vowel,0,4)];
@@ -92,44 +102,44 @@
   if(style==='gregorian'){
    // Gregorian-inspired mode uses one common melody without triadic harmonization.
    const duration=9.2+voiceDNA.phraseLength*.55;
-   const phase=cycle((t+(seed%17)*.09)/duration);
+   const phase=cycle((sTime+(seed%17)*.09)/duration);
    const segments=[.09,.20,.29,.41,.54,.66,.78,.88,1];
    const index=Math.max(0,segments.findIndex(x=>phase<x));
    const degrees=[0,2,3,2,0,-2,-1,0,0];
    const scale=seed%2?[0,1,3,5,7,8,10]:[0,2,3,5,7,9,10];
    const degree=degrees[index];
    const semi=degree<0?degree:scale[degree%scale.length];
-   const fundamental=hz(48+(seed%5)+semi);
+   const fundamental=hz(50+(seed%5)+semi);
    const breath=shape(phase,.045,.12)*(.80+.20*morph);
    const cents=[0,-3,2.3,-1.8,2.7,3.3],gain=[.19,.12,.11,.085,.07,.06];
    all.forEach((v,i)=>set(v,fundamental*Math.pow(2,cents[i]/1200),breath*gain[i],i%3===0?3:4,.80,false,.2));
   }else if(style==='hymn'){
    // Bass, tenor, alto, soprano. Keep consonant I-IV-V-I phrase cycles.
    const degrees=[0,5,7,0,9,5,7,0],offset=(seed%7)*.14;
-   const chordIndex=Math.floor((t+offset)/4.5);
-   const base=hz(47+(seed%6)+degrees[((chordIndex%degrees.length)+degrees.length)%degrees.length]);
+   const chordIndex=Math.floor((sTime+offset)/4.5);
+   const base=hz(49+(seed%6)+degrees[((chordIndex%degrees.length)+degrees.length)%degrees.length]);
    const third=seed%2?3:4;
    const parts=[base,base*Math.pow(2,7/12),base*Math.pow(2,(12+third)/12),base*Math.pow(2,19/12)];
-   const bar=cycle((t+offset)/4.5);
-   const phrase=shape(cycle((t+offset)/18),.035,.07);
+   const bar=cycle((sTime+offset)/4.5);
+   const phrase=shape(cycle((sTime+offset)/18),.035,.07);
    const syllable=shape(cycle(bar*2),.1,.18);
    const bloom=(.68+.32*syllable)*(.52+.48*phrase)*(.82+.18*morph);
    for(let i=0;i<4;i++)set(all[i],parts[i],bloom*[.16,.13,.14,.13][i],i%2===0?3:0,1,false,.25);
    set(all[4],base,0);set(all[5],base,0);
   }else if(style==='sutra'){
    // Narrow-range, syllabic dokkyo-inspired chant; no actual sacred words.
-   const syllable=.66+((seed>>>5)%7)*.036,clock=(t+(seed%7)*.09)/syllable;
+   const syllable=.66+((seed>>>5)%7)*.036,clock=(sTime+(seed%7)*.09)/syllable;
    const step=Math.floor(clock),pattern=[0,0,0,0,-2,0,0,1,0,0,-1,0];
-   const pitch=hz(45+(seed%5)+pattern[((step%12)+12)%12]);
+   const pitch=hz(49+(seed%5)+pattern[((step%12)+12)%12]);
    const stroke=shape(cycle(clock),.12,.22);
    const phrase=shape(cycle(clock/12),.035,.07);
    const level=stroke*phrase*(.80+.20*morph),cent=[0,-2,2.1,-1.7,1.6,.7];
    all.forEach((v,i)=>set(v,pitch*Math.pow(2,cent[i]/1200),level*[.19,.115,.095,.072,.045,.035][i],i%2?3:4,.77,false,.09));
   }else if(style==='cetacean'){
    // Lower long calls contain successive motifs: unit -> phrase -> repeated theme.
-   const period=8+(seed%5)*.8,phase=cycle((t+(seed%11)*.15)/period);
+   const period=8+(seed%5)*.8,phase=cycle((sTime+(seed%11)*.15)/period);
    const lowContour=Math.sin(phase*2*Math.PI*1.4+.3)+.3*Math.sin(phase*2*Math.PI*3.1+(seed%13));
-   const bass=95+(seed%8)*8;
+   const bass=130+(seed%8)*9; // fundamental is deliberately audible on phone speakers
    const tone=bass*Math.pow(2,(lowContour*4)/12);
    const lowLevel=shape(phase,.12,.20)*(.82+.18*morph);
    set(state.body,tone,lowLevel*.21,3,.54,false,.24);
@@ -137,7 +147,7 @@
    set(state.pulse,tone*1.31*(1+.08*Math.sin(reply*2*Math.PI)),shape(reply,.13,.22)*.12,4,.70,false,.18);
    // Repeat stable individual FM contours, not independent random noise each tick.
    for(let i=0;i<4;i++){
-    const rate=2.9+(seed%4)*.29,ph=cycle((t+(seed%31)*.04)/rate+i*.245);
+    const rate=2.9+(seed%4)*.29,ph=cycle((sTime+(seed%31)*.04)/rate+i*.245);
     const variation=Math.sin(ph*Math.PI*2*(1.1+((seed>>>i)&3)*.07)+i*.63);
     const rise=.6*Math.sin(ph*Math.PI*2)+(i%2?-.24:.24)*Math.sin(ph*Math.PI*4.4);
     const f=clamp(1120+(seed%170)+i*170+variation*350+rise*310,670,2600);
@@ -147,5 +157,7 @@
    }
   }
  }
- window.MorphVoiceStyles={INFO,current,apply};
+ // Internal readback is used to verify active synthesis, not just the select's label.
+ function applied(state){return state?.generatedVoiceStyle||null;}
+ window.MorphVoiceStyles={INFO,current,apply,applied};
 })();
