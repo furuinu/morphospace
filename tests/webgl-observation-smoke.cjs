@@ -93,7 +93,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   await page.evaluate(()=>setViewerNavigationVisible(false));
   await page.waitForTimeout(600);
   const titleAfter=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
-  if(!(titleAfter+30<titleBefore))throw Error('Title did not slide to the top edge: '+JSON.stringify({titleBefore,titleAfter}));
+  if(!(titleAfter+30<titleBefore))throw Error('Title did not slide to the top edge: '+JSON.stringify({titleBefore,titleAfter,navHidden:await page.locator('#overlay').evaluate(el=>el.classList.contains('viewer-nav-hidden')),inlineTop:await page.locator('.viewer-brand').evaluate(el=>el.style.top)}));
   await page.evaluate(()=>setViewerNavigationVisible(true));
   const settledBoot=await page.evaluate(()=>({
    splashHidden:document.querySelector('#bootSplash').classList.contains('boot-dismissed'),

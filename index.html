@@ -6883,6 +6883,13 @@ function activateViewerPreparation(){
 }
 function setViewerNavigationVisible(visible){
  $('overlay').classList.toggle('viewer-nav-hidden',!visible);
+ // Apply the title's end position at the same instant as the navigation state.
+ // Inline priority also protects this animation from older layout overrides.
+ const brand=document.querySelector?.('.viewer-brand');
+ if(brand){
+  if(visible)brand.style.removeProperty('top');
+  else brand.style.setProperty('top','calc(12px + env(safe-area-inset-top,0px))','important');
+ }
  if(!visible)$('viewerSettings').open=false;
 }
 function viewerZoomBounds(){
