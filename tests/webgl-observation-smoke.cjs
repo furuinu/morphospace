@@ -82,7 +82,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // Measure REAL samples from the shared safety-chain analyser. Checking selected
   // values alone missed the original problem: several presets sounded identical.
   const audibleMeasurements=[];
-  for(const style of ['gregorian','cetacean','hymn','sutra']){
+  for(const style of ['original','gregorian','cetacean','hymn','sutra']){
    await page.evaluate(id=>{
     const select=document.getElementById('viewerVoiceStyle');
     select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));
@@ -116,6 +116,10 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   const signature=m=>m.bands.map(x=>x.toFixed(4)).join(',');
   if(new Set(audibleMeasurements.map(signature)).size<3)
    throw Error('Audible style spectra lack distinct fingerprints: '+JSON.stringify(audibleMeasurements));
+  const originalRms=audibleMeasurements.find(x=>x.style==='original').rms;
+  console.log('LEVELS relative to original (dB):',audibleMeasurements.map(x=>({
+   style:x.style,rms:+x.rms.toFixed(5),deltaDb:+(20*Math.log10(x.rms/originalRms)).toFixed(2)
+  })));
   console.log('PASS: genuine audible waveform energy and different spectral signatures',audibleMeasurements);
 
   if(errors.length)throw new Error('Audio browser errors: '+errors.join('\n'));
