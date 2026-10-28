@@ -52,6 +52,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    throw new Error('Observation failed: '+JSON.stringify(observation));
   // Browser-level audio regression: verify that a real AudioContext and live
   // organism voice graph receive each selected style, not just the UI label.
+  await page.locator('#viewerSettings summary').click({force:true});
   await page.evaluate(async()=>{
    if(!window.MorphVoiceStyles)throw Error('Missing voice style module');
    if(!document.querySelector('#viewerVoiceStyle')?.onchange)throw Error('Voice style control is unwired');
