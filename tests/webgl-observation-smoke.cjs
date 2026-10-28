@@ -40,9 +40,19 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
     ||bootState.splashVisible!=='visible'||bootState.strandCount!==2||bootState.bondCount<8)
    throw Error('The initial frame must show joined DNA without revealing the atlas: '+JSON.stringify(bootState));
-  await page.locator('#gallery button.item').first().waitFor({state:'visible',timeout:120000});
-  await page.waitForFunction(()=>!document.body.classList.contains('boot-loading')&&
-    document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:120000});
+  await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:120000});
+  await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
+    !document.querySelector('#bootStartButton')?.hidden,{timeout:120000});
+  const beforeTap=await page.evaluate(()=>({
+    atlasHidden:getComputedStyle(document.querySelector('.wrap')).visibility==='hidden',
+    viewerHidden:getComputedStyle(document.querySelector('#overlay')).visibility==='hidden',
+    dnaVisible:!document.querySelector('#bootSplash').classList.contains('boot-dismissed')
+  }));
+  if(!beforeTap.atlasHidden||!beforeTap.viewerHidden||!beforeTap.dnaVisible)
+   throw Error('Startup must remain gated until user taps: '+JSON.stringify(beforeTap));
+  await page.locator('#bootStartButton').click();
+  await page.waitForFunction(()=>!document.body.classList.contains('boot-ready')&&
+    document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:15000});
   await page.waitForFunction(()=>document.querySelector('#gallery button.item')&&!document.querySelector('#generate')?.disabled,{timeout:120000});
   const state=await page.evaluate(()=>({
    webgl:!!(document.querySelector('#glview')?.getContext('webgl2')||document.querySelector('#glview')?.getContext('webgl')),
@@ -73,7 +83,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    throw Error('The viewer should replace the DNA splash without breaking the 64-item atlas: '+JSON.stringify(settledBoot));
   // Production audio regression: this page must run only the original voice.
   // The five experimental styles are archived as a separate JS source.
-  await page.locator('#viewerSettings summary').click({force:true});
+  await page.locator('#viewerSettings > summary').click({force:true});
   await page.evaluate(async()=>{
    if(document.querySelector('#viewerVoiceStyle'))throw Error('Experimental voice selector still present in production');
    if(window.MorphVoiceStyles)throw Error('Experimental voice generator still loaded in production');
@@ -277,7 +287,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     const pixel=canvas.getContext('2d').getImageData(90,90,1,1).data;
     return pixel[3]===255;
    },null,{timeout:60000});
-   console.log('PASS: visible atlas thumbnail rendered after observation closes');
+   console.log('PASS: rotating DNA start gate, user-initiated observation and visible atlas thumbnail');
    console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
