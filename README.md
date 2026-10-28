@@ -1,10 +1,10 @@
 # MORPHOSPACE 64
 
-Offline-compatible, self-contained WebGL artificial-life specimen gallery.
+Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.13.15, Glass Sample Lab.
-- No installation or external assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+- **App:** [index.html](index.html) — v15.21.3. **About translations:** [about-i18n.js](about-i18n.js).
+- No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
 ## Full-screen specimen viewing
 
