@@ -101,7 +101,7 @@ test('clockwise bottom-left timer renders the real transition progress at 5, 30 
   f.updateViewerCountdown();
   assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length*.25)<1e-8);
   assert.equal(digits.textContent,String(Math.ceil(lengthSeconds*.75)));
-  assert.match(circle['aria-label'],/次の生体まで/);
+  assert.equal(circle['aria-label'],'次の生体への進行状況');
  }
  f.v.seconds=30;f.v.elapsed=29.5;f.updateViewerCountdown();
  assert.ok(Number(arc.style.strokeDashoffset)>length*.9);
@@ -120,7 +120,7 @@ test('countdown hides on stopped interval, missing next specimen or hidden tab; 
  f.v.elapsed=14;f.v.preparing=true;f.updateViewerCountdown();
  assert.equal(circle.hidden,false);assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length)<1e-8);
  f.v.preparing=false;f.v.morph={};f.updateViewerCountdown();
- assert.equal(circle['aria-label'],'次の生体へ切り替え中');
+ assert.equal(circle['aria-label'],'次の生体を読み込み中');
  f.v.morph=null;f.v.elapsed=0;f.updateViewerCountdown();
  assert.equal(Number(arc.style.strokeDashoffset),0);
  f.stopViewer();
