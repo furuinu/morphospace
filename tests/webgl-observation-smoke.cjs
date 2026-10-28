@@ -34,10 +34,11 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
    overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
    splashVisible:getComputedStyle(document.querySelector('#bootSplash')).visibility,
-   iconPaths:document.querySelectorAll('#bootSplash .boot-dna path').length
+   dnaGlyph:document.querySelector('#bootSplash .boot-dna-icon')?.textContent.codePointAt(0),
+    dnaFallback:!!document.querySelector('#bootSplash .boot-dna-fallback')
   }));
   if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
-    ||bootState.splashVisible!=='visible'||bootState.iconPaths<4)
+    ||bootState.splashVisible!=='visible'||bootState.dnaGlyph!==0xf471||!bootState.dnaFallback)
    throw Error('The initial frame must show joined DNA without revealing the atlas: '+JSON.stringify(bootState));
   await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:120000});
   await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
@@ -73,6 +74,27 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
+  // Match startup typography with the viewer and verify the title moves on navigation tap.
+  const typography=await page.evaluate(()=>{
+   const title=getComputedStyle(document.querySelector('#bootSplash .boot-title'));
+   const viewerTitle=getComputedStyle(document.querySelector('#viewerTitleText'));
+   const subtitle=getComputedStyle(document.querySelector('#bootSplash .boot-caption'));
+   const viewerSubtitle=getComputedStyle(document.querySelector('#viewerSubtitleText'));
+   const zoom=[...document.querySelector('.viewer-zoom').children].map(node=>node.id||node.className);
+   return {
+    sameTitle:title.fontSize===viewerTitle.fontSize&&title.fontWeight===viewerTitle.fontWeight&&title.letterSpacing===viewerTitle.letterSpacing,
+    sameSubtitle:subtitle.fontSize===viewerSubtitle.fontSize&&subtitle.letterSpacing===viewerSubtitle.letterSpacing,
+    zoom
+   };
+  });
+  if(!typography.sameTitle||!typography.sameSubtitle||typography.zoom[0]!=='viewer-zoom-lens'||typography.zoom[1]!=='viewerZoomOut')
+   throw Error('Loader typography or zoom icon ordering is wrong: '+JSON.stringify(typography));
+  const titleBefore=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
+  await page.evaluate(()=>setViewerNavigationVisible(false));
+  await page.waitForTimeout(600);
+  const titleAfter=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
+  if(!(titleAfter+30<titleBefore))throw Error('Title did not slide to the top edge: '+JSON.stringify({titleBefore,titleAfter}));
+  await page.evaluate(()=>setViewerNavigationVisible(true));
   const settledBoot=await page.evaluate(()=>({
    splashHidden:document.querySelector('#bootSplash').classList.contains('boot-dismissed'),
    ariaHidden:document.querySelector('#bootSplash').getAttribute('aria-hidden'),

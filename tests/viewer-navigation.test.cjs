@@ -29,3 +29,10 @@ test('appearance controls preserve the current viewer mode', () => {
  assert.match(html, /viewerReturnFocus=document\.activeElement/);
  assert.match(html, /target\.focus\(\{preventScroll:true\}\)/);
 });
+
+test('DNA startup uses the icon font, and hidden navigation moves the title to the top',()=>{
+ assert.match(html, /Morphospace FA Icons/);
+ assert.match(html, /class="boot-dna-icon"[^>]*>&#xf471;<\/span>/);
+ assert.match(html, /\.overlay\.viewer-full\.viewer-nav-hidden \.viewer-brand\{\s*top:calc\(12px/);
+ assert.match(html, /<div class="viewer-zoom"><span class="viewer-zoom-lens"/);
+});
