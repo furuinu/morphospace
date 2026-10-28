@@ -90,16 +90,18 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   if(!typography.sameTitle||!typography.sameSubtitle||typography.zoom[0]!=='viewer-zoom-lens'||typography.zoom[1]!=='viewerZoomOut')
    throw Error('Loader typography or zoom icon ordering is wrong: '+JSON.stringify(typography));
   const titleBefore=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
-  await page.evaluate(()=>setViewerNavigationVisible(false));
-  // The software WebGL renderer can delay CSS transition frames on CI runners.
-  // Wait for the observed position rather than assuming a 600 ms wall-clock delay.
-  await page.waitForFunction(before=>{
-   const title=document.querySelector('.viewer-brand');
-   return !!title&&parseFloat(getComputedStyle(title).top)+30<before;
-  },titleBefore,{timeout:6000,polling:100}).catch(()=>{});
+  // Verify the end position with CSS transitions disabled only in the test:
+  // software-rendered WebGL can prevent animations advancing under headless CI.
+  await page.evaluate(()=>{
+   setViewerNavigationVisible(false);
+   document.querySelector('.viewer-brand').style.setProperty('transition','none','important');
+  });
   const titleAfter=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
-  if(!(titleAfter+30<titleBefore))throw Error('Title did not slide to the top edge: '+JSON.stringify({titleBefore,titleAfter,navHidden:await page.locator('#overlay').evaluate(el=>el.classList.contains('viewer-nav-hidden')),inlineTop:await page.locator('.viewer-brand').evaluate(el=>el.style.top)}));
-  await page.evaluate(()=>setViewerNavigationVisible(true));
+  if(!(titleAfter+30<titleBefore))throw Error('Title did not move to the top edge: '+JSON.stringify({titleBefore,titleAfter,navHidden:await page.locator('#overlay').evaluate(el=>el.classList.contains('viewer-nav-hidden')),inlineTop:await page.locator('.viewer-brand').evaluate(el=>el.style.top)}));
+  await page.evaluate(()=>{
+   document.querySelector('.viewer-brand').style.removeProperty('transition');
+   setViewerNavigationVisible(true);
+  });
   const settledBoot=await page.evaluate(()=>({
    splashHidden:document.querySelector('#bootSplash').classList.contains('boot-dismissed'),
    ariaHidden:document.querySelector('#bootSplash').getAttribute('aria-hidden'),
