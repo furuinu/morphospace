@@ -16,7 +16,7 @@
  // formant and direct-source branches, before the shared safety compressor.
  // Avoid the previous near-unity gain, which made presets much louder.
  const STYLE_GAIN=Object.freeze({
-  original:.95,gregorian:.53,cetacean:.39,hymn:.36,sutra:.53
+  original:.95,gregorian:.81,cetacean:.15,hymn:.42,sutra:.88
  });
  const gainFor=style=>STYLE_GAIN[Object.prototype.hasOwnProperty.call(STYLE_GAIN,style)?style:'original'];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -90,7 +90,7 @@
    soften(v.exciter?.frequency,fq,now,whistle?.052:.09);
    for(const partial of v.oscillators)
     soften(partial.osc.frequency,clamp(fq*partial.h,25,12500),now,.11);
-   const voiced=human?.35*color:whistle?0:.42*color;
+   const voiced=human?.57*color:whistle?0:.42*color;
    soften(v.voicingGain?.gain,voiced,now,.20);
    soften(v.exciterGain?.gain,voiced,now,.20);
    // No exposed low-frequency direct oscillator in Gregorian or sutra.
@@ -160,7 +160,7 @@
    const phrase=shape(cycle(clock/12),.06,.12);
    const level=stroke*phrase*(.80+.20*morph),cent=[0,-2.4,1.8,-1,0,0];
    const vowels=[3,4,3,0,3,1,3,4,3,0,4,3];
-   all.forEach((v,i)=>set(v,pitch*Math.pow(2,cent[i]/1200),level*[.18,.10,.070,.047,0,0][i],vowels[(step+(i%2))%vowels.length],1,false,.13));
+   all.forEach((v,i)=>set(v,pitch*Math.pow(2,cent[i]/1200),level*[.23,.145,.108,.067,0,0][i],vowels[(step+(i%2))%vowels.length],1,false,.13));
   }else if(style==='cetacean'){
    // Lower long calls contain successive motifs: unit -> phrase -> repeated theme.
    const period=8+(seed%5)*.8,phase=cycle((sTime+(seed%11)*.15)/period);
