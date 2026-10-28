@@ -1,6 +1,6 @@
 # MORPHOSPACE 音声スタイル拡張 — 音楽・生物音響資料に基づく仕様
 
-更新: 2026-10-28 / 実装版: v15.19.0 / 対象: `furuinu/morphospace` の `main`
+更新: 2026-10-28 / 実装版: v15.19.3 / 対象: `furuinu/morphospace` の `main`
 
 ## 目的と基本原則
 
@@ -72,6 +72,40 @@
 
 典拠:
 - Slottow, *The Americanization of Zen Chanting*, Chapter 3, *Performance Practice* https://www.cambridge.org/core/books/abs/americanization-of-zen-chanting/performance-practice/C16598CA8C9F8DAF492415142A0F897E
+
+## v15.19.3 — 聴感音量の均一化と「ブザーではない声」
+
+### 修正の背景（2026-10-28 の聴感報告）
+
+- 原音より追加プリセットの主観的音量・音圧が高い。同じ音量スライダーでも聴こえる大きさに差が出る。
+- Gregorian / sutra では、フォルマントを通さない sawtooth の **直結パス**（`exciter → directTone → voice.out`）と高域のバイパスが、低音の連続した「ブーー」という音を増幅していた。
+- `state.master` の固定ゲインが原音とほぼ同じ（旧値 original .95 / Gregorian .94 / hymn .88 / sutra .91 / cetacean .77）で、追加の直結ソースによる電力増加を補償していなかった。コンプレッサーは音量統一装置ではない。
+
+### 音声合成の根拠と修正
+
+人の有声音は喉頭を起点とするグロッタル音源と、声道による **F1/F2/F3フォルマント** の組み合わせでモデル化できる。Klatt (1980) が提案する F0 / F1-F3 / B1-B3 / 有声振幅 / 気息音を、MORPHOSPACE の既存 Web Audio グラフに写像した。研究で述べる声門音源のスペクトル傾斜は、単純な低音鋸歯状波を音声出力へ直結することの問題点を説明する。
+
+実装上の変更は次のとおり。
+
+1. Gregorian / sutra は `directTone` と `directOvertone` を **0** にする。既存の声門に相当する励振器から、ローパスと3段の並列母音フォルマントを通った音だけを中心にする。
+2. 母音 F1/F2/F3 は発声中に音節ごとに変化し、低周波の一定音より「あ・お・う」などの響きと呼吸による区切りを重視する。
+3. 既存の filtered-noise consonant source を微量に混ぜ、息の抜けを模倣する。ランダムなノイズノードや追加発振器を更新周期に生成しない。
+4. 4声以内のゆるいユニゾンと小さな微分音揺れにし、6声が同じ低音を加算し続けない。読経も実在の経文は発話しない。
+5. 旧オリジナルは元の出力・音色を復元する。切替には `setTargetAtTime` による補間を用いる。
+6. 各追加スタイルは、オリジナルの音量ゲイン .95 より**大幅に小さい初期ゲイン**から出力する。初期設定は Gregorian .53 / cetacean .39 / hymn .36 / sutra .53。これらは制作時の保守的なレベル設定であり、全個体・全機器について厳密に等しいLUFSを保証するものではない。
+7. ブラウザ実行時の AnalyserNode で5種類の波形 RMS / 帯域別エネルギーをオリジナルと比較する。比較窓の長さや発声休止により誤差が生じるため、最終判定は**聴感、長時間測定、iPhoneの実機**を合わせて行う。
+
+**関連一次資料・技術資料**
+
+- Dennis H. Klatt (1980), *Software for a Cascade/Parallel Formant Synthesizer*, JASA. https://sail.usc.edu/~lgoldste/Ling582/Week%2012/klatt1980.pdf — F0, F1–F3, 帯域幅、voicing/aspiration の独立制御。
+- Pisanski et al., *Acoustic and auditory phonetics: the adaptive design of speech sound systems*（PMC掲載のレビュー） https://pmc.ncbi.nlm.nih.gov/articles/PMC2606790/ — 声帯の音源と声道共鳴および放射によるスペクトル合成。
+- d'Alessandro et al., *Cantor Digitalis: chironomic parametric synthesis of singing* (2017) https://link.springer.com/article/10.1186/s13636-016-0098-5 — 歌声の声門音源・スペクトル傾斜・パラメトリック合成の参考。
+- ITU-R BS.1770-5 https://www.itu.int/rec/R-REC-BS.1770/en ／ AES, *Loudness Basics* https://aes.org/resources/audio-topics/loudness-project/loudness-basics/ — RMSだけでなく周波数重み付けと時間区間のゲーティングが主観的音量に必要。**現実装の簡易RMS試験はBS.1770準拠のLUFSメーターではない**。
+- W3C, *Web Audio API 1.1* https://www.w3.org/TR/webaudio/ — BiquadFilterNode / DynamicsCompressorNode / AudioParam補間。
+
+### 独自ドメイン
+
+XServer cronは `index.html` だけ同期するため、編集用 `voice-styles.js` と `surface-reaction.js` の実体を **同じ `index.html` のインラインscriptにも完全一致で埋め込む**。CIはこの同一性を検証する。外部スクリプトを追加する場合は同期経路を先に更新する。
 
 ## 共通のエンジニアリング制約
 
