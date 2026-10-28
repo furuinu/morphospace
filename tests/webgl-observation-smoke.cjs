@@ -247,6 +247,16 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
   console.log('PASS: analytic world-space glows and static atlas background',backgroundPixels);
-  console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
+  // An atlas that prioritizes visible cards must never leave the first one blank
+   // after the viewer is closed, even when its generation was deferred.
+   await page.evaluate(()=>close());
+   await page.waitForFunction(()=>{
+    const canvas=document.querySelector('#gallery canvas.thumb');
+    if(!canvas)return false;
+    const pixel=canvas.getContext('2d').getImageData(90,90,1,1).data;
+    return pixel[3]===255;
+   },null,{timeout:60000});
+   console.log('PASS: visible atlas thumbnail rendered after observation closes');
+   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
