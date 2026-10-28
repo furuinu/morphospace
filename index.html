@@ -417,7 +417,7 @@ body{color:#eaf4f4;background:#090e18}
   <details id="publicURLSetting"><summary>公開ページのURL</summary><label class="share-field" for="publicPageURL"><span>公開したページで開くと自動で設定されます。</span><input id="publicPageURL" type="url" placeholder="https://…" autocomplete="url"></label></details>
  </div>
 </dialog>
-<script src="./voice-styles.js"></script><script>
+<script>
 /* MORPHOSPACE v15.13.27 — portable specimens and trading cards. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
@@ -8238,7 +8238,8 @@ document.addEventListener('click',event=>{
  }
  void maybeStartBioticAudio(true);
 });
-const voiceStyleInput=$('viewerVoiceStyle');
+window.addEventListener('DOMContentLoaded',()=>{
+ const voiceStyleInput=$('viewerVoiceStyle');
  try{const stored=localStorage.getItem('morphospace-voice-style-v1');if(Object.prototype.hasOwnProperty.call(window.MorphVoiceStyles.INFO,stored))voiceStyleInput.value=stored;}catch(error){}
  $('viewerVoiceStyleHelp').textContent=window.MorphVoiceStyles.INFO[window.MorphVoiceStyles.current()].help;
  voiceStyleInput.onchange=()=>{
@@ -8248,6 +8249,7 @@ const voiceStyleInput=$('viewerVoiceStyle');
   $('viewerSoundStatus').textContent=bioticAudioRunning()?'再生中：'+window.MorphVoiceStyles.INFO[style].label+'。身体・発光に連動します。':'音声設定：'+window.MorphVoiceStyles.INFO[style].label;
   if(bioticAudioRunning())tickBioticAudio();
  };
+ });
  $('viewerSoundVolume').oninput=()=>{try{localStorage.setItem('morphospace-sound-volume-v2',$('viewerSoundVolume').value)}catch(error){}tickBioticAudio()};
 try{const saved=localStorage.getItem('morphospace-sound-volume-v2');if(saved!==null&&Number.isFinite(Number(saved)))$('viewerSoundVolume').value=String(clamp(Number(saved),0,100))}catch(error){}
 document.addEventListener('visibilitychange',()=>{
@@ -9391,7 +9393,7 @@ canvas.addEventListener('webglcontextlost',e=>{
  window.addEventListener('keydown',event=>{if(dialog.open&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();dialog.close()}},true);
 })();
 
-</script><script src="./surface-reaction.js"></script></body></html>
+</script><script src="./voice-styles.js"></script><script src="./surface-reaction.js"></script></body></html>
 
 
 
