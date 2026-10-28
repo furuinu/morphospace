@@ -533,14 +533,11 @@ function draw(p){
  for(let i=0;i<count;i++){
   const v=1-(i+1)/(count+1),threshold=step(v)+.04;
   const alpha=smooth((p-threshold)/.024);
-  if(alpha<=0)returnRung();
-  else{
-   const a=point(v,0,p),b=point(v,1,p);
-   pieces.push({type:'rung',a,b,alpha,z:(a.z+b.z)/2,
-    snap:Math.max(0,1-Math.abs(p-threshold-.019)/.028)});
-  }
+  if(alpha<=0)continue;
+  const a=point(v,0,p),b=point(v,1,p);
+  pieces.push({type:'rung',a,b,alpha,z:(a.z+b.z)/2,
+   snap:Math.max(0,1-Math.abs(p-threshold-.019)/.028)});
  }
- function returnRung(){} // Keep unformed rungs hidden until their own snap.
  pieces.sort((a,b)=>a.z-b.z);
  for(const item of pieces){
   const {a,b}=item,front=smooth((item.z+.8)/1.6);
