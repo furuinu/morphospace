@@ -65,7 +65,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
   const settledBoot=await page.evaluate(()=>({
-   splashHidden:getComputedStyle(document.querySelector('#bootSplash')).opacity==='0',
+   splashHidden:document.querySelector('#bootSplash').classList.contains('boot-dismissed'),
    ariaHidden:document.querySelector('#bootSplash').getAttribute('aria-hidden'),
    atlasCount:document.querySelectorAll('#gallery button.item').length
   }));
