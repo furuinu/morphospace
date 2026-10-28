@@ -36,3 +36,12 @@ test('negative CSS letter-spacing cannot wrap and clip the final digit of the ex
  f.drawVideoViewerText({mode:'viewer',width:592,height:1280,ctx});
  assert.equal(draws.length,1);assert.equal(draws[0][0],'MORPHOSPACE 64');assert.ok(draws[0][3]>0);assert.ok(draws[0][3]<196*592/390);
 });
+
+test('video effects start disabled for new visitors but remain manually opt-in',()=>{
+ assert.match(html,/<input id="viewerVideoNoise" type="checkbox">映像ノイズ/);
+ assert.match(html,/<input id="videoVhs" type="checkbox">VHSノイズ・グリッチを収録/);
+ assert.match(html,/function viewerVideoNoiseEnabled\(\)\{return videoRecording\?videoRecording\.vhs===true:\$\('viewerVideoNoise'\)\?\.checked===true\}/);
+ assert.match(html,/\$\('videoVhs'\)\.checked=\$\('viewerVideoNoise'\)\.checked/);
+ assert.match(html,/localStorage\.setItem\('morphospace-viewer-video-noise'/);
+ assert.match(html,/if\(value==='0'\|\|value==='1'\)\$\('viewerVideoNoise'\)\.checked=value==='1'/);
+});
