@@ -6,6 +6,7 @@ on:
     paths:
       - 'index.html'
       - 'voice-styles.js'
+      - 'surface-reaction.js'
       - 'tests/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
@@ -47,6 +48,12 @@ jobs:
         run: |
           test -s index.html
           grep -q 'MORPHOSPACE' index.html
+          grep -q 'data-bundled="voice-styles.js"' index.html
+          grep -q 'data-bundled="surface-reaction.js"' index.html
+          if grep -qE '<script[^>]+src=' index.html; then
+            echo "Standalone XServer index must not depend on external script files" >&2
+            exit 1
+          fi
           echo "Deploying $(grep -o 'MORPHOSPACE v[0-9.]*' index.html | head -1)"
       - name: Check specimen restoration and colour regressions
         run: node --test tests/*.test.cjs
