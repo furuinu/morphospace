@@ -444,7 +444,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 #bootSplash .boot-caption{
  font-family:inherit;
  font-size:11px;font-weight:400;color:#b4d4d1;
- letter-spacing:0;line-height:1.2;margin-top:1px
+ letter-spacing:normal;line-height:1.2;margin-top:1px
 }
 .overlay.viewer-full .viewer-brand{
  transition:top .48s cubic-bezier(.2,.7,.2,1);
@@ -9452,7 +9452,7 @@ async function restoreSharedSpecimen(payload){
 }
 
 // Prefer the icon-font DNA; retain the device glyph if the font cannot be fetched.
-if(document.fonts?.load){
+if(location.protocol==='https:'&&document.fonts?.load){
  void document.fonts.load('900 79px "Morphospace FA Icons"')
   .then(fonts=>{if(fonts.length)document.documentElement.classList.add('boot-icon-ready')})
   .catch(()=>{});
