@@ -43,6 +43,10 @@ p=Path(sys.argv[1])
 b=p.read_bytes()
 if len(b)<100000 or b"MORPHOSPACE" not in b or b"<html" not in b.lower():
     raise SystemExit("Downloaded HTML failed validation")
+if b'data-bundled="voice-styles.js"' not in b or b'data-bundled="surface-reaction.js"' not in b:
+    raise SystemExit("Standalone deployment missing embedded voice or surface modules")
+if b'<script src=' in b or b'<script type="module" src=' in b:
+    raise SystemExit("Standalone deployment references non-synced external scripts")
 PY
 # Preserve existing index on failure; no deletion of other site files.
 cp -p "$TARGET/index.html" "$TARGET/.morphospace-index-backup.html" 2>/dev/null || true
