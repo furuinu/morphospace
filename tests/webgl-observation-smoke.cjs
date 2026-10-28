@@ -28,7 +28,21 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   page.on('pageerror',err=>errors.push('pageerror: '+err.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
   await page.goto(pathToFileURL(path.resolve(__dirname,'../index.html')).href,{waitUntil:'domcontentloaded'});
+  // A fresh visit starts on a DNA assembly screen, never exposing the atlas.
+  const bootState=await page.evaluate(()=>({
+   loading:document.body.classList.contains('boot-loading'),
+   galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
+   overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
+   splashVisible:getComputedStyle(document.querySelector('#bootSplash')).visibility,
+   strandCount:document.querySelectorAll('#bootSplash .boot-dna .dna-a, #bootSplash .boot-dna .dna-b').length,
+   bondCount:document.querySelectorAll('#bootSplash .dna-bonds line').length
+  }));
+  if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
+    ||bootState.splashVisible!=='visible'||bootState.strandCount!==2||bootState.bondCount<8)
+   throw Error('The initial frame must show joined DNA without revealing the atlas: '+JSON.stringify(bootState));
   await page.locator('#gallery button.item').first().waitFor({state:'visible',timeout:120000});
+  await page.waitForFunction(()=>!document.body.classList.contains('boot-loading')&&
+    document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:120000});
   await page.waitForFunction(()=>document.querySelector('#gallery button.item')&&!document.querySelector('#generate')?.disabled,{timeout:120000});
   const state=await page.evaluate(()=>({
    webgl:!!(document.querySelector('#glview')?.getContext('webgl2')||document.querySelector('#glview')?.getContext('webgl')),
@@ -50,6 +64,13 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
+  const settledBoot=await page.evaluate(()=>({
+   splashHidden:getComputedStyle(document.querySelector('#bootSplash')).opacity==='0',
+   ariaHidden:document.querySelector('#bootSplash').getAttribute('aria-hidden'),
+   atlasCount:document.querySelectorAll('#gallery button.item').length
+  }));
+  if(!settledBoot.splashHidden||settledBoot.ariaHidden!=='true'||settledBoot.atlasCount!==64)
+   throw Error('The viewer should replace the DNA splash without breaking the 64-item atlas: '+JSON.stringify(settledBoot));
   // Production audio regression: this page must run only the original voice.
   // The five experimental styles are archived as a separate JS source.
   await page.locator('#viewerSettings summary').click({force:true});
