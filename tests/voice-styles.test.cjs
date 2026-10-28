@@ -71,7 +71,7 @@ test('modes yield different pitches and keep whistles within a safe audible rang
  assert.equal(f.state.lights[0].exciter.type,'sine');
  assert.ok(f.state.lights[0].directTone.gain.value>.75);
  assert.equal(f.engine.applied(f.state),'cetacean');
- assert.ok(f.state.body.directTone.gain.value>.5);
+ assert.ok(f.state.body.directTone.gain.value>.35);
 });
 test('hot switching restores original timbre without allocating new oscillators',()=>{
  const f=fixture();
@@ -92,12 +92,13 @@ test('chant and hymn have distinct audible source waveforms, direct fundamentals
  const f=fixture();const voices=[f.state.body,f.state.pulse,...f.state.lights];
  const settings={seed:4242},blink=()=>.7,character={phraseLength:4};
  f.setMode('gregorian');f.engine.apply(f.state,settings,f.ctx,25,.2,.5,blink,character);
- assert.ok(voices.every(v=>v.directTone.gain.value>.7));
+ assert.ok(voices.every(v=>v.directTone.gain.value===0),'human chant must not leak raw oscillator into speakers');
+ assert.ok(voices.some(v=>v.consonantGain?.gain.value>0),'human vocal breath must be present');
  assert.ok(voices.every(v=>v.exciter.type==='sawtooth'));
  const chantPitch=f.state.body.exciter.frequency.value;
  f.setMode('hymn');f.engine.apply(f.state,settings,f.ctx,26,.2,.5,blink,character);
  assert.equal(f.state.body.exciter.type,'triangle');
- assert.ok(voices.slice(0,4).every(v=>v.directTone.gain.value>.5));
+ assert.ok(voices.slice(0,4).every(v=>v.directTone.gain.value>.25));
  assert.notEqual(chantPitch,f.state.body.exciter.frequency.value);
  f.setMode('sutra');f.engine.apply(f.state,settings,f.ctx,27,.2,.5,blink,character);
  assert.equal(f.state.body.exciter.type,'sawtooth');
@@ -105,4 +106,22 @@ test('chant and hymn have distinct audible source waveforms, direct fundamentals
  assert.equal(f.state.generatedStyleEpoch,27);
  f.engine.apply(f.state,settings,f.ctx,30,.2,.5,blink,character);
  assert.equal(f.state.generatedStyleEpoch,27,'do not restart phrase every synthesis frame');
+});
+
+test('presets remain below original master gain and chants use vowel formants instead of a raw buzzer',()=>{
+ const f=fixture(),seed={seed:32901},dna={phraseLength:3.4,vibrato:.6};
+ assert.equal(f.engine.gainFor('original'),.95);
+ for(const style of ['gregorian','cetacean','hymn','sutra']){
+  assert.ok(f.engine.gainFor(style)<=.55,'preset ${style} must stay below conservative mix cap');
+  f.setMode(style);
+  f.engine.apply(f.state,seed,f.ctx,0.8,.1,.5,()=>.6,dna);
+  assert.equal(f.engine.applied(f.state),style);
+  if(style==='gregorian'||style==='sutra'){
+   for(const v of [f.state.body,f.state.pulse,...f.state.lights])
+    assert.equal(v.directTone.gain.value,0,'no unfiltered fundamental bypass');
+   assert.ok(f.state.body.voicingGain===undefined||f.state.body.voicingGain.gain.value>0);
+  }
+ }
+ f.setMode('original');f.engine.apply(f.state,seed,f.ctx,5,.1,.5,()=>.6,dna);
+ assert.equal(f.state.body.directTone.gain.value,0);
 });
