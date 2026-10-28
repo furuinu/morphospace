@@ -8238,7 +8238,7 @@ document.addEventListener('click',event=>{
  }
  void maybeStartBioticAudio(true);
 });
-window.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',()=>{
  const voiceStyleInput=$('viewerVoiceStyle');
  try{const stored=localStorage.getItem('morphospace-voice-style-v1');if(Object.prototype.hasOwnProperty.call(window.MorphVoiceStyles.INFO,stored))voiceStyleInput.value=stored;}catch(error){}
  $('viewerVoiceStyleHelp').textContent=window.MorphVoiceStyles.INFO[window.MorphVoiceStyles.current()].help;
