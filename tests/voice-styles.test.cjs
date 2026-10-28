@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const base=path.join(__dirname,'..');
-const src=fs.readFileSync(path.join(base,'voice-styles.js'),'utf8');
+const src=fs.readFileSync(path.join(base,'experimental/voice-styles.js'),'utf8');
 const html=fs.readFileSync(path.join(base,'index.html'),'utf8');
 function fixture(){
  let mode='original',writes=[],allocated=0;
@@ -27,19 +27,21 @@ function fixture(){
  vm.runInNewContext(src,sandbox,{filename:'voice-styles.js'});
  return{engine:sandbox.window.MorphVoiceStyles,state,ctx,writes,allocated:()=>allocated,setMode(next){mode=next}};
 }
-test('voice module and legacy inline script arrangement compile and remain stable',()=>{
+test('archived voice experiment compiles but production only runs original synthesis',()=>{
  assert.doesNotThrow(()=>new vm.Script(src));
  const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
  assert.ok(scripts[2].includes('function renderPureChoir('),'existing third inline script remains the generator');
  for(const source of scripts)if(source.trim())assert.doesNotThrow(()=>new vm.Script(source));
- assert.ok(scripts.some(block=>block.trim()===src.trim()),'XServer HTML-only deployment must embed the exact voice module');
- assert.ok(!html.includes('src="./voice-styles.js'),'external voice module will be missing from XServer');
+ assert.ok(!scripts.some(block=>block.includes('window.MorphVoiceStyles')),'experimental generator must not execute in production');
+ assert.ok(!scripts.some(block=>block.trim()===src.trim()),'archived voice script must not be inlined');
+ assert.doesNotMatch(html, /<script[^>]*src=[^>]*voice-styles/);
+ assert.doesNotMatch(html, /id="viewerVoiceStyle"/);
+ assert.doesNotMatch(html, /morphospace-voice-style-v1/);
+ assert.doesNotMatch(html, /MorphVoiceStyles\.apply\(state,sp,ctx,t,wave,coupling,blink,voiceDNA\)/);
+ assert.match(html,/const styleGain=\.95;/,'original master gain must be restored');
+ assert.match(html,/const beatScale=\.45;/,'original heartbeat balance must be restored');
  const reaction=fs.readFileSync(path.join(base,'surface-reaction.js'),'utf8');
- assert.ok(scripts.some(block=>block.trim()===reaction.trim()),'XServer HTML-only deployment must embed the reaction module');
- assert.ok(!html.includes('src="./surface-reaction.js'),'external reaction module will be missing from XServer');
- assert.ok(html.includes('id="viewerVoiceStyle"'));
- assert.ok(html.includes('morphospace-voice-style-v1'));
- assert.match(html,/MorphVoiceStyles\.apply\(state,sp,ctx,t,wave,coupling,blink,voiceDNA\)/);
+ assert.ok(scripts.some(block=>block.trim()===reaction.trim()),'XServer must retain inlined surface module');
 });
 test('all five style IDs are valid and the original is selected by default',()=>{
  const f=fixture();
