@@ -32,7 +32,7 @@ test('voice module and legacy inline script arrangement compile and remain stabl
  const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
  assert.ok(scripts[2].includes('function renderPureChoir('),'existing third inline script remains the generator');
  for(const source of scripts)if(source.trim())assert.doesNotThrow(()=>new vm.Script(source));
- assert.ok(html.includes('src="./voice-styles.js"'));
+ assert.match(html, /src="\.\/voice-styles\.js(?:\?v=[0-9.]+)?"/);
  assert.ok(html.includes('id="viewerVoiceStyle"'));
  assert.ok(html.includes('morphospace-voice-style-v1'));
  assert.match(html,/MorphVoiceStyles\.apply\(state,sp,ctx,t,wave,coupling,blink,voiceDNA\)/);
