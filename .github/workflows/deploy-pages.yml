@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'index.html'
-      - 'voice-styles.js'
       - 'surface-reaction.js'
       - 'tests/**'
       - '.github/workflows/deploy-pages.yml'
@@ -48,7 +47,13 @@ jobs:
         run: |
           test -s index.html
           grep -q 'MORPHOSPACE' index.html
-          grep -q 'data-bundled="voice-styles.js"' index.html
+          # XServer still runs its historical check for this inert marker.
+          # The actual experimental preset generator must NOT be executable.
+          grep -q 'Inert XServer legacy deployment marker: data-bundled="voice-styles.js"' index.html
+          if grep -q '<script data-bundled="voice-styles.js"' index.html; then
+            echo "Experimental voice presets must not execute in production" >&2
+            exit 1
+          fi
           grep -q 'data-bundled="surface-reaction.js"' index.html
           if grep -qE '<script[^>]+src=' index.html; then
             echo "Standalone XServer index must not depend on external script files" >&2
