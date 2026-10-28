@@ -4,18 +4,18 @@ const {pathToFileURL}=require('node:url');
 const path=require('node:path');
 const indexSource=require('node:fs').readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const backgroundParameters=[
- "float mid=driftingCloud(p-camera*.007,.425,",
- "float light=driftingCloud(p+camera*.011,.200,",
+ "float broadGlow=exp(-19.0*radius*radius);",
+ "float coreGlow=exp(-85.0*radius*radius);",
  "vec2 p=(vStudioUv-uBgSceneCenter+vec2(0.0,.01))*uBgSceneScale;",
- "colour=screenColours(colour,uBgMid*mid);",
- "colour=screenColours(colour,uBgCenter*min(1.0,light*1.15));",
- "cloud(profile.mid,.85);",
- "cloud(profile.center,.40);",
+ "colour=screenColours(colour,uBgMid*(broadGlow*shimmer));",
+ "colour=screenColours(colour,uBgCenter*min(1.0,coreGlow*",
+ "if(uGalleryPreview>.5){",
+ "float shimmer=.94+.06*cloudNoise(",
  "ctx.scale(w,h);",
  "float spin=t*.085;",
  "float bend=(wander-.5)*.24;",
  "float strength=.70+.60*wander;",
- "function drawStudioGL(rayStrength=.03575,projection=null,view=null){"
+ "function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false){"
 
 ];
 for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
@@ -207,7 +207,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     environmentTime=235;drawStudioGL();
     const last=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
     const cloudMotion=first.reduce((sum,p,i)=>sum+distance(p,last[i]),0);
-    if(cloudMotion<6)throw Error('Cloud layers must actually evolve over time independently of background selection: '+cloudMotion);
+    if(cloudMotion<6)throw Error('Atmospheric glow shimmer must evolve independently of background selection: '+cloudMotion);
     // Compare the real GPU output with and without ray contribution. Its very
     // low gain must be perceptible in aggregate, but never produce hard lines.
     // Comparing increments at two times isolates the rays from moving clouds.
@@ -246,7 +246,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    }
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: subject-space atmospheric background and soft radial glimmer',backgroundPixels);
+  console.log('PASS: analytic world-space glows and static atlas background',backgroundPixels);
   console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
