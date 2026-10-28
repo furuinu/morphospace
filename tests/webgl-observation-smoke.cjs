@@ -50,6 +50,35 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!observation.opened||!observation.alert||!observation.width||!observation.height)
    throw new Error('Observation failed: '+JSON.stringify(observation));
+  // Browser-level audio regression: verify that a real AudioContext and live
+  // organism voice graph receive each selected style, not just the UI label.
+  await page.evaluate(async()=>{
+   if(!window.MorphVoiceStyles)throw Error('Missing voice style module');
+   if(!document.querySelector('#viewerVoiceStyle')?.onchange)throw Error('Voice style control is unwired');
+   if(!bioticAudioRunning())await startBioticAudio();
+  });
+  await page.waitForFunction(()=>bioticAudioRunning(),{timeout:8000});
+  const voiceStates=await page.evaluate(()=>{
+   const select=document.getElementById('viewerVoiceStyle'),snapshots=[];
+   for(const id of ['original','gregorian','cetacean','hymn','sutra','original']){
+    select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));
+    tickBioticAudio();
+    const v=pureChoir.body,caller=pureChoir.lights[0];
+    const result={selected:window.MorphVoiceStyles.current(),applied:window.MorphVoiceStyles.applied(pureChoir),
+     waveform:v.exciter.type,callWaveform:caller.exciter.type,
+     direct:!!v.directTone,callerDirect:!!caller.directTone};
+    if(id!=='result'&&result.selected!==id)throw Error('Voice selector ignored '+id);
+    if(result.applied!==id)throw Error('Audio engine did not apply '+id+': '+JSON.stringify(result));
+    if(id==='cetacean'&&caller.exciter.type!=='sine')throw Error('Cetacean whistle was not synthesized as a sine source');
+    if(id==='hymn'&&v.exciter.type!=='triangle')throw Error('Four-part hymn did not switch its oscillator');
+    if(id==='original'&&v.exciter.type!=='sawtooth')throw Error('Original voice waveform not restored');
+    if(id!=='original'&&!result.direct)throw Error('Audible voice core absent for '+id);
+    snapshots.push(result);
+   }
+   return snapshots;
+  });
+  console.log('PASS: actual browser AudioContext, five vocal styles and live oscillator switching',voiceStates);
+  if(errors.length)throw new Error('Audio browser errors: '+errors.join('\n'));
   // The production material projection defaults to triplanar.
   const projection=page.locator('#triplanarTrial');
   if(!await projection.isChecked())throw new Error('Triplanar projection must be enabled by default');
