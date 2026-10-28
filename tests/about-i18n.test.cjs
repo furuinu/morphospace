@@ -17,7 +17,7 @@ function harness(storage=new Map()){
  const dialog={lang:'ja',getAttribute(){return null},
   querySelector(selector){
    if(selector==='.about-document')return scroll;
-   const match=selector.match(/^\\[data-about-key="([^"]+)"\\]$/);
+   const match=selector.match(/^\[data-about-key="([^"]+)"\]$/);
    return match?nodes[match[1]]:null;
   }};
  const window={localStorage:{
@@ -34,7 +34,7 @@ function harness(storage=new Map()){
  return {window,nodes,dialog,control,select,scroll,change:()=>handler()};
 }
 test('the original Japanese introduction and the full signed poetic ending remain in the HTML fallback',()=>{
- assert.match(html,/<script src="about-i18n\\.js" defer><\\/script>/);
+ assert.match(html,/<script src="about-i18n\.js" defer><\/script>/);
  assert.match(html,/甘さに、形があるとしたら。<br>香りが、生きものとして動き出したら。/);
  assert.match(html,/この世界では、そうした感覚を手がかりに、色、模様、骨格、質感、動きを組み合わせ、生物の姿を想像します。/);
  assert.match(html,/一期一会。宇宙にひとつだけの生命体。/);
@@ -75,7 +75,7 @@ test('without storage permissions the language menu still works',()=>{
  const nodes=Object.fromEntries(keys.map(k=>[k,{innerHTML:'ja',textContent:'ja'}]));
  const select={value:'ja',addEventListener(){}},control={hidden:true};
  const document={getElementById(id){
-  if(id==='aboutDialog')return {lang:'ja',querySelector(q){const match=q.match(/^\\[data-about-key="([^"]+)"\\]$/);return match?nodes[match[1]]:null},getAttribute(){return null}};
+  if(id==='aboutDialog')return {lang:'ja',querySelector(q){const match=q.match(/^\[data-about-key="([^"]+)"\]$/);return match?nodes[match[1]]:null},getAttribute(){return null}};
   if(id==='aboutLanguageControl')return control;
   if(id==='aboutLanguage')return select;
   return null;
