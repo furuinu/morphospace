@@ -102,7 +102,7 @@ test('chant and hymn have distinct audible source waveforms, direct fundamentals
  assert.notEqual(chantPitch,f.state.body.exciter.frequency.value);
  f.setMode('sutra');f.engine.apply(f.state,settings,f.ctx,27,.2,.5,blink,character);
  assert.equal(f.state.body.exciter.type,'sawtooth');
- assert.ok(voices.slice(0,4).every(v=>v.directTone.gain.value>.25));
+ assert.ok(voices.every(v=>v.directTone.gain.value===0),'sutra must not leak raw oscillator');
  assert.equal(f.state.generatedStyleEpoch,27);
  f.engine.apply(f.state,settings,f.ctx,30,.2,.5,blink,character);
  assert.equal(f.state.generatedStyleEpoch,27,'do not restart phrase every synthesis frame');
