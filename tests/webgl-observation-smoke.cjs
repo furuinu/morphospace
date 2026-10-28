@@ -29,17 +29,23 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
   await page.goto(pathToFileURL(path.resolve(__dirname,'../index.html')).href,{waitUntil:'domcontentloaded'});
   // A fresh visit starts on a DNA assembly screen, never exposing the atlas.
-  const bootState=await page.evaluate(()=>({
-   loading:document.body.classList.contains('boot-loading'),
-   galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
-   overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
-   splashVisible:getComputedStyle(document.querySelector('#bootSplash')).visibility,
-   dnaGlyph:document.querySelector('#bootSplash .boot-dna-icon')?.textContent.codePointAt(0),
-    dnaFallback:!!document.querySelector('#bootSplash .boot-dna-fallback')
-  }));
+  const bootState=await page.evaluate(()=>{
+   const splash=document.querySelector('#bootSplash'),dna=splash.querySelector('#bootDnaCanvas');
+   return {
+    loading:document.body.classList.contains('boot-loading'),
+    galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
+    overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
+    splashVisible:getComputedStyle(splash).visibility,
+    dnaCanvas:dna instanceof HTMLCanvasElement,
+    dnaContext:!!dna?.getContext('2d'),
+    dnaComplete:typeof window.morphospaceBootDNAComplete==='function',
+    titleTop:splash.querySelector('.boot-title').getBoundingClientRect().top,
+    captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top
+   };
+  });
   if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
-    ||bootState.splashVisible!=='visible'||bootState.dnaGlyph!==0xf471||!bootState.dnaFallback)
-   throw Error('The initial frame must show joined DNA without revealing the atlas: '+JSON.stringify(bootState));
+    ||bootState.splashVisible!=='visible'||!bootState.dnaCanvas||!bootState.dnaContext||!bootState.dnaComplete)
+   throw Error('The initial frame must show the spatial DNA canvas without revealing the atlas: '+JSON.stringify(bootState));
   await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:120000});
   await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
     !document.querySelector('#bootStartButton')?.hidden,{timeout:120000});
@@ -50,6 +56,28 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!beforeTap.atlasHidden||!beforeTap.viewerHidden||!beforeTap.dnaVisible)
    throw Error('Startup must remain gated until user taps: '+JSON.stringify(beforeTap));
+  // DNA must be fully assembled and motionless after loading, and labels must not jump.
+  const bootFinal=await page.evaluate(()=>{
+   const splash=document.querySelector('#bootSplash'),dna=splash.querySelector('#bootDnaCanvas');
+   return {
+    titleTop:splash.querySelector('.boot-title').getBoundingClientRect().top,
+    captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top,
+    pixels:dna.toDataURL(),
+    buttonVisible:getComputedStyle(document.querySelector('#bootStartButton')).visibility,
+    animation:getComputedStyle(dna).animationName
+   };
+  });
+  await page.waitForTimeout(180);
+  const settledDNA=await page.locator('#bootDnaCanvas').evaluate(dna=>dna.toDataURL());
+  if(bootFinal.pixels.length<1000||bootFinal.pixels!==settledDNA||
+    Math.abs(bootFinal.titleTop-bootState.titleTop)>1.5||
+    Math.abs(bootFinal.captionTop-bootState.captionTop)>1.5||
+    bootFinal.buttonVisible!=='visible'||bootFinal.animation!=='none')
+   throw Error('Completed 3D DNA must remain static with fixed loader typography: '+
+    JSON.stringify({pixels:bootFinal.pixels.length,settled:bootFinal.pixels===settledDNA,
+     titleShift:bootFinal.titleTop-bootState.titleTop,
+     captionShift:bootFinal.captionTop-bootState.captionTop,
+     buttonVisible:bootFinal.buttonVisible,animation:bootFinal.animation}));
   await page.locator('#bootSplash').click({position:{x:24,y:24}});
   await page.waitForFunction(()=>!document.body.classList.contains('boot-ready')&&
     document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:15000});
