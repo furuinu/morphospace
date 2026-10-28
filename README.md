@@ -56,6 +56,28 @@ Checks cover seeded colour determinism, all eight layouts, category controls, st
 
 The authoritative source is the root `index.html` on `main` in this public repository. `masala-generator` contains historical snapshots and is not the publication source.
 
+## Multilingual About and script policy
+
+The MORPHOSPACE **?** explanation dialog offers Japanese (default), English, Traditional Chinese (Taiwan), Korean, Simplified Chinese, French, Italian, German, Russian, Thai, Vietnamese, Portuguese and Spanish. This changes only the explanatory dialog, not the language of the underlying 3D application. The author credit is part of each translation. The selected language is stored locally when browser storage is available.
+
+The original Japanese explanation and signature remain directly in `index.html` as a no-JavaScript fallback. Translations and selection logic live in the same-origin, static `about-i18n.js` file; no remote scripts, translation API, server processing or CDN is required. If the external file fails to load, the Japanese explanation remains readable and the language dropdown stays hidden.
+
+GitHub Pages packages **both** `index.html` and `about-i18n.js`; its deployment workflow allows that one explicit local script path only and verifies syntax. Existing Pages workflow permissions remain limited to `contents: read`, `pages: write` and `id-token: write`.
+
+### XServer mirror (only when independently hosted)
+
+The repository cannot inspect or alter an existing server's private cron configuration. If an XServer site or historical scheduled pull is still in service, it must synchronize **both** the root `index.html` and `about-i18n.js`. Do not use an old “index.html only” copy job; do not fetch from `masala-generator`. Configure the existing server-side scheduled task to call the checked-in helper:
+
+```sh
+MORPHOSPACE_REPO_DIR=/absolute/path/to/morphospace \
+MORPHOSPACE_DOCROOT=/absolute/path/to/public/document/root \
+bash /absolute/path/to/morphospace/scripts/sync-xserver.sh
+```
+
+Supply the correct paths from the actual XServer account before enabling the job. The helper verifies the origin and `main` branch, performs `git pull --ff-only origin main`, and copies the dependent JavaScript **before** the updated HTML. It applies `0644` permissions to both web files, refuses to write to an unwritable document root, and requires the web document directory to be traversable. An app-owned document directory ordinarily uses `0755`; do not reset shared hosting directory ownership or permissions blindly. Both files must be accessible by the web-server user. Existing `data-bundled="voice-styles.js"` compatibility marker remains intact for historical XServer checks.
+
+The helper is **not** invoked by GitHub Pages and is **not** automatically installed into an existing XServer cron job. XServer delivery must be checked separately after confirming the remote account configuration.
+
 ## Publishing
 
 The **Deploy MORPHOSPACE to GitHub Pages** workflow publishes the root app when `main` changes. GitHub Pages must use **GitHub Actions** as its source. Each workflow run uploads its own uniquely named Pages artifact.
