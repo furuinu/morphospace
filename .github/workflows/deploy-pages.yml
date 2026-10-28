@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'about-i18n.js'
       - 'surface-reaction.js'
       - 'tests/**'
       - '.github/workflows/deploy-pages.yml'
@@ -55,10 +56,26 @@ jobs:
             exit 1
           fi
           grep -q 'data-bundled="surface-reaction.js"' index.html
-          if grep -qE '<script[^>]+src=' index.html; then
-            echo "Standalone XServer index must not depend on external script files" >&2
-            exit 1
-          fi
+          test -s about-i18n.js
+          node --check about-i18n.js
+          # Only an audited, local, same-origin translation file is permitted here.
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class ScriptSources(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.sources = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == 'script':
+                      src = dict(attrs).get('src')
+                      if src is not None:
+                          self.sources.append(src)
+          parser = ScriptSources()
+          parser.feed(Path('index.html').read_text(encoding='utf-8'))
+          if parser.sources != ['about-i18n.js']:
+              raise SystemExit(f'Unexpected script dependencies: {parser.sources!r}')
+          PY
           echo "Deploying $(grep -o 'MORPHOSPACE v[0-9.]*' index.html | head -1)"
       - name: Check specimen restoration and colour regressions
         run: node --test tests/*.test.cjs
