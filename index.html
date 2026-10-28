@@ -8282,7 +8282,7 @@ async function startBioticAudio(){
  }catch(error){if(revision===bioticAudio.revision)stopBioticAudio('自動再生はブラウザに制限されています。画面タップで再生してください。');}
 }
 function maybeStartBioticAudio(fromGesture=false){
- if(document.body.classList.contains('boot-loading')||document.body.classList.contains('boot-ready'))return;
+ if(document.body?.classList?.contains('boot-loading')||document.body?.classList?.contains('boot-ready'))return;
  if(!$('viewerSound').checked||bioticAudioRunning()||bioticAudio.starting||selected<0||document.hidden||!$('overlay').classList.contains('open'))return;
  
  // Attempt autoplay when opening; gesture restrictions are handled as a visible fallback.
