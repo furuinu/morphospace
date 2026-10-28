@@ -10,6 +10,7 @@ TARGET="/home/hakatamasala/masalakitchen.jp/public_html/morphospace.masalakitche
 API="https://api.github.com/repos/$REPO"
 LOG_PREFIX="[morphospace-deploy]"
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+echo "$LOG_PREFIX cron invoked at $(date)"
 [ -d "$TARGET" ] && [ -w "$TARGET" ] && [ -x "$TARGET" ] || {
   echo "$LOG_PREFIX document root missing or inaccessible: $TARGET" >&2
   exit 1
@@ -42,7 +43,9 @@ SHA="$(cat "$TMP/sha")"
 CURRENT="$TARGET/.morphospace-deployed-sha"
 if [ "$(cat "$CURRENT" 2>/dev/null || true)" = "$SHA" ] \
    && [ -s "$TARGET/index.html" ] && [ -r "$TARGET/index.html" ] \
-   && [ -s "$TARGET/about-i18n.js" ] && [ -r "$TARGET/about-i18n.js" ]; then
+   && [ -s "$TARGET/about-i18n.js" ] && [ -r "$TARGET/about-i18n.js" ] \
+   && grep -q "MorphospaceAboutI18n" "$TARGET/about-i18n.js"; then
+  echo "$LOG_PREFIX up to date: $SHA (both files present)"
   exit 0
 fi
 
