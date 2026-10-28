@@ -91,7 +91,12 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    throw Error('Loader typography or zoom icon ordering is wrong: '+JSON.stringify(typography));
   const titleBefore=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
   await page.evaluate(()=>setViewerNavigationVisible(false));
-  await page.waitForTimeout(600);
+  // The software WebGL renderer can delay CSS transition frames on CI runners.
+  // Wait for the observed position rather than assuming a 600 ms wall-clock delay.
+  await page.waitForFunction(before=>{
+   const title=document.querySelector('.viewer-brand');
+   return !!title&&parseFloat(getComputedStyle(title).top)+30<before;
+  },titleBefore,{timeout:6000,polling:100}).catch(()=>{});
   const titleAfter=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
   if(!(titleAfter+30<titleBefore))throw Error('Title did not slide to the top edge: '+JSON.stringify({titleBefore,titleAfter,navHidden:await page.locator('#overlay').evaluate(el=>el.classList.contains('viewer-nav-hidden')),inlineTop:await page.locator('.viewer-brand').evaluate(el=>el.style.top)}));
   await page.evaluate(()=>setViewerNavigationVisible(true));
