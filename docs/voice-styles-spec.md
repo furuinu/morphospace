@@ -1,6 +1,6 @@
 # MORPHOSPACE 音声スタイル拡張 — 音楽・生物音響資料に基づく仕様
 
-更新: 2026-10-28 / 実装版: v15.19.4 / 対象: `furuinu/morphospace` の `main`
+更新: 2026-10-28 / 実装版: v15.19.5 / 対象: `furuinu/morphospace` の `main`
 
 ## 目的と基本原則
 
@@ -73,7 +73,7 @@
 典拠:
 - Slottow, *The Americanization of Zen Chanting*, Chapter 3, *Performance Practice* https://www.cambridge.org/core/books/abs/americanization-of-zen-chanting/performance-practice/C16598CA8C9F8DAF492415142A0F897E
 
-## v15.19.4 — 聴感音量の均一化と「ブザーではない声」
+## v15.19.5 — 聴感音量の均一化と「ブザーではない声」
 
 ### 修正の背景（2026-10-28 の聴感報告）
 
@@ -92,7 +92,7 @@
 3. 既存の filtered-noise consonant source を微量に混ぜ、息の抜けを模倣する。ランダムなノイズノードや追加発振器を更新周期に生成しない。
 4. 4声以内のゆるいユニゾンと小さな微分音揺れにし、6声が同じ低音を加算し続けない。読経も実在の経文は発話しない。
 5. 旧オリジナルは元の出力・音色を復元する。切替には `setTargetAtTime` による補間を用いる。
-6. 各追加スタイルは、オリジナルの音量ゲイン .95 より**大幅に小さい初期ゲイン**から出力する。初期設定は Gregorian .81 / cetacean .15 / hymn .42 / sutra .88。これらはブラウザ上で計測した出力RMSを見て再調整した値であり、全個体・全機器について厳密に等しいLUFSを保証するものではない。
+6. 各追加スタイルは、オリジナルの音量ゲイン .95 より**大幅に小さい初期ゲイン**から出力する。初期設定は Gregorian .81 / cetacean .09 / hymn .23 / sutra .88。これらはブラウザ上で計測した出力RMSを見て再調整した値であり、全個体・全機器について厳密に等しいLUFSを保証するものではない。
 7. ブラウザ実行時の AnalyserNode で5種類の波形 RMS / 帯域別エネルギーをオリジナルと比較する。比較窓の長さや発声休止により誤差が生じるため、最終判定は**聴感、長時間測定、iPhoneの実機**を合わせて行う。
 
 **関連一次資料・技術資料**
