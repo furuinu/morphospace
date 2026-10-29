@@ -3811,7 +3811,13 @@ function architectureFounderDNA(seed,index=0){
 function normalizedArchitectureDNA(data,seed,index=0){
  const d=architectureFounderDNA(seed,index);
  if(!data||typeof data!=='object')return d;
- if(Number.isInteger(data.grammar)&&data.grammar>=0&&data.grammar<9)d.grammar=data.grammar;
+ if(Number.isInteger(data.grammar)){
+  // Migrate retired v15.27 layouts: old cross-axis 9 becomes 8;
+  // former random-cluster 8/10/11 use a stable surviving rule.
+  if(data.version===2&&data.grammar===9)d.grammar=8;
+  else if(data.version===2&&[8,10,11].includes(data.grammar))d.grammar=0;
+  else if(data.grammar>=0&&data.grammar<9)d.grammar=data.grammar;
+ }
  for(const key of ['mode','coreMode'])if([0,1,2].includes(data[key]))d[key]=data[key];
  for(const key of ['order','coreOrder'])if([2,3,4,6,8].includes(data[key]))d[key]=data[key];
  for(const key of ['chirality','distortion','fusion'])if(Number.isFinite(data[key]))d[key]=clamp(data[key],key==='chirality'?-1:0,1);
