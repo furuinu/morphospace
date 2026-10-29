@@ -6116,6 +6116,7 @@ function buildViewerTransition(request){
  const target=makeSpecimen(record.seed,g.style,pickPalette(record.seed,g.colorDNA,g.patternDNA),false,null,settings.variance,settings.density,settings.micro,g.archetype,null,g);
  const profile=target.glowProfile||(target.glowProfile=createGlowProfile(target.seed)),glow=profile.shellGlow?[profile.shellGlow.strength,profile.shellGlow.phase]:[0,0];
  const targetMeshes={shell:target.growthModel?skinGrowthRig(target.shell,target.growthModel):dynamicMesh(target.shell,0,(target.seed*.00013)%TAU,[0,0,0],null,glow),parts:dynamicBatches(target),cilia:createGpuCiliaMeshes(target)};
+ if(target.localGroup){targetMeshes.localShell=skinGrowthRig(target.localGroup.shell,target.localGroup.source);targetMeshes.localParts=dynamicBatches({...target,parts:target.localGroup.parts,rigs:[]});}
  const batches=createMorphBatches(from,[targetMeshes.shell,...targetMeshes.parts.map(p=>p.mesh)],4000);
  return {target,targetMeshes,batches,distance:specimenViewDistance(target)};
 }
@@ -6197,7 +6198,7 @@ function activeEmitColor(){
 function blinkStrength(i){return soundBlinkValue(Number($('emitBlink').value),bodyTime*Number($('blinkSpeed').value)/100+i*.31+(spec?.seed||0)*.001);}
 
 function buildEmissionSites(sp){
- const rng=seedRng(sp.seed+634291),data=sp.shell.data,verts=data.length/9;
+ const rng=seedRng(sp.seed+634291),data=(sp.localGroup?.shell||sp.shell).data,verts=data.length/9;
  const sites=[];
  const indices=[.11,.32,.55,.79];
  for(let i=0;i<EMIT_COUNT;i++){
@@ -6276,7 +6277,7 @@ function fail(e){
  $('status').textContent='描画エラー';$('status').classList.add('fail');$('message').textContent=msg;const sceneAlert=$('sceneAlert');if(sceneAlert){sceneAlert.textContent='3D描画を継続できませんでした：\n'+msg;sceneAlert.hidden=false;}
  const diag=$('gpuDiag');diag.hidden=false;diag.textContent='GPU診断: '+msg+'\n（スクリーンショットを送ってください）';
 }
-function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>destroy(gl,pt.mesh));(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
+function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>destroy(gl,pt.mesh));(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));if(meshes.localShell)destroy(gl,meshes.localShell);(meshes.localParts||[]).forEach(pt=>destroy(gl,pt.mesh));}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
 function createSpecimenForIndex(i,motion=null){
  if(activeStoredIndividual){
   const rec=activeStoredIndividual.payload.record,g=copyJSON(rec.genome);
@@ -6304,6 +6305,7 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepa
   const groups=dynamicBatches(nextSpec),ciliaGroups=createGpuCiliaMeshes(nextSpec);
   destroyMeshes();const shellProfile=nextSpec.glowProfile||(nextSpec.glowProfile=createGlowProfile(nextSpec.seed)); const shellGlow=shellProfile.shellGlow?[shellProfile.shellGlow.strength,shellProfile.shellGlow.phase]:[0,0];
   meshes={shell:upload(gl,nextSpec.growthModel?skinGrowthRig(nextSpec.shell,nextSpec.growthModel):dynamicMesh(nextSpec.shell,0,(nextSpec.seed*.00013)%TAU,[0,0,0],null,shellGlow)),parts:groups.map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind})),cilia:ciliaGroups.map(mesh=>upload(gl,mesh))};
+   if(nextSpec.localGroup){meshes.localShell=upload(gl,skinGrowthRig(nextSpec.localGroup.shell,nextSpec.localGroup.source));meshes.localParts=dynamicBatches({...nextSpec,parts:nextSpec.localGroup.parts,rigs:[]}).map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind}));}
  }
  rigMeshes=nextSpec.rigs;spec=nextSpec;
  const branchCount=nextSpec.rigs.filter(r=>!r.microType).length+nextSpec.parts.filter(p=>p.chain).length,ciliaCount=nextSpec.ciliaDefs.length+nextSpec.rigs.filter(r=>r.microType).length;
@@ -7111,6 +7113,7 @@ function queueViewerPreparation(direction=1){
     const result=event.data.payload;job.target=result.target;job.distance=result.distance;job.target.baseViewDistance=result.distance;job.target.emissionSites=buildEmissionSites(job.target);
     const add=raw=>{const mesh={...raw};job.resources.push(mesh);job.tasks.push({mesh,slot:0,offset:0});return mesh};
     job.targetMeshes={shell:add(result.targetMeshes.shell),parts:result.targetMeshes.parts.map(p=>({...p,mesh:add(p.mesh)})),cilia:result.targetMeshes.cilia.map(add)};
+     if(result.targetMeshes.localShell){job.targetMeshes.localShell=add(result.targetMeshes.localShell);job.targetMeshes.localParts=result.targetMeshes.localParts.map(p=>({...p,mesh:add(p.mesh)}));}
     job.batches=result.batches.map(add);
    }catch(error){failViewerPreparation(job,error)}
   };
@@ -7327,22 +7330,40 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  if(u.uBranchEnabled!==null)gl.uniform1f(u.uBranchEnabled,$('branchMotion').checked?1:0);
  gl.disable(gl.BLEND);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
  let wire=$('wire').checked;
+ const useLocal=!!(spec.localGroup&&meshes.localShell&&!viewer.morph);
+ function localCopyMatrix(t){
+  // SDF point() uses +Z, +X and -Y Euler conventions respectively.
+  const rot=t.axis==='z'?rotZ(t.angle):t.axis==='x'?rotX(t.angle):rotY(-t.angle);
+  return mul4(translate3(...t.p),mul4(rot,scale3(t.scale*(t.mirror?-1:1),t.scale*(t.mirrorY?-1:1),t.scale)));
+ }
+ function drawLocalCopies(baseModel){
+  // Every copy shares original positions, normals, vertex colours, rig IDs and time.
+  // uCopyCount=0: both Safari-compatible and full shaders evaluate LOCAL coordinates.
+  setCopyMotionUniforms(gl,u,spec.localGroup.source);
+  let first=null;
+  for(const t of spec.localGroup.copyTransforms){
+   const model=mul4(baseModel,localCopyMatrix(t));
+   const mvp=drawCopy(model,!!t.mirror!==!!t.mirrorY);
+   if(!first)first=mvp;
+  }
+  return first||mul4(pr,mul4(cam,baseModel));
+ }
  function drawCopy(model,mirrored=false){
    const mvp=mul4(pr,mul4(cam,model));
    gl.uniformMatrix4fv(u.uModel,false,model);gl.uniformMatrix4fv(u.uMvp,false,mvp);
    if(u.uMirrorSign!==null)gl.uniform1f(u.uMirrorSign,mirrored?-1:1);
    if(wire){
      gl.disable(gl.CULL_FACE);
-     if(!$('branchSolo').checked||spec.growthModel)drawUploaded(meshes.shell,1,true,0);
-     for(const pt of meshes.parts)if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,true,0);
+     if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,true,0);
+     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,true,0);
      drawGPUMotileCilia(mvp,model,true);
    }else{
      gl.disable(gl.BLEND);
      gl.enable(gl.CULL_FACE);
      gl.frontFace(mirrored?gl.CW:gl.CCW);
      gl.cullFace(gl.BACK);
-     if(!$('branchSolo').checked||spec.growthModel)drawUploaded(meshes.shell,1,false,0,0);
-     for(const pt of meshes.parts)if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
+     if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
+     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
      drawGPUMotileCilia(mvp,model,false);
      gl.frontFace(gl.CCW);
    }
@@ -7358,8 +7379,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
  const hidden=!!capturePose?.frame.hideBody;
- const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):drawCopy(mLeft,false);
- if(!hidden&&spec.__mirrorRender)drawCopy(mirrorM,true);
+ const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):(useLocal?drawLocalCopies(base):drawCopy(mLeft,false));
+ if(!hidden&&!useLocal&&spec.__mirrorRender)drawCopy(mirrorM,true);
  if(capturePose&&(capturePose.frame.tissues?.length||capturePose.frame.neck))drawNanoTissues(pr,cam,capturePose.frame,w,h);
  lastSceneViewProj=mul4(pr,cam);
  drawWorldSnow(lastSceneViewProj,!!(lens&&lens.depthTexture&&lens.dofProgram&&$('macroDof').checked&&!$('wire').checked),cam);
