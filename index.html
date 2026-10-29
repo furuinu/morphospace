@@ -7172,7 +7172,7 @@ function applyViewerMorphUniforms(u){
  for(const values of [m.patternA,m.patternB])for(const [loc,v]of values){if(loc==null||loc===u.uOpticsControl)continue;if(v.length===1)gl.uniform1f(loc,v[0]);else gl['uniform'+v.length+'fv'](loc,new Float32Array(v))}
  gl.uniform1f(u.uTextureMix,t);
  if(u.uBilateral!==null)gl.uniform1f(u.uBilateral,0);
- setCopyMotionUniforms(gl,u,t<.5?m.source.growthModel:m.target.growthModel);
+ if(typeof setCopyMotionUniforms==='function')setCopyMotionUniforms(gl,u,t<.5?m.source.growthModel:m.target.growthModel);
  const a=m.source.motionGPU,b=m.target.motionGPU;
  if(a&&b)for(const [name,key]of [['uMotionGene0','a'],['uMotionGene1','b'],['uMotionGene2','c'],['uMotionFocus','focus'],['uMotionAxis','axis']]){const v=a[key].map((x,i)=>x+(b[key][i]-x)*t);if(key==='axis'&&Math.hypot(...v)<.01)v[1]=.01;gl['uniform'+v.length+'fv'](u[name],new Float32Array(v))}
  if(m.source.biome||m.target.biome){
