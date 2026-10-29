@@ -153,13 +153,13 @@ test('new architectural traits are heritable, not merely the name of a body plan
  assert.equal(traits.migratedVersion,4);
 });
 
-test('bilateral motion is evaluated in a canonical mirrored frame throughout GPU rendering',()=>{
- assert.match(html,/uniform float uBilateral/);
- assert.match(html,/vec3 canonical=vec3\(aPos\.x\*signX,aPos\.y,aPos\.z\)/);
- assert.match(html,/vec3 p=aPos\+vec3\(delta\.x\*signX,delta\.y,delta\.z\)/);
- assert.match(html,/uBilateral>\.5\?vec3\(0\.\):biomechanics/);
- assert.match(html,/em\?\.copyLayout===1\?\[0,0,0\]/);
- assert.match(html,/em\?\.copyLayout===1\?\[0,1,0\]/);
+test('GPU applies the selected copy transform to canonical motion',()=>{
+ assert.match(html,/uniform int uCopyCount;uniform vec4 uCopyPos\[6\]/);
+ assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
+ assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
+ assert.match(html,/vec3 canonical=uCopyCount>0\?copyToSource\(aPos,copyIndex\):aPos/);
+ assert.match(html,/vec3 p=aPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.growthModel\)/);
 });
 test('bilateral source cells retain paired inner organ placement',()=>{
  assert.match(html,/if\(em\.copyLayout===1\)\{parts\.push\(\{mesh:sphere\(\[-c\[0\],c\[1\],c\[2\]\]/);
