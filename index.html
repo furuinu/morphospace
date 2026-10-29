@@ -3750,7 +3750,7 @@ function morphDescription(g){const d=g.morphDNA||{};
  const ranked=MORPH_FIELDS.map((k,i)=>({v:d[k]||0,label:MORPH_LABELS[i]})).sort((a,b)=>b.v-a.v);
  return ranked.slice(0,3).map(x=>x.label).join('・');
 }
-function morphName(g){const arch=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+(g.archetype||0));return ARCH_GRAMMARS[arch.grammar]+'・'+ARCH_SYMMETRIES[arch.mode]+(arch.mode===0?'':arch.order+'方向');
+function morphName(g){const arch=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+(g.archetype||0));return ARCH_GRAMMARS[arch.grammar]+'・自由成長形状の空間複製';
 }
 // Proper names are distinct from the descriptive morphName taxonomy.
 // Each is stable for a seed/genome; actual assigned names persist on lineage records.
