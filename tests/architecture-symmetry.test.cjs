@@ -151,3 +151,15 @@ test('new architectural traits are heritable, not merely the name of a body plan
  assert.equal(traits.migrated,true);
  assert.equal(traits.migratedVersion,2);
 });
+
+test('bilateral motion is evaluated in a canonical mirrored frame throughout GPU rendering',()=>{
+ assert.match(html,/uniform float uBilateral/);
+ assert.match(html,/vec3 canonical=vec3\(aPos\.x\*signX,aPos\.y,aPos\.z\)/);
+ assert.match(html,/vec3 p=aPos\+vec3\(delta\.x\*signX,delta\.y,delta\.z\)/);
+ assert.match(html,/uBilateral>\.5\?vec3\(0\.\):biomechanics/);
+ assert.match(html,/em\?\.copyLayout===1\?\[0,0,0\]/);
+ assert.match(html,/em\?\.copyLayout===1\?\[0,1,0\]/);
+});
+test('bilateral source cells retain paired inner organ placement',()=>{
+ assert.match(html,/if\(em\.copyLayout===1\)\{parts\.push\(\{mesh:sphere\(\[-c\[0\],c\[1\],c\[2\]\]/);
+});
