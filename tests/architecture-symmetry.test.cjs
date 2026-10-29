@@ -73,31 +73,44 @@ test('archived DNA without architectural genes resolves deterministically throug
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
 });
 
-test('population balances large living masses against open skeletal grammars',()=>{
- const result=run(function(){
-  const tally={massive:[],hollow:[],skeletal:[]},grammars=new Set();
-  for(let i=0;i<64;i++){
-   const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8),i%8),em=architectureGrowth(g);
-   const shape=normalizedArchitectureDNA(g.architectureDNA,seed,Math.floor(i/8)*8+i%8);
-   const nucleus=em.blobs.find(b=>b.kind==='nucleus');
-   const volume=nucleus?nucleus.axes.reduce((v,x)=>v*x,1):0;
-   grammars.add(shape.grammar);
-   const kind=[0,5,7,9,11].includes(shape.grammar)?'massive':shape.grammar===6?'hollow':'skeletal';
-   tally[kind].push({volume,links:em.links.length,mass:shape.mass,blobs:em.blobs.length});
+test('independent developmental genes create different shapes within one grammar',()=>{
+ const data=run(function(){
+  const radii=[],programs=new Set(),weights=[],families=new Set();
+  for(let i=0;i<90;i++){
+   const seed=80000+i*1039,g=makeFounderGenome(seed,0,0);
+   g.architectureDNA.grammar=0;families.add(g.architectureDNA.grammar);
+   const em=architectureGrowth(g),arch=em.architecture;
+   let radius=Math.max(...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes)),0);
+   programs.add(em.growthProgram);weights.push(arch.mass);radii.push(radius);
+   if(em.blobs.length>26||em.links.length>32)throw Error('developmental complexity exceeded budget');
   }
-  return {grammars:grammars.size,
-   massive:{n:tally.massive.length,avgVolume:tally.massive.reduce((n,x)=>n+x.volume,0)/tally.massive.length,
-    maxLinks:Math.max(...tally.massive.map(x=>x.links)),minVolume:Math.min(...tally.massive.map(x=>x.volume))},
-   hollow:tally.hollow.length,skeletal:tally.skeletal.length,
-   skeletalLinks:tally.skeletal.reduce((n,x)=>n+x.links,0)/tally.skeletal.length};
+  return {families:families.size,programs:programs.size,
+   minRadius:Math.min(...radii),maxRadius:Math.max(...radii),
+   minMass:Math.min(...weights),maxMass:Math.max(...weights)};
  });
- assert.equal(result.grammars,12);
- assert.ok(result.massive.n>=24,'many organisms must have a substantial central mass');
- assert.ok(result.massive.avgVolume>.5,'massive bodies must retain approximately legacy-sized nuclei');
- assert.ok(result.massive.minVolume>.3,'avoid tiny nuclei in fleshy body plans');
- assert.equal(result.massive.maxLinks,0,'soft-bodied families must grow using volumes, not thin connecting rods');
- assert.ok(result.hollow>=4);
- assert.ok(result.skeletal>=25&&result.skeletalLinks>=5,'open skeletal species must remain available');
+ assert.equal(data.families,1,'all shapes deliberately share one developmental phase');
+ assert.ok(data.programs>=4,'growth program must not be fixed by grammar');
+ assert.ok(data.maxRadius-data.minRadius>2,'same grammar must support broad and compact phenotypes');
+ assert.ok(data.maxMass-data.minMass>.75,'body volume must not be a fixed family preset');
+});
+test('emergent population retains broad reach, compact creatures and every growth mechanism',()=>{
+ const sample=run(function(){
+  const programs=new Set(),grammar=new Set(),radii=[];
+  for(let i=0;i<64;i++){
+   const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8),i%8);
+   const em=architectureGrowth(g),reach=Math.max(...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes)),0,
+    ...em.links.map(l=>Math.max(Math.hypot(...l.a),Math.hypot(...l.b))+l.radius));
+   grammar.add(em.architecture.grammar);programs.add(em.growthProgram);radii.push(reach);
+   if(em.bound>4.4)throw Error('unbounded voxel grid');
+  }
+  return {grammars:grammar.size,programs:programs.size,average:radii.reduce((a,b)=>a+b,0)/radii.length,
+   compact:radii.filter(x=>x<1.8).length,large:radii.filter(x=>x>3).length};
+ });
+ assert.equal(sample.grammars,12);
+ assert.equal(sample.programs,5);
+ assert.ok(sample.average>2.15,'average developmental reach should improve on the compressed version');
+ assert.ok(sample.compact>=3,'some quiet compact phenotypes must remain');
+ assert.ok(sample.large>=12,'large outward-growing phenotypes must remain');
 });
 test('mass gene survives crossing and missing mass in saved genomes migrates deterministically',()=>{
  const state=run(function(){
@@ -125,4 +138,18 @@ test('mirror mode keeps a bilateral body outline after tissue generation and sof
  });
  assert.equal(errors.length,12);
  for(let i=0;i<12;i++)assert.ok(errors[i]<.005,'grammar '+i+' lost its bilateral growth symmetry: '+errors[i]);
+});
+
+test('new architectural traits are heritable, not merely the name of a body plan',()=>{
+ const traits=run(function(){
+  const g=makeFounderGenome(700091,2,4),m=makeFounderGenome(179072,4,3),traits=['mass','reach','lobes','membrane','branching','cavity','polarity','anisotropy','segmentation'];
+  const child=crossoverGenome(g,m,222333,4,.8).genome.architectureDNA;
+  const saved=JSON.parse(JSON.stringify(g));delete saved.architectureDNA.version;
+  const migrated=normalizedArchitectureDNA(saved.architectureDNA,g.seed,g.style*8+g.archetype);
+  return {fields:traits.every(k=>Number.isFinite(child[k])&&child[k]>=0&&child[k]<=1),
+   migrated:traits.every(k=>Number.isFinite(migrated[k])),migratedVersion:migrated.version};
+ });
+ assert.equal(traits.fields,true);
+ assert.equal(traits.migrated,true);
+ assert.equal(traits.migratedVersion,2);
 });
