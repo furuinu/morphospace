@@ -3921,7 +3921,7 @@ function copiedAnatomy(g){
  if(layout===10){for(let i=0;i<5;i++){const a=i*2.39996;add([Math.cos(a)*(.35+i*.13),(i-2)*.19,Math.sin(a)*(.35+i*.13)],a,.62);}}
  if(layout===11){for(let i=0;i<3+Math.floor(r()*3);i++){const a=r()*TAU,dist=.28+r()*.65;add([Math.cos(a)*dist,(r()-.5)*1.25,Math.sin(a)*dist],r()*TAU,.53+r()*.29);}}
  const point=(p,t,local=0)=>{
-  let x=p[0]*(t.mirror?-1:1),y=p[1],z=p[2],a=t.angle+(local?0:(r()-.5)*arch.distortion*.2),c=Math.cos(a),s=Math.sin(a);
+  let x=p[0]*(t.mirror?-1:1),y=p[1],z=p[2],a=t.angle,c=Math.cos(a),s=Math.sin(a);
   if(t.axis==='z'){const v=x*c-y*s;y=x*s+y*c;x=v;}
   else if(t.axis==='x'){const v=y*c-z*s;z=y*s+z*c;y=v;}
   else{const v=x*c-z*s;z=x*s+z*c;x=v;}
@@ -3932,8 +3932,8 @@ function copiedAnatomy(g){
  // placement of each copy, rather than replacing anatomy with a grammar template.
  for(const t of layouts){
   const localSeed=seedRng(g.seed+blobs.length*4177+1103),jitter=arch.distortion*.16;
-  t.p=t.p.map(v=>v+(localSeed()-.5)*jitter);
-  t.scale*=.96+(localSeed()-.5)*arch.distortion*.30;
+  t.p=t.p.map(v=>v+(layout===1?0:(localSeed()-.5)*jitter));
+  t.scale*=layout===1?1:.96+(localSeed()-.5)*arch.distortion*.30;
   for(const b of base.blobs){
    const p=point(b.p,t),ex=[b.axes[0]*t.scale,b.axes[1]*t.scale,b.axes[2]*t.scale];
    const angle=Math.atan2(b.s,b.c),u=[Math.cos(angle),Math.sin(angle),0],v=[-Math.sin(angle),Math.cos(angle),0],w=[0,0,1];
