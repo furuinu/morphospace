@@ -3749,10 +3749,7 @@ function morphDescription(g){const d=g.morphDNA||{};
  const ranked=MORPH_FIELDS.map((k,i)=>({v:d[k]||0,label:MORPH_LABELS[i]})).sort((a,b)=>b.v-a.v);
  return ranked.slice(0,3).map(x=>x.label).join('・');
 }
-function morphName(g){const d=g.morphDNA||{},arch=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+(g.archetype||0));return ARCH_GRAMMARS[arch.grammar]+'・'+ARCH_SYMMETRIES[arch.mode]+(arch.mode===0?'':arch.order+'方向');
- /* previous taxonomy */
- const a=(d.radial||0)>.7?'放射':'偏在',b=(d.void||0)>.73?'空隙':(d.flat||0)>.75?'薄葉':(d.axial||0)>.72?'伸長':'胞状';
- const c=(d.branch||0)>.7?'枝体':(d.fusion||0)>.66?'融合体':'生体';return a+b+c;
+function morphName(g){const arch=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+(g.archetype||0));return ARCH_GRAMMARS[arch.grammar]+'・'+ARCH_SYMMETRIES[arch.mode]+(arch.mode===0?'':arch.order+'方向');
 }
 // Proper names are distinct from the descriptive morphName taxonomy.
 // Each is stable for a seed/genome; actual assigned names persist on lineage records.
@@ -4111,7 +4108,7 @@ function growMorphAppendages(em,g,palette,seed){
 function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGenome){
  forcedGenome.soundDNA=normalizedSoundDNA(forcedGenome.soundDNA,seed);
  forcedGenome.surfaceDNA=normalizedSurfaceDNA(forcedGenome.surfaceDNA,seed);palette.surfaceDNA=copyJSON(forcedGenome.surfaceDNA);
- const g=forcedGenome;g.architectureDNA=normalizedArchitectureDNA(g.architectureDNA,seed,g.style*8+(g.archetype||0));g.motionDNA=normalizedMotionDNA(g.motionDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);g.bioDNA=normalizedBioDNA(g.bioDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);const em=morphGrowth(g),shell=morphImplicitMesh(em,palette,g,low),r=seedRng(seed+835171),parts=[],stats={trabeculae:0,vesicles:0,tendrils:0,fins:0,ribs:0,pores:0,cilia:0,clusters:0,crystals:0};
+ const g=forcedGenome;g.architectureDNA=normalizedArchitectureDNA(g.architectureDNA,seed,g.style*8+(g.archetype||0));g.motionDNA=normalizedMotionDNA(g.motionDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);g.bioDNA=normalizedBioDNA(g.bioDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);const em=architectureGrowth(g),shell=morphImplicitMesh(em,palette,g,low),r=seedRng(seed+835171),parts=[],stats={trabeculae:0,vesicles:0,tendrils:0,fins:0,ribs:0,pores:0,cilia:0,clusters:0,crystals:0};
  // Stage 1 intentionally suppresses the v14 forest of ribs, microfilaments and organs.
  if(!low && shell.tri.length>0){
   let n=Math.floor(Math.min(3,density*2.7)*(0.35+g.morphDNA.budding*.8));
