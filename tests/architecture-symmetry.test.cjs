@@ -194,6 +194,10 @@ test('copied body shares ancestral texture and peristaltic motion before copy tr
  assert.match(html,/vec3 p=aPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
  assert.match(html,/float copyPhase=0\.0/);
  assert.match(html,/uniform vec3 uCopyCentroid/);
- assert.match(html,/vec3 offset=candidate-uCopyCentroid/);
+ assert.match(html,/uniform int uCopyLayout/);
+ assert.match(html,/uCopyLayout==1 && uCopyCount==2/);
+ assert.match(html,/copyIndex=aPos\.x>=0\.0\?1:0/);
+ assert.match(html,/uCopyLayout==4 && uCopyCount==4/);
+ assert.match(html,/vec3 center=uCopyPos\[ci\]\.xyz\+copyVectorToWorld\(uCopyCentroid,ci\)/);
  assert.match(html,/gl\.uniform3fv\(u\.uCopyCentroid/);
 });
