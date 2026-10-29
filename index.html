@@ -3913,7 +3913,11 @@ function architectureGrowth(g){
  if(plan===6)cuts.push({p:origin,axes:[.31+.18*dna.void,.46+.20*dna.void,.31+.18*dna.void],s:0,c:1});
  if(plan===11&&dna.void>.72)cuts.push({p:[arch.mode===0?0:.12,.12,.06],axes:[.20+.17*dna.void,.23+.17*dna.void,.20+.14*dna.void],s:0,c:1});
  // Preserve global growth-field bounds to avoid clipping, but cap to existing 4.4 limit.
- const all=blobs.map(b=>Math.max(...b.p.map((x,j)=>Math.abs(x)+b.axes[j])));
+ const all=blobs.map(b=>Math.max(...b.p.map((x,j)=>{
+  // A rotated lamella can reach farther than its unrotated Z radius.
+  const radius=b.frame?Math.hypot(b.axes[0]*b.frame[0][j],b.axes[1]*b.frame[1][j],b.axes[2]*b.frame[2][j]):b.axes[j];
+  return Math.abs(x)+radius;
+ })));
  for(const l of links)all.push(...[l.a,l.b].map(p=>Math.max(...p.map(v=>Math.abs(v)))+.26));
  return {blobs,links,cuts,fuse:.14+.31*arch.fusion+.11*mass,rough:(.012+.038*dna.surface)*(1-.48*mass),
   bound:Math.min(4.4,Math.max(2.0,...all)+.25),d:dna,architecture:arch};
