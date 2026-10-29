@@ -185,3 +185,12 @@ test('copy transforms propagate to the GPU deformation field',()=>{
  assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.growthModel\)/);
  assert.match(html,/setCopyMotionUniforms\(gl,u,t<\.5\?m\.source\.growthModel:m\.target\.growthModel\)/);
 });
+
+test('copied body shares ancestral texture and peristaltic motion before copy transforms',()=>{
+ assert.match(html,/vObj=canonical;vAlong=u;/);
+ assert.match(html,/vec3 peristalsis=surfaceMotion\(canonical,canonicalNormal,ancestralTime/);
+ assert.match(html,/wholeBodyWarp\(canonical\+motion\+bio\+peristalsis,ancestralTime,uMotion\*1\.42\)/);
+ assert.match(html,/shifted=branchJointWarp\(shifted,anchorCanonical/);
+ assert.match(html,/vec3 p=aPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
+ assert.match(html,/float copyPhase=float\(copyIndex\)\*0\.055/);
+});
