@@ -6,10 +6,10 @@ const ctx=vm.createContext({document:{querySelectorAll:()=>[]},TextEncoder,TextD
 vm.runInContext(scripts[0],ctx);
 vm.runInContext(scripts[2].slice(0,scripts[2].indexOf("const canvas=$('glview'),gl=")),ctx);
 const run=fn=>vm.runInContext('('+fn.toString()+')()',ctx,{timeout:120000});
-test('twelve grammars each produce nonempty bounded implicit growth geometry',()=>{
+test('nine grammars each produce nonempty bounded implicit growth geometry',()=>{
  const families=run(function(){
   const results=[];
-  for(let i=0;i<12;i++){
+  for(let i=0;i<9;i++){
    const seed=731029+i*197,genome=makeFounderGenome(seed,i%8,i%8);
    genome.architectureDNA={...genome.architectureDNA,grammar:i,mode:1,order:4};
    const palette=pickPalette(seed,genome.colorDNA,genome.patternDNA);
@@ -20,13 +20,13 @@ test('twelve grammars each produce nonempty bounded implicit growth geometry',()
   }
   return results;
  });
- assert.equal(families.length,12);
- assert.equal(new Set(families.map(x=>x.code)).size,12);
+ assert.equal(families.length,9);
+ assert.equal(new Set(families.map(x=>x.code)).size,9);
  for(const a of families){
   assert.ok(a.tri>8,'grammar '+a.id+' generated no visible 3D body');
   assert.ok(a.blobs<=26&&a.links<=32,'grammar '+a.id+' exceeded its complexity budget');
   assert.ok(a.bounds>=2&&a.bounds<=4.4);
-  assert.equal(a.mirror,![2,3,4].includes(a.id),'rotational symmetries must not be doubled by the legacy mirror pass');
+  assert.equal(a.mirror,false,'the selected copy rule alone must control final geometry');
   assert.ok(a.finite,'grammar '+a.id+' generated nonfinite positions');
  }
 });
@@ -40,7 +40,7 @@ test('bilateral, threefold and 3D vertex symmetry are distinct bounded direction
  assert.equal(cases[1].points.every(p=>p[1]===0),true);
  assert.ok(cases[5].points.some(p=>p[1]!==0),'tetrahedral must be truly 3D');
 });
-test('founder distribution covers twelve grammars and crossover transmits structural genes',()=>{
+test('founder distribution covers nine grammars and crossover transmits structural genes',()=>{
  const data=run(function(){
   const all=Array.from({length:64},(_,i)=>makeFounderGenome(120001+i*1237,Math.floor(i/8),i%8));
   const grammars=new Set(all.map(g=>g.architectureDNA.grammar));
@@ -51,11 +51,11 @@ test('founder distribution covers twelve grammars and crossover transmits struct
    const d=result.genome.architectureDNA;
    if(result.inherited.architecture)inherited++;
    mutations+=result.mutationLog.filter(x=>x.field.startsWith('architectureDNA.')).length;
-   if(d.grammar>=0&&d.grammar<12&&d.order>=2&&d.order<=8)valid++;
+   if(d.grammar>=0&&d.grammar<9&&d.order>=2&&d.order<=8)valid++;
   }
   return {grammars:grammars.size,symmetries:symmetries.size,inherited,mutations,valid};
  });
- assert.equal(data.grammars,12);
+ assert.equal(data.grammars,9);
  assert.ok(data.symmetries>=5);
  assert.equal(data.inherited,35);
  assert.equal(data.valid,35);
@@ -67,11 +67,11 @@ test('archived DNA without architectural genes resolves deterministically throug
   const a=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+g.archetype),b=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+g.archetype);
   const sp=makeSpecimen(g.seed,g.style,pickPalette(g.seed,g.colorDNA,g.patternDNA),true,null,.7,.84,.75,g.archetype,null,copyJSON(g));
   return {same:JSON.stringify(a)===JSON.stringify(b),migrated:!!sp.genome.architectureDNA,
-   renderOnce:sp.__mirrorRender===true};
+   renderOnce:sp.__mirrorRender===false};
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{same:true,migrated:true,renderOnce:true});
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
- assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:!\[2,3,4\]\.includes\(spec\.growthModel\?\.copyLayout\)\}/);
+ assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:false\}/);
 });
 
 test('one copy layout retains varied ancestral free-growth shapes and bounded complexity',()=>{
@@ -99,7 +99,7 @@ test('population exercises distinct copy layouts without exceeding mobile SDF bo
   const layouts=new Set(),counts=[],range=[];
   for(let i=0;i<96;i++){
    const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8)%8,i%8);
-   g.architectureDNA.grammar=i%12;
+   g.architectureDNA.grammar=i%9;
    const em=architectureGrowth(g);
    layouts.add(em.copyLayout);
    counts.push([em.blobs.length,em.links.length,em.bound,em.cuts.length]);
@@ -109,7 +109,7 @@ test('population exercises distinct copy layouts without exceeding mobile SDF bo
    safe:counts.every(x=>x[0]>0&&x[0]<=26&&x[1]<=32&&x[2]>=2&&x[2]<=4.4&&x[3]>=0),
    variation:Math.max(...range)-Math.min(...range)};
  });
- assert.equal(data.layouts,12);
+ assert.equal(data.layouts,9);
  assert.equal(data.safe,true,'all copy layouts must respect mobile memory budgets');
  assert.ok(data.variation>.3,'copy layouts must produce differing extents');
 });
@@ -125,7 +125,7 @@ test('mass gene survives crossing and missing mass in saved genomes migrates det
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{deterministic:true,inRange:true,inheritedMass:true});
 });
-test('Rorschach bilateral layout retains a recognizable mirrored silhouette with bounded rim variation',()=>{
+test('bilateral layout remains symmetric after fusing the source and applying its copy transform',()=>{
  const errors=run(function(){
   const errors=[];
   for(let i=0;i<12;i++){
@@ -137,7 +137,7 @@ test('Rorschach bilateral layout retains a recognizable mirrored silhouette with
   return errors;
  });
  assert.equal(errors.length,12);
- for(const e of errors)assert.ok(e<.035,'mirrored anatomy exceeds subtle rim-variation budget: '+e);
+ for(const e of errors)assert.ok(e<.035,'bilateral fused source exceeds symmetry budget: '+e);
 });
 test('new architectural traits are heritable, not merely the name of a body plan',()=>{
  const traits=run(function(){
@@ -169,4 +169,11 @@ test('threefold is a planar 120-degree rotational copy and four-way is doubly mi
  assert.match(html,/if\(layout===2\)\{for\(let i=0;i<3;i\+\+\)/);
  assert.match(html,/if\(layout===4\)\{for\(let j=0;j<2;j\+\+\)for\(let i=0;i<2;i\+\+\)/);
  assert.match(html,/if\(em\.copyLayout===4\)\{x=Math\.abs\(x\);y=Math\.abs\(y\);\}/);
+});
+
+test('the source SDF is fused before one of nine spatial-copy operators',()=>{
+ assert.match(html,/fusedSource:\{\.\.\.base,copyLayout:0\}/);
+ assert.match(html,/copyTransforms:layouts\.map/);
+ assert.match(html,/if\(em\.fusedSource&&em\.copyTransforms\)/);
+ assert.equal(run(function(){return COPY_LAYOUTS.length}),9);
 });
