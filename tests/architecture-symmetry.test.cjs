@@ -201,3 +201,39 @@ test('copied body shares ancestral texture and peristaltic motion before copy tr
  assert.match(html,/vec3 center=uCopyPos\[ci\]\.xyz\+copyVectorToWorld\(uCopyCentroid,ci\)/);
  assert.match(html,/gl\.uniform3fv\(u\.uCopyCentroid/);
 });
+
+test('local body is generated once and all symmetry copies retain its palette, motion and emission landmarks',()=>{
+ const d=run(function(){
+  const seed=731029,genome=makeFounderGenome(seed,1,1);
+  genome.architectureDNA={...genome.architectureDNA,grammar:1,distortion:0};
+  const palette=pickPalette(seed,genome.colorDNA,genome.patternDNA);
+  const sp=makeSpecimen(seed,genome.style,palette,false,null,.7,.84,.75,genome.archetype,null,copyJSON(genome));
+  const g=sp.localGroup;
+  if(!g)return null;
+  const t0=g.copyTransforms[0],t1=g.copyTransforms[1],p=g.shell.data;
+  const x=p[0],y=p[1],z=p[2];
+  const left=[t0.p[0]+t0.scale*x,t0.p[1]+t0.scale*y,t0.p[2]+t0.scale*z];
+  const right=[t1.p[0]-t1.scale*x,t1.p[1]+t1.scale*y,t1.p[2]+t1.scale*z];
+  return {copies:g.copyTransforms.length,source:g.source.copyLayout,localTriangles:g.shell.tri.length/3,
+   budgetedGlobal:sp.shell.tri.length/3,bound:sp.growthModel.bound,
+   symmetrical:Math.abs(left[0]+right[0])<1e-5&&Math.abs(left[1]-right[1])<1e-5&&Math.abs(left[2]-right[2])<1e-5,
+   localPalette:sp.palette.chromaticFrame.growth===g.source,sharedClock:sp.motionGPU.a[2]===sp.genome.motionDNA.tempo};
+ });
+ assert.ok(d,'local group should be retained on a full-resolution organism');
+ assert.equal(d.copies,2);
+ assert.equal(d.source,0);
+ assert.ok(d.localTriangles>100);
+ assert.ok(d.budgetedGlobal>0);
+ assert.equal(d.symmetrical,true,'identical source vertex must be reflected by the model transform');
+ assert.equal(d.localPalette,true,'pigment frame must belong to local source');
+});
+test('local symmetry draw is shared by Safari compatibility and full shaders',()=>{
+ assert.match(html,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&!viewer\.morph\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ assert.match(html,/for\(const t of spec\.localGroup\.copyTransforms\)/);
+ assert.match(html,/drawCopy\(model,!!t\.mirror!==!!t\.mirrorY\)/);
+ assert.match(html,/drawUploaded\(useLocal\?meshes\.localShell:meshes\.shell/);
+ assert.match(html,/data=\(sp\.localGroup\?\.shell\|\|sp\.shell\)\.data/);
+ assert.match(html,/const srcVert=compatibility\?compatibleVert:vert/);
+ assert.match(html,/vColor=aColor;vRole=role;vObj=aPos;/);
+});
