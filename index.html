@@ -3802,7 +3802,7 @@ const ARCH_GROWTH_FIELDS=['mass','reach','lobes','membrane','branching','cavity'
 function architectureFounderDNA(seed,index=0){
  const r=seedRng(seed+329771),choice=ARCH_SYM_CHOICES[(index*5+Math.floor(r()*8))%8],core=ARCH_SYM_CHOICES[(index*3+2+Math.floor(r()*8))%8];
  // Independently sampled developmental axes: no grammar can mandate a size or organ.
- const d={version:2,grammar:index%9,mode:choice[0],order:choice[1],coreMode:core[0],coreOrder:core[1],
+ const d={version:3,grammar:index%9,mode:choice[0],order:choice[1],coreMode:core[0],coreOrder:core[1],
   chirality:+(r()*1.7-.85).toFixed(4),distortion:+(.03+r()*.19).toFixed(4),
   fusion:+(.20+r()*.67).toFixed(4),composite:r()<.40?1:0};
  for(const key of ARCH_GROWTH_FIELDS)d[key]=+r().toFixed(4);
@@ -3829,7 +3829,7 @@ function normalizedArchitectureDNA(data,seed,index=0){
 }
 function architectureCrossoverDNA(A,B,seed,index,strength,log,inherited){
  const r=seedRng(seed+769417),a=normalizedArchitectureDNA(A,seed,index),b=normalizedArchitectureDNA(B,seed+1,index+4),left=r()<.5;
- const p=left?a:b,q=left?b:a,d={...p,version:2};
+ const p=left?a:b,q=left?b:a,d={...p,version:3};
  inherited.architecture=left?'A':'B';
  if(r()<.13+.18*strength){d.grammar=(d.grammar+1+Math.floor(r()*8))%9;log.push({field:'architectureDNA.grammar',to:d.grammar});}
  if(r()<.36+.28*strength){d.mode=q.mode;d.order=q.order;inherited.architectureSymmetry=left?'B':'A';}
