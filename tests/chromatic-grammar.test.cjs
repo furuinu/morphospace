@@ -14,7 +14,7 @@ vm.runInContext(core,context);
 const run=code=>vm.runInContext(code,context,{timeout:120000});
 const plain=x=>JSON.parse(JSON.stringify(x));
 
-test('200 source palettes retain six pigments and reproducible, diverse spatial grammars',()=>{
+test('300 source palettes retain six pigments and reproducible, diverse spatial grammars',()=>{
  const result=run(`(()=>{
   const seen=new Set();let invalid=0;
   for(let seed=1;seed<=512;seed++){
@@ -26,7 +26,7 @@ test('200 source palettes retain six pigments and reproducible, diverse spatial 
   }
   return {palettes:COLOR_TABLE.length,grammars:seen.size,invalid};
  })()`);
- assert.deepEqual(plain(result),{palettes:200,grammars:14,invalid:0});
+ assert.deepEqual(plain(result),{palettes:300,grammars:14,invalid:0});
 });
 
 test('pattern category controls still affect grammar selection',()=>{
