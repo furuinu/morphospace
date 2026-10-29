@@ -26,7 +26,7 @@ test('twelve grammars each produce nonempty bounded implicit growth geometry',()
   assert.ok(a.tri>8,'grammar '+a.id+' generated no visible 3D body');
   assert.ok(a.blobs<=26&&a.links<=32,'grammar '+a.id+' exceeded its complexity budget');
   assert.ok(a.bounds>=2&&a.bounds<=4.4);
-  assert.equal(a.mirror,false,'one generated body should render once');
+  assert.equal(a.mirror,true,'every growth layout must retain the historical bilateral mirror pass');
   assert.ok(a.finite,'grammar '+a.id+' generated nonfinite positions');
  }
 });
@@ -67,10 +67,11 @@ test('archived DNA without architectural genes resolves deterministically throug
   const a=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+g.archetype),b=normalizedArchitectureDNA(g.architectureDNA,g.seed,g.style*8+g.archetype);
   const sp=makeSpecimen(g.seed,g.style,pickPalette(g.seed,g.colorDNA,g.patternDNA),true,null,.7,.84,.75,g.archetype,null,copyJSON(g));
   return {same:JSON.stringify(a)===JSON.stringify(b),migrated:!!sp.genome.architectureDNA,
-   renderOnce:sp.__mirrorRender===false};
+   renderOnce:sp.__mirrorRender===true};
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{same:true,migrated:true,renderOnce:true});
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
+ assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:true\}/);
 });
 
 test('one copy layout retains varied ancestral free-growth shapes and bounded complexity',()=>{
