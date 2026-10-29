@@ -37,3 +37,12 @@ test('DNA startup uses a spatial canvas, and hidden navigation moves the title t
  assert.match(html, /\.overlay\.viewer-full\.viewer-nav-hidden \.viewer-brand\{\s*top:calc\(12px/);
  assert.match(html, /<div class="viewer-zoom"><span class="viewer-zoom-lens"/);
 });
+
+test('DNA startup displays the same build version as the home header',()=>{
+ const splash=html.match(/<div class="boot-version" aria-label="バージョン">(v\d+\.\d+\.\d+(?:\.\d+\.\d+)?)<\/div>/);
+ const header=html.match(/<span class="version-label">(v\d+\.\d+\.\d+(?:\.\d+\.\d+)?)<\/span>/);
+ assert.ok(splash,'loading splash must display the version without running JavaScript');
+ assert.ok(header,'home version label must exist for the deploy stamper');
+ assert.equal(splash[1],header[1]);
+ assert.match(html, /#bootSplash \.boot-version\{[^}]*font-size:10px/);
+});
