@@ -9032,10 +9032,14 @@ function genomeDistance(a,b){const pa=normalizedPatternDNA(a.patternDNA,a.seed||
  const ca=(a.colorDNA?.rows||[]).join('-')+'|'+(a.colorDNA?.cols||[]).flat().join('-'); const cb=(b.colorDNA?.rows||[]).join('-')+'|'+(b.colorDNA?.cols||[]).flat().join('-'); if(ca===cb)d-=.28; else d+=.12; if(a.style!==b.style)d+=.16; if(a.archetype!==b.archetype)d+=.22;
   const aa=normalizedArchitectureDNA(a.architectureDNA,a.seed,a.style*8+(a.archetype||0));
   const bb=normalizedArchitectureDNA(b.architectureDNA,b.seed,b.style*8+(b.archetype||0));
-  d+=(aa.grammar!==bb.grammar?2.7:0)+(aa.mode!==bb.mode?1.55:0)+(aa.order!==bb.order?.85:0);
-  if(aa.composite!==bb.composite)d+=.32;
-  for(const key of ['chirality','distortion','fusion'])d+=Math.abs(aa[key]-bb[key])*.45;
-  for(const k of ARCH_GROWTH_FIELDS)d+=Math.abs(aa[k]-bb[k])*.52;
+  // The grammar label is not a silhouette. Select for real developmental contrast.
+  d+=(aa.grammar!==bb.grammar?.12:0)+(aa.mode!==bb.mode?.65:0)+(aa.order!==bb.order?.32:0);
+  if(aa.composite!==bb.composite)d+=.16;
+  for(const key of ['chirality','distortion','fusion'])d+=Math.abs(aa[key]-bb[key])*.36;
+  for(const k of ARCH_GROWTH_FIELDS){
+   const weight=k==='reach'||k==='mass'?1.25:k==='membrane'||k==='branching'||k==='cavity'?1.00:.72;
+   d+=Math.abs(aa[k]-bb[k])*weight;
+  }
   if(a.morphDNA&&b.morphDNA)for(const key of ['axial','flat','radial','branch','fusion','void','lobation','twist','budding','extension','lamella','polarity'])d+=Math.abs((a.morphDNA[key]||0)-(b.morphDNA[key]||0))*.20;
   return d;}
 function noveltyScore(candidate,existing){if(!existing.length)return 999; let m=Infinity; for(const g of existing){const d=genomeDistance(candidate,g); if(d<m)m=d;} return m;}
