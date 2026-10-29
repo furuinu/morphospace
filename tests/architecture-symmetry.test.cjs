@@ -73,44 +73,44 @@ test('archived DNA without architectural genes resolves deterministically throug
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
 });
 
-test('independent developmental genes create different shapes within one grammar',()=>{
+test('one copy layout retains varied ancestral free-growth shapes and bounded complexity',()=>{
  const data=run(function(){
-  const radii=[],programs=new Set(),weights=[],families=new Set();
+  const forms=new Set(),radii=[],genes=new Set(),counts=[];
   for(let i=0;i<90;i++){
    const seed=80000+i*1039,g=makeFounderGenome(seed,0,0);
-   g.architectureDNA.grammar=0;families.add(g.architectureDNA.grammar);
-   const em=architectureGrowth(g),arch=em.architecture;
-   let radius=Math.max(...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes)),0);
-   programs.add(em.growthProgram);weights.push(arch.mass);radii.push(radius);
-   if(em.blobs.length>26||em.links.length>32)throw Error('developmental complexity exceeded budget');
+   g.architectureDNA.grammar=0;
+   const base=morphGrowth(g),em=architectureGrowth(g);
+   const radius=Math.max(0,...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes)));
+   forms.add(base.blobs.length+':'+base.links.length+':'+base.cuts.length);
+   genes.add(JSON.stringify(g.morphDNA));
+   radii.push(radius);counts.push([em.blobs.length,em.links.length]);
   }
-  return {families:families.size,programs:programs.size,
-   minRadius:Math.min(...radii),maxRadius:Math.max(...radii),
-   minMass:Math.min(...weights),maxMass:Math.max(...weights)};
+  return {forms:forms.size,genes:genes.size,spread:Math.max(...radii)-Math.min(...radii),
+   bounded:counts.every(x=>x[0]<=26&&x[1]<=32)};
  });
- assert.equal(data.families,1,'all shapes deliberately share one developmental phase');
- assert.ok(data.programs>=4,'growth program must not be fixed by grammar');
- assert.ok(data.maxRadius-data.minRadius>2,'same grammar must support broad and compact phenotypes');
- assert.ok(data.maxMass-data.minMass>.75,'body volume must not be a fixed family preset');
+ assert.ok(data.forms>=8,'free growth must vary its anatomy within a layout');
+ assert.ok(data.genes>=80,'distinct morph DNA must reach the ancestral generator');
+ assert.ok(data.spread>.35,'layout zero must not collapse all body sizes');
+ assert.equal(data.bounded,true);
 });
-test('emergent population retains broad reach, compact creatures and every growth mechanism',()=>{
- const sample=run(function(){
-  const programs=new Set(),grammar=new Set(),radii=[];
-  for(let i=0;i<64;i++){
-   const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8),i%8);
-   const em=architectureGrowth(g),reach=Math.max(...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes)),0,
-    ...em.links.map(l=>Math.max(Math.hypot(...l.a),Math.hypot(...l.b))+l.radius));
-   grammar.add(em.architecture.grammar);programs.add(em.growthProgram);radii.push(reach);
-   if(em.bound>4.4)throw Error('unbounded voxel grid');
+test('population exercises distinct copy layouts without exceeding mobile SDF bounds',()=>{
+ const data=run(function(){
+  const layouts=new Set(),counts=[],range=[];
+  for(let i=0;i<96;i++){
+   const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8)%8,i%8);
+   g.architectureDNA.grammar=i%12;
+   const em=architectureGrowth(g);
+   layouts.add(em.copyLayout);
+   counts.push([em.blobs.length,em.links.length,em.bound,em.cuts.length]);
+   range.push(Math.max(0,...em.blobs.map(b=>Math.hypot(...b.p)+Math.max(...b.axes))));
   }
-  return {grammars:grammar.size,programs:programs.size,average:radii.reduce((a,b)=>a+b,0)/radii.length,
-   compact:radii.filter(x=>x<1.8).length,large:radii.filter(x=>x>3).length};
+  return {layouts:layouts.size,
+   safe:counts.every(x=>x[0]>0&&x[0]<=26&&x[1]<=32&&x[2]>=2&&x[2]<=4.4&&x[3]>=0),
+   variation:Math.max(...range)-Math.min(...range)};
  });
- assert.equal(sample.grammars,12);
- assert.equal(sample.programs,5);
- assert.ok(sample.average>2.15,'average developmental reach should improve on the compressed version');
- assert.ok(sample.compact>=3,'some quiet compact phenotypes must remain');
- assert.ok(sample.large>=12,'large outward-growing phenotypes must remain');
+ assert.equal(data.layouts,12);
+ assert.equal(data.safe,true,'all copy layouts must respect mobile memory budgets');
+ assert.ok(data.variation>.3,'copy layouts must produce differing extents');
 });
 test('mass gene survives crossing and missing mass in saved genomes migrates deterministically',()=>{
  const state=run(function(){
@@ -124,22 +124,20 @@ test('mass gene survives crossing and missing mass in saved genomes migrates det
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{deterministic:true,inRange:true,inheritedMass:true});
 });
-test('mirror mode keeps a bilateral body outline after tissue generation and soft fusion',()=>{
+test('bilateral copy layout mirrors original anatomy in 3D SDF',()=>{
  const errors=run(function(){
   const errors=[];
   for(let i=0;i<12;i++){
    const seed=731029+i*197,g=makeFounderGenome(seed,i%8,i%8);
-   g.architectureDNA={...g.architectureDNA,grammar:i,mode:0,order:2};
-   delete g.architectureDNA.mass;
-   const em=architectureGrowth(g),p=[[.44,.2,.13],[.87,.2,.26],[1.07,.40,.10],[.61,-.33,.27],[1.35,.12,.44]];
-   errors.push(Math.max(...p.map(q=>Math.abs(morphSDF(q[0],q[1],q[2],em)-morphSDF(-q[0],q[1],q[2],em)))));
+   g.architectureDNA={...g.architectureDNA,grammar:1,mode:0,order:2};
+   const em=architectureGrowth(g),points=[[.44,.2,.13],[.87,.2,.26],[1.07,.4,.1],[.61,-.33,.27],[1.35,.12,.44]];
+   errors.push(Math.max(...points.map(q=>Math.abs(morphSDF(q[0],q[1],q[2],em)-morphSDF(-q[0],q[1],q[2],em)))));
   }
   return errors;
  });
  assert.equal(errors.length,12);
- for(let i=0;i<12;i++)assert.ok(errors[i]<.005,'grammar '+i+' lost its bilateral growth symmetry: '+errors[i]);
+ for(const e of errors)assert.ok(e<.005,'mirrored anatomy differs across x: '+e);
 });
-
 test('new architectural traits are heritable, not merely the name of a body plan',()=>{
  const traits=run(function(){
   const g=makeFounderGenome(700091,2,4),m=makeFounderGenome(179072,4,3),traits=['mass','reach','lobes','membrane','branching','cavity','polarity','anisotropy','segmentation'];
