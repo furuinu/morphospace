@@ -154,7 +154,7 @@ test('new architectural traits are heritable, not merely the name of a body plan
 });
 
 test('GPU applies the selected copy transform to canonical motion',()=>{
- assert.match(html,/uniform int uCopyCount;uniform vec4 uCopyPos\[6\]/);
+ assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[6\]/);
  assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
  assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
  assert.match(html,/vec3 canonical=uCopyCount>0\?copyToSource\(aPos,copyIndex\):aPos/);
@@ -179,7 +179,7 @@ test('the source SDF is fused before one of five spatial-copy operators',()=>{
 });
 
 test('copy transforms propagate to the GPU deformation field',()=>{
- assert.match(html,/uniform int uCopyCount;uniform vec4 uCopyPos\[6\]/);
+ assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[6\]/);
  assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
  assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
  assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.growthModel\)/);
