@@ -150,7 +150,7 @@ test('new architectural traits are heritable, not merely the name of a body plan
  });
  assert.equal(traits.fields,true);
  assert.equal(traits.migrated,true);
- assert.equal(traits.migratedVersion,2);
+ assert.equal(traits.migratedVersion,3);
 });
 
 test('bilateral motion is evaluated in a canonical mirrored frame throughout GPU rendering',()=>{
