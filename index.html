@@ -3962,9 +3962,9 @@ function copiedAnatomy(g){
 function architectureGrowth(g){return copiedAnatomy(g);}
 
 function morphSDF(x,y,z,em){
- // Fold the SDF domain instead of sampling a second reflected mesh: also
- // eliminates smooth-union order bias between the positive/negative lobes.
- // Each transformed copy is evaluated in full 3D; no global mirror fold.
+ // The bilateral copy is exactly symmetric, including fused voids and relief.
+ // Evaluate the positive half-space to prevent asymmetric union order.
+ if(em.copyLayout===1)x=Math.abs(x);
  let acc=1e4;const d=em.d;
  for(let i=0;i<em.blobs.length;i++){
   const b=em.blobs[i],dx=x-b.p[0],dy=y-b.p[1],dz=z-b.p[2];
