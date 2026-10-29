@@ -3974,11 +3974,22 @@ function architectureGrowth(g){
   return Math.abs(x)+v;
  })));
  for(const l of links)all.push(Math.max(...l.a.map(v=>Math.abs(v)),...l.b.map(v=>Math.abs(v)))+l.radius);
- return {blobs,links,cuts,fuse:.10+.32*arch.fusion+.07*mass,rough:.014+.046*d.surface,
-  bound:Math.min(4.4,Math.max(2.0,...all)+.20),d,architecture:arch,
+ // Even long probes must fit inside the bounded mobile voxel field.
+ // Scale the *whole anatomy*, never shorten individual branches independently.
+ const gross=Math.max(2.0,...all)+.20,fit=gross>4.25?4.25/gross:1;
+ if(fit<1){
+  for(const b of blobs){b.p=b.p.map(v=>v*fit);b.axes=b.axes.map(v=>v*fit);}
+  for(const l of links){l.a=l.a.map(v=>v*fit);l.b=l.b.map(v=>v*fit);l.radius*=fit;}
+  for(const c of cuts){c.p=c.p.map(v=>v*fit);c.axes=c.axes.map(v=>v*fit);}
+ }
+ return {blobs,links,cuts,fuse:(.10+.32*arch.fusion+.07*mass)*fit,rough:(.014+.046*d.surface)*fit,
+  bound:Math.min(4.4,Math.max(2.0,gross*fit)),d,architecture:arch,
   growthProgram:dominant,secondaryProgram:secondary};
 }
 function morphSDF(x,y,z,em){
+ // Fold the SDF domain instead of sampling a second reflected mesh: also
+ // eliminates smooth-union order bias between the positive/negative lobes.
+ if(em.architecture?.mode===0)x=Math.abs(x);
  let acc=1e4;const d=em.d;
  for(let i=0;i<em.blobs.length;i++){
   const b=em.blobs[i],dx=x-b.p[0],dy=y-b.p[1],dz=z-b.p[2];
@@ -6221,7 +6232,7 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepa
  if(updateMeta){applyEmissionDNAtoUI(getSpecEmissionDNA(spec));const seed=spec.seed;$('index').textContent='SPECIMEN / '+String(selected+1).padStart(2,'0')+' ・ SEED '+seed;
  $('name').textContent=recordDisplayName(currentIndividual())||morphName(spec.genome);
  const described=currentIndividual()||{seed:spec.seed};MorphospaceEcology.ensure(described);const tax=CaptureShare.taxonomy(described);$('scientificName').textContent=tax.scientificName;$('taxonomicLine').textContent=tax.line;$('description').textContent=tax.description;
- $('morphologyInfo').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。12種類の成長文法と対称性DNAを組み合わせて単一立体を生成。左右対称・三つ巴・4/6/8方向・立体頂点対称を選び、組織成長・融合・空隙で形成します。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
+ $('morphologyInfo').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。複数の独立した成長作用をDNAで混成して単一立体を生成。成長相が同じでも、塊・膜・枝・中空構造・長い張り出しの比率は個体ごとに異なります。左右対称・三つ巴・4/6/8方向・立体頂点対称にも対応します。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
  const composition=spec.palette||pickPalette(seed,spec.genome.colorDNA,spec.genome.patternDNA);
  $('palette').innerHTML=composition.hex.map(c=>'<i style="background:'+c+'"></i>').join('');
  if($('paletteDesignInfo')&&composition.design){
