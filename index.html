@@ -4229,7 +4229,7 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  if(!low){
   // Highly folded genomes may exceed the 16-bit index budget. Reduce tessellation
   // only for those specimens instead of failing the entire gallery/observation.
-  for(let n=resolution;n>=19;n-=4){
+  for(let n=resolution;n>=19;n=Math.max(19,n-4)){
    try{localShell=morphImplicitMesh(source,palette,g,false,n);break;}
    catch(error){
     if(!String(error?.message||error).includes('成長メッシュが頂点上限')||n<=19)throw error;
