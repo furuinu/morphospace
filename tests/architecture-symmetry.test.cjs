@@ -237,3 +237,12 @@ test('local symmetry draw is shared by Safari compatibility and full shaders',()
  assert.match(html,/const srcVert=compatibility\?compatibleVert:vert/);
  assert.match(html,/vColor=aColor;vRole=role;vObj=aPos;/);
 });
+
+test('high-fidelity instance tessellation follows copy budget and safely falls back',()=>{
+ assert.match(html,/const resolution=copyCount<=2\?39:copyCount===3\?35:copyCount===4\?33:29/);
+ assert.match(html,/for\(let n=resolution;n>=19;n=Math\.max\(19,n-4\)\)/);
+ assert.match(html,/localShell=morphImplicitMesh\(source,palette,g,false,n\)/);
+ assert.match(html,/成長メッシュが頂点上限/);
+ assert.match(html,/if\(!low\)\{/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+});
