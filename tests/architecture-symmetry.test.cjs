@@ -70,7 +70,7 @@ test('archived DNA without architectural genes resolves deterministically throug
    renderOnce:sp.__mirrorRender===false};
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{same:true,migrated:true,renderOnce:true});
- assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
+ assert.match(html,/if\(!hidden&&!useLocal&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
  assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:false\}/);
 });
 
