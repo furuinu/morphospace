@@ -5418,12 +5418,13 @@ const frag300='#version 300 es\n'+frag.replace('precision mediump float;','preci
 const compatibleVert=`attribute vec3 aPos;attribute vec3 aNormal;attribute vec3 aColor;
 attribute vec4 aAnchor;attribute vec4 aParams;
 uniform mat4 uMvp;uniform mat4 uModel;
-uniform float uCamera;uniform vec3 uCameraPos;uniform float uTime;uniform float uMotion;uniform mediump float uGlowPass;
+uniform float uCamera;uniform vec3 uCameraPos;uniform float uTime;uniform float uMotion;uniform float uBranchEnabled;uniform mediump float uGlowPass;
 varying mediump vec3 vNormal;varying mediump vec3 vColor;varying mediump vec3 vView;
 varying mediump float vRole;varying mediump vec2 vGlow;varying mediump vec3 vObj;varying mediump float vAlong;
 ${motionGrammarGLSL}
 ${biomechanicsGLSL}
 ${wholeBodyGLSL}
+${branchBendGLSL.replace('uniform float uMirrorSign;','')}
 ${captureWarpGLSL}
 ${surfaceMorphVertexGLSL}
 void main(){
@@ -5433,6 +5434,7 @@ void main(){
  vec3 movement=developmentalMotion(aPos,n,role,phase,clamp(aParams.y,0.0,1.0),uTime,uMotion*tissueGain);
  float tissuePressure=1.+.25*clamp(dot(uBioPressure,vec4(.25)),-1.,1.);
  vec3 p=wholeBodyWarp(aPos+movement+biomechanics(aPos,n,role)*tissueGain+surfaceMotion(aPos,n,uTime,uMotion)*tissueGain*tissuePressure,uTime,uMotion);
+ p=branchJointWarp(p,aAnchor.xyz,clamp(aParams.y,0.0,1.0),phase,role,uTime,uMotion*uBranchEnabled*1.72);
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n+movement*.16,0.0)).xyz);
@@ -6309,11 +6311,11 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepa
  }
  rigMeshes=nextSpec.rigs;spec=nextSpec;
  const branchCount=nextSpec.rigs.filter(r=>!r.microType).length+nextSpec.parts.filter(p=>p.chain).length,ciliaCount=nextSpec.ciliaDefs.length+nextSpec.rigs.filter(r=>r.microType).length;
- $('branchInspectInfo').textContent='外皮の大域ねじれ・湾曲をGPUで再生 / 成長軸 '+(nextSpec.growthModel?.links?.length||0)+'本'+(branchCount?' / 分離枝 '+branchCount+'本':'')+ (ciliaCount?' / 微細構造 '+ciliaCount+'本':'');spec.emissionSites=spec.emissionSites||buildEmissionSites(spec);spec.baseViewDistance=nextView;spec.viewDistance=preserveView&&oldView?oldView:nextView;
+ $('branchInspectInfo').textContent='ローカル生体を鏡像・回転コピー / 成長軸 '+(nextSpec.growthModel?.links?.length||0)+'本'+(branchCount?' / 分離枝 '+branchCount+'本':'')+ (ciliaCount?' / 微細構造 '+ciliaCount+'本':'');spec.emissionSites=spec.emissionSites||buildEmissionSites(spec);spec.baseViewDistance=nextView;spec.viewDistance=preserveView&&oldView?oldView:nextView;
  if(updateMeta){applyEmissionDNAtoUI(getSpecEmissionDNA(spec));const seed=spec.seed;$('index').textContent='SPECIMEN / '+String(selected+1).padStart(2,'0')+' ・ SEED '+seed;
  $('name').textContent=recordDisplayName(currentIndividual())||morphName(spec.genome);
  const described=currentIndividual()||{seed:spec.seed};MorphospaceEcology.ensure(described);const tax=CaptureShare.taxonomy(described);$('scientificName').textContent=tax.scientificName;$('taxonomicLine').textContent=tax.line;$('description').textContent=tax.description;
- $('morphologyInfo').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。複数の独立した成長作用をDNAで混成して単一立体を生成。成長相が同じでも、塊・膜・枝・中空構造・長い張り出しの比率は個体ごとに異なります。左右対称・三つ巴・4/6/8方向・立体頂点対称にも対応します。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
+ $('morphologyInfo').textContent=(spec.morphology?.name||morphName(spec.genome))+' ／ '+(spec.morphology ? '発生形態：'+spec.morphology.description+'。成長核 '+spec.morphology.centres+' / 成長抑制場 '+spec.morphology.cavities+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形。生体原型を生成後、体表模様・拍動・発光とともに回転・鏡像コピー。成長相が同じでも、塊・膜・枝・中空構造・長い張り出しの比率は個体ごとに異なります。左右対称・三つ巴・4/6/8方向・立体頂点対称にも対応します。運動DNA：'+motionDescription(spec.genome)+'。運動状態は局所場と時間文法で変化します。' : '運動生理 '+physiologyForStyle(spec.style).label+'。外皮 '+spec.shellTriangles.toLocaleString()+' 三角形 / 合計 '+spec.triangles.toLocaleString()+' 三角形。生成済みの個体を左右反転複製して左右対称化。多孔骨格 '+(spec.anatomy?.trabeculae||0)+'本 / 小胞 '+(spec.anatomy?.vesicles||0)+'個 / 触手・枝 '+(spec.anatomy?.tendrils||0)+'本 / 膜 '+(spec.anatomy?.fins||0)+'枚 / 微細孔 '+(spec.anatomy?.pores||0)+' / 繊毛 '+(spec.anatomy?.cilia||0)+' / GPU全身・内臓・触腕・繊毛：同じ時間軸で毎描画フレーム変形。');
  const composition=spec.palette||pickPalette(seed,spec.genome.colorDNA,spec.genome.patternDNA);
  $('palette').innerHTML=composition.hex.map(c=>'<i style="background:'+c+'"></i>').join('');
  if($('paletteDesignInfo')&&composition.design){
@@ -7081,7 +7083,7 @@ function viewerGlowSetting(id){
 }
 function viewerGlowTint(){const m=viewer.morph;return m?.emissionA&&m?.emissionB?m.emissionA.tint.map((v,i)=>v+(m.emissionB.tint[i]-v)*m.t):activeEmitColor()}
 function retireViewerMesh(mesh){if(mesh&&!viewer.retired.includes(mesh))viewer.retired.push(mesh)}
-function retireViewerMeshes(group,rigs=[]){if(!group)return;retireViewerMesh(group.shell);for(const p of group.parts)retireViewerMesh(p.mesh);for(const m of group.cilia||[])retireViewerMesh(m);for(const r of rigs)if(r.uploaded)retireViewerMesh(r.uploaded)}
+function retireViewerMeshes(group,rigs=[]){if(!group)return;retireViewerMesh(group.shell);for(const p of group.parts)retireViewerMesh(p.mesh);for(const m of group.cilia||[])retireViewerMesh(m);if(group.localShell)retireViewerMesh(group.localShell);for(const p of group.localParts||[])retireViewerMesh(p.mesh);for(const r of rigs)if(r.uploaded)retireViewerMesh(r.uploaded)}
 function drainViewerRetired(limit=1){
  for(let i=0;i<limit&&viewer.retired.length;i++){const mesh=viewer.retired.shift();for(const key of ['buffer','triBuffer','lineBuffer'])if(mesh[key]){gl.deleteBuffer(mesh[key]);mesh[key]=null}}
 }
