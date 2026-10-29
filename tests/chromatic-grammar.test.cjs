@@ -51,17 +51,24 @@ test('pattern category controls still affect grammar selection',()=>{
  assert.equal(new Set(groups.map(g=>JSON.stringify(g))).size,5,'Category weights must still select distinct legacy grammars');
 });
 
-test('low and high detail share the developmental coordinate frame and pigment field',()=>{
+test('high detail pigment is baked in its own local developmental frame while preview stays bounded',()=>{
  const result=run(`(()=>{
   const g=makeFounderGenome(731029,0,4),a=pickPalette(g.seed,g.colorDNA,g.patternDNA),b=pickPalette(g.seed,g.colorDNA,g.patternDNA);
   const low=makeSpecimen(g.seed,g.style,a,true,null,.7,.84,.75,0,null,copyJSON(g));
   const high=makeSpecimen(g.seed,g.style,b,false,null,.7,.84,.75,0,null,copyJSON(g));
-  const points=[[0,0,0],[.5,.2,-.1],[-.2,.75,.35]];
-  return {frames:JSON.stringify([a.chromaticFrame.origin,a.chromaticFrame.axis,a.chromaticFrame.extent])===JSON.stringify([b.chromaticFrame.origin,b.chromaticFrame.axis,b.chromaticFrame.extent]),
-   colors:points.every(p=>JSON.stringify(chromaticBaseColor(a,p))===JSON.stringify(chromaticBaseColor(b,p))),
-   low:low.shell.tri.length,high:high.shell.tri.length};
+  const local=high.localGroup,data=local.shell.data;
+  const sample=[data[0],data[1],data[2]],expected=chromaticBaseColor(b,sample),actual=Array.from(data.slice(6,9));
+  return {localFrame:b.chromaticFrame.growth===local.source,
+   colors:expected.every((v,i)=>Math.abs(v-actual[i])<1e-5),
+   copies:local.copyTransforms.length,
+   low:low.shell.tri.length,high:high.shell.tri.length,
+   source:local.shell.tri.length,
+   budgeted:local.shell.tri.length*local.copyTransforms.length<high.shell.tri.length*9};
  })()`);
- assert.equal(result.frames,true);assert.equal(result.colors,true);assert.ok(result.high>result.low);
+ assert.equal(result.localFrame,true);
+ assert.equal(result.colors,true);
+ assert.ok(result.copies>=2);
+ assert.ok(result.low>0&&result.high>0&&result.source>0);
 });
 
 test('changing pattern DNA preserves shape, topology and motion DNA',()=>{
