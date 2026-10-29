@@ -72,3 +72,57 @@ test('archived DNA without architectural genes resolves deterministically throug
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{same:true,migrated:true,renderOnce:true});
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
 });
+
+test('population balances large living masses against open skeletal grammars',()=>{
+ const result=run(function(){
+  const tally={massive:[],hollow:[],skeletal:[]},grammars=new Set();
+  for(let i=0;i<64;i++){
+   const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8),i%8),em=architectureGrowth(g);
+   const shape=normalizedArchitectureDNA(g.architectureDNA,seed,Math.floor(i/8)*8+i%8);
+   const nucleus=em.blobs.find(b=>b.kind==='nucleus');
+   const volume=nucleus?nucleus.axes.reduce((v,x)=>v*x,1):0;
+   grammars.add(shape.grammar);
+   const kind=[0,5,7,9,11].includes(shape.grammar)?'massive':shape.grammar===6?'hollow':'skeletal';
+   tally[kind].push({volume,links:em.links.length,mass:shape.mass,blobs:em.blobs.length});
+  }
+  return {grammars:grammars.size,
+   massive:{n:tally.massive.length,avgVolume:tally.massive.reduce((n,x)=>n+x.volume,0)/tally.massive.length,
+    maxLinks:Math.max(...tally.massive.map(x=>x.links)),minVolume:Math.min(...tally.massive.map(x=>x.volume))},
+   hollow:tally.hollow.length,skeletal:tally.skeletal.length,
+   skeletalLinks:tally.skeletal.reduce((n,x)=>n+x.links,0)/tally.skeletal.length};
+ });
+ assert.equal(result.grammars,12);
+ assert.ok(result.massive.n>=24,'many organisms must have a substantial central mass');
+ assert.ok(result.massive.avgVolume>.5,'massive bodies must retain approximately legacy-sized nuclei');
+ assert.ok(result.massive.minVolume>.3,'avoid tiny nuclei in fleshy body plans');
+ assert.equal(result.massive.maxLinks,0,'soft-bodied families must grow using volumes, not thin connecting rods');
+ assert.ok(result.hollow>=4);
+ assert.ok(result.skeletal>=25&&result.skeletalLinks>=5,'open skeletal species must remain available');
+});
+test('mass gene survives crossing and missing mass in saved genomes migrates deterministically',()=>{
+ const state=run(function(){
+  const original=makeFounderGenome(912403,0,1),mate=makeFounderGenome(503219,1,4);
+  const previous={...original.architectureDNA};delete previous.mass;
+  const restoreA=normalizedArchitectureDNA(previous,original.seed,original.style*8+original.archetype);
+  const restoreB=normalizedArchitectureDNA(previous,original.seed,original.style*8+original.archetype);
+  const child=crossoverGenome(original,mate,146073,2,.75).genome;
+  return {deterministic:restoreA.mass===restoreB.mass,inRange:restoreA.mass>=.05&&restoreA.mass<=1,
+   inheritedMass:Number.isFinite(child.architectureDNA.mass)&&child.architectureDNA.mass>=.05&&child.architectureDNA.mass<=1};
+ });
+ assert.deepEqual(JSON.parse(JSON.stringify(state)),{deterministic:true,inRange:true,inheritedMass:true});
+});
+test('mirror mode keeps a bilateral body outline after tissue generation and soft fusion',()=>{
+ const errors=run(function(){
+  const errors=[];
+  for(let i=0;i<12;i++){
+   const seed=731029+i*197,g=makeFounderGenome(seed,i%8,i%8);
+   g.architectureDNA={...g.architectureDNA,grammar:i,mode:0,order:2};
+   delete g.architectureDNA.mass;
+   const em=architectureGrowth(g),p=[[.44,.2,.13],[.87,.2,.26],[1.07,.40,.10],[.61,-.33,.27],[1.35,.12,.44]];
+   errors.push(Math.max(...p.map(q=>Math.abs(morphSDF(q[0],q[1],q[2],em)-morphSDF(-q[0],q[1],q[2],em)))));
+  }
+  return errors;
+ });
+ assert.equal(errors.length,12);
+ for(let i=0;i<12;i++)assert.ok(errors[i]<.005,'grammar '+i+' lost its bilateral growth symmetry: '+errors[i]);
+});
