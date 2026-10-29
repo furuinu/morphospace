@@ -124,7 +124,7 @@ test('mass gene survives crossing and missing mass in saved genomes migrates det
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{deterministic:true,inRange:true,inheritedMass:true});
 });
-test('bilateral copy layout mirrors original anatomy in 3D SDF',()=>{
+test('Rorschach bilateral layout retains a recognizable mirrored silhouette with bounded rim variation',()=>{
  const errors=run(function(){
   const errors=[];
   for(let i=0;i<12;i++){
@@ -136,7 +136,7 @@ test('bilateral copy layout mirrors original anatomy in 3D SDF',()=>{
   return errors;
  });
  assert.equal(errors.length,12);
- for(const e of errors)assert.ok(e<.005,'mirrored anatomy differs across x: '+e);
+ for(const e of errors)assert.ok(e<.035,'mirrored anatomy exceeds subtle rim-variation budget: '+e);
 });
 test('new architectural traits are heritable, not merely the name of a body plan',()=>{
  const traits=run(function(){
