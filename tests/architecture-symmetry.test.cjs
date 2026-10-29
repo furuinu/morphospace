@@ -26,7 +26,7 @@ test('twelve grammars each produce nonempty bounded implicit growth geometry',()
   assert.ok(a.tri>8,'grammar '+a.id+' generated no visible 3D body');
   assert.ok(a.blobs<=26&&a.links<=32,'grammar '+a.id+' exceeded its complexity budget');
   assert.ok(a.bounds>=2&&a.bounds<=4.4);
-  assert.equal(a.mirror,true,'every growth layout must retain the historical bilateral mirror pass');
+  assert.equal(a.mirror,![2,3,4].includes(a.id),'rotational symmetries must not be doubled by the legacy mirror pass');
   assert.ok(a.finite,'grammar '+a.id+' generated nonfinite positions');
  }
 });
@@ -71,7 +71,7 @@ test('archived DNA without architectural genes resolves deterministically throug
  });
  assert.deepEqual(JSON.parse(JSON.stringify(state)),{same:true,migrated:true,renderOnce:true});
  assert.match(html,/if\(!hidden&&spec\.__mirrorRender\)drawCopy\(mirrorM,true\)/);
- assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:true\}/);
+ assert.match(html,/return \{\.\.\.spec,__rorschach:true,__mirrorRender:!\[2,3,4\]\.includes\(spec\.growthModel\?\.copyLayout\)\}/);
 });
 
 test('one copy layout retains varied ancestral free-growth shapes and bounded complexity',()=>{
@@ -163,4 +163,10 @@ test('bilateral motion is evaluated in a canonical mirrored frame throughout GPU
 });
 test('bilateral source cells retain paired inner organ placement',()=>{
  assert.match(html,/if\(em\.copyLayout===1\)\{parts\.push\(\{mesh:sphere\(\[-c\[0\],c\[1\],c\[2\]\]/);
+});
+
+test('threefold is a planar 120-degree rotational copy and four-way is doubly mirrored',()=>{
+ assert.match(html,/if\(layout===2\)\{for\(let i=0;i<3;i\+\+\)/);
+ assert.match(html,/if\(layout===4\)\{for\(let j=0;j<2;j\+\+\)for\(let i=0;i<2;i\+\+\)/);
+ assert.match(html,/if\(em\.copyLayout===4\)\{x=Math\.abs\(x\);y=Math\.abs\(y\);\}/);
 });
