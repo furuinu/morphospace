@@ -4925,7 +4925,7 @@ float surfaceHeight(vec3 point,float time){
 vec3 surfaceDisplacement(vec3 point,vec3 normal,float time,float amplitude){
  vec3 p=chromaticPoint(point);
  float delay=uSurface1.z*(p.y*2.+surfaceBoundary(p)*3.);
- float beat=sin(time*uMotionGene0.z*(.22+.16*uSurface2.z)/max(.1666667,uSurface2.w)+uSurface2.x-delay);
+ float beat=sin(time*(.22+.16*uSurface2.z)/max(.1666667,uSurface2.w)+uSurface2.x-delay);
  float ridge=surfaceRidge(p);
  float reactiveRim=exp(-pow(surfaceBoundary(p)*21.,2.));
  float pulseGain=max(.22,uSurface0.x*uSurface1.y);
