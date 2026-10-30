@@ -232,7 +232,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // Isolating the studio pass lets the test assess atmospheric falloff even while
   // the specimen is moving or the lens effects are enabled.
   const backgroundPixels=await page.evaluate(()=>{
-   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime,distance:spec.viewDistance,panX,panY};
+   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fromMode:backgroundCycle.fromMode,toMode:backgroundCycle.toMode,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime,psyTime:psychedelicTime,distance:spec.viewDistance,panX,panY};
    const samples=[];
    const sample=(x,y)=>{
     const pixel=new Uint8Array(4);
@@ -245,7 +245,10 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    // At neutral zoom the light retains the original softly feathered gradients.
    const at=(radius,angle=0)=>sample(w*(.50+radius*Math.cos(angle)),h*(.49+radius*Math.sin(angle)));
    try{
-    for(const preset of BACKGROUND_PRESETS){
+    // The radial atmospheric invariants apply only to the six natural presets.
+    // The four psychedelic patterns are tested separately for GPU motion.
+    backgroundCycle.fromMode=backgroundCycle.toMode=0;
+    for(const preset of BACKGROUND_PRESETS.filter(p=>!backgroundMode(p.id))){
      backgroundCycle.from=backgroundCycle.to=preset;
      backgroundCycle.fade=0;
      backgroundCycle.fadeSeconds=0;
@@ -269,6 +272,29 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      const a=samples[i].central,b=samples[j].central;
      if(distance(a,b)<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
     }
+    // Verify four psychedelic modes on the real GPU. The selected pattern must
+    // continue deforming even with automatic background switching disabled.
+    const psychedelicFrames=[];
+    const probes=[[.11,0],[.21,.8],[.35,2.1],[.28,4.3],[.41,1.1],[.15,5.1]];
+    for(const [id,mode] of Object.entries(PSY_CODES)){
+     const preset=backgroundProfile(id);
+     backgroundCycle.from=backgroundCycle.to=preset;
+     backgroundCycle.fromMode=backgroundCycle.toMode=mode;
+     backgroundCycle.fade=backgroundCycle.fadeSeconds=0;
+     psychedelicTime=0;drawStudioGL();
+     const start=probes.map(([r,a])=>at(r,a));
+     psychedelicTime=13.7;drawStudioGL();
+     const end=probes.map(([r,a])=>at(r,a));
+     const motion=start.reduce((sum,p,i)=>sum+distance(p,end[i]),0);
+     if(gl.getError()!==gl.NO_ERROR)throw Error('Psychedelic GPU failure: '+id);
+     if(motion<24)throw Error('Psychedelic pattern stopped moving: '+id+' / '+motion);
+     psychedelicFrames.push({id,motion:Math.round(motion),pixels:start});
+    }
+    for(let i=0;i<psychedelicFrames.length;i++)for(let j=i+1;j<psychedelicFrames.length;j++){
+     const diff=psychedelicFrames[i].pixels.reduce((sum,p,k)=>sum+distance(p,psychedelicFrames[j].pixels[k]),0);
+     if(diff<25)throw Error('Psychedelic modes visually indistinguishable: '+psychedelicFrames[i].id+'/'+psychedelicFrames[j].id);
+    }
+    backgroundCycle.fromMode=backgroundCycle.toMode=0;
     // GPU zoom test: radial light grows and shrinks at the organism's camera depth.
      backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[0];
      environmentTime=0;
@@ -325,10 +351,10 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     if(maxLift>7)throw Error('Radial glimmer exceeds the 45%-attenuated brightness budget: '+maxLift);
     if(evolution<8||angularEvolution<2)throw Error('Ray angle and strength pattern fails to evolve at camera-orbit speed: '+evolution+'/'+angularEvolution);
     if(nearDelta>25)throw Error('Radial glimmer makes abrupt rather than smooth changes: '+nearDelta);
-    return {samples,cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution,angularEvolution,nearDelta}};
+    return {samples,psychedelic:psychedelicFrames.map(({id,motion})=>({id,motion})),cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution,angularEvolution,nearDelta}};
    }finally{
-    Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
-    environmentTime=saved.at;spec.viewDistance=saved.distance;panX=saved.panX;panY=saved.panY;
+    Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fromMode:saved.fromMode,toMode:saved.toMode,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
+    psychedelicTime=saved.psyTime;environmentTime=saved.at;spec.viewDistance=saved.distance;panX=saved.panX;panY=saved.panY;
     render();
    }
   });
