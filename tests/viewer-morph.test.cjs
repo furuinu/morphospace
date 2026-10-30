@@ -230,7 +230,7 @@ test('pressure, emission and bloom reach the exact incoming state while blink id
 });
 
 test('the render loop advances the incoming pressure simulation before adoption',()=>{
- const {f}=runtime(),steps=[];Object.assign(f,{animating:true,lastFrame:0,environmentTime:0,rigTime:0,bodyTime:0,patternTime:0,modelYaw:0,auto:false,requestAnimationFrame(){},render(){},tickViewer(){},stepBiomeSystem:(bio,elapsed,speed)=>steps.push({bio,elapsed,speed})});
+ const {f}=runtime(),steps=[];Object.assign(f,{animating:true,lastFrame:0,environmentTime:0,psychedelicTime:0,rigTime:0,bodyTime:0,patternTime:0,modelYaw:0,auto:false,requestAnimationFrame(){},render(){},tickViewer(){},stepBiomeSystem:(bio,elapsed,speed)=>steps.push({bio,elapsed,speed})});
  f.tickBackgroundCycle=()=>{};f.spec={biome:{name:'source'},genome:{}};f.v.morph={target:{biome:{name:'target'}}};f.$('motionSpeed').value='100';f.$('bodySpeed').value='100';
  vm.runInContext(src.slice(src.indexOf('let framesInWindow='),src.indexOf('function close(){')),f);f.frame(16);
  assert.equal(steps.length,2);assert.equal(steps[0].bio.name,'source');assert.equal(steps[1].bio.name,'target');assert.equal(steps[0].elapsed,steps[1].elapsed);assert.equal(steps[0].speed,steps[1].speed);
