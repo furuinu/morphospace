@@ -7856,8 +7856,10 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  if(u.uBranchEnabled!==null)gl.uniform1f(u.uBranchEnabled,!viewer.morph&&$('branchMotion').checked?1:0);
  gl.disable(gl.BLEND);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
  let wire=$('wire').checked;
+ // Optional coloured glass; 0% preserves the opaque original.
+ const glassAmount=wire?0:Math.max(0,Math.min(.90,Number($('transparency').value)/100||0));
  const useLocal=!!(spec.localGroup&&meshes.localShell&&!viewer.morph);
- function drawLocalCopies(baseModel){
+ function drawLocalCopies(baseModel,glassPass=false){
   // All parts share one canonical tissue clock. Each whole symmetry copy
   // additionally receives an inherited rigid articulation, without mesh tearing.
   setCopyMotionUniforms(gl,u,spec.localGroup.source);
@@ -7867,13 +7869,13 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   for(const t of spec.localGroup.copyTransforms){
    const pose=enabled?copyArticulationPose(bodyTime,spec.genome.motionDNA,copyIndex,spec.localGroup.copyTransforms.length,spec.growthModel.copyLayout,hingeStrength):null;
    const model=mul4(baseModel,articulatedCopyMatrix(t,pose,spec.growthModel.copyLayout));
-   const mvp=drawCopy(model,!!t.mirror!==!!t.mirrorY);
+   const mvp=drawCopy(model,!!t.mirror!==!!t.mirrorY,glassPass);
    if(!first)first=mvp;
    copyIndex++;
   }
   return first||mul4(pr,mul4(cam,baseModel));
  }
- function drawCopy(model,mirrored=false){
+ function drawCopy(model,mirrored=false,glassPass=false){
    const mvp=mul4(pr,mul4(cam,model));
    gl.uniformMatrix4fv(u.uModel,false,model);gl.uniformMatrix4fv(u.uMvp,false,mvp);
    if(u.uMirrorSign!==null)gl.uniform1f(u.uMirrorSign,mirrored?-1:1);
@@ -7883,13 +7885,23 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,true,0);
      drawGPUMotileCilia(mvp,model,true);
    }else{
-     gl.disable(gl.BLEND);
      gl.enable(gl.CULL_FACE);
      gl.frontFace(mirrored?gl.CW:gl.CCW);
      gl.cullFace(gl.BACK);
-     if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
-     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
-     drawGPUMotileCilia(mvp,model,false);
+     if(glassPass){
+       // Opaque organs of all copies are already in the colour and depth buffers.
+       gl.enable(gl.BLEND);
+       gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE);
+       gl.depthMask(false);
+       if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
+       gl.depthMask(true);
+       gl.disable(gl.BLEND);
+     }else{
+       gl.disable(gl.BLEND);
+       if(!glassAmount&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
+       for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
+       drawGPUMotileCilia(mvp,model,false);
+     }
      gl.frontFace(gl.CCW);
    }
    return mvp;
@@ -7906,6 +7918,11 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const hidden=!!capturePose?.frame.hideBody;
  const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):(useLocal?drawLocalCopies(base):drawCopy(mLeft,false));
  if(!hidden&&!useLocal&&spec.__mirrorRender)drawCopy(mirrorM,true);
+ // Pigmented skins are drawn last, preserving opaque internal structures.
+ if(!hidden&&glassAmount>0){
+  if(useLocal)drawLocalCopies(base,true);
+  else{drawCopy(mLeft,false,true);if(spec.__mirrorRender)drawCopy(mirrorM,true,true)}
+ }
  if(capturePose&&(capturePose.frame.tissues?.length||capturePose.frame.neck))drawNanoTissues(pr,cam,capturePose.frame,w,h);
  lastSceneViewProj=mul4(pr,cam);
  drawWorldSnow(lastSceneViewProj,!!(lens&&lens.depthTexture&&lens.dofProgram&&$('macroDof').checked&&!$('wire').checked),cam);
