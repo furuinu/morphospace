@@ -16,8 +16,8 @@ test('marine and psychedelic backgrounds use independent family selectors',()=>{
 });
 
 test('the six specimen pigments and movement clock drive the WebGL backdrop',()=>{
- assert.match(html,/window\.MorphospacePsyBackground=Object\.freeze/);
- assert.match(html,/\$\{window\.MorphospacePsyBackground\.glsl\}/);
+ assert.match(html,/globalThis\.MorphospacePsyBackground=Object\.freeze/);
+ assert.match(html,/\$\{globalThis\.MorphospacePsyBackground\.glsl\}/);
  for(let n=0;n<6;n++)assert.match(html,new RegExp('uPsy'+n));
  assert.match(html,/psychedelicTime\+=Math\.min\(elapsed,\.18\)/);
  assert.match(html,/paletteFade/);
