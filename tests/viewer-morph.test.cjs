@@ -11,7 +11,7 @@ test('morph preserves every triangle of unequal topology at both endpoints with 
   for(const t of [0,.02,.1,.5,.9,.98,1]){
    ctx.interpolateMorphBatch(batch,t);
    assert.ok(Array.from(batch.data).every(Number.isFinite));
-   for(let i=0;i<batch.data.length;i++)if(i%17>=3)assert.ok(Math.abs(batch.data[i]-(batch.start[i]+(batch.end[i]-batch.start[i])*t))<1e-5);
+   for(let i=0;i<batch.data.length;i++)if(i%17>=3){const expected=i%17>=9?(batch.side==='incoming'?batch.end[i]:batch.start[i]):batch.start[i]+(batch.end[i]-batch.start[i])*t;assert.ok(Math.abs(batch.data[i]-expected)<1e-5);}
   }
   ctx.interpolateMorphBatch(batch,batch.side==='incoming'?1:0);
   const native=batch.side==='incoming'?batch.end:batch.start;
@@ -251,3 +251,19 @@ test('the real Worker builds identical target geometry while the main event loop
   t.diagnostic('Main event-loop heartbeat during worker preparation: '+ticks+' ticks; all target/correspondence hashes match');
  }finally{clearInterval(interval);await worker.terminate()}
 });
+
+ test('duplicated corners stay welded at different triangle indices throughout morphing',()=>{
+ const make=z=>mesh([[0,0,z],[1,0,z],[0,1,z],[1,1,z]],[0,1,2,2,0,3]);
+ for(const limit of [1,12000]){
+  const batches=ctx.createMorphBatches([make(0)],[make(1)],limit);
+  for(const t of [.03,.13,.37,.51,.79,.97]){
+   const positions=new Map();
+   for(const batch of batches){ctx.interpolateMorphBatch(batch,t);for(let i=0;i<batch.data.length;i+=17){
+    const key=batch.side+':'+[...batch.start.slice(i,i+3),...batch.end.slice(i,i+3)].join(',');
+    const point=Array.from(batch.data.slice(i,i+3));
+    if(positions.has(key))assert.deepEqual(point,positions.get(key),'shared vertex split at t='+t);
+    positions.set(key,point);
+   }}
+  }
+ }
+ });
