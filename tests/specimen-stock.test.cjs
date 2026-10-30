@@ -63,7 +63,7 @@ test('opening a stored specimen uses isolated DNA and leaves gallery records and
 
 test('capture persists DNA before image rendering and completes only after the IndexedDB commit',async()=>{
  const source=scripts[2],begin=source.indexOf('async function saveCaptureToStock('),end=source.indexOf('async function exportStock(',begin),els={};
- const $=id=>els[id]||(els[id]={textContent:'',classList:{add(){},remove(){}},hidden:true,disabled:false});
+ const $=id=>els[id]||(els[id]={textContent:'',classList:{add(){},remove(){},toggle(){}},hidden:true,disabled:false});
  let commit,refreshed=0;const state={stockPayload:entry().payload};
  const fixture={$: $,captureShareSequence:5,stockStore:{save:()=>new Promise(resolve=>{commit=resolve})},refreshStock:async()=>{refreshed++}};
  vm.createContext(fixture);vm.runInContext(source.slice(begin,end),fixture);
