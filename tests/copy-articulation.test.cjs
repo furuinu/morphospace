@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-const scripts=[...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/g)].map(x=>x[1]);
+const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
 const ctx=vm.createContext({document:{querySelectorAll:()=>[]},TextEncoder,TextDecoder,btoa,atob,URL,URLSearchParams,console});
 vm.runInContext(scripts[0],ctx);
 vm.runInContext(scripts[2].slice(0,scripts[2].indexOf("const canvas=$('glview'),gl=")),ctx);
@@ -58,8 +58,8 @@ test('all growth grammars retain bounded rigid copy matrices and preserve reflec
  assert.ok(d.some(x=>x.different));assert.ok(d.every(x=>x.max<=.43+1e-8));
 });
 test('turning organism movement off removes structural articulation without affecting per-vertex shaders',()=>{
- assert.match(html,/const pose=enabled\\?copyArticulationPose/);
- assert.match(html,/articulatedCopyMatrix\\(t,pose,spec\\.growthModel\\.copyLayout\\)/);
- assert.match(html,/setCopyMotionUniforms\\(gl,u,spec\\.localGroup\\.source\\)/);
- assert.match(html,/vec3 peristalsis=surfaceMotion\\(canonical,canonicalNormal,ancestralTime/);
+ assert.match(html,/const pose=enabled\?copyArticulationPose/);
+ assert.match(html,/articulatedCopyMatrix\(t,pose,spec\.growthModel\.copyLayout\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ assert.match(html,/vec3 peristalsis=surfaceMotion\(canonical,canonicalNormal,ancestralTime/);
 });
