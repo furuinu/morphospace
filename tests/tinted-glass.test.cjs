@@ -39,7 +39,7 @@ test('opaque organs precede front-only depth-safe glass; wireframe stays solid',
 });
 
 test('glass setting is saved and restored without shifting existing share key indices',()=>{
- assert.match(source,/time ecologyVersion transparency'\)\.split\(' '\)/);
+ assert.match(html,/time ecologyVersion transparency'\)\.split\(' '\)/);
  assert.match(source,/'shadeStrength','transparency','fresnelStrength'/);
  assert.match(source,/transparency:\[0,90\]/);
  assert.match(source,/transparency:'transNum'/);
