@@ -5678,6 +5678,8 @@ uniform vec3 uBgEdge;   // opaque base fill
 uniform vec4 uBgDynamics;
 uniform float uBgRayStrength; // subtle spatial flare
 uniform float uGalleryPreview; // shared still atlas background
+uniform float uPsyFrom,uPsyTo,uPsyFade,uPsyTime,uPsyAspect;
+uniform vec3 uPsy0,uPsy1,uPsy2,uPsy3,uPsy4,uPsy5;
 
 // Analytic glow lobes replace multi-octave fog; one low-frequency noise
 // field remains for shimmer and two for the softly evolving flare.
@@ -5722,12 +5724,21 @@ float softRadialGlimmer(vec2 p){
  float intoDistance=1.0-smoothstep(.22,.59,r);
  return streaks*strength*fromCore*intoDistance;
 }
+${window.MorphospacePsyBackground.glsl}
 void main(){
  if(uGalleryPreview>.5){
   // Every atlas thumbnail has the same dark still backdrop, without noise.
   vec2 q=vStudioUv-vec2(.5,.49);
   float falloff=1.0-smoothstep(0.0,.52,length(q));
   gl_FragColor=vec4(mix(vec3(.008,.018,.037),vec3(.092,.135,.170),falloff*falloff),1.0);
+  return;
+ }
+ // Full-screen six-colour procedural psychedelic scene, independent of camera and organism pose.
+ vec2 psyUv=(vStudioUv-vec2(.5))*vec2(uPsyAspect,1.0);
+ if(uPsyFrom>.5&&uPsyTo>.5){
+  vec3 a=psyScene(psyUv,uPsyFrom);
+  vec3 b=uPsyFade>.001&&abs(uPsyFrom-uPsyTo)>.1?psyScene(psyUv,uPsyTo):a;
+  gl_FragColor=vec4(clamp(mix(a,b,uPsyFade),0.0,1.0),1.0);
   return;
  }
  // Project atmosphere with the organism's camera distance, pan and orbit.
@@ -5743,6 +5754,11 @@ void main(){
  colour=screenColours(colour,uBgCenter*min(1.0,coreGlow*(.975+.025*sin(t*.23))*1.15));
  vec3 rayTint=mix(uBgMid,uBgCenter,.55);
  colour=screenColours(colour,rayTint*(uBgRayStrength*softRadialGlimmer(p)));
+ if(uPsyFrom>.5||uPsyTo>.5){
+  vec3 a=uPsyFrom>.5?psyScene(psyUv,uPsyFrom):colour;
+  vec3 b=uPsyTo>.5?psyScene(psyUv,uPsyTo):colour;
+  colour=mix(a,b,uPsyFade);
+ }
  gl_FragColor=vec4(clamp(colour,0.0,1.0),1.0);
 }
 `;
@@ -5750,7 +5766,7 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uPsyFrom','uPsyTo','uPsyFade','uPsyTime','uPsyAspect','uPsy0','uPsy1','uPsy2','uPsy3','uPsy4','uPsy5'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -6426,7 +6442,7 @@ function paintEmissionBloom(viewProj,w,h){
 }
 
 const activePointers=new Map();
-let pinchState=null, environmentTime=0;
+let pinchState=null, environmentTime=0, psychedelicTime=0;
 function fail(e){
  console.error(e);const msg=String(e&&e.message||e);
  $('status').textContent='描画エラー';$('status').classList.add('fail');$('message').textContent=msg;const sceneAlert=$('sceneAlert');if(sceneAlert){sceneAlert.textContent='3D描画を継続できませんでした：\n'+msg;sceneAlert.hidden=false;}
@@ -6782,6 +6798,13 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uBgDynamics!==null&&surface.uBgDynamics!==undefined)gl.uniform4f(surface.uBgDynamics,...background.dynamics);
  if(surface.uBgRayStrength!==null&&surface.uBgRayStrength!==undefined)gl.uniform1f(surface.uBgRayStrength,rayStrength);
  if(surface.uGalleryPreview!==null&&surface.uGalleryPreview!==undefined)gl.uniform1f(surface.uGalleryPreview,preview?1:0);
+ gl.uniform1f(surface.uPsyFrom,backgroundCycle.fromMode);
+ gl.uniform1f(surface.uPsyTo,backgroundCycle.toMode);
+ gl.uniform1f(surface.uPsyFade,backgroundMix());
+ gl.uniform1f(surface.uPsyTime,psychedelicTime%7200);
+ gl.uniform1f(surface.uPsyAspect,canvas.width/Math.max(1,canvas.height));
+ const colors=spec?.palette?.baseRgb||spec?.palette?.raw||[[.1,.9,.9],[.9,.1,.7],[1,.6,.1],[.4,.15,.9],[.7,1,.1],[.1,.3,1]];
+ for(let i=0;i<6;i++){const v=colors[i%colors.length],u=surface['uPsy'+i];if(u!==null&&u!==undefined)gl.uniform3f(u,v[0],v[1],v[2]);}
  gl.bindBuffer(gl.ARRAY_BUFFER,renderer.studioBuffer);
  for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
  gl.vertexAttribPointer(renderer.studioAttribute,2,gl.FLOAT,false,0,0);
@@ -9058,6 +9081,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
  const elapsed=Math.max(0,(now-lastFrame)/1000);lastFrame=now;
  if(selected>=0&&!nanoAction&&!stockDialog.open&&(!captureShareIsOpen||videoRecording)){
   environmentTime+=Math.min(elapsed,.18);
+  psychedelicTime+=Math.min(elapsed,.18)*Number($('viewerPsySpeed').value)/100;
   tickBackgroundCycle(elapsed);
   tickViewer(elapsed);
   if($('patternMotion').checked)patternTime+=Math.min(elapsed,.18);
