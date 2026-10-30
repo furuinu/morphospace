@@ -6805,7 +6805,15 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  gl.uniform1f(surface.uPsyTime,psychedelicTime%7200);
  gl.uniform1f(surface.uPsyAspect,canvas.width/Math.max(1,canvas.height));
  const colors=spec?.palette?.baseRgb||spec?.palette?.raw||[[.1,.9,.9],[.9,.1,.7],[1,.6,.1],[.4,.15,.9],[.7,1,.1],[.1,.3,1]];
- for(let i=0;i<6;i++){const v=colors[i%colors.length],u=surface['uPsy'+i];if(u!==null&&u!==undefined)gl.uniform3f(u,v[0],v[1],v[2]);}
+ const targetColors=viewer.morph?.target?.palette?.baseRgb||null;
+ const paletteFade=targetColors?clamp(viewer.morph.t,0,1):0;
+ for(let i=0;i<6;i++){
+  const v=colors[i%colors.length],n=targetColors?.[i],u=surface['uPsy'+i];
+  if(u!==null&&u!==undefined)gl.uniform3f(u,
+   v[0]+(n?n[0]-v[0]:0)*paletteFade,
+   v[1]+(n?n[1]-v[1]:0)*paletteFade,
+   v[2]+(n?n[2]-v[2]:0)*paletteFade);
+ }
  gl.bindBuffer(gl.ARRAY_BUFFER,renderer.studioBuffer);
  for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
  gl.vertexAttribPointer(renderer.studioAttribute,2,gl.FLOAT,false,0,0);
