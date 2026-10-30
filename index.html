@@ -4682,7 +4682,7 @@ function copyArticulationPose(time,dna,index,count,layout,strength=1){
  // Independent axis strengths and phase offsets are seeded per organism.
  // X bends, Y twists, Z flaps simultaneously, each with a different excursion.
  const seed=(dna?.hingePhase??0)*TAU+(dna?.axisBias??0)*1.9;
- const xGain=.25+.30*(.5+.5*Math.sin(seed*2.7+1.2));
+ const xGain=.05+.15*(.5+.5*Math.sin(seed*2.7+1.2));
  const yGain=.25+.30*(.5+.5*Math.cos(seed*3.1+.4));
  const zGain=.25+.30*(.5+.5*Math.sin(seed*1.7+2.4));
  const cycles=(Array.isArray(dna?.hingeAxisCycles)?dna.hingeAxisCycles:[0,1,2]).map(i=>HINGE_AXIS_PERIODS[i]||1);
