@@ -311,7 +311,7 @@ test('phase handoff adopts prepared native meshes at opaque midpoint, then revea
 
 test('particle phase transition does not fade the full scene or mutate topology',()=>{
  assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
- assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=360\)/);
+ assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=1300\)/);
  assert.match(html,/canvas\.style\.opacity=String\(1-v\)/);
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
  assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
@@ -325,16 +325,16 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
  assert.doesNotMatch(boot,/createLinearGradient|createRadialGradient|shadowBlur/);
 });
 
-test('pointillist transition samples visible colour and blurs only the specimen canvas',()=>{
- assert.match(html,/function phaseCapturePointillism\(seed,count=650\)/);
+test('pointillist particles are sampled from visible specimen colour and blur the specimen layer',()=>{
+ assert.match(html,/function phaseCapturePointillism\(seed,count=1300\)/);
  assert.match(html,/g\.drawImage\(canvas,0,0,192,192\)/);
- assert.match(html,/ctx\.fillStyle=t<\.5\?\(from\[2\]/);
+ assert.match(html,/ctx\.fillStyle='rgb\('/);
  assert.match(html,/canvas\.style\.filter=v>0\?'blur\('/);
  assert.match(html,/phaseParticleTarget=phaseCapturePointillism\(spec\.seed\)/);
 });
-
-test('reassembly recolours particle grains from the destination specimen rather than source',()=>{
- assert.match(html,/const release=ease\(t\/\.47\),gather=ease\(\(t-\.53\)\/\.47\)/);
- assert.match(html,/to\[2\]\|\|'#81A9EE'/);
- assert.match(html,/Math\.sin\(Math\.PI\*t\)\*\*1\.8/);
+test('new specimen particles interpolate RGB continuously with no flash',()=>{
+ assert.match(html,/const recolor=ease\(\(t-\.38\)\/\.24\)/);
+ assert.match(html,/c0\[0\]\+\(c1\[0\]-c0\[0\]\)\*recolor/);
+ assert.match(html,/scatter=t<\.2\?0/);
+ assert.match(html,/const opacity=ease\(t\/\.20\)/);
 });
