@@ -159,6 +159,27 @@ test('global camera pose inverts orbit, pan and roll while lights follow the sam
  assert.ok(error<.00001,'lighting and Fresnel view vectors must agree with the global camera matrix');
 });
 
+test('camera orbit and pan are computed in world coordinates independently of organism motion',()=>{
+ const cameraSource=scripts[2].slice(scripts[2].indexOf('function worldCameraFrame('),scripts[2].indexOf('function backgroundSceneTransform('));
+ assert.match(cameraSource,/function viewerCameraMatrix\(\)/);
+ run(cameraSource);
+ const error=run(`(()=>{
+  let error=0;
+  for(const yaw of [-2.1,0,.54,2.4])for(const pitch of [-1.1,-.18,.3,1.1])for(const roll of [-.4,0,.6]){
+   const f=worldCameraFrame(yaw,pitch,roll,13,2,-3);
+   const old=mul4(translate(-13),mul4(rotZ(-roll),mul4(rotX(-pitch),mul4(rotY(-yaw),translate3(-2,3,0)))));
+   const actual=mul4(f.rotation,translate3(-f.position[0],-f.position[1],-f.position[2]));
+   for(let i=0;i<16;i++)error=Math.max(error,Math.abs(actual[i]-old[i]));
+   for(let i=0;i<3;i++)error=Math.max(error,Math.abs(f.position[i]-f.target[i]-f.back[i]*13));
+   // Translation changes the target in fixed world X/Y, not the camera's local X/Y.
+   const shifted=worldCameraFrame(yaw,pitch,roll,13,3,-1);
+   for(let i=0;i<3;i++)error=Math.max(error,Math.abs(shifted.position[i]-f.position[i]-[1,2,0][i]));
+  }
+  return error;
+ })()`);
+ assert.ok(error<.00002,'camera view matrix and global pan/orbit must agree');
+});
+
 test('shared views retain both optical controls and accept old links without them',()=>{
  const result=run(`(()=>{
   const g=makeFounderGenome(120003,0,0),record={id:'optics',name:'光彩標本',seed:g.seed,genome:g,generation:0,parents:[]};
