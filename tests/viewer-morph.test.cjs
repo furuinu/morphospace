@@ -314,7 +314,7 @@ test('particle phase transition does not fade the full scene or mutate topology'
  assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=360\)/);
  assert.match(html,/canvas\.style\.opacity=String\(1-v\)/);
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
- assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTarget\)/);
+ assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
  assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
 });
 test('loading DNA assembles many horizontal base pairs into 3D helix without gradients',()=>{
@@ -323,4 +323,12 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
  assert.match(boot,/kind:'bond'/);
  assert.match(boot,/for\(const side of \[-1,1\]\)/);
  assert.doesNotMatch(boot,/createLinearGradient|createRadialGradient|shadowBlur/);
+});
+
+test('pointillist transition samples visible colour and blurs only the specimen canvas',()=>{
+ assert.match(html,/function phaseCapturePointillism\(seed,count=650\)/);
+ assert.match(html,/g\.drawImage\(canvas,0,0,192,192\)/);
+ assert.match(html,/ctx\.fillStyle=from\[2\]/);
+ assert.match(html,/canvas\.style\.filter=v>0\?'blur\('/);
+ assert.match(html,/phaseParticleTarget=phaseCapturePointillism\(spec\.seed\)/);
 });
