@@ -60,6 +60,6 @@ test('all growth grammars retain bounded rigid copy matrices and preserve reflec
 test('turning organism movement off removes structural articulation without affecting per-vertex shaders',()=>{
  assert.match(html,/const pose=enabled\?copyArticulationPose/);
  assert.match(html,/articulatedCopyMatrix\(t,pose,spec\.growthModel\.copyLayout\)/);
- assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,null\)/,'local meshes must use only CPU copy placement; no GPU copy-space remapping');
  assert.match(html,/vec3 peristalsis=surfaceMotion\(canonical,canonicalNormal,ancestralTime/);
 });
