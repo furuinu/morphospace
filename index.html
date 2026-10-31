@@ -5828,11 +5828,11 @@ void main(){
   float grazing=1.-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.,1.);
   // Dense tissue remains opaque; attenuated membranes transmit more colour.
   float thin=1.0-tissue;
-  float transmission=uGlassAmount*mix(.08,1.48,thin);
+  float transmission=uGlassAmount*mix(.08,.70,thin); // Keep front-facing skin dominant over rear organs.
   shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
   // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
   shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.52,.48,1.0);
+  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.62,.72,1.0);
  }
  gl_FragColor=shaded;
  }
@@ -5953,11 +5953,11 @@ void main(){
   float grazing=1.-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.,1.);
   // Dense tissue remains opaque; attenuated membranes transmit more colour.
   float thin=1.0-tissue;
-  float transmission=uGlassAmount*mix(.08,1.48,thin);
+  float transmission=uGlassAmount*mix(.08,.70,thin); // Keep front-facing skin dominant over rear organs.
   shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
   // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
   shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.52,.48,1.0);
+  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.62,.72,1.0);
  }
  gl_FragColor=shaded; }
 }`;
