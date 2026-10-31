@@ -5592,7 +5592,7 @@ vec3 chromaticFinish(vec3 color){
  float globalAmbient=uLightLevels.w*(.77+.46*sky);
  // Soft forward-right/lower fill, independently camera-tracked and deliberately subtle.
  float lowerFill=pow(max(dot(n,normalize(uLowerFillDir)),0.0),.72);
- float illumination=globalAmbient+uLightLevels.x*kd+uLightLevels.y*fd+uLightLevels.z*pow(bd,1.35)+uLowerFillPower*lowerFill;
+ float illumination=1.10*(globalAmbient+uLightLevels.x*kd+uLightLevels.y*fd+uLightLevels.z*pow(bd,1.35)+uLowerFillPower*lowerFill);
  color*=clamp(illumination*(1.-deep*.12),.10,1.35);
  // Restore subtle blue/umber undertones to near-black marks; never turn them gray
  // or transparent. Existing skin normals still carry the gloss across these zones.
@@ -5614,14 +5614,14 @@ vec3 chromaticFinish(vec3 color){
  vec3 film=thinFilmColor(nv,thickness,uOptics0.z);
  if(family>.5&&family<1.5)film=mix(film,film*mix(uPal0,uPal1,.5)*1.8,.28);
  // Avoid washing all pigment territories in the same reflection colour.
- float filmAmount=clamp(uOpticsControl.y*uOptics1.y*coverage*(.12+.46*pow(grazing,.7))*(1.-deep*.42+metal*.20-pearl*.24),0.,.54);
+ float filmAmount=clamp(uOpticsControl.y*uOptics1.y*coverage*(.15+.58*pow(grazing,.7))*(1.-deep*.42+metal*.20-pearl*.24),0.,.68);
  color=mix(color,film,filmAmount);
  vec3 environment=mix(vec3(.10,.23,.31),vec3(.74,.88,.95),.24+.76*kd);
  vec3 reflection=mix(environment,film,clamp(uOpticsControl.y*uOptics1.y*.57,0.,.80));
  float glassFresnel=clamp(uGlassAmount/.40,0.,1.);
   // Higher transmission increases edge reflection only on the glass skin.
   float baseRim=uOpticsControl.x*uOptics1.z*(fresnel+.09*pow(grazing,2.))*(1.-pearl*.15);
-  float rim=clamp(baseRim+uOpticsControl.x*glassFresnel*.55*pow(grazing,1.55),0.,mix(.61,.88,glassFresnel));
+  float rim=clamp(baseRim+uOpticsControl.x*glassFresnel*.82*pow(grazing,1.45),0.,mix(.70,.96,glassFresnel));
  color=mix(color,reflection,rim);
  // Two lobe clear coat: broad damp sheen and a sharp wet highlight.
  vec3 h1=normalize(view+key+vec3(.00001)),h2=normalize(view+fill+vec3(.00001));
@@ -5631,6 +5631,9 @@ vec3 chromaticFinish(vec3 color){
  float wet=(.24+.35*pearl+.28*metal+.22*(family>2.5?1.:0.));
  float clearCoat=clamp(uOpticsControl.x*wet*(sharp*.40+soft*.13),0.,.46);
  color=mix(color,mix(vec3(.92,.96,1.),film,.13+metal*.24),clearCoat);
+ // Localised soft halo around strong clear-coat peaks; keep fine pigment contrast.
+ float halo=smoothstep(.17,.40,clearCoat)*pow(max(dot(n,view),0.),.35);
+ color+=mix(vec3(.90,.95,1.),film,.46)*halo*.15;
  // Dim, coloured tissue still picks up a fine wet catchlight without blooming flat.
  color+=reflection*darkZone*pow(max(dot(n,h2),0.),28.)*.055*uOpticsControl.x;
  // Faux near-surface light scattering: no alpha blending, no geometry transmission.
@@ -5828,17 +5831,8 @@ void main(){
   float grazing=1.-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.,1.);
   // Dense tissue remains opaque; attenuated membranes transmit more colour.
   float thin=1.0-tissue;
-  float transmission=uGlassAmount*mix(.08,.70,thin); // Keep front-facing skin dominant over rear organs.
-  shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
-  // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
-  shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  // Opaque pseudo-translucence: pigment and subsurface colour remain on the
-  // visible surface. No alpha layering or depth/DOF disagreement.
-  float innerVein=sin(vObj.x*5.3+vObj.y*3.7+vObj.z*4.9+uTime*.18);
-  float innerCloud=.5+.5*sin(vObj.y*2.8-vObj.z*3.2+innerVein*.8);
-  vec3 buriedTint=mix(uPal2,uPal4,innerCloud);
-  float visibleTissue=uGlassAmount*(1.-pow(grazing,1.7))*mix(.22,.72,thin);
-  shaded.rgb=mix(shaded.rgb,shaded.rgb*.56+buriedTint*.44,visibleTissue);
+  // Keep original high-frequency pigments and geometry normals intact.
+  // Glass control now governs the rim optics only; no faux transmission blur.
   shaded.a=1.0;
  }
  gl_FragColor=shaded;
@@ -5960,17 +5954,8 @@ void main(){
   float grazing=1.-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.,1.);
   // Dense tissue remains opaque; attenuated membranes transmit more colour.
   float thin=1.0-tissue;
-  float transmission=uGlassAmount*mix(.08,.70,thin); // Keep front-facing skin dominant over rear organs.
-  shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
-  // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
-  shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  // Opaque pseudo-translucence: pigment and subsurface colour remain on the
-  // visible surface. No alpha layering or depth/DOF disagreement.
-  float innerVein=sin(vObj.x*5.3+vObj.y*3.7+vObj.z*4.9+uTime*.18);
-  float innerCloud=.5+.5*sin(vObj.y*2.8-vObj.z*3.2+innerVein*.8);
-  vec3 buriedTint=mix(uPal2,uPal4,innerCloud);
-  float visibleTissue=uGlassAmount*(1.-pow(grazing,1.7))*mix(.22,.72,thin);
-  shaded.rgb=mix(shaded.rgb,shaded.rgb*.56+buriedTint*.44,visibleTissue);
+  // Keep original high-frequency pigments and geometry normals intact.
+  // Glass control now governs the rim optics only; no faux transmission blur.
   shaded.a=1.0;
  }
  gl_FragColor=shaded; }
