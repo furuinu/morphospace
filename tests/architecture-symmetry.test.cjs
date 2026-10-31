@@ -229,7 +229,7 @@ test('local body is generated once and all symmetry copies retain its palette, m
 });
 test('local symmetry draw is shared by Safari compatibility and full shaders',()=>{
  assert.match(html,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&!viewer\.morph\)/);
- assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,null\)/,'local meshes must use only CPU copy placement; no GPU copy-space remapping');
  assert.match(html,/for\(const t of spec\.localGroup\.copyTransforms\)/);
  assert.match(html,/drawCopy\(model,!!t\.mirror!==!!t\.mirrorY,glassPass\)/);
  assert.match(html,/function drawLocalCopies\(baseModel,glassPass=false\)/);
@@ -247,5 +247,5 @@ test('high-fidelity instance tessellation follows copy budget and safely falls b
  assert.match(html,/localShell=morphImplicitMesh\(source,palette,g,false,n\)/);
  assert.match(html,/成長メッシュが頂点上限/);
  assert.match(html,/if\(!low\)\{/);
- assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ assert.match(html,/setCopyMotionUniforms\(gl,u,null\)/,'local meshes must use only CPU copy placement; no GPU copy-space remapping');
 });
