@@ -328,7 +328,13 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
 test('pointillist transition samples visible colour and blurs only the specimen canvas',()=>{
  assert.match(html,/function phaseCapturePointillism\(seed,count=650\)/);
  assert.match(html,/g\.drawImage\(canvas,0,0,192,192\)/);
- assert.match(html,/ctx\.fillStyle=from\[2\]/);
+ assert.match(html,/ctx\.fillStyle=t<\.5\?\(from\[2\]/);
  assert.match(html,/canvas\.style\.filter=v>0\?'blur\('/);
  assert.match(html,/phaseParticleTarget=phaseCapturePointillism\(spec\.seed\)/);
+});
+
+test('reassembly recolours particle grains from the destination specimen rather than source',()=>{
+ assert.match(html,/const release=ease\(t\/\.47\),gather=ease\(\(t-\.53\)\/\.47\)/);
+ assert.match(html,/to\[2\]\|\|'#81A9EE'/);
+ assert.match(html,/Math\.sin\(Math\.PI\*t\)\*\*1\.8/);
 });
