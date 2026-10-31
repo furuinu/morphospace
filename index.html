@@ -8022,7 +8022,7 @@ function phaseParticlesDraw(progress,source,target){
   // Do not interpolate colour between unrelated organs; recolour only
   // inside the cloud, so every arriving grain matches the target specimen.
   // Blend the two source colours continuously, avoiding a midpoint flash.
-  const readColor=value=>{const m=/^rgb\\((\\d+),(\\d+),(\\d+)\\)$/.exec(value||'');return m?[+m[1],+m[2],+m[3]]:[88,224,193]};
+  const readColor=value=>{const m=/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(value||'');return m?[+m[1],+m[2],+m[3]]:[88,224,193]};
   const ca=readColor(from[2]),cb=readColor(to[2]),mix=clamp((t-.38)/.24,0,1),smooth=mix*mix*(3-2*mix);
   ctx.fillStyle='rgb('+ca.map((v,k)=>Math.round(v+(cb[k]-v)*smooth)).join(',')+')';
   const size=2.1+(i%6)*.48;
