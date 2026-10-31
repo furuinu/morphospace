@@ -8003,13 +8003,26 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      gl.frontFace(mirrored?gl.CW:gl.CCW);
      gl.cullFace(gl.BACK);
      if(glassPass){
-       // Opaque organs of all copies are already in the colour and depth buffers.
-       gl.enable(gl.BLEND);
-       gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE);
-       gl.depthMask(false);
-       if((!$('branchSolo').checked||spec.growthModel)&&!debugOrgans)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
-       gl.depthMask(true);
-       gl.disable(gl.BLEND);
+       const shellVisible=(!$('branchSolo').checked||spec.growthModel)&&!debugOrgans;
+       if(glassPass==='depth'){
+         // Depth-only front skin: preserve organ colour but update DOF depth.
+         gl.disable(gl.BLEND);
+         gl.colorMask(false,false,false,false);
+         gl.depthMask(true);
+         gl.depthFunc(gl.LEQUAL);
+         if(shellVisible)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
+         gl.colorMask(true,true,true,true);
+       }else{
+         // Only the winning front surface may tint the underlying organs.
+         gl.depthFunc(gl.EQUAL);
+         gl.enable(gl.BLEND);
+         gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE);
+         gl.depthMask(false);
+         if(shellVisible)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
+         gl.depthMask(true);
+         gl.disable(gl.BLEND);
+         gl.depthFunc(gl.LEQUAL);
+       }
      }else{
        gl.disable(gl.BLEND);
        if(!glassAmount&&!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
@@ -8034,8 +8047,11 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  if(!hidden&&!useLocal&&spec.__mirrorRender)drawCopy(mirrorM,true);
  // Pigmented skins are drawn last, preserving opaque internal structures.
  if(!hidden&&glassAmount>0){
-  if(useLocal)drawLocalCopies(base,true);
-  else{drawCopy(mLeft,false,true);if(spec.__mirrorRender)drawCopy(mirrorM,true,true)}
+  // Resolve the skin depth for every symmetry copy before blending any skin.
+  for(const pass of ['depth','color']){
+   if(useLocal)drawLocalCopies(base,pass);
+   else{drawCopy(mLeft,false,pass);if(spec.__mirrorRender)drawCopy(mirrorM,true,pass)}
+  }
  }
  if(capturePose&&(capturePose.frame.tissues?.length||capturePose.frame.neck))drawNanoTissues(pr,cam,capturePose.frame,w,h);
  lastSceneViewProj=mul4(pr,cam);
