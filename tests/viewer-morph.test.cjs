@@ -308,3 +308,19 @@ test('phase handoff adopts prepared native meshes at opaque midpoint, then revea
  assert.equal(f.v.phaseFade,null);
  assert.equal(events.filter(e=>e==='apply').length,1);
 });
+
+test('particle phase transition does not fade the full scene or mutate topology',()=>{
+ assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
+ assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=360\)/);
+ assert.match(html,/canvas\.style\.opacity=String\(1-v\)/);
+ assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
+ assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTarget\)/);
+ assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
+});
+test('loading DNA assembles many horizontal base pairs into 3D helix without gradients',()=>{
+ const boot=scripts[scripts.length-1];
+ assert.match(boot,/const n=26,cx=w\/2/);
+ assert.match(boot,/kind:'bond'/);
+ assert.match(boot,/for\(const side of \[-1,1\]\)/);
+ assert.doesNotMatch(boot,/createLinearGradient|createRadialGradient|shadowBlur/);
+});
