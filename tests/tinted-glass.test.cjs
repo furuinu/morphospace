@@ -16,9 +16,24 @@ test('glass experiment limits each organism to 0–40% and remains reversible',(
 
 test('the existing moving pigment grammar tints both shader variants',()=>{
  assert.equal((source.match(/vec4 shaded=emissionSurfaceColor\(color,vObj\)/g)||[]).length,2);
- assert.equal((source.match(/shaded\.a=clamp\(1\.-uGlassAmount\+pow\(grazing,2\.3\)\*uGlassAmount\*\.68/g)||[]).length,2);
+ // Both shader paths must retain palette-coloured transmission with anatomical thickness.
+ assert.equal((source.match(/float tissue=tissueThickness\(vObj,vRole,vAlong\)/g)||[]).length,2);
+ assert.equal((source.match(/shaded\.a=clamp\(1\.0-transmission\+pow\(grazing,2\.3\)\*transmission\*\.52/g)||[]).length,2);
  assert.equal((source.match(/uniform float uGlassAmount;/g)||[]).length,2);
  assert.equal((source.match(/'uGlowPass','uGlassAmount','uShadeStrength'/g)||[]).length,2);
+});
+
+test('anatomical thickness modulates shading and transmission in both shader variants',()=>{
+ assert.equal((source.match(/float tissueThickness\(vec3 p,float role,float along\)/g)||[]).length,2);
+ assert.equal((source.match(/float shade=1\.0-clamp\(uShadeStrength,0\.0,0\.30\)\*\(1\.0-lambert\)\*mix\(\.67,1\.18,tissue\)/g)||[]).length,2);
+ assert.equal((source.match(/float transmission=uGlassAmount\*mix\(\.08,1\.48,thin\)/g)||[]).length,2);
+ assert.equal((source.match(/uDramaticEdge\*mix\(1\.24,\.66,tissue\)/g)||[]).length,2);
+ // No camera-angle term in the thickness field: orbiting must not change the inferred tissue mass.
+ const definitions=[...source.matchAll(/float tissueThickness\(vec3 p,float role,float along\)\{([\s\S]*?)\n\}/g)];
+ assert.equal(definitions.length,2);
+ for(const [,body] of definitions){
+  assert.doesNotMatch(body,/vView|uCameraPos|uLampDir|uRimDir/);
+ }
 });
 
 test('opaque organs precede front-only depth-safe glass; wireframe stays solid',()=>{
