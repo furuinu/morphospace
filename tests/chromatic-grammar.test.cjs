@@ -134,16 +134,25 @@ test('all four coatings are seeded, bounded and retained across saved DNA',()=>{
  assert.deepEqual(plain(result),{count:4,valid:true});
 });
 
-test('camera position inverts the actual orbit/pan view transform',()=>{
+test('global camera pose inverts orbit, pan and roll while lights follow the same world basis',()=>{
  const error=run(`(()=>{
   let error=0;
-  for(const yaw of [-2.1,0,.54,2.4])for(const pitch of [-1.1,-.18,.3,1.1]){
-   const p=cameraWorldPosition(yaw,pitch,13,2,-3),m=mul4(translate(-13),mul4(rotX(-pitch),mul4(rotY(-yaw),translate3(-2,3,0))));
-   for(let r=0;r<3;r++)error=Math.max(error,Math.abs(m[r]*p[0]+m[4+r]*p[1]+m[8+r]*p[2]+m[12+r]));
-  }
+  const saved=viewerCameraMatrix;
+  try{
+   for(const yaw of [-2.1,0,.54,2.4])for(const pitch of [-1.1,-.18,.3,1.1])for(const roll of [-.7,0,.6]){
+    const m=mul4(translate(-13),mul4(rotZ(-roll),mul4(rotX(-pitch),mul4(rotY(-yaw),translate3(-2,3,0)))));
+    viewerCameraMatrix=()=>m;
+    const pose=globalCameraPose(),p=pose.position;
+    for(let r=0;r<3;r++)error=Math.max(error,Math.abs(m[r]*p[0]+m[4+r]*p[1]+m[8+r]*p[2]+m[12+r]));
+    for(const [offset,axis] of [[[1,0,0],pose.right],[[0,1,0],pose.up],[[0,0,1],pose.back]]){
+     const actual=cameraRigDirection(offset,pose);
+     for(let r=0;r<3;r++)error=Math.max(error,Math.abs(actual[r]-axis[r]));
+    }
+   }
+  }finally{viewerCameraMatrix=saved;}
   return error;
  })()`);
- assert.ok(error<.00001,'reflections must use the camera that actually rendered the specimen');
+ assert.ok(error<.00001,'lighting and Fresnel view vectors must agree with the global camera matrix');
 });
 
 test('shared views retain both optical controls and accept old links without them',()=>{
