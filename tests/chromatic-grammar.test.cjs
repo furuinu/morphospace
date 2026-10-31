@@ -137,8 +137,11 @@ test('all four coatings are seeded, bounded and retained across saved DNA',()=>{
 test('global camera pose inverts orbit, pan and roll while lights follow the same world basis',()=>{
  const error=run(`(()=>{
   let error=0;
-  const saved=viewerCameraMatrix;
+  const saved=typeof viewerCameraMatrix==='function'?viewerCameraMatrix:null;
   try{
+   // The headless core intentionally stops before the UI's viewerCameraMatrix declaration.
+   // Inject a controlled view matrix; test the real globalCameraPose() against it.
+   var viewerCameraMatrix=()=>null;
    for(const yaw of [-2.1,0,.54,2.4])for(const pitch of [-1.1,-.18,.3,1.1])for(const roll of [-.7,0,.6]){
     const m=mul4(translate(-13),mul4(rotZ(-roll),mul4(rotX(-pitch),mul4(rotY(-yaw),translate3(-2,3,0)))));
     viewerCameraMatrix=()=>m;
