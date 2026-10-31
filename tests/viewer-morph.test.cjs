@@ -190,7 +190,7 @@ test('texture weights and geometry uploads advance together on each morph frame'
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
  const {f,workers,events}=runtime(),original=f.meshes,before=Array.from(a.data);f.tickViewer(.1);
  assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.v.morph,null);assert.equal(f.meshes,original);assert.equal(events.length,0);
- const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.equal(request.from[0].data,a.data);assert.deepEqual(Array.from(a.data),before);
+ const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.deepEqual(Array.from(request.from),[],'phase transfer must not clone source topology');assert.deepEqual(Array.from(a.data),before);
  f.tickViewer(.1);assert.equal(workers.length,1);
 });
 
@@ -271,3 +271,27 @@ test('the real Worker builds identical target geometry while the main event loop
   }
  }
  });
+
+test('production phase transfer preserves native geometry and does not build intermediate topology',()=>{
+ assert.match(src,/const batches=\[\]; \/\/ Native-mesh phase transition/);
+ assert.match(src,/const from=\[\]; \/\/ No cross-topology correspondence/);
+ assert.match(src,/viewer\.morph=\{mode:'phase'/);
+ assert.match(src,/if\(m&&m\.mode==='phase'\)/);
+ assert.match(src,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&\(!viewer\.morph\|\|viewer\.morph\.mode==='phase'\)\)/);
+});
+test('phase handoff adopts prepared native meshes at opaque midpoint, then reveals them',()=>{
+ const {f,workers,events}=runtime(),source=f.meshes;
+ f.$('glview').parentElement={style:{setProperty(){}}};
+ f.startViewerMorph();
+ const target=deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ assert.equal(f.v.morph.mode,'phase');
+ assert.equal(f.meshes,source,'first half must keep all source meshes');
+ for(let i=0;i<14;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);
+ assert.equal(f.spec,target);
+ assert.ok(f.v.phaseFade);
+ for(let i=0;i<14;i++)f.tickViewer(.12);
+ assert.equal(f.v.phaseFade,null);
+ assert.equal(events.filter(e=>e==='apply').length,1);
+});
