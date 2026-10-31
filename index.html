@@ -5832,7 +5832,14 @@ void main(){
   shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
   // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
   shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.62,.72,1.0);
+  // Opaque pseudo-translucence: pigment and subsurface colour remain on the
+  // visible surface. No alpha layering or depth/DOF disagreement.
+  float innerVein=sin(vObj.x*5.3+vObj.y*3.7+vObj.z*4.9+uTime*.18);
+  float innerCloud=.5+.5*sin(vObj.y*2.8-vObj.z*3.2+innerVein*.8);
+  vec3 buriedTint=mix(uPal2,uPal4,innerCloud);
+  float visibleTissue=uGlassAmount*(1.-pow(grazing,1.7))*mix(.22,.72,thin);
+  shaded.rgb=mix(shaded.rgb,shaded.rgb*.56+buriedTint*.44,visibleTissue);
+  shaded.a=1.0;
  }
  gl_FragColor=shaded;
  }
@@ -5957,7 +5964,14 @@ void main(){
   shaded.rgb=mix(shaded.rgb,pow(max(shaded.rgb,vec3(.02)),vec3(.78)),uGlassAmount*.18*thin);
   // Soft colour-dependent sub-surface return; do not bleach inherited pigments.
   shaded.rgb+=shaded.rgb*(.07*thin*uGlassAmount)*pow(grazing,1.5);
-  shaded.a=clamp(1.0-transmission+pow(grazing,2.3)*transmission*.62,.72,1.0);
+  // Opaque pseudo-translucence: pigment and subsurface colour remain on the
+  // visible surface. No alpha layering or depth/DOF disagreement.
+  float innerVein=sin(vObj.x*5.3+vObj.y*3.7+vObj.z*4.9+uTime*.18);
+  float innerCloud=.5+.5*sin(vObj.y*2.8-vObj.z*3.2+innerVein*.8);
+  vec3 buriedTint=mix(uPal2,uPal4,innerCloud);
+  float visibleTissue=uGlassAmount*(1.-pow(grazing,1.7))*mix(.22,.72,thin);
+  shaded.rgb=mix(shaded.rgb,shaded.rgb*.56+buriedTint*.44,visibleTissue);
+  shaded.a=1.0;
  }
  gl_FragColor=shaded; }
 }`;
@@ -8029,9 +8043,9 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
        if(debugBias)gl.disable(gl.POLYGON_OFFSET_FILL);
      }else{
        gl.disable(gl.BLEND);
-       if(!glassAmount&&!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
-       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
-       if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
+       if(!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
+       if(!debugShell&&!debugGlass&&!glassAmount)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
+       if(!debugShell&&!debugGlass&&!glassAmount)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
    }
@@ -8050,13 +8064,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):(useLocal?drawLocalCopies(base):drawCopy(mLeft,false));
  if(!hidden&&!useLocal&&spec.__mirrorRender)drawCopy(mirrorM,true);
  // Pigmented skins are drawn last, preserving opaque internal structures.
- if(!hidden&&glassAmount>0){
-  // Resolve the skin depth for every symmetry copy before blending any skin.
-  for(const pass of ['depth','color']){
-   if(useLocal)drawLocalCopies(base,pass);
-   else{drawCopy(mLeft,false,pass);if(spec.__mirrorRender)drawCopy(mirrorM,true,pass)}
-  }
- }
+ // Pseudo-translucent skin is already drawn as a single opaque pass.
+ // Its surface depth is naturally available to DOF; no glass colour pass.
  if(capturePose&&(capturePose.frame.tissues?.length||capturePose.frame.neck))drawNanoTissues(pr,cam,capturePose.frame,w,h);
  lastSceneViewProj=mul4(pr,cam);
  drawWorldSnow(lastSceneViewProj,!!(lens&&lens.depthTexture&&lens.dofProgram&&$('macroDof').checked&&!$('wire').checked),cam);
