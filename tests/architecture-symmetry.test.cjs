@@ -234,7 +234,8 @@ test('local symmetry draw is shared by Safari compatibility and full shaders',()
  assert.match(html,/drawCopy\(model,!!t\.mirror!==!!t\.mirrorY,glassPass\)/);
  assert.match(html,/function drawLocalCopies\(baseModel,glassPass=false\)/);
  assert.match(html,/function drawCopy\(model,mirrored=false,glassPass=false\)/);
- assert.match(html,/if\(useLocal\)drawLocalCopies\(base,true\)/);
+ assert.match(html,/for\(const pass of \['depth','color'\]\)/);
+ assert.match(html,/if\(useLocal\)drawLocalCopies\(base,pass\)/);
  assert.match(html,/drawUploaded\(useLocal\?meshes\.localShell:meshes\.shell/);
  assert.match(html,/data=\(sp\.localGroup\?\.shell\|\|sp\.shell\)\.data/);
  assert.match(html,/const srcVert=compatibility\?compatibleVert:vert/);
