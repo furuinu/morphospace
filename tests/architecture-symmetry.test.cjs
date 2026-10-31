@@ -228,7 +228,7 @@ test('local body is generated once and all symmetry copies retain its palette, m
  assert.equal(d.localPalette,true,'pigment frame must belong to local source');
 });
 test('local symmetry draw is shared by Safari compatibility and full shaders',()=>{
- assert.match(html,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&!viewer\.morph\)/);
+ assert.match(html,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&\(!viewer\.morph\|\|viewer\.morph\.mode==='phase'\)\)/);
  assert.match(html,/setCopyMotionUniforms\(gl,u,null\)/,'local meshes must use only CPU copy placement; no GPU copy-space remapping');
  assert.match(html,/for\(const t of spec\.localGroup\.copyTransforms\)/);
  assert.match(html,/drawCopy\(model,!!t\.mirror!==!!t\.mirrorY,glassPass\)/);
