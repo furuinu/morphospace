@@ -16,16 +16,12 @@ test('glass experiment limits each organism to 0–40% and remains reversible',(
  assert.match(source,/Math\.max\(0,Math\.min\(\.40,Number\(\$\('transparency'\)\.value\)\/100\|\|0\)\)/);
 });
 
-test('opaque pseudo-translucence is present in both shaders and preserves surface depth',()=>{
- for(const token of ['shaded.a=1.0;','float innerVein=','float innerCloud=','float tissue=tissueThickness(vObj,vRole,vAlong)','float tissueThickness(vec3 p,float role,float along)']){
-  assert.equal(source.split(token).length-1,2,token);
- }
- const begin=source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)');
- const draw=source.slice(begin,source.indexOf('const pose=wholeBodyPose(',begin));
- assert.ok(draw.includes('if(!debugOrgans&&'));
- assert.ok(draw.includes('drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount)'));
- assert.ok(draw.includes('!debugShell&&!debugGlass&&!glassAmount'));
- assert.ok(source.includes('gl.uniform1f(v.uGlassAmount,glass)'));
+test('opaque skin preserves fine pigments and normal detail without pseudo-transmission',()=>{
+ assert.equal(source.split('shaded.a=1.0;').length-1,2);
+ assert.equal(source.split('float tissue=tissueThickness(vObj,vRole,vAlong)').length-1,2);
+ for(const removed of ['float innerVein=','float innerCloud=','vec3 buriedTint=','float visibleTissue=','float transmission=uGlassAmount'])assert.ok(!source.includes(removed),removed);
+ assert.ok(source.includes('drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount)'));
+ assert.ok(source.includes('!debugShell&&!debugGlass&&!glassAmount'));
  assert.ok(!source.includes("for(const pass of ['depth','color'])"));
 });
 
@@ -49,10 +45,11 @@ test('glass transparency is deterministic per individual and covers the 0–40% 
  assert.match(source,/\$\('transNum'\)\.textContent=percent\+'%'/);
 });
 
-test('fresnel and structural colour remain available on opaque skin',()=>{
- assert.ok(source.includes('float glassFresnel=clamp(uGlassAmount/.40,0.,1.)'));
- assert.ok(source.includes('baseRim+uOpticsControl.x*glassFresnel*.55*pow(grazing,1.55)'));
- assert.ok(source.includes('float visibleTissue=uGlassAmount'));
+test('Fresnel, interference pigment, all lights and selective highlight halo strengthened',()=>{
+ assert.ok(source.includes('glassFresnel*.82*pow(grazing,1.45)'));
+ assert.ok(source.includes('float filmAmount=clamp(uOpticsControl.y*uOptics1.y*coverage*(.15+.58*pow(grazing,.7))'));
+ assert.ok(source.includes('float illumination=1.10*(globalAmbient+uLightLevels.x*kd+uLightLevels.y*fd+uLightLevels.z*pow(bd,1.35)+uLowerFillPower*lowerFill)'));
+ assert.ok(source.includes('float halo=smoothstep(.17,.40,clearCoat)'));
 });
 
 test('all inline JavaScript remains parseable',()=>{
