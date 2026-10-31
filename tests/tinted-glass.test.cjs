@@ -11,7 +11,9 @@ assert.ok(source,'specimen GPU renderer exists');
 test('glass experiment limits each organism to 0–40% and remains reversible',()=>{
  assert.match(html,/色ガラス透過（個体別）/);
  assert.match(html,/id="transparency" max="40" min="0" step="1" type="range" value="0"/);
- assert.match(source,/const glassAmount=wire\?0:Math\.max\(0,Math\.min\(\.40,Number\(\$\('transparency'\)\.value\)\/100\|\|0\)\)/);
+ assert.match(source,/const depthDebug=new URLSearchParams\(location\.search\)\.get\('depthDebug'\)/);
+ assert.match(source,/const glassAmount=debugShell\|\|debugOrgans\|\|wire\?0:debugGlass\?/);
+ assert.match(source,/Math\.max\(0,Math\.min\(\.40,Number\(\$\('transparency'\)\.value\)\/100\|\|0\)\)/);
 });
 
 test('the existing moving pigment grammar tints both shader variants',()=>{
