@@ -50,6 +50,8 @@ jobs:
         run: |
           python3 -m pip install --quiet Pillow==11.3.0
           python3 scripts/generate_home_icons.py
+          cp icons/apple-touch-icon.png apple-touch-icon.png
+          cp icons/apple-touch-icon.png apple-touch-icon-precomposed.png
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -77,6 +79,8 @@ jobs:
           test -s index.html
           test -s manifest.webmanifest
           test -s icons/apple-touch-icon.png
+          test -s apple-touch-icon.png
+          test -s apple-touch-icon-precomposed.png
           grep -q 'rel="apple-touch-icon"' index.html
           grep -q 'MORPHOSPACE' index.html
           # XServer still runs its historical check for this inert marker.
