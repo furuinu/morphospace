@@ -7963,7 +7963,11 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  gl.disable(gl.BLEND);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
  let wire=$('wire').checked;
  // Optional coloured glass; 0% preserves the opaque original.
- const glassAmount=wire?0:Math.max(0,Math.min(.40,Number($('transparency').value)/100||0));
+ // Diagnostic-only render isolation, activated by an explicit URL parameter.
+ // No parameter means the production render path is unchanged.
+ const depthDebug=new URLSearchParams(location.search).get('depthDebug');
+ const debugShell=depthDebug==='shell',debugOrgans=depthDebug==='organs',debugGlass=depthDebug==='glass-shell';
+ const glassAmount=debugShell||debugOrgans||wire?0:debugGlass?Math.max(.30,Math.min(.40,Number($('transparency').value)/100||0)):Math.max(0,Math.min(.40,Number($('transparency').value)/100||0));
  const useLocal=!!(spec.localGroup&&meshes.localShell&&!viewer.morph);
  function drawLocalCopies(baseModel,glassPass=false){
   // All parts share one canonical tissue clock. Each whole symmetry copy
@@ -8003,14 +8007,14 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
        gl.enable(gl.BLEND);
        gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE);
        gl.depthMask(false);
-       if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
+       if((!$('branchSolo').checked||spec.growthModel)&&!debugOrgans)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
        gl.depthMask(true);
        gl.disable(gl.BLEND);
      }else{
        gl.disable(gl.BLEND);
-       if(!glassAmount&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
-       for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
-       drawGPUMotileCilia(mvp,model,false);
+       if(!glassAmount&&!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0);
+       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
+       if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
    }
