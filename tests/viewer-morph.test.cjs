@@ -335,6 +335,13 @@ test('pointillist particles are sampled from visible specimen colour and blur th
 test('restored 650 drifting particles are blurred independently of the background',()=>{
  assert.match(html,/phase-particle-canvas\{[^}]*filter:blur\(2\.4px\)/);
  assert.match(html,/const scatter=Math\.sin\(Math\.PI\*t\)\*\*1\.8/);
- assert.match(html,/const mix=clamp\(\(t-\.38\)\/\.24,0,1\)/);
+ assert.match(html,/mix=clamp\(\(t-\.38\)\/\.24,0,1\)/);
  assert.match(html,/const ca=readColor\(from\[2\]\),cb=readColor\(to\[2\]\)/);
+});
+
+test('particle RGB parsing accepts actual canvas rgb() strings',()=>{
+ const match=html.match(/const readColor=value=>([^\n]+);/);
+ assert.ok(match,'particle palette parser must exist');
+ assert.match(match[0],/\\s\*/,'colour parser accepts spaces');
+ assert.doesNotMatch(match[0],/\\\\d/,'do not double-escape digit classes in JS regex literals');
 });
