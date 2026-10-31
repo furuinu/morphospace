@@ -133,7 +133,7 @@ test('countdown hides on stopped interval, missing next specimen or hidden tab; 
 });
 test('timer pauses when hidden and phase transition adopts prepared meshes once',()=>{
  const {f,workers,events}=runtime();
- f.$('glview').parentElement={style:{setProperty(){}}};
+ f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
  f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);
  assert.equal(f.v.elapsed,0);f.document.hidden=false;
  f.startViewerMorph();
@@ -189,7 +189,7 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
 
 test('phase transfer never streams interpolated polygons into the GPU',()=>{
  const {f,workers,events}=runtime();
- f.$('glview').parentElement={style:{setProperty(){}}};
+ f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
  f.startViewerMorph();
  deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
@@ -294,7 +294,7 @@ test('production phase transfer preserves native geometry and does not build int
 });
 test('phase handoff adopts prepared native meshes at opaque midpoint, then reveals them',()=>{
  const {f,workers,events}=runtime(),source=f.meshes;
- f.$('glview').parentElement={style:{setProperty(){}}};
+ f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
  f.startViewerMorph();
  const target=deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
