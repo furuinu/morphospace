@@ -53,8 +53,11 @@ test('opaque organs precede front-only depth-safe glass; wireframe stays solid',
  const second=source.indexOf('if(!hidden&&glassAmount>0)');
  assert.ok(second>source.indexOf('const mvpLeft=hidden?'));
  assert.ok(second<source.indexOf('if(capturePose&&(capturePose.frame.tissues'));
- assert.match(source,/if\(useLocal\)drawLocalCopies\(base,true\)/);
- assert.match(source,/drawCopy\(mirrorM,true,true\)/);
+ assert.match(source,/if\(useLocal\)drawLocalCopies\(base,pass\)/);
+ assert.match(source,/drawCopy\(mirrorM,true,pass\)/);
+ assert.match(source,/for\(const pass of \['depth','color'\]\)/);
+ assert.match(draw,/gl\.colorMask\(false,false,false,false\)/);
+ assert.match(draw,/gl\.depthFunc\(gl\.EQUAL\)/);
 });
 
 test('the view state is saved without shifting historical share codec keys',()=>{
