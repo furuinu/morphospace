@@ -17,17 +17,16 @@ test('glass experiment limits each organism to 0–40% and remains reversible',(
 });
 
 test('opaque pseudo-translucence is present in both shaders and preserves surface depth',()=>{
- assert.equal((source.match(/shaded\\.a=1\\.0;/g)||[]).length,2);
- assert.equal((source.match(/float innerVein=/g)||[]).length,2);
- assert.equal((source.match(/float innerCloud=/g)||[]).length,2);
- assert.equal((source.match(/float tissue=tissueThickness\\(vObj,vRole,vAlong\\)/g)||[]).length,2);
- assert.equal((source.match(/float tissueThickness\\(vec3 p,float role,float along\\)/g)||[]).length,2);
- const draw=source.slice(source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)'),source.indexOf('const pose=wholeBodyPose(',source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)')));
- assert.match(draw,/if\\(!debugOrgans&&/);
- assert.match(draw,/drawUploaded\\(useLocal\\?meshes\\.localShell:meshes\\.shell,1,false,0,0,glassAmount\\)/);
- assert.match(draw,/!debugShell&&!debugGlass&&!glassAmount/);
- assert.match(source,/gl\\.uniform1f\\(v\\.uGlassAmount,glass\\)/);
- assert.doesNotMatch(source,/for\\(const pass of \\['depth','color'\\]\\)/);
+ for(const token of ['shaded.a=1.0;','float innerVein=','float innerCloud=','float tissue=tissueThickness(vObj,vRole,vAlong)','float tissueThickness(vec3 p,float role,float along)']){
+  assert.equal(source.split(token).length-1,2,token);
+ }
+ const begin=source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)');
+ const draw=source.slice(begin,source.indexOf('const pose=wholeBodyPose(',begin));
+ assert.ok(draw.includes('if(!debugOrgans&&'));
+ assert.ok(draw.includes('drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount)'));
+ assert.ok(draw.includes('!debugShell&&!debugGlass&&!glassAmount'));
+ assert.ok(source.includes('gl.uniform1f(v.uGlassAmount,glass)'));
+ assert.ok(!source.includes("for(const pass of ['depth','color'])"));
 });
 
 test('the view state is saved without shifting historical share codec keys',()=>{
@@ -51,9 +50,9 @@ test('glass transparency is deterministic per individual and covers the 0–40% 
 });
 
 test('fresnel and structural colour remain available on opaque skin',()=>{
- assert.match(source,/float glassFresnel=clamp\\(uGlassAmount\\/\\.40,0\\.,1\\.\\)/);
- assert.match(source,/baseRim\\+uOpticsControl\\.x\\*glassFresnel\\*\\.55\\*pow\\(grazing,1\\.55\\)/);
- assert.match(source,/float visibleTissue=uGlassAmount/);
+ assert.ok(source.includes('float glassFresnel=clamp(uGlassAmount/.40,0.,1.)'));
+ assert.ok(source.includes('baseRim+uOpticsControl.x*glassFresnel*.55*pow(grazing,1.55)'));
+ assert.ok(source.includes('float visibleTissue=uGlassAmount'));
 });
 
 test('all inline JavaScript remains parseable',()=>{
