@@ -16,48 +16,18 @@ test('glass experiment limits each organism to 0–40% and remains reversible',(
  assert.match(source,/Math\.max\(0,Math\.min\(\.40,Number\(\$\('transparency'\)\.value\)\/100\|\|0\)\)/);
 });
 
-test('the existing moving pigment grammar tints both shader variants',()=>{
- assert.equal((source.match(/vec4 shaded=emissionSurfaceColor\(color,vObj\)/g)||[]).length,2);
- // Both shader paths must retain palette-coloured transmission and preserve the front-surface opacity floor.
- assert.equal((source.match(/float tissue=tissueThickness\(vObj,vRole,vAlong\)/g)||[]).length,2);
- assert.equal((source.match(/shaded\.a=clamp\(1\.0-transmission\+pow\(grazing,2\.3\)\*transmission\*\.62/g)||[]).length,2);
- assert.equal((source.match(/uniform float uGlassAmount;/g)||[]).length,2);
- assert.equal((source.match(/'uGlowPass','uGlassAmount','uShadeStrength'/g)||[]).length,2);
-});
-
-test('anatomical thickness modulates shading and transmission in both shader variants',()=>{
- assert.equal((source.match(/float tissueThickness\(vec3 p,float role,float along\)/g)||[]).length,2);
- assert.equal((source.match(/float shade=1\.0-clamp\(uShadeStrength,0\.0,0\.30\)\*\(1\.0-lambert\)\*mix\(\.67,1\.18,tissue\)/g)||[]).length,2);
- assert.equal((source.match(/float transmission=uGlassAmount\*mix\(\.08,\.70,thin\)/g)||[]).length,2);
- assert.equal((source.match(/uDramaticEdge\*mix\(1\.24,\.66,tissue\)/g)||[]).length,2);
- // Thickness stays object-space; angle changes only the final opacity, not the anatomy.
- assert.equal((source.match(/shaded\.a=clamp\(1\.0-transmission\+pow\(grazing,2\.3\)\*transmission\*\.62,\.72,1\.0\)/g)||[]).length,2);
- // No camera-angle term in the thickness field: orbiting must not change the inferred tissue mass.
- const definitions=[...source.matchAll(/float tissueThickness\(vec3 p,float role,float along\)\{([\s\S]*?)\n\}/g)];
- assert.equal(definitions.length,2);
- for(const [,body] of definitions){
-  assert.doesNotMatch(body,/vView|uCameraPos|uLampDir|uRimDir/);
- }
-});
-
-test('opaque organs precede front-only depth-safe glass; wireframe stays solid',()=>{
- const begin=source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)');
- const end=source.indexOf('const pose=wholeBodyPose(',begin);
- const draw=source.slice(begin,end);
- assert.match(draw,/if\(glassPass\)/);
- assert.match(draw,/gl\.blendFuncSeparate\(gl\.SRC_ALPHA,gl\.ONE_MINUS_SRC_ALPHA,gl\.ZERO,gl\.ONE\)/);
- assert.match(draw,/gl\.depthMask\(false\)/);
- assert.match(draw,/gl\.depthMask\(true\)/);
- assert.match(draw,/if\(!glassAmount&&/);
- assert.match(draw,/if\(wire\)/);
- const second=source.indexOf('if(!hidden&&glassAmount>0)');
- assert.ok(second>source.indexOf('const mvpLeft=hidden?'));
- assert.ok(second<source.indexOf('if(capturePose&&(capturePose.frame.tissues'));
- assert.match(source,/if\(useLocal\)drawLocalCopies\(base,pass\)/);
- assert.match(source,/drawCopy\(mirrorM,true,pass\)/);
- assert.match(source,/for\(const pass of \['depth','color'\]\)/);
- assert.match(draw,/gl\.colorMask\(false,false,false,false\)/);
- assert.match(draw,/gl\.depthFunc\(gl\.EQUAL\)/);
+test('opaque pseudo-translucence is present in both shaders and preserves surface depth',()=>{
+ assert.equal((source.match(/shaded\\.a=1\\.0;/g)||[]).length,2);
+ assert.equal((source.match(/float innerVein=/g)||[]).length,2);
+ assert.equal((source.match(/float innerCloud=/g)||[]).length,2);
+ assert.equal((source.match(/float tissue=tissueThickness\\(vObj,vRole,vAlong\\)/g)||[]).length,2);
+ assert.equal((source.match(/float tissueThickness\\(vec3 p,float role,float along\\)/g)||[]).length,2);
+ const draw=source.slice(source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)'),source.indexOf('const pose=wholeBodyPose(',source.indexOf('function drawCopy(model,mirrored=false,glassPass=false)')));
+ assert.match(draw,/if\\(!debugOrgans&&/);
+ assert.match(draw,/drawUploaded\\(useLocal\\?meshes\\.localShell:meshes\\.shell,1,false,0,0,glassAmount\\)/);
+ assert.match(draw,/!debugShell&&!debugGlass&&!glassAmount/);
+ assert.match(source,/gl\\.uniform1f\\(v\\.uGlassAmount,glass\\)/);
+ assert.doesNotMatch(source,/for\\(const pass of \\['depth','color'\\]\\)/);
 });
 
 test('the view state is saved without shifting historical share codec keys',()=>{
@@ -80,14 +50,10 @@ test('glass transparency is deterministic per individual and covers the 0–40% 
  assert.match(source,/\$\('transNum'\)\.textContent=percent\+'%'/);
 });
 
-test('transparency increases pigment-glass Fresnel but not the opaque organ pass',()=>{
- assert.match(source,/float glassFresnel=clamp\(uGlassAmount\/\.40,0\.,1\.\)/);
- assert.match(source,/baseRim\+uOpticsControl\.x\*glassFresnel\*\.55\*pow\(grazing,1\.55\)/);
- const rim=glass=>.15+Math.min(1,glass/.40)*.55*Math.pow(.7,1.55);
- assert.ok(rim(.40)>rim(.20)&&rim(.20)>rim(0));
- assert.match(source,/drawUploaded\(useLocal\?meshes\.localShell:meshes\.shell,1,false,0,0,glassAmount\)/);
- assert.match(source,/for\(const pt of \(useLocal\?meshes\.localParts:meshes\.parts\)\)/);
- assert.match(source,/gl\.uniform1f\(v\.uGlassAmount,glass\)/);
+test('fresnel and structural colour remain available on opaque skin',()=>{
+ assert.match(source,/float glassFresnel=clamp\\(uGlassAmount\\/\\.40,0\\.,1\\.\\)/);
+ assert.match(source,/baseRim\\+uOpticsControl\\.x\\*glassFresnel\\*\\.55\\*pow\\(grazing,1\\.55\\)/);
+ assert.match(source,/float visibleTissue=uGlassAmount/);
 });
 
 test('all inline JavaScript remains parseable',()=>{
