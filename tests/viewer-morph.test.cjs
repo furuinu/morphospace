@@ -131,12 +131,20 @@ test('countdown hides on stopped interval, missing next specimen or hidden tab; 
  assert.equal(circle.hidden,true,'closing viewer hides the timer immediately');
  assert.equal(f.v.seconds,30);
 });
-test('timer pauses for hidden pages and completes a morph once, releasing only transient buffers',()=>{const {f,events}=runtime();f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);assert.equal(f.v.elapsed,0);f.document.hidden=false;
- const source=f.spec,target={id:'target'},original=f.meshes,prepared={shell:{buffer:'prepared'},parts:[],cilia:[]};const finalInterpolation=[];f.interpolateMorphBatch=(batch,t)=>{finalInterpolation.push(t)};f.v.morph={source,target,index:1,originalMeshes:original,originalRigs:f.rigMeshes,targetMeshes:prepared,targetDistance:15,batches:[{buffer:'transient',data:new Float32Array(17)}],elapsed:2.79,lastUpload:0,fromDistance:20,toDistance:30,t:0};f.tickViewer(.1);
- assert.ok(f.v.morph,'Fully interpolated coating must render before adoption');assert.deepEqual(finalInterpolation,[1]);f.tickViewer(.016);
- assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.meshes,prepared);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(e=>e==='apply').length,1);assert.deepEqual(events,['upload','apply','metadata'],'Final GPU endpoint is uploaded before adopting the prepared specimen');assert.ok(f.v.retired.some(m=>m.buffer==='transient'));f.drainViewerRetired();assert.ok(events.includes('delete:transient'));assert.ok(!events.includes('delete:prepared'));
+test('timer pauses when hidden and phase transition adopts prepared meshes once',()=>{
+ const {f,workers,events}=runtime();
+ f.$('glview').parentElement={style:{setProperty(){}}};
+ f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);
+ assert.equal(f.v.elapsed,0);f.document.hidden=false;
+ f.startViewerMorph();
+ const target=deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ for(let i=0;i<14;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(f.v.phaseFade);
+ assert.equal(events.filter(e=>e==='apply').length,1);
+ for(let i=0;i<14;i++)f.tickViewer(.12);
+ assert.equal(f.v.phaseFade,null);
 });
-
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
  const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
  for(const t of [.1,.5,.9]){ctx.interpolateMorphBatch(batches[0],t);ctx.interpolateMorphBatch(batches[1],t);assert.deepEqual(Array.from(batches[0].data.slice(0,3)),Array.from(batches[1].data.slice(0,3)))}
@@ -179,12 +187,17 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
  assert.equal(result.source,result.a);assert.equal(result.target,result.b);assert.equal(result.reset,0);assert.equal(result.separate,true);
 });
 
-test('texture weights and geometry uploads advance together on each morph frame',()=>{
- const {f,events}=runtime();let interpolations=0;f.interpolateMorphBatch=()=>{interpolations++};
- f.v.morph={source:f.spec,target:{},batches:[{data:new Float32Array(17),buffer:'morph-buffer'}],elapsed:.1,lastUpload:.1,t:0,fromDistance:20,toDistance:30};
- f.tickViewer(1/120);const a=f.v.morph.t;assert.equal(events.filter(e=>e==='upload').length,1);
- f.tickViewer(1/120);assert.ok(f.v.morph.t>a);assert.equal(events.filter(e=>e==='upload').length,2);
- assert.equal(interpolations,2);
+test('phase transfer never streams interpolated polygons into the GPU',()=>{
+ const {f,workers,events}=runtime();
+ f.$('glview').parentElement={style:{setProperty(){}}};
+ f.startViewerMorph();
+ deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ const initialUploads=events.filter(e=>e==='upload').length;
+ for(let i=0;i<9;i++)f.tickViewer(.12);
+ assert.equal(events.filter(e=>e==='upload').length,initialUploads);
+ assert.equal(f.v.morph.mode,'phase');
+ assert.equal(f.v.morph.batches.length,0);
 });
 
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
