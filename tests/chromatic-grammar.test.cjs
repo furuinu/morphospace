@@ -180,6 +180,39 @@ test('camera orbit and pan are computed in world coordinates independently of or
  assert.ok(error<.00002,'camera view matrix and global pan/orbit must agree');
 });
 
+test('local copies deform once in canonical space under one organism root',()=>{
+ const ui=scripts[2];
+ const begin=ui.indexOf('function drawLocalCopies(baseModel,glassPass=false)');
+ const end=ui.indexOf('function drawCopy(model,mirrored=false,glassPass=false)',begin);
+ assert.ok(begin>0&&end>begin,'local specimen render path must exist');
+ const block=ui.slice(begin,end);
+ assert.match(block,/setCopyMotionUniforms\(gl,u,null\)/,'GPU must not inverse-map CPU-positioned local copies');
+ assert.match(block,/mul4\(baseModel,articulatedCopyMatrix\(t,pose,spec\.growthModel\.copyLayout\)\)/);
+ assert.doesNotMatch(block,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
+ // Camera rotation changes the projection, not the world-space placement of copies.
+ const error=run(`(()=>{
+  const t={axis:'y',angle:.37,p:[1.4,-.7,.2],scale:1,mirror:false,mirrorY:false};
+  const joint={x:.12,y:-.08,z:.03};
+  const root=mul4(translate3(.2,.3,-.4),rotY(.4));
+  const world=mul4(root,articulatedCopyMatrix(t,joint,2));
+  const p=[.2,.3,.4,1.],actual=[0,0,0,0];
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++)actual[i]+=world[j*4+i]*p[j];
+  let err=0;
+  for(const yaw of [-2.1,-.4,.3,2.2]){
+   const camera=mul4(translate(-15),rotY(-yaw));
+   // Camera is applied AFTER the unchanged organism world transform.
+   const correct=mul4(camera,world),observed=actual.map((_,i)=>camera[i*4]*actual[0]+camera[i*4+1]*actual[1]+camera[i*4+2]*actual[2]+camera[i*4+3]*actual[3]);
+   for(let i=0;i<4;i++){
+    let expected=0;for(let j=0;j<4;j++)expected+=correct[j*4+i]*p[j];
+    const viewPoint=camera[i]*actual[0]+camera[4+i]*actual[1]+camera[8+i]*actual[2]+camera[12+i]*actual[3];
+    err=Math.max(err,Math.abs(expected-viewPoint));
+   }
+  }
+  return err;
+ })()`);
+ assert.ok(error<.00001);
+});
+
 test('shared views retain both optical controls and accept old links without them',()=>{
  const result=run(`(()=>{
   const g=makeFounderGenome(120003,0,0),record={id:'optics',name:'光彩標本',seed:g.seed,genome:g,generation:0,parents:[]};
