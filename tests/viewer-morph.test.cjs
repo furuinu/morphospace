@@ -17,7 +17,11 @@ test('morph preserves every triangle of unequal topology at both endpoints with 
   const native=batch.side==='incoming'?batch.end:batch.start;
   for(let i=0;i<batch.data.length;i++)assert.ok(Math.abs(batch.data[i]-native[i])<1e-5);
   ctx.interpolateMorphBatch(batch,batch.side==='incoming'?0:1);
-  for(let i=0;i<batch.data.length;i++)if(i%17<3)assert.ok(Math.abs(batch.data[i])<1e-5);
+  // Non-native endpoint must stay in anatomical space instead of collapsing
+  // every vertex to the origin (the previous implementation's visual defect).
+  const mapped=batch.side==='incoming'?batch.start:batch.end;
+  for(let i=0;i<batch.data.length;i++)if(i%17<3)assert.ok(Math.abs(batch.data[i]-mapped[i])<1e-5);
+  assert.ok(Array.from(batch.data).some((v,i)=>i%17<3&&Math.abs(v)>1e-4));
  }
  const faces=result.slice(1).map(x=>Array.from(x.end).filter((_,i)=>i%17<3).join(','));assert.equal(new Set(faces).size,2);
  assert.deepEqual(Array.from(a.data),sourceBefore);assert.deepEqual(Array.from(b.data),targetBefore);
