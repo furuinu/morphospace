@@ -48,7 +48,7 @@ test('captured-only playback adopts saved identities without changing the galler
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
  const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
  f.startViewerMorph();assert.equal(workers[0].request.record.seed,102);deliver(f,workers[0],{seed:102,style:0,genome:{},parts:[],rigs:[],palette:{}});
- f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.equal(f.v.phaseFade,null);
+ f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(f.activeStoredIndividual,second);assert.equal(f.spec.seed,102);assert.equal(f.detailSpecimens[0],cached);assert.equal(JSON.stringify(f.population),population);assert.equal(f.v.source,'stock');
  f.queueViewerPreparation();assert.equal(workers[1].request.record.seed,101);
 });
@@ -63,7 +63,7 @@ test('random next excludes the current organism and holds one choice throughout 
 });
 test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
  const {f,workers}=runtime();f.stockEntries=[stored('only',101)];f.v.source='stock';f.startViewerMorph();assert.equal(workers[0].request.record.seed,101);
- deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.equal(f.v.phaseFade,null);
+ deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  f.startViewerMorph();f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.activeStoredIndividual,f.stockEntries[0]);
 });
 test('captured-only selection reports an empty archive and ignores a load superseded by closing',async()=>{
@@ -140,10 +140,10 @@ test('timer pauses when hidden and phase transition adopts prepared meshes once'
  const target=deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
  for(let i=0;i<35;i++)f.tickViewer(.12);
- assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.equal(f.v.phaseFade,null);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
  for(let i=0;i<35;i++)f.tickViewer(.12);
- assert.equal(f.v.phaseFade,null);
+ assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
 });
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
  const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
@@ -288,7 +288,7 @@ test('native mesh adoption occurs once at end of visible transition',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;f.startViewerMorph();const target=deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'mesh');assert.equal(f.meshes,original);
  for(let i=0;i<35;i++)f.tickViewer(.12);
- assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.equal(f.v.phaseFade,null);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
 });
 test('particle phase transition does not fade the full scene or mutate topology',()=>{
