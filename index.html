@@ -327,7 +327,7 @@ body.boot-loading>.wrap,body.boot-loading>#overlay{visibility:hidden!important}
 @keyframes bootDnaProgress{0%{transform:translateX(-140%)}100%{transform:translateX(340%)}}
 @media(prefers-reduced-motion:reduce){#bootSplash .boot-dna,#bootSplash .boot-progress::before{animation:none!important}}
 
-/* v15.56.5 — compact icon-driven observation UI */
+/* v15.56.6 — compact icon-driven observation UI */
 .wrap header h1{margin-bottom:0;line-height:1.08}
 .wrap header .sub{line-height:1.22;margin-top:1px}
 
@@ -372,7 +372,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 @keyframes bootTapPulse{50%{box-shadow:0 0 34px #5ddac266}}
 @media(prefers-reduced-motion:reduce){#bootSplash .boot-dna,#bootStartButton{animation:none!important}}
 
-/* v15.56.5: minimal observation UI */
+/* v15.56.6: minimal observation UI */
 .wrap header{justify-content:flex-end;text-align:right}
 .wrap header>div{margin-left:auto}
 .wrap header .sub{justify-content:flex-end}
@@ -424,7 +424,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
  .overlay.viewer-full.viewer-nav-hidden .viewer-caption{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
 }
 
-/* v15.56.5: Font Awesome icon font, consistent startup type, sliding viewer identity */
+/* v15.56.6: Font Awesome icon font, consistent startup type, sliding viewer identity */
 @font-face{
  font-family:"Morphospace FA Icons";
  src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/webfonts/fa-solid-900.woff2") format("woff2");
@@ -486,7 +486,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 @media(prefers-reduced-motion:reduce){#bootSplash .boot-progress::before{animation:none!important}}
 
 #viewerPsySpeedRow[hidden]{display:none!important}#viewerPsySpeedRow input{width:100%;accent-color:#85e6c9}.phase-particle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;filter:blur(2.4px)}.phase-particle-canvas[hidden]{display:none}
-</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.56.5</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">DNAを結合しています</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.56.5</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
+</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.56.6</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">DNAを結合しています</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.56.6</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
 <div id="gallery" class="gallery" aria-label="64体の生命標本一覧"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">別の64個体を生成</button><button id="same" class="btn">同じシードで再生成</button></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -496,7 +496,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
   <div class="breed-actions"><button id="stockToLab" class="btn" type="button">生体サンプルから親を選ぶ</button></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">64個体から親A・親Bを選び、遺伝子を交叉して新しい子世代を作れます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.56.5</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.56.5：背景系統を独立選択。生体の6色で常時変形するサイケデリック4種を追加。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.56.6</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.56.6：背景系統を独立選択。生体の6色で常時変形するサイケデリック4種を追加。</div></div>
 </section>
 
 </div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作">
@@ -6300,7 +6300,7 @@ void main(){
  gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.clearColor(.90,.90,.90,1);
  return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,snowProgram,snowVars,snowSparkProgram,snowSparkVars,snowSparkFlashBuffer,snowSparkFlashData,snowBuffer,snowData,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
 }
-// v15.56.5: camera-tracked dramatic three-point lighting.
+// v15.56.6: camera-tracked dramatic three-point lighting.
 const DRAMATIC_LIGHTING=Object.freeze({
  key:Object.freeze([-.62,.72,.36]),
  fill:Object.freeze([.76,.22,.30]),
@@ -10851,7 +10851,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.56.5 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.56.6 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;scheduleViewerFrame();void bootMorphospace().catch(fail)
  }catch(e){fail(e);void bootMorphospace().catch(fail)}
