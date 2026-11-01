@@ -311,7 +311,7 @@ test('phase handoff adopts prepared native meshes at opaque midpoint, then revea
 
 test('particle phase transition does not fade the full scene or mutate topology',()=>{
  assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
- assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=650\)/);
+ assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=220,specimen=null\)/);
  assert.match(html,/canvas\.style\.opacity=String\(1-v\)/);
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
  assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
@@ -325,20 +325,21 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
  assert.doesNotMatch(boot,/createLinearGradient|createRadialGradient|shadowBlur/);
 });
 
-test('triangle vortex draws independent fragments with specimen colour and rotation',()=>{
- assert.match(html,/const n=Math.min\(260,a.length,b.length\)/);
- assert.match(html,/ctx\.rotate\(spin\)/);
- assert.match(html,/ctx\.lineTo\(size\*\.85,size\*\.67\)/);
- assert.match(html,/const c0=parse\(from\[2\]\),c1=parse\(to\[2\]\)/);
- assert.match(html,/scatter=smooth\(\(t-\.15\)\/\.34\)/);
- assert.match(html,/recolor=smooth\(\(t-\.36\)\/\.28\)/);
+test('Y-propagating helical unbinding uses real mesh triangle centroids',()=>{
+ assert.match(html,/viewerMorphSurfaces\(specimen,meshesGroup\)/);
+ assert.match(html,/const v=tri\[f\]\*17,w=tri\[f\+1\]\*17,z=tri\[f\+2\]\*17/);
+ assert.match(html,/return out.sort\(\(a,b\)=>a\[1\]-b\[1\]\)/);
+ assert.match(html,/const torsion=smooth\(\(t-height\*\.32\)\/\.28\)/);
+ assert.match(html,/const unbind=smooth\(\(torsion-\.56\)\/\.35\)/);
+ assert.match(html,/const rebond=smooth\(\(\(t-\.56\)-targetHeight\*\.22\)\/\.24\)/);
+ assert.match(html,/const phase=i%2\?Math.PI:0,theta=t\*11\.5\+height\*9\+phase/);
+ assert.match(html,/ctx\.rotate\(twistAngle\+theta\*separation\*\.3\)/);
 });
 test('shards do not draw background-covering transitions',()=>{
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
  assert.match(html,/phase-particle-canvas\{position:absolute/);
 });
-test('triangle colour parser accepts canvas rgb values',()=>{
- const match=html.match(/const parse=v=>([^\n]+);/);
- assert.ok(match);
- assert.match(match[0],/rgb/);
+test('helical fragments preserve RGB by blending real surface pigment',()=>{
+ assert.match(html,/const c0=from\[2\]\|\|\[88,224,193\],c1=to\[2\]\|\|c0/);
+ assert.match(html,/Math.round\(v\+\(c1\[k\]-v\)\*mix\)/);
 });
