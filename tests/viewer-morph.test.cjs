@@ -189,7 +189,7 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
 
 test('visible morph streams interpolated polygons during four-second transition',()=>{
  const {f,workers,events}=runtime();f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- assert.equal(f.v.morph.mode,'mesh');const uploaded=events.filter(e=>e==='upload').length;
+ assert.equal(f.v.morph.mode,'layered');const uploaded=events.filter(e=>e==='upload').length;
  for(let i=0;i<9;i++)f.tickViewer(.12);
  assert.ok(events.filter(e=>e==='upload').length>uploaded);assert.ok(f.v.morph);
 });
@@ -279,14 +279,14 @@ test('the real Worker builds identical target geometry while the main event loop
  });
 
 test('production uses visible organic four-second mesh morph instead of phase',()=>{
- assert.ok(src.includes("mode:'mesh'"));
+ assert.ok(src.includes("mode:'layered'"));
  assert.ok(src.includes("m.elapsed/4"));
  assert.ok(src.includes("const batches=from.length?createMorphBatches"));
  assert.ok(src.includes("No mist, occlusion, or phase particles"));
 });
 test('native mesh adoption occurs once at end of visible transition',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;f.startViewerMorph();const target=deliver(f,workers[0]);
- f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'mesh');assert.equal(f.meshes,original);
+ f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'layered');assert.equal(f.meshes,original);
  for(let i=0;i<35;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
