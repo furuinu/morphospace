@@ -5898,6 +5898,25 @@ void main(){
   // Glass control now governs the rim optics only; no faux transmission blur.
   shaded.a=1.0;
  }
+ // Fast diffuse subsurface scattering: opaque pigment stays sharp while
+ // only the lighting term diffuses through the anatomical tissue proxy.
+ // This is intentionally screen-independent (no costly blur/pass or alpha).
+ float thinTissue=1.0-tissue;
+ float frontLight=clamp(dot(n,lightDir),0.0,1.0);
+ float rearLight=clamp(dot(n,-lightDir),0.0,1.0);
+ float wrapLight=clamp((dot(n,lightDir)+0.42)/1.42,0.0,1.0);
+ float scatterWeight=clamp(0.18+thinTissue*0.65,0.0,0.78);
+ float scatterIllumination=(0.40*wrapLight+0.60*pow(rearLight,1.3))*scatterWeight;
+ // A subtle endogenous breathing response, in phase with the skin's DNA cycle.
+ float skinCycle=max(0.1666667,uSurface2.w);
+ float tissueBeat=0.5+0.5*sin(uPatternTime*(0.22+0.16*uSurface2.z)/skinCycle+uSurface2.x-vAlong*0.35);
+ float breathingScatter=0.90+0.20*tissueBeat;
+ // Use the existing pigment result as chromatic absorption, not a white glow.
+ // Avoid washing out fine veins, patterns, bumps or structural colours.
+ vec3 tissueColor=clamp(mix(base,shaded.rgb,0.35),0.0,1.0);
+ vec3 scatteredLight=tissueColor*scatterIllumination*breathingScatter*0.30;
+ shaded.rgb=clamp(shaded.rgb+scatteredLight,0.0,1.0);
+ shaded.a=1.0;
  gl_FragColor=shaded;
  }
 }`;
