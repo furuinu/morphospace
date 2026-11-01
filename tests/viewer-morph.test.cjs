@@ -330,7 +330,7 @@ test('triangle vortex draws independent fragments with specimen colour and rotat
  assert.match(html,/ctx\.rotate\(spin\)/);
  assert.match(html,/ctx\.lineTo\(size\*\.85,size\*\.67\)/);
  assert.match(html,/const c0=parse\(from\[2\]\),c1=parse\(to\[2\]\)/);
- assert.match(html,/const scatter=smooth\(\(t-\.15\)\/\.34\)/);
+ assert.match(html,/scatter=smooth\(\(t-\.15\)\/\.34\)/);
  assert.match(html,/recolor=smooth\(\(t-\.36\)\/\.28\)/);
 });
 test('shards do not draw background-covering transitions',()=>{
