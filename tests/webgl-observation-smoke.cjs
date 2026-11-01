@@ -24,6 +24,8 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
  const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
  try{
   const page=await browser.newPage({viewport:{width:1120,height:780},deviceScaleFactor:1});
+  // Stabilize the random boot collection in headless CI so regressions are reproducible.
+  await page.addInitScript(()=>{let state=0x6d2b79f5;Math.random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};});
   const errors=[];
   page.on('pageerror',err=>errors.push('pageerror: '+err.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
