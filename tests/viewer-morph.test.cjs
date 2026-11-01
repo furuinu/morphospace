@@ -281,7 +281,10 @@ test('the real Worker builds identical target geometry while the main event loop
 test('production uses visible organic four-second mesh morph instead of phase',()=>{
  assert.ok(src.includes("mode:'layered'"));
  assert.ok(src.includes("m.elapsed/4"));
- assert.ok(src.includes("const batches=from.length?createMorphBatches"));
+ assert.ok(src.includes("const rawBatches=from.length?createMorphBatches"));
+ assert.ok(src.includes("function layeredMorphScale(layer,p)"));
+ assert.ok(src.includes("function interpolateLayeredMorphBatch(batch,p)"));
+ assert.ok(src.includes("for(const batch of viewer.morph.batches)drawUploaded(batch"));
  assert.ok(src.includes("No mist, occlusion, or phase particles"));
 });
 test('native mesh adoption occurs once at end of visible transition',()=>{
