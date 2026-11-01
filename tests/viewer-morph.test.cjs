@@ -312,7 +312,7 @@ test('phase handoff adopts prepared native meshes at opaque midpoint, then revea
 test('particle phase transition does not fade the full scene or mutate topology',()=>{
  assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
  assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=220,specimen=null\)/);
- assert.match(html,/canvas\.style\.opacity=String\(1-v\)/);
+ assert.match(html,/canvas\.style\.opacity='1'/,'scene canvas must remain visible through transition');
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
  assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
  assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
@@ -343,4 +343,14 @@ test('shards do not draw background-covering transitions',()=>{
 test('helical fragments preserve RGB by blending real surface pigment',()=>{
  assert.match(html,/const c0=from\[2\]\|\|\[88,224,193\],c1=to\[2\]\|\|c0/);
  assert.match(html,/Math.round\(v\+\(c1\[k\]-v\)\*mix\)/);
+});
+
+test('actual organism shaders apply Y torsion and bottom-up phase clipping',()=>{
+ assert.ok(html.includes("uniform float uPhaseTwist;"),'organism vertex shaders expose torsion control');
+ assert.ok(html.includes("vPhaseHeight=clamp(.5+.5*p.y/max(uPhaseScale,.01),0.,1.);"));
+ assert.ok(html.includes("p.xz=mat2(ca,-sa,sa,ca)*p.xz;"));
+ assert.ok(html.includes("if(uPhaseCut>0.001 && vPhaseHeight<uPhaseCut)discard;"));
+ assert.ok(html.includes("const phaseCut=phaseOutgoing!==null?"));
+ assert.ok(html.includes("canvas.style.opacity='1';"),'background and marine snow should not disappear');
+ assert.ok(html.includes("canvas.style.filter='none';"),'background should never blur during the transition');
 });
