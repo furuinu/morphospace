@@ -5854,6 +5854,7 @@ const compatibleVert=`attribute vec3 aPos;attribute vec3 aNormal;attribute vec3 
 attribute vec4 aAnchor;attribute vec4 aParams;
 uniform mat4 uMvp;uniform mat4 uModel;
 uniform float uCamera;uniform vec3 uCameraPos;uniform float uTime;uniform float uMotion;uniform mediump float uGlowPass;
+uniform float uPhaseTwist;uniform float uPhaseScale;varying mediump float vPhaseHeight;
 varying mediump vec3 vNormal;varying mediump vec3 vColor;varying mediump vec3 vView;
 varying mediump float vRole;varying mediump vec2 vGlow;varying mediump vec3 vObj;varying mediump float vAlong;
 ${motionGrammarGLSL}
@@ -5872,6 +5873,10 @@ void main(){
  p=branchJointWarp(p,aAnchor.xyz,clamp(aParams.y,0.0,1.0),phase,role,uTime,uMotion*uBranchEnabled*1.72);
  p=localBodyMotion(aPos,p,uTime,uMotion);
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
+ vPhaseHeight=clamp(.5+.5*p.y/max(uPhaseScale,.01),0.,1.);
+ float torsionAngle=uPhaseTwist*(.32+.68*vPhaseHeight)*6.2831853;
+ float ca=cos(torsionAngle),sa=sin(torsionAngle);
+ p.xz=mat2(ca,-sa,sa,ca)*p.xz;
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n+movement*.16,0.0)).xyz);
  vColor=aColor;vRole=role;vObj=aPos;vAlong=clamp(aParams.y,0.0,1.0);
@@ -5906,6 +5911,7 @@ const compatibleFrag=`precision mediump float;
 uniform highp float uTime;
 varying mediump vec3 vNormal;varying mediump vec3 vColor;varying mediump vec3 vView;
 varying mediump float vRole;varying mediump vec2 vGlow;varying mediump vec3 vObj;varying mediump float vAlong;
+uniform float uPhaseCut;varying mediump float vPhaseHeight;
 uniform float uGlassAmount;uniform float uAlpha;uniform float uWire;uniform float uRim;
 uniform float uMaterial;uniform float uGlow;uniform mediump float uGlowPass;uniform float uShadeStrength;
 uniform vec3 uGlowTint0;uniform vec3 uGlowTint1;uniform vec3 uGlowTint2;
@@ -5941,6 +5947,7 @@ float tissueThickness(vec3 p,float role,float along){
 }
 
 void main(){
+ if(uPhaseCut>0.001 && vPhaseHeight<uPhaseCut)discard;
  vec3 base=pow(clamp(vColor,0.0,1.0),vec3(0.92));
  float l=dot(base,vec3(0.2126,0.7152,0.0722));
  vec3 color=clamp(vec3(l)+(base-vec3(l))*1.18,0.0,1.0)*1.08;
