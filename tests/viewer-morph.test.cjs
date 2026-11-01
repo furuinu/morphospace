@@ -354,3 +354,10 @@ test('actual organism shaders apply Y torsion and bottom-up phase clipping',()=>
  assert.ok(html.includes("canvas.style.opacity='1';"),'background and marine snow should not disappear');
  assert.ok(html.includes("canvas.style.filter='none';"),'background should never blur during the transition');
 });
+
+test('cilia shader must not link organism-only phase varyings',()=>{
+ assert.match(html,/const ciliaFragment=srcFrag/);
+ assert.match(html,/const ciliaProgram=linked\(cv,ciliaFp,'繊毛GPUプログラム'\)/);
+ assert.match(html,/replace\(\/uniform float uPhaseCut;varying/);
+ assert.match(html,/const program=linked\(vp,fp,'本体GPUプログラム'\)/);
+});
