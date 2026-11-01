@@ -328,12 +328,13 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
 test('Y-propagating helical unbinding uses real mesh triangle centroids',()=>{
  assert.match(html,/viewerMorphSurfaces\(specimen,meshesGroup\)/);
  assert.match(html,/const v=tri\[f\]\*17,w=tri\[f\+1\]\*17,z=tri\[f\+2\]\*17/);
- assert.match(html,/return out.sort\(\(a,b\)=>a\[1\]-b\[1\]\)/);
+ assert.match(html,/\.sort\(\(a,b\)=>a\[1\]-b\[1\]\)/);
  assert.match(html,/const torsion=smooth\(\(t-height\*\.32\)\/\.28\)/);
  assert.match(html,/const unbind=smooth\(\(torsion-\.56\)\/\.35\)/);
  assert.match(html,/const rebond=smooth\(\(\(t-\.56\)-targetHeight\*\.22\)\/\.24\)/);
  assert.match(html,/const phase=i%2\?Math.PI:0,theta=t\*11\.5\+height\*9\+phase/);
  assert.match(html,/ctx\.rotate\(twistAngle\+theta\*separation\*\.3\)/);
+ assert.match(html,/const corners=\(settle>\.5\?to\[4\]:from\[4\]\)\|\|\[\]/);
 });
 test('shards do not draw background-covering transitions',()=>{
  assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
