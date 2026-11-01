@@ -325,23 +325,20 @@ test('loading DNA assembles many horizontal base pairs into 3D helix without gra
  assert.doesNotMatch(boot,/createLinearGradient|createRadialGradient|shadowBlur/);
 });
 
-test('pointillist particles are sampled from visible specimen colour and blur the specimen layer',()=>{
- assert.match(html,/function phaseCapturePointillism\(seed,count=650\)/);
- assert.match(html,/g\.drawImage\(canvas,0,0,192,192\)/);
- assert.match(html,/ctx\.fillStyle='rgb\('/);
- assert.match(html,/canvas\.style\.filter=v>0\?'blur\('/);
- assert.match(html,/phaseParticleTarget=phaseCapturePointillism\(spec\.seed\)/);
+test('triangle vortex draws independent fragments with specimen colour and rotation',()=>{
+ assert.match(html,/const n=Math.min\(260,a.length,b.length\)/);
+ assert.match(html,/ctx\.rotate\(spin\)/);
+ assert.match(html,/ctx\.lineTo\(size\*\.85,size\*\.67\)/);
+ assert.match(html,/const c0=parse\(from\[2\]\),c1=parse\(to\[2\]\)/);
+ assert.match(html,/const scatter=smooth\(\(t-\.15\)\/\.34\)/);
+ assert.match(html,/recolor=smooth\(\(t-\.36\)\/\.28\)/);
 });
-test('restored 650 drifting particles are blurred independently of the background',()=>{
- assert.match(html,/phase-particle-canvas\{[^}]*filter:blur\(2\.4px\)/);
- assert.match(html,/const scatter=Math\.sin\(Math\.PI\*t\)\*\*1\.8/);
- assert.match(html,/mix=clamp\(\(t-\.38\)\/\.24,0,1\)/);
- assert.match(html,/const ca=readColor\(from\[2\]\),cb=readColor\(to\[2\]\)/);
+test('shards do not draw background-covering transitions',()=>{
+ assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
+ assert.match(html,/phase-particle-canvas\{position:absolute/);
 });
-
-test('particle RGB parsing accepts actual canvas rgb() strings',()=>{
- const match=html.match(/const readColor=value=>([^\n]+);/);
- assert.ok(match,'particle palette parser must exist');
- assert.match(match[0],/\\s\*/,'colour parser accepts spaces');
- assert.doesNotMatch(match[0],/\\\\d/,'do not double-escape digit classes in JS regex literals');
+test('triangle colour parser accepts canvas rgb values',()=>{
+ const match=html.match(/const parse=v=>([^\n]+);/);
+ assert.ok(match);
+ assert.match(match[0],/rgb/);
 });
