@@ -48,7 +48,7 @@ test('captured-only playback adopts saved identities without changing the galler
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
  const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
  f.startViewerMorph();assert.equal(workers[0].request.record.seed,102);deliver(f,workers[0],{seed:102,style:0,genome:{},parts:[],rigs:[],palette:{}});
- f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<14;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(f.v.phaseFade);
+ f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.equal(f.v.phaseFade,null);
  assert.equal(f.activeStoredIndividual,second);assert.equal(f.spec.seed,102);assert.equal(f.detailSpecimens[0],cached);assert.equal(JSON.stringify(f.population),population);assert.equal(f.v.source,'stock');
  f.queueViewerPreparation();assert.equal(workers[1].request.record.seed,101);
 });
@@ -63,7 +63,7 @@ test('random next excludes the current organism and holds one choice throughout 
 });
 test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
  const {f,workers}=runtime();f.stockEntries=[stored('only',101)];f.v.source='stock';f.startViewerMorph();assert.equal(workers[0].request.record.seed,101);
- deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<14;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(f.v.phaseFade);
+ deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.equal(f.v.phaseFade,null);
  f.startViewerMorph();f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.activeStoredIndividual,f.stockEntries[0]);
 });
 test('captured-only selection reports an empty archive and ignores a load superseded by closing',async()=>{
@@ -139,10 +139,10 @@ test('timer pauses when hidden and phase transition adopts prepared meshes once'
  f.startViewerMorph();
  const target=deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
- for(let i=0;i<14;i++)f.tickViewer(.12);
- assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(f.v.phaseFade);
+ for(let i=0;i<35;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.equal(f.v.phaseFade,null);
  assert.equal(events.filter(e=>e==='apply').length,1);
- for(let i=0;i<14;i++)f.tickViewer(.12);
+ for(let i=0;i<35;i++)f.tickViewer(.12);
  assert.equal(f.v.phaseFade,null);
 });
 test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
@@ -154,7 +154,7 @@ test('navigation uses worker output, uploads ahead of time, and adopts prepared 
  f.createSpecimenForIndex=()=>{throw Error('Generation must not run on the rendering thread')};f.createMorphBatches=()=>{throw Error('Correspondence must not run on the rendering thread')};f.upload=()=>{throw Error('Synchronous upload must not be used')};
  f.startViewerMorph();assert.equal(f.meshes,original);assert.equal(f.v.morph,null);const target=deliver(f,workers[0]);f.tickViewer(.01);
  assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);const prepared=f.v.morph.targetMeshes;
- for(let i=0;i<30;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
+ for(let i=0;i<42;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
  assert.equal(f.meshes,prepared);
 });
 
@@ -187,23 +187,16 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
  assert.equal(result.source,result.a);assert.equal(result.target,result.b);assert.equal(result.reset,0);assert.equal(result.separate,true);
 });
 
-test('phase transfer never streams interpolated polygons into the GPU',()=>{
- const {f,workers,events}=runtime();
- f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
- f.startViewerMorph();
- deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
- f.advanceViewerPreparation();f.activateViewerPreparation();
- const initialUploads=events.filter(e=>e==='upload').length;
+test('visible morph streams interpolated polygons during four-second transition',()=>{
+ const {f,workers,events}=runtime();f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
+ assert.equal(f.v.morph.mode,'mesh');const uploaded=events.filter(e=>e==='upload').length;
  for(let i=0;i<9;i++)f.tickViewer(.12);
- assert.equal(events.filter(e=>e==='upload').length,initialUploads);
- assert.equal(f.v.morph.mode,'phase');
- assert.equal(f.v.morph.batches.length,0);
+ assert.ok(events.filter(e=>e==='upload').length>uploaded);assert.ok(f.v.morph);
 });
-
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
  const {f,workers,events}=runtime(),original=f.meshes,before=Array.from(a.data);f.tickViewer(.1);
  assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.v.morph,null);assert.equal(f.meshes,original);assert.equal(events.length,0);
- const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.deepEqual(Array.from(request.from),[],'phase transfer must not clone source topology');assert.deepEqual(Array.from(a.data),before);
+ const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.ok(request.from.length>0,'worker requires source geometry');assert.deepEqual(Array.from(a.data),before);
  f.tickViewer(.1);assert.equal(workers.length,1);
 });
 
@@ -264,7 +257,7 @@ test('the real Worker builds identical target geometry while the main event loop
   ctx.transitionRequest=structuredClone(request);const direct=vm.runInContext('buildViewerTransition(transitionRequest)',ctx),hash=a=>crypto.createHash('sha256').update(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).digest('hex');
   assert.equal(hash(message.payload.target.shell.data),hash(direct.target.shell.data));assert.equal(hash(message.payload.targetMeshes.shell.data),hash(direct.targetMeshes.shell.data));
   assert.deepEqual(message.payload.batches.map(b=>hash(b.end)),Array.from(direct.batches,b=>hash(b.end)));
-  assert.equal(request.from[0].data.byteLength,sourceLength);assert.equal(JSON.stringify(request.record),before);assert.ok(message.payload.batches.every(b=>b.tri.length<=12000));
+  assert.equal(request.from[0].data.byteLength,sourceLength);assert.equal(JSON.stringify(request.record),before);assert.ok(message.payload.batches.every(b=>b.tri.length<=36000));
   t.diagnostic('Main event-loop heartbeat during worker preparation: '+ticks+' ticks; all target/correspondence hashes match');
  }finally{clearInterval(interval);await worker.terminate()}
 });
@@ -285,30 +278,19 @@ test('the real Worker builds identical target geometry while the main event loop
  }
  });
 
-test('production phase transfer preserves native geometry and does not build intermediate topology',()=>{
- assert.match(src,/const batches=\[\]; \/\/ Native-mesh phase transition/);
- assert.match(src,/const from=\[\]; \/\/ No cross-topology correspondence/);
- assert.match(src,/viewer\.morph=\{mode:'phase'/);
- assert.match(src,/if\(m&&m\.mode==='phase'\)/);
- assert.match(src,/const useLocal=!!\(spec\.localGroup&&meshes\.localShell&&\(!viewer\.morph\|\|viewer\.morph\.mode==='phase'\)\)/);
+test('production uses visible organic four-second mesh morph instead of phase',()=>{
+ assert.ok(src.includes("mode:'mesh'"));
+ assert.ok(src.includes("m.elapsed/4"));
+ assert.ok(src.includes("const batches=from.length?createMorphBatches"));
+ assert.ok(src.includes("No mist, occlusion, or phase particles"));
 });
-test('phase handoff adopts prepared native meshes at opaque midpoint, then reveals them',()=>{
- const {f,workers,events}=runtime(),source=f.meshes;
- f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
- f.startViewerMorph();
- const target=deliver(f,workers[0]);
- f.advanceViewerPreparation();f.activateViewerPreparation();
- assert.equal(f.v.morph.mode,'phase');
- assert.equal(f.meshes,source,'first half must keep all source meshes');
- for(let i=0;i<14;i++)f.tickViewer(.12);
- assert.equal(f.v.morph,null);
- assert.equal(f.spec,target);
- assert.ok(f.v.phaseFade);
- for(let i=0;i<14;i++)f.tickViewer(.12);
- assert.equal(f.v.phaseFade,null);
+test('native mesh adoption occurs once at end of visible transition',()=>{
+ const {f,workers,events}=runtime(),original=f.meshes;f.startViewerMorph();const target=deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'mesh');assert.equal(f.meshes,original);
+ for(let i=0;i<35;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.equal(f.v.phaseFade,null);
  assert.equal(events.filter(e=>e==='apply').length,1);
 });
-
 test('particle phase transition does not fade the full scene or mutate topology',()=>{
  assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
  assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=220,specimen=null\)/);
