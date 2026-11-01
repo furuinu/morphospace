@@ -8012,7 +8012,7 @@ function phaseParticlesDraw(progress,source,target){
  // Solid fragments remain readable before separation and after reassembly.
  ctx.globalAlpha=fragment*(1-smooth((t-.86)/.14));
  const n=Math.min(260,a.length,b.length);
- const parse=v=>{if(Array.isArray(v))return v;const m=/rgb\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)/.exec(v||'');return m?[+m[1],+m[2],+m[3]]:[88,224,193]};
+ const parse=v=>{if(Array.isArray(v))return v;const m=/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/.exec(v||'');return m?[+m[1],+m[2],+m[3]]:[88,224,193]};
  for(let i=0;i<n;i++){
   const from=a[Math.floor(i*a.length/n)],to=b[Math.floor(i*b.length/n)];
   const fromX=from[0]*w*.5,fromY=from[1]*h*.5,toX=to[0]*w*.5,toY=to[1]*h*.5;
