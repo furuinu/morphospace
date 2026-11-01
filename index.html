@@ -6810,16 +6810,39 @@ function createMorphBatches(from,to,batchTriangles=12000){
 // 4-second eight-stage transformation: A → A high → A medium → A low
 // → B low → B medium → B high → B. Endpoint jitter conceals mesh handoff.
 // Four-second sequence: A -> A jitter -> medium A -> medium B -> B jitter -> B.
+// Overlapping living layers. Each successor expands from the core while the
+// preceding native anatomy contracts. Stage order: A, low A, low B, B.
 function morphFrameFactors(t){
- const p=Math.max(0,Math.min(1,t));
- const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
- const bell=(a,b,c)=>smooth((p-a)/(b-a))*(1-smooth((p-b)/(c-b)));
- const f=smooth((p-.40)/.20); // Only morph between the two medium-detail organisms.
- const coarse=0; // Medium is the normal native mesh resolution; no low-poly faceting.
- const high=0;
- const jitter=bell(.035,.17,.33)+bell(.68,.83,.975);
- const tremor=0;
- return {f,coarse,high,jitter,tremor};
+ const p=Math.max(0,Math.min(1,t)),ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
+ const pulse=(a,b,c)=>ease((p-a)/(b-a))*(1-ease((p-b)/(c-b)));
+ return {f:ease((p-.40)/.20),coarse:0,high:0,jitter:pulse(.02,.17,.36)+pulse(.64,.83,.98),tremor:0};
+}
+function layeredMorphScale(layer,p){
+ const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
+ if(layer==='a')return 1-ease((p-.13)/.26);
+ if(layer==='lowA')return ease((p-.13)/.25)*(1-ease((p-.37)/.26));
+ if(layer==='lowB')return ease((p-.37)/.26)*(1-ease((p-.61)/.27));
+ return ease((p-.61)/.27);
+}
+function interpolateLayeredMorphBatch(batch,p){
+ const native=batch.side==='outgoing'?batch.start:batch.end,output=batch.data;
+ const scale=layeredMorphScale(batch.layer,p);
+ // Low layers use the same anatomical topology but an explicitly coarse 16-cell field.
+ const low=batch.layer==='lowA'||batch.layer==='lowB';
+ const envelope=(batch.layer==='a'||batch.layer==='lowA'?Math.sin(Math.PI*Math.min(1,p/.55)):Math.sin(Math.PI*Math.max(0,(p-.40)/.60)));
+ const jitter=.095*Math.max(0,envelope);
+ const cell=.125;
+ for(let i=0;i<native.length;i+=17){
+  const x=native[i],y=native[i+1],z=native[i+2];
+  const phase=x*1.73+y*2.31+z*1.11;
+  const wobble=jitter*Math.sin(p*138+phase*5.4)*Math.sin(phase*2.3+p*17);
+  for(let k=0;k<3;k++){
+   const v=native[i+k];const faceted=low?Math.round(v/cell)*cell:v;
+   output[i+k]=faceted*scale+wobble*scale*Math.sin(phase+k*1.7);
+  }
+  for(let k=3;k<17;k++)output[i+k]=native[i+k];
+ }
+ return batch;
 }
 function interpolateMorphBatch(batch,t,factors){
  const {f,coarse,high,jitter,tremor}=factors||morphFrameFactors(t),a=batch.start,b=batch.end,out=batch.data;
@@ -6870,7 +6893,11 @@ function buildViewerTransition(request){
  const profile=target.glowProfile||(target.glowProfile=createGlowProfile(target.seed)),glow=profile.shellGlow?[profile.shellGlow.strength,profile.shellGlow.phase]:[0,0];
  const targetMeshes={shell:target.growthModel?skinGrowthRig(target.shell,target.growthModel):dynamicMesh(target.shell,0,(target.seed*.00013)%TAU,[0,0,0],null,glow),parts:dynamicBatches(target),cilia:createGpuCiliaMeshes(target)};
  if(target.localGroup){targetMeshes.localShell=skinGrowthRig(target.localGroup.shell,target.localGroup.source);targetMeshes.localParts=dynamicBatches({...target,parts:target.localGroup.parts,rigs:[]});}
- const batches=from.length?createMorphBatches(from,viewerMorphSurfaces(target,targetMeshes)):[];
+ const rawBatches=from.length?createMorphBatches(from,viewerMorphSurfaces(target,targetMeshes)):[];
+ const batches=rawBatches.flatMap(batch=>{
+  const layers=batch.side==='outgoing'?['a','lowA']:['lowB','b'];
+  return layers.map(layer=>({...batch,layer,data:new Float32Array(batch.data),tri:new Uint16Array(batch.tri),edges:new Uint16Array(batch.edges)}));
+ });
  return {target,targetMeshes,batches,distance:specimenViewDistance(target)};
 }
 function viewerWorkerSource(core){
@@ -7984,7 +8011,7 @@ function activateViewerPreparation(){
  const job=viewer.pending;if(!job?.ready||job.source!==spec||job.revision!==viewer.revision)return;
  viewer.pending=null;viewer.preparing=false;
  const zoom=spec.viewDistance/(spec.baseViewDistance*viewer.fit);
- viewer.morph={mode:'mesh',index:job.index,source:spec,target:job.target,targetMeshes:job.targetMeshes,targetDistance:job.distance,originalMeshes:meshes,originalRigs:rigMeshes,batches:job.batches,elapsed:0,t:0,lastUpload:-1,fromDistance:spec.viewDistance,toDistance:job.distance*viewer.fit*zoom,patternA:viewerPatternValues(spec.palette),patternB:viewerPatternValues(job.target.palette,textureMorphUniforms(renderer.vars)),emissionA:viewerEmissionValues(spec,true),emissionB:viewerEmissionValues(job.target,false)};
+ viewer.morph={mode:'layered',index:job.index,source:spec,target:job.target,targetMeshes:job.targetMeshes,targetDistance:job.distance,originalMeshes:meshes,originalRigs:rigMeshes,batches:job.batches,elapsed:0,t:0,lastUpload:-1,fromDistance:spec.viewDistance,toDistance:job.distance*viewer.fit*zoom,patternA:viewerPatternValues(spec.palette),patternB:viewerPatternValues(job.target.palette,textureMorphUniforms(renderer.vars)),emissionA:viewerEmissionValues(spec,true),emissionB:viewerEmissionValues(job.target,false)};
  $('overlay').classList.add('viewer-caption-fading');
  // No mist, occlusion, or phase particles: the whole transformation remains visible.
  viewer.morph.stored=job.stored;viewer.morph.record=job.record;viewer.morph.direction=job.direction;viewer.morph.itemKey=job.itemKey;viewer.morph.sourceItemKey=job.sourceItemKey;
@@ -8266,7 +8293,7 @@ function tickViewer(elapsed){
   if(p===1&&m.lastUpload===1){if(m.endpointPresented){cancelViewerMorph(true);return}m.endpointPresented=true;}
   if(p!==m.lastUpload){
    const factors=morphFrameFactors(p);
-   for(const b of m.batches){interpolateMorphBatch(b,p,factors);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
+   for(const b of m.batches){if(m.mode==='layered')interpolateLayeredMorphBatch(b,p);else interpolateMorphBatch(b,p,factors);gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,b.data)}
    m.lastUpload=p;
   }
   if(p===1&&!m.endpointPresented)m.endpointPresented=true;
@@ -8358,12 +8385,12 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
    if(u.uMirrorSign!==null)gl.uniform1f(u.uMirrorSign,mirrored?-1:1);
    if(wire){
      gl.disable(gl.CULL_FACE);
-     if(viewer.morph?.mode==='mesh'){for(const batch of viewer.morph.batches)drawUploaded(batch,1,true,0);return mvp;}
+     if(viewer.morph?.mode==='layered'){for(const batch of viewer.morph.batches)drawUploaded(batch,1,true,0);return mvp;}
      if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,true,0);
      for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,true,0);
      drawGPUMotileCilia(mvp,model,true);
    }else{
-     if(viewer.morph?.mode==='mesh'){
+     if(viewer.morph?.mode==='layered'){
        gl.disable(gl.CULL_FACE);
        for(const batch of viewer.morph.batches)drawUploaded(batch,1,false,0);
        return mvp;
@@ -8434,8 +8461,11 @@ function drawUploaded(mesh,alpha=1,wire=false,rim=.2,glowPass=0,glass=0){
  // and visibly removes large regions of skin at transition start.
  // Use exactly one coherent topology per frame; never depth-stack them.
  if(viewer.morph&&mesh.side){
-  const incoming=viewer.morph.t>=.5;
-  if((mesh.side==='incoming')!==incoming)return;
+  if(viewer.morph.mode!=='layered'){
+   const incoming=viewer.morph.t>=.5;
+   if((mesh.side==='incoming')!==incoming)return;
+  }
+  if(mesh.layer&&layeredMorphScale(mesh.layer,Math.min(1,viewer.morph.elapsed/4))<.005)return;
  }
  gl.bindBuffer(gl.ARRAY_BUFFER,mesh.buffer);const v=renderer.vars;
  for(const [name,size,offset] of [['aPos',3,0],['aNormal',3,12],['aColor',3,24],['aAnchor',4,36],['aParams',4,52]]){
