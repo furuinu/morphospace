@@ -17,7 +17,7 @@ test('glass experiment limits each organism to 0–40% and remains reversible',(
 });
 
 test('opaque skin preserves fine pigments and normal detail without pseudo-transmission',()=>{
- assert.equal(source.split('shaded.a=1.0;').length-1,2);
+ assert.equal(source.split('shaded.a=1.0;').length-1,3);
  assert.equal(source.split('float tissue=tissueThickness(vObj,vRole,vAlong)').length-1,2);
  for(const removed of ['float innerVein=','float innerCloud=','vec3 buriedTint=','float visibleTissue=','float transmission=uGlassAmount'])assert.ok(!source.includes(removed),removed);
  assert.ok(source.includes('drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount)'));
