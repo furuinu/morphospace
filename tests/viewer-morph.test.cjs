@@ -3,6 +3,19 @@ const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),
 const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncoder,TextDecoder,btoa,atob,URL,URLSearchParams});vm.runInContext(scripts[0],ctx);vm.runInContext(core,ctx);
 function mesh(vertices,tri){const data=new Float32Array(vertices.length*17);vertices.forEach((p,i)=>data.set([...p,0,0,1,1,0,0,0,0,0,0,0,0,0,0],i*17));return{data,tri:new Uint16Array(tri),edges:new Uint16Array(tri.flatMap((v,i)=>[v,tri[i-i%3+(i+1)%3]]))}}
 const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],[-2,0,1]],[0,1,2,0,2,3]);
+test('successor reaches full scale before previous layer starts contracting',()=>{
+ const scale=ctx.layeredMorphScale;
+ for(const [previous,next,grown,shrinkStart] of [
+  ['a','lowA',.22,.22],['lowA','lowB',.52,.52],['lowB','b',.82,.82]
+ ]){
+  assert.ok(Math.abs(scale(next,grown)-1)<1e-8,next+' must finish expanding');
+  assert.ok(Math.abs(scale(previous,shrinkStart)-1)<1e-8,previous+' must still be full size');
+  assert.ok(scale(previous,shrinkStart+.05)<1,previous+' contracts only after successor has expanded');
+ }
+ for(const layer of ['a','lowA','lowB','b'])for(let k=0;k<=100;k++){
+  const value=scale(layer,k/100);assert.ok(value>=0&&value<=1,layer+' scale outside range');
+ }
+});
 test('morph preserves every triangle of unequal topology at both endpoints with safe WebGL1 indices',()=>{
  const result=ctx.createMorphBatches([a],[b],1);assert.equal(result.length,3);
  const sourceBefore=Array.from(a.data),targetBefore=Array.from(b.data);
