@@ -5994,7 +5994,13 @@ function initGL(gl,compatibility=false){
   gl.deleteShader(shv);gl.deleteShader(shf);return program;
  }
  const program=linked(vp,fp,'本体GPUプログラム');
- const ciliaProgram=linked(cv,fp,'繊毛GPUプログラム');
+ // Cilia vertices do not emit the organism-only phase varying. Keep their
+ // original fragment program; using the body fragment verbatim prevents linking.
+ const ciliaFragment=srcFrag
+  .replace(/uniform float uPhaseCut;varying (?:mediump )?float vPhaseHeight;/,'')
+  .replace(/if\(uPhaseCut>0\.001 && vPhaseHeight<uPhaseCut\)discard;/,'');
+ const ciliaFp=isWebGL2?toFragment300(ciliaFragment):ciliaFragment;
+ const ciliaProgram=linked(cv,ciliaFp,'繊毛GPUプログラム');
  // The studio backdrop lives in the opaque framebuffer, rather than behind a
  // transparent WebGL canvas. Otherwise partially transparent tissue is darkened
  // a second time when the browser composites the canvas over the CSS gradient.
