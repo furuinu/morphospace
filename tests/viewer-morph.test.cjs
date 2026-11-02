@@ -396,3 +396,15 @@ test('growth collars are fused into the source SDF before detailed skin tessella
  assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts\)/);
  assert.ok(html.indexOf('source.appendageBases=delicateParts.map')<html.indexOf('localShell=morphImplicitMesh(source,palette,g,false,n)'));
 });
+
+test('flexible appendages follow body DNA with a root-fixed delayed travelling bend',()=>{
+ const start=html.indexOf('const delicateWaveGLSL='),end=html.indexOf('const captureWarpGLSL=',start);
+ assert.ok(start>=0&&end>start);
+ const shader=html.slice(start,end);
+ assert.match(shader,/float cycle=max\(\.166667,uMotionCycles\.y\)/);
+ assert.match(shader,/float bodyPhase=6\.2831853\*t\*speed\+uMotionGene2\.y/);
+ assert.match(shader,/float delayed=bodyPhase-u\*waveNumber\+phase\*\.28/);
+ assert.match(shader,/float delayed2=bodyPhase\*\.73-u\*waveNumber\*\.76\+phase\*\.43/);
+ assert.match(shader,/float taper=u\*u\*\(3\.-2\.\*u\)/);
+ assert.match(shader,/return flex\*taper\*/);
+});
