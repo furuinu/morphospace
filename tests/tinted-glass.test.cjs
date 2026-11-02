@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
 const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
-const source=scripts.find(script=>script.includes('function drawCopy(model,mirrored=false,glassPass=false)'));
+const source=scripts.find(script=>script.includes('function drawCopy(model,mirrored=false,glassPass=false,copyIndex=0)'));
 assert.ok(source,'specimen GPU renderer exists');
 
 test('glass experiment limits each organism to 0–40% and remains reversible',()=>{
