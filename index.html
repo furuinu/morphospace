@@ -6037,6 +6037,21 @@ vec4 chromaticSkinFlow(vec3 point,vec3 normal,vec3 view){
 
 // Stable pseudo-thickness derived from inherited anatomical surface relief,
 // not from camera angle: lighting changes must not make tissue change thickness.
+// Per-appendage asynchronous bioluminescent tip nodes.
+float tipBioGlow(float role,float along,float time,float phase){
+ float target=((role>5.5&&role<7.5)||(role>9.5&&role<10.5))?1.0:0.0;
+ float tip=smoothstep(.68,.82,along),glow=0.0;
+ for(int k=0;k<3;k++){
+  float key=floor(phase*7.7+.5)+float(k)*13.71;
+  float center=.77+.20*fract(sin(key*17.13+6.7)*43758.5453);
+  float width=.022+.019*fract(sin(key*3.91+4.2)*7341.12);
+  float node=exp(-pow((along-center)/width,2.0));
+  float rate=1.1+2.3*fract(sin(key*7.19+1.9)*8159.23);
+  float cycle=time*rate+key*2.1;
+  glow+=node*(.08+.92*pow(max(0.0,sin(cycle+.24*sin(cycle*.37))),4.0));
+ }
+ return target*tip*min(1.0,glow);
+}
 float tissueThickness(vec3 p,float role,float along){
  float ridge=surfaceRidge(chromaticPoint(p));
  float nextRidge=nextSurfaceRidge(nextChromaticPoint(p));
@@ -6063,6 +6078,10 @@ void main(){
    vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
    shaded.rgb+=skinLight.rgb;
    shaded.a=max(shaded.a,skinLight.a);
+  float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
+  vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
+  shaded.rgb+=lureTint*lure*1.65+vec3(.27,.39,.42)*pow(lure,3.0);
+  shaded.a=max(shaded.a,lure*.97);
   // Camera-relative silhouette emission, routed into the existing bloom extraction.
   float silhouette=pow(1.0-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.0,1.0),3.2);
   float rimCatch=pow(max(dot(normalize(vNormal),normalize(uRimDir)),0.0),1.5);
@@ -6242,6 +6261,21 @@ vec4 chromaticSkinFlow(vec3 point,vec3 normal,vec3 view){
 
 // Stable pseudo-thickness derived from inherited anatomical surface relief,
 // not from camera angle: lighting changes must not make tissue change thickness.
+// Per-appendage asynchronous bioluminescent tip nodes.
+float tipBioGlow(float role,float along,float time,float phase){
+ float target=((role>5.5&&role<7.5)||(role>9.5&&role<10.5))?1.0:0.0;
+ float tip=smoothstep(.68,.82,along),glow=0.0;
+ for(int k=0;k<3;k++){
+  float key=floor(phase*7.7+.5)+float(k)*13.71;
+  float center=.77+.20*fract(sin(key*17.13+6.7)*43758.5453);
+  float width=.022+.019*fract(sin(key*3.91+4.2)*7341.12);
+  float node=exp(-pow((along-center)/width,2.0));
+  float rate=1.1+2.3*fract(sin(key*7.19+1.9)*8159.23);
+  float cycle=time*rate+key*2.1;
+  glow+=node*(.08+.92*pow(max(0.0,sin(cycle+.24*sin(cycle*.37))),4.0));
+ }
+ return target*tip*min(1.0,glow);
+}
 float tissueThickness(vec3 p,float role,float along){
  float ridge=surfaceRidge(chromaticPoint(p));
  float nextRidge=nextSurfaceRidge(nextChromaticPoint(p));
@@ -6266,6 +6300,10 @@ void main(){
  vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
  shaded.rgb+=skinLight.rgb;
  shaded.a=max(shaded.a,skinLight.a);
+  float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
+  vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
+  shaded.rgb+=lureTint*lure*1.65+vec3(.27,.39,.42)*pow(lure,3.0);
+  shaded.a=max(shaded.a,lure*.97);
   // Camera-relative silhouette emission, routed into the existing bloom extraction.
   float silhouette=pow(1.0-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.0,1.0),3.2);
   float rimCatch=pow(max(dot(normalize(vNormal),normalize(uRimDir)),0.0),1.5);
