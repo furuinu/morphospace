@@ -4425,9 +4425,9 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
  const rng=seedRng(seed+11673041),out=[],blobs=source?.blobs||[];
  if(!blobs.length)return out;
  const ecology=appendageEcology(g,seed),dna=g.morphDNA||{},strength=clamp(density,0,1);
- // Species-level rarity: retain only 20% of the previously tentacled specimens.
+ // Species-level rarity: retain 40% of the previously tentacled specimens.
  // Fin-bearing lateral-frill species keep their original incidence.
- if(ecology.appendagePlan!=='lateral_frill'&&rng()>=.20)return out;
+ if(ecology.appendagePlan!=='lateral_frill'&&rng()>=.40)return out;
  // Conditional on tentacles existing, only 20% of specimens retain
  // the previous chance of growing any arm >= 0.8 body lengths.
  const allowLongTentacles=rng()<.20;
