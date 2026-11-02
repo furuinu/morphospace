@@ -21,7 +21,10 @@ test('opaque skin preserves fine pigments and normal detail without pseudo-trans
  assert.equal(source.split('float tissue=tissueThickness(vObj,vRole,vAlong)').length-1,2);
  for(const removed of ['float innerVein=','float innerCloud=','vec3 buriedTint=','float visibleTissue=','float transmission=uGlassAmount'])assert.ok(!source.includes(removed),removed);
  assert.ok(source.includes('drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount)'));
- assert.ok(source.includes('!debugShell&&!debugGlass&&!glassAmount'));
+ // The skin's transparency must not hide external fins, tentacles or cilia.
+ assert.ok(source.includes("if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))"));
+ assert.ok(source.includes("if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false)"));
+ assert.ok(!source.includes('!debugShell&&!debugGlass&&!glassAmount'));
  assert.ok(!source.includes("for(const pass of ['depth','color'])"));
 });
 
