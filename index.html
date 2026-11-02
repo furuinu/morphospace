@@ -4424,6 +4424,12 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
  const rng=seedRng(seed+11673041),out=[],blobs=source?.blobs||[];
  if(!blobs.length)return out;
  const ecology=appendageEcology(g,seed),dna=g.morphDNA||{},strength=clamp(density,0,1);
+ // Species-level rarity: retain only 20% of the previously tentacled specimens.
+ // Fin-bearing lateral-frill species keep their original incidence.
+ if(ecology.appendagePlan!=='lateral_frill'&&rng()>=.20)return out;
+ // Conditional on tentacles existing, only 20% of specimens retain
+ // the previous chance of growing any arm >= 0.8 body lengths.
+ const allowLongTentacles=rng()<.20;
  const maxCount=Math.min(50,Math.max(6,Math.round(8+42*strength*(.45+.35*(dna.branch||0)+.20*(dna.budding||0)))));
  const count=4+Math.floor(rng()*(maxCount-3));
  // Choose one dominant growth mass and its long axis, then generate ordered
@@ -4461,7 +4467,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
   const tangent=V.norm(V.cross(outward,Math.abs(outward[1])>.9?[1,0,0]:[0,1,0]));
   const bend=V.norm(V.cross(outward,tangent));
   const length=mode==='fin'?(.50+.15*rng())*lengthProfile*(.7+Math.max(...axes)*.5):bodySize*(.2+(2.5-.2)*Math.pow(rng(),1.15))*Math.max(.75,Math.min(1.15,lengthProfile+.25));
-  const strandLength=mode==='fin'?length:Math.max(bodySize/5,Math.min(bodySize*2.5,length));
+  const strandLength=mode==='fin'?length:Math.max(bodySize/5,Math.min(allowLongTentacles?bodySize*2.5:bodySize*.79,length));
   const phase=(i%2)*.24+rng()*.22+u*1.8;
   const collarLength=Math.min(.22,strandLength*.18);
   if(mode==='fin'){
