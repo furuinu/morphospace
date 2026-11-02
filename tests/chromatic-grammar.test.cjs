@@ -183,7 +183,7 @@ test('camera orbit and pan are computed in world coordinates independently of or
 test('local copies deform once in canonical space under one organism root',()=>{
  const ui=scripts[2];
  const begin=ui.indexOf('function drawLocalCopies(baseModel,glassPass=false)');
- const end=ui.indexOf('function drawCopy(model,mirrored=false,glassPass=false)',begin);
+ const end=ui.indexOf('function drawCopy(model,mirrored=false,glassPass=false,copyIndex=0)',begin);
  assert.ok(begin>0&&end>begin,'local specimen render path must exist');
  const block=ui.slice(begin,end);
  assert.match(block,/setCopyMotionUniforms\(gl,u,null\)/,'GPU must not inverse-map CPU-positioned local copies');
