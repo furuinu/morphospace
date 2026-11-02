@@ -6839,19 +6839,32 @@ function stepVerletStrand(mesh,time,moving){
  const steps=Math.max(1,Math.min(4,Math.ceil(elapsed/(1/60)))),dt=elapsed/steps;
  const dna=p.genome?.motionDNA||{},period=Math.max(.35,Number(dna.period)||2.5);
  const anchor=p.anchor;
- const pose=wholeBodyPose(time,p.genome?.seed||1,p.genome?.motionDNA?.primary??0,true);
- const previousPose=p.bodyPose||pose;
- const bodyVelocity=[pose.x-previousPose.x,pose.y-previousPose.y,pose.z-previousPose.z];
- p.bodyPose=pose;
+ const seed=p.genome?.seed||1,mode=p.genome?.motionDNA?.primary??0;
+ // Global translation and rotation produce inertia in the organism's frame.
+ const sample=t=>wholeBodyPose(t,seed,mode,true),h=Math.max(.012,Math.min(.03,elapsed*.5));
+ const pose=sample(time),minus=sample(time-h),plus=sample(time+h);
+ const accel=k=>(plus[k]-2*pose[k]+minus[k])/(h*h);
+ const linear=['x','y','z'].map(accel),angular=['pitch','yaw','roll'].map(accel);
+ const spin=['pitch','yaw','roll'].map(k=>(plus[k]-minus[k])/(2*h));
+ const cross=(x,y)=>[x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0]];
+ // Position-dependent acceleration of local tissue, distinct from whole-body drift.
+ const tempo=Math.max(.3,Math.min(3.5,Number(dna.tempo)||1));
+ const tissue=t=>{const q=t*tempo,ph=p.phase+seed*.00019,x=anchor[0],y=anchor[1],z=anchor[2];
+  return [.105*Math.sin(q*1.23+y*.83+ph)+.036*Math.sin(q*.61+z*1.7),
+    .075*Math.sin(q*.91+x*.72+ph*1.3),.090*Math.cos(q*1.07+x*.63-y*.42+ph)];};
+ const localNow=tissue(time),localBefore=tissue(time-h),localAfter=tissue(time+h);
+ const localAcceleration=localNow.map((v,i)=>(localAfter[i]-2*v+localBefore[i])/(h*h));
  const sides=p.sides,rows=p.rows;
  for(let sub=0;sub<steps;sub++){
   const t=time-elapsed+(sub+1)*dt,phase=t*2*Math.PI/period+p.phase;
   // Inertial drive from the organism's developmental motion; no hard tip oscillation.
-  const flow=[Math.sin(phase*.51)*2.5-bodyVelocity[0]*24,Math.cos(phase*.37)*2.3-bodyVelocity[1]*24,Math.sin(phase*.43+1.4)*2.6-bodyVelocity[2]*24];
+  const flow=[Math.sin(phase*.51)*2.5,Math.cos(phase*.37)*2.3,Math.sin(phase*.43+1.4)*2.6];
   p.points[0]=anchor.slice();
   for(let i=1;i<rows;i++){
    const point=p.points[i],prev=p.last[i],old=point.slice(),u=i/(rows-1),drag=.992-.012*u;
-   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+(flow[a]+Math.sin(phase*.83-u*7.2+a*2.1+p.phase)*2.2*u)*dt*dt*(.15+1.35*u*u);
+   const lever=V.sub(point,anchor),euler=cross(angular,lever),centripetal=cross(spin,cross(spin,lever));
+   const force=flow.map((v,a)=>clamp(v-linear[a]*2.4-localAcceleration[a]*2-euler[a]*1.8-centripetal[a]*1.35,-12,12));
+   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+(force[a]+Math.sin(phase*.83-u*7.2+a*2.1+p.phase)*2.2*u)*dt*dt*(.15+1.35*u*u);
    p.last[i]=old;
   }
   // Distance constraints preserve length, but deliberately add no bend stiffness.
