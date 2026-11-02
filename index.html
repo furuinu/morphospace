@@ -6799,11 +6799,15 @@ function stepVerletStrand(mesh,time,moving){
  const steps=Math.max(1,Math.min(4,Math.ceil(elapsed/(1/60)))),dt=elapsed/steps;
  const dna=p.genome?.motionDNA||{},period=Math.max(.35,Number(dna.period)||2.5);
  const anchor=p.anchor;
+ const pose=wholeBodyPose(time,p.genome?.seed||1,p.genome?.motionDNA?.primary??0,true);
+ const previousPose=p.bodyPose||pose;
+ const bodyVelocity=[pose.x-previousPose.x,pose.y-previousPose.y,pose.z-previousPose.z];
+ p.bodyPose=pose;
  const sides=p.sides,rows=p.rows;
  for(let sub=0;sub<steps;sub++){
   const t=time-elapsed+(sub+1)*dt,phase=t*2*Math.PI/period+p.phase;
   // Inertial drive from the organism's developmental motion; no hard tip oscillation.
-  const flow=[Math.sin(phase*.51)*.12,Math.cos(phase*.37)*.10,Math.sin(phase*.43+1.4)*.10];
+  const flow=[Math.sin(phase*.51)*1.5-bodyVelocity[0]*36,Math.cos(phase*.37)*1.2-bodyVelocity[1]*36,Math.sin(phase*.43+1.4)*1.4-bodyVelocity[2]*36];
   p.points[0]=anchor.slice();
   for(let i=1;i<rows;i++){
    const point=p.points[i],prev=p.last[i],old=point.slice(),u=i/(rows-1),drag=.975-.035*u;
