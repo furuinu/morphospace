@@ -414,7 +414,7 @@ test('delicate strands use real bounded Verlet constraints and body inertia',()=
  assert.match(html,/function stepVerletStrand\(mesh,time,moving\)/);
  assert.match(html,/const steps=Math\.max\(1,Math\.min\(4,Math\.ceil\(elapsed\//);
  assert.match(html,/const correction=V\.scale\(diff,error\*/);
- assert.match(html,/const pose=wholeBodyPose\(time,p\.genome/);
+ assert.match(html,/const pose=sample\(time\),minus=sample\(time-h\),plus=sample\(time\+h\)/);
  assert.match(html,/gl\.bufferSubData\(gl\.ARRAY_BUFFER,0,mesh\.data\)/);
  assert.match(html,/mesh\.verlet=makeVerletStrand\(mesh,d,sp\.genome\)/);
  assert.match(html,/stepVerletStrand\(pt\.mesh,bodyTime,\$\('motion'\)\.checked\)/);
@@ -426,7 +426,10 @@ test('underwater strands have free curvature, stronger drift and persistent iner
  const solver=html.slice(start,end);
  assert.match(solver,/drag=\.992-\.012\*u/);
  assert.match(solver,/Math\.sin\(phase\*\.83-u\*7\.2\+a\*2\.1\+p\.phase\)\*2\.2\*u/);
- assert.match(solver,/bodyVelocity\[0\]\*24/);
+ assert.match(solver,/const linear=\['x','y','z'\]\.map\(accel\),angular=/);
+  assert.match(solver,/const localAcceleration=localNow\.map/);
+  assert.match(solver,/centripetal=cross\(spin,cross\(spin,lever\)\)/);
+  assert.match(solver,/clamp\(v-linear\[a\]\*2\.4-localAcceleration\[a\]\*2-euler\[a\]\*1\.8-centripetal\[a\]\*1\.35,-12,12\)/);
  assert.match(solver,/No Laplacian straightening/);
  assert.doesNotMatch(solver,/p\.points\[i-1\]\[a\]\+p\.points\[i\+1\]\[a\]/);
 });
@@ -444,7 +447,7 @@ test('tentacle root keeps growth direction while distal chain remains flexible',
  assert.match(html,/const blended=V\.norm\(V\.add\(V\.scale\(guide,\.72\),V\.scale\(straight,\.28\)\)\)/);
  assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
  assert.match(html,/const secondDir=V\.norm/);
- assert.match(html,/bodyVelocity\[0\]\*24/);
+ assert.match(html,/const force=flow\.map\(\(v,a\)=>clamp\(/);
 });
 
 test('fin membranes render both sides and tentacles start with a curved physical pose',()=>{
