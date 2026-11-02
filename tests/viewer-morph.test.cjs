@@ -419,3 +419,14 @@ test('delicate strands use real bounded Verlet constraints and body inertia',()=
  assert.match(html,/mesh\.verlet=makeVerletStrand\(mesh,d,sp\.genome\)/);
  assert.match(html,/stepVerletStrand\(pt\.mesh,bodyTime,\$\('motion'\)\.checked\)/);
 });
+
+test('underwater strands have free curvature, stronger drift and persistent inertia',()=>{
+ const start=html.indexOf('function stepVerletStrand('),end=html.indexOf('function dynamicBatches(',start);
+ assert.ok(start>=0&&end>start);
+ const solver=html.slice(start,end);
+ assert.match(solver,/drag=\.992-\.012\*u/);
+ assert.match(solver,/Math\.sin\(phase\*\.83-u\*7\.2\+a\*2\.1\+p\.phase\)\*4\.2\*u/);
+ assert.match(solver,/bodyVelocity\[0\]\*85/);
+ assert.match(solver,/No Laplacian straightening/);
+ assert.doesNotMatch(solver,/p\.points\[i-1\]\[a\]\+p\.points\[i\+1\]\[a\]/);
+});
