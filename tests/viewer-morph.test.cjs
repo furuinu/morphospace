@@ -315,10 +315,10 @@ test('particle phase transition does not fade the full scene or mutate topology'
  assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
  assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
 });
-test('minimal boot loader displays a standard spinner and progress bar',()=>{
- const boot=scripts.find(script=>script.includes('Minimal startup spinner'))||'';
- assert.match(boot,/ctx\.arc\(cx,cy,r/);
- assert.match(boot,/window\.morphospaceBootDNAComplete=function/);
+test('boot screen uses progress bar only, without a rotating spinner',()=>{
+ const boot=scripts.find(script=>script.includes('Progress-bar-only boot screen'))||'';
+ assert.match(boot,/window\.morphospaceBootDNAComplete=/);
+ assert.match(html,/#bootSplash \.boot-dna\{display:none!important\}/);
  assert.match(html,/id="bootStatus">読み込み中…/);
  assert.match(html,/class="boot-progress"/);
 });
