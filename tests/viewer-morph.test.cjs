@@ -433,7 +433,7 @@ test('underwater strands have free curvature, stronger drift and persistent iner
 
 test('strand length is bounded by body size and long flexible roots stay pinned',()=>{
  assert.match(html,/const bodySize=Math\.max\(\.3,bodyExtent\*2\)/);
- assert.match(html,/Math\.max\(bodySize\/3,Math\.min\(bodySize\*3,length\)\)/);
+ assert.match(html,/Math\.max\(bodySize\/5,Math\.min\(bodySize\*2\.5,length\)\)/);
  assert.match(html,/const segments=Math\.max\(12,Math\.min\(24,/);
  assert.match(html,/p\.points\[0\]=anchor\.slice\(\)/);
  assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
@@ -454,4 +454,12 @@ test('fin membranes render both sides and tentacles start with a curved physical
  assert.match(html,/Start already immersed in the flow/);
  assert.match(html,/const offset=V\.add\(V\.scale\(lateral,amp\*Math\.sin/);
  assert.match(html,/growthDirection:axis/);
+});
+
+test('tentacle angle diversity narrows, never widens, the established fan',()=>{
+ assert.match(html,/const spread=\.38\+\.62\*rng\(\)/);
+ assert.match(html,/V\.scale\(radial,\.85\*spread\)/);
+ assert.match(html,/V\.scale\(radial,\.68\*spread\)/);
+ assert.match(html,/V\.scale\(side,lane\*\.35\*spread\)/);
+ assert.match(html,/Math\.max\(bodySize\/5,Math\.min\(bodySize\*2\.5,length\)\)/);
 });
