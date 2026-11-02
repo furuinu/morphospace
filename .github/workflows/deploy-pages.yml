@@ -48,7 +48,7 @@ jobs:
           ref: main
       - name: Build DNA home screen icons
         run: |
-          python3 -m pip install --quiet Pillow==11.3.0
+          python3 -m pip install --quiet Pillow==11.3.0 CairoSVG==2.8.2
           python3 scripts/generate_home_icons.py
           cp icons/apple-touch-icon.png apple-touch-icon.png
           cp icons/apple-touch-icon.png apple-touch-icon-precomposed.png
