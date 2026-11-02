@@ -4202,6 +4202,21 @@ function morphSDF(x,y,z,em){
   const rr=Math.sqrt(xx*xx/(c.axes[0]*c.axes[0])+yy*yy/(c.axes[1]*c.axes[1])+dz*dz/(c.axes[2]*c.axes[2]));
   acc=Math.max(acc,-(rr-1)*Math.min(...c.axes));
  }
+ // A short, smooth growth collar is part of the SAME implicit skin mesh.
+ // The flexible distal appendage remains a separately animated GPU mesh.
+ if(em.appendageBases)for(const base of em.appendageBases){
+  const dx=x-base.root[0],dy=y-base.root[1],dz=z-base.root[2];
+  const along=dx*base.dir[0]+dy*base.dir[1]+dz*base.dir[2];
+  if(along<-.24||along>base.length+base.blend+.24)continue;
+  const t=clamp(along/base.length,0,1);
+  const rx=dx-base.dir[0]*clamp(along,0,base.length);
+  const ry=dy-base.dir[1]*clamp(along,0,base.length);
+  const rz=dz-base.dir[2]*clamp(along,0,base.length);
+  const radius=base.radius*(1-.72*t);
+  const bd=Math.hypot(rx,ry,rz)-radius;
+  const k=base.blend,h=Math.max(k-Math.abs(acc-bd),0)/k;
+  acc=Math.min(acc,bd)-h*h*k*.25;
+ }
  return acc;
 }
 // Pigment fields use the developmental frame, never quantiles of the current LOD vertices.
@@ -4443,6 +4458,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
   const bend=V.norm(V.cross(outward,tangent));
   const length=(.50+.15*rng())*lengthProfile*(.7+Math.max(...axes)*.5);
   const phase=(i%2)*.24+rng()*.22+u*1.8;
+  const collarLength=Math.min(.22,length*.22);
   if(mode==='fin'){
    const rows=12,cols=4,p=[],colors=[],faces=[];
    for(let j=0;j<=rows;j++){
@@ -4454,7 +4470,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     }
    }
    for(let j=0;j<rows;j++)for(let k=0;k<cols;k++){const a=j*(cols+1)+k,b=a+1,c=a+cols+1,d=c+1;faces.push([a,b,c],[b,d,c]);}
-   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase,rows:rows+1,sides:cols+1,type:'fin'}});
+   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase,rows:rows+1,sides:cols+1,type:'fin',dir:outward,collarLength,collarRadius:.035}});
   }else{
    const segments=mode==='cerata'?7:11,sides=mode==='cerata'?7:5,thickness=mode==='cerata'?.040:.014;
    const pts=[],radii=[];
@@ -4463,7 +4479,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     pts.push(V.add(root,V.add(V.scale(outward,length*t),V.add(V.scale(tangent,length*.085*t*t*Math.sin(phase+t*2)),V.scale(bend,length*.045*t*t*Math.cos(phase+t*2))))));
     radii.push(Math.max(.002,thickness*Math.pow(1-t,1.2)+.002));
    }
-   out.push({mesh:makeSwept(pts,radii,palette,sides,4+i,phase),kind:'opaque',role:'appendage',delicate:{root,phase,rows:segments+1,sides,type:'strand'}});
+   out.push({mesh:makeSwept(pts,radii,palette,sides,4+i,phase),kind:'opaque',role:'appendage',delicate:{root,phase,rows:segments+1,sides,type:'strand',dir:outward,collarLength,collarRadius:thickness*1.6}});
   }
  }
  return out;
@@ -4491,6 +4507,13 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  // silhouette resolution without multiplying CPU vertex buffers by copy count.
  // Crowded radial organisms use a smaller source mesh to bound mobile fill cost.
  const resolution=copyCount<=2?47:copyCount===3?43:copyCount===4?41:37;
+ // Deterministic anatomical layout is planned BEFORE the skin is tessellated.
+ // Sampling anchors sees the unmodified SDF; collars are attached afterwards.
+ const delicateParts=low?[]:makeDelicateMorphOrgans(source,g,palette,seed,detailDensity);
+ if(!low)source.appendageBases=delicateParts.map(p=>p.delicate).filter(Boolean).map(d=>({
+  root:d.root,dir:d.dir,length:Math.max(.025,d.collarLength),
+  radius:d.collarRadius,blend:Math.max(.055,d.collarRadius*1.7)
+ }));
  let localShell=null;
  if(!low){
   // Highly folded genomes may exceed the 16-bit index budget. Reduce tessellation
@@ -4512,7 +4535,7 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
    localParts.push({mesh:sphere(c,dims,palette,i+4,24,16),kind:'translucent',role:'lung'});
   }
  }
- if(localShell) localParts.push(...makeDelicateMorphOrgans(source,g,palette,seed,detailDensity));
+ if(localShell)localParts.push(...delicateParts);
  const localGroup=localShell?{shell:localShell,parts:localParts,source,copyTransforms:em.copyTransforms}:null;
  const shellTriangles=localShell?localShell.tri.length/3*copyCount:shell.tri.length/3;
  return rorschachizeSpecimen({shell,parts,localGroup,ciliaDefs:[],rigs:[],growthModel:em,anatomy:stats,genome:g,palette,glowTints:glowTintsForPalette(palette,seed),triangles:shellTriangles+(localGroup?localParts.reduce((n,x)=>n+x.mesh.tri.length/3*copyCount,0):parts.reduce((n,x)=>n+x.mesh.tri.length/3,0)),shellTriangles,seed,style:g.style,motionGPU:motionGPUSpec(g,localGroup?source:em),biome:low?null:buildBiomeSystem(g,source),morphology:{name:morphName(g),description:morphDescription(g),centres:em.blobs.length,cavities:em.cuts.length,mesh:'local-instanced-growth'}});
