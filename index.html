@@ -4847,6 +4847,17 @@ function makeAnatomicalFin(t0,angle,g,points,fs,radius,palette,r,style,motion=nu
    let loc=V.add(root,V.add(V.scale(dir,high),V.add(V.scale(f.b,w*.30*v*Math.sin(p*8+v*4+angle)),V.scale(f.t,w*.1*v*Math.sin(p*TAU*2+angle)))));
    const kinematics=organDynamics('fin',tt,g,motion,finIndex*.31+p+v*.7),lag=v*v*(.45+.55*physiologyForStyle(style).fin);
    loc=applyMotionToPoint(loc,f,{dn:kinematics.dn*lag,db:kinematics.db*lag,dt:kinematics.dt*lag});
+   // Small, rapid propulsive strokes: hinged at the skin, travelling along the fin.
+   // Keep displacement proportional to local body radius and bounded to avoid folding.
+   if(motion&&motion.amp){
+    const finStrength=clamp(motion.amp,0,1.5)*(.85+.15*physiologyForStyle(style).fin);
+    const tipWeight=Math.pow(v,1.45),edgeWeight=.78+.22*Math.sin(Math.PI*p);
+    const beatPhase=motion.time*(7.5+(finIndex%5)*.48)-p*2.1-v*1.7+finIndex*1.618+g.seed*.00037;
+    const stroke=Math.sin(beatPhase)+.18*Math.sin(beatPhase*2+.35);
+    const flutter=.36*Math.cos(beatPhase-.65);
+    const excursion=w*.047*finStrength*tipWeight*edgeWeight;
+    loc=V.add(loc,V.add(V.scale(f.b,excursion*stroke),V.scale(f.t,excursion*flutter)));
+   }
    verts.push(loc);colors.push(colorFor(palette,tt,angle+v*TAU*.32,15+i%2));
   }
  }
