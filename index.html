@@ -690,6 +690,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
    if(forbidden(k))throw Error('DNAの項目名が不正です');
    if(typeof v==='number'&&(!Number.isFinite(v)||(k!=='seed'&&Math.abs(v)>256&&!(inPaletteRows&&Number.isInteger(v)&&v>=0&&v<PALETTE_ROW_LIMIT))))throw Error('DNAの数値が範囲外です');
    if(v&&typeof v==='object')inspect(v,depth+1,inPaletteRows||k==='rows'&&depth===1);
+   else if(typeof v==='string'&&depth===1&&o===g.ecologyDNA&&['strategy','sensing','intake','appendagePlan'].includes(k)&&v.length<=40&&/^[a-z_]+$/.test(v)){} // Ecology descriptors are bounded enums.
    else if(typeof v!=='number'&&v!==null)throw Error('DNAの型が不正です');
   }}inspect(g);
   if(g.colorDNA){const c=g.colorDNA;if(!Array.isArray(c.rows)||c.rows.length!==2||c.rows.some(n=>!Number.isInteger(n)||n<0||n>=PALETTE_ROW_LIMIT)||!Array.isArray(c.cols)||c.cols.length!==2||c.cols.some(a=>!Array.isArray(a)||a.length!==3||a.some(n=>!Number.isInteger(n)||n<0||n>5)))throw Error('色素DNAの形式が違います');}
