@@ -8480,8 +8480,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      }else{
        gl.disable(gl.BLEND);
        if(!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
-       if(!debugShell&&!debugGlass&&!glassAmount)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
-       if(!debugShell&&!debugGlass&&!glassAmount)drawGPUMotileCilia(mvp,model,false);
+       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch')drawUploaded(pt.mesh,1,false,0,0);
+       if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
    }
