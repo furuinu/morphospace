@@ -6807,15 +6807,15 @@ function stepVerletStrand(mesh,time,moving){
  for(let sub=0;sub<steps;sub++){
   const t=time-elapsed+(sub+1)*dt,phase=t*2*Math.PI/period+p.phase;
   // Inertial drive from the organism's developmental motion; no hard tip oscillation.
-  const flow=[Math.sin(phase*.51)*1.5-bodyVelocity[0]*36,Math.cos(phase*.37)*1.2-bodyVelocity[1]*36,Math.sin(phase*.43+1.4)*1.4-bodyVelocity[2]*36];
+  const flow=[Math.sin(phase*.51)*5.2-bodyVelocity[0]*85,Math.cos(phase*.37)*4.8-bodyVelocity[1]*85,Math.sin(phase*.43+1.4)*5.5-bodyVelocity[2]*85];
   p.points[0]=anchor.slice();
   for(let i=1;i<rows;i++){
-   const point=p.points[i],prev=p.last[i],old=point.slice(),u=i/(rows-1),drag=.975-.035*u;
-   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+flow[a]*dt*dt*(.7+u);
+   const point=p.points[i],prev=p.last[i],old=point.slice(),u=i/(rows-1),drag=.992-.012*u;
+   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+(flow[a]+Math.sin(phase*.83-u*7.2+a*2.1+p.phase)*4.2*u)*dt*dt*(.4+1.8*u);
    p.last[i]=old;
   }
-  // Three distance iterations plus a light bend constraint preserve soft curvature.
-  for(let iter=0;iter<4;iter++){
+  // Distance constraints preserve length, but deliberately add no bend stiffness.
+  for(let iter=0;iter<5;iter++){
    p.points[0]=anchor.slice();
    for(let i=1;i<rows;i++){
     const diff=V.sub(p.points[i],p.points[i-1]),dist=Math.max(1e-7,Math.hypot(...diff)),error=(dist-p.lengths[i-1])/dist;
@@ -6823,8 +6823,7 @@ function stepVerletStrand(mesh,time,moving){
     p.points[i]=V.sub(p.points[i],correction);
     if(i>1)p.points[i-1]=V.add(p.points[i-1],correction);
    }
-   // Low stiffness: only gently resist sharp kinks.
-   for(let i=2;i<rows-1;i++)for(let a=0;a<3;a++)p.points[i][a]+=((p.points[i-1][a]+p.points[i+1][a])*.5-p.points[i][a])*.055;
+   // No Laplacian straightening: allow free serpentine curvature and lag.
   }
  }
  const pulse=1+.012*Math.sin(time*1.9+p.phase);
