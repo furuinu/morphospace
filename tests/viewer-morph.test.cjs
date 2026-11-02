@@ -425,8 +425,8 @@ test('underwater strands have free curvature, stronger drift and persistent iner
  assert.ok(start>=0&&end>start);
  const solver=html.slice(start,end);
  assert.match(solver,/drag=\.992-\.012\*u/);
- assert.match(solver,/Math\.sin\(phase\*\.83-u\*7\.2\+a\*2\.1\+p\.phase\)\*4\.2\*u/);
- assert.match(solver,/bodyVelocity\[0\]\*85/);
+ assert.match(solver,/Math\.sin\(phase\*\.83-u\*7\.2\+a\*2\.1\+p\.phase\)\*2\.2\*u/);
+ assert.match(solver,/bodyVelocity\[0\]\*24/);
  assert.match(solver,/No Laplacian straightening/);
  assert.doesNotMatch(solver,/p\.points\[i-1\]\[a\]\+p\.points\[i\+1\]\[a\]/);
 });
@@ -436,7 +436,7 @@ test('strand length is bounded by body size and long flexible roots stay pinned'
  assert.match(html,/Math\.max\(bodySize\/3,Math\.min\(bodySize\*3,length\)\)/);
  assert.match(html,/const segments=Math\.max\(12,Math\.min\(24,/);
  assert.match(html,/p\.points\[0\]=anchor\.slice\(\)/);
- assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(first,p\.lengths\[0\]\/firstDist\)\)/);
+ assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
 });
 
 test('tentacle root keeps growth direction while distal chain remains flexible',()=>{
