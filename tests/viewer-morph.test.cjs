@@ -315,14 +315,12 @@ test('particle phase transition does not fade the full scene or mutate topology'
  assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
  assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
 });
-test('cellular boot loader animates membrane, organelles and nucleus without WebGL',()=>{
- const boot=scripts.find(script=>script.includes('MORPHOSPACE cellular genesis loader'))||'';
- assert.match(boot,/const particles=\[/);
- assert.match(boot,/const membrane=/);
- assert.match(boot,/ctx\.ellipse\(centerX,centerY/);
- assert.match(boot,/createRadialGradient/);
+test('minimal boot loader displays a standard spinner and progress bar',()=>{
+ const boot=scripts.find(script=>script.includes('Minimal startup spinner'))||'';
+ assert.match(boot,/ctx\.arc\(cx,cy,r/);
  assert.match(boot,/window\.morphospaceBootDNAComplete=function/);
- assert.match(html,/id="bootStatus">細胞構造を形成しています/);
+ assert.match(html,/id="bootStatus">読み込み中…/);
+ assert.match(html,/class="boot-progress"/);
 });
 
 test('Y-propagating helical unbinding uses real mesh triangle centroids',()=>{
