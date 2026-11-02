@@ -24,6 +24,7 @@ def svg_icon(source):
     if not match:
         raise ValueError("DNA icon SVG has no viewBox")
     vb, body = match.groups()
+    body = body.replace("currentColor", "#8ce9d0")
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
 <rect width="512" height="512" fill="#071721"/>
 <svg x="92" y="67" width="328" height="378" viewBox="{vb}" fill="#8ce9d0">{body}</svg>
