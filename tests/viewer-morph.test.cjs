@@ -440,9 +440,18 @@ test('strand length is bounded by body size and long flexible roots stay pinned'
 });
 
 test('tentacle root keeps growth direction while distal chain remains flexible',()=>{
- assert.match(html,/growthDirection:V\.norm\(V\.sub\(rest\[Math\.min\(2,rows-1\)\],rest\[0\]\)\)/);
- assert.match(html,/const blended=V\.norm\(V\.add\(V\.scale\(guide,\.88\),V\.scale\(straight,\.12\)\)\)/);
+ assert.match(html,/growthDirection:axis/);
+ assert.match(html,/const blended=V\.norm\(V\.add\(V\.scale\(guide,\.72\),V\.scale\(straight,\.28\)\)\)/);
  assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
  assert.match(html,/const secondDir=V\.norm/);
  assert.match(html,/bodyVelocity\[0\]\*24/);
+});
+
+test('fin membranes render both sides and tentacles start with a curved physical pose',()=>{
+ assert.match(html,/function doubleSidedMembrane\(mesh\)/);
+ assert.match(html,/tri\[k\+1\]=mesh\.tri\[i\+2\]\+n/);
+ assert.match(html,/mesh:doubleSidedMembrane\(buildMesh\(p,colors,faces,true\)\)/);
+ assert.match(html,/Start already immersed in the flow/);
+ assert.match(html,/const offset=V\.add\(V\.scale\(lateral,amp\*Math\.sin/);
+ assert.match(html,/growthDirection:axis/);
 });
