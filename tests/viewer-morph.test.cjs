@@ -387,3 +387,12 @@ test('delicate organs attach inside the detailed implicit growth surface',()=>{
  assert.match(html,/anchor=anchorOnGrowthSurface\(source,finOrigin,outward,radius\)/);
  assert.match(html,/hit-Math\.min\(\.085,expectedRadius\*\.12\)/);
 });
+
+test('growth collars are fused into the source SDF before detailed skin tessellation',()=>{
+ assert.match(html,/if\(em\.appendageBases\)for\(const base of em\.appendageBases\)/);
+ assert.match(html,/acc=Math\.min\(acc,bd\)-h\*h\*k\*\.25/);
+ assert.match(html,/const delicateParts=low\?\[\]:makeDelicateMorphOrgans\(source,g,palette,seed,detailDensity\)/);
+ assert.match(html,/source\.appendageBases=delicateParts\.map/);
+ assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts\)/);
+ assert.ok(html.indexOf('source.appendageBases=delicateParts.map')<html.indexOf('localShell=morphImplicitMesh(source,palette,g,false,n)'));
+});
