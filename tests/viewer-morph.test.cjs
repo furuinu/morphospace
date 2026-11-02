@@ -359,3 +359,10 @@ test('cilia shader must not link organism-only phase varyings',()=>{
  assert.match(html,/replace\(\/uniform float uPhaseCut;varying/);
  assert.match(html,/const program=linked\(vp,fp,'本体GPUプログラム'\)/);
 });
+
+test('detailed observation renders external organs and cilia at nonzero skin transparency',()=>{
+ const draw=html.slice(html.indexOf('function drawCopy(model,mirrored=false,glassPass=false)'),html.indexOf('const pose=wholeBodyPose(bodyTime,spec.seed',html.indexOf('function drawCopy(model,mirrored=false,glassPass=false)')));
+ assert.ok(draw.includes("if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))"),'external organs must remain visible when glassAmount > 0');
+ assert.ok(draw.includes("if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false)"),'surface cilia must remain visible when glassAmount > 0');
+ assert.doesNotMatch(draw,/!debugShell&&!debugGlass&&!glassAmount/,'skin transparency must never suppress appendages');
+});
