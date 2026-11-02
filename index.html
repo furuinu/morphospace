@@ -10224,10 +10224,11 @@ function videoFrameSize(resolution,mode,rect){
 function drawVideoViewerText(job){
  if(job.mode!=='viewer')return;
  const rect=canvas.getBoundingClientRect(),scale=job.width/Math.max(1,rect.width),ctx=job.ctx;
- const caption=document.querySelector('.viewer-caption');
- const navHidden=$('overlay').classList.contains('viewer-nav-hidden');
+ const caption=typeof document!=='undefined'?document.querySelector?.('.viewer-caption'):null;
  const captionBox=caption?.getBoundingClientRect();
- const hiddenBottom=(window.innerHeight<=550?14:24);
+ const navHidden=captionBox?$('overlay').classList.contains('viewer-nav-hidden'):true;
+ const viewportHeight=typeof window!=='undefined'?window.innerHeight:rect.height;
+ const hiddenBottom=viewportHeight<=550?14:24;
  const captionOffset=captionBox&&!navHidden?(rect.bottom-hiddenBottom-captionBox.bottom):0;
  ctx.save();ctx.textBaseline='top';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=10*scale;ctx.shadowOffsetY=scale;
  // Re-read text and layout when the selected organism changes during recording.
