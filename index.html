@@ -5342,7 +5342,7 @@ vec3 surfaceDisplacement(vec3 point,vec3 normal,float time,float amplitude){
  float reactiveRim=exp(-pow(surfaceBoundary(p)*21.,2.));
  float pulseGain=max(.22,uSurface0.x*uSurface1.y);
  float amount=pulseGain*(ridge-.35)*(.012+.025*beat)*clamp(amplitude,0.,2.)+uSurface0.x*reactiveRim*.006;
- return normal*amount;
+ return normal*(amount*.45);
 }
 vec3 surfaceGradient(vec3 point,float time){
  vec3 p=chromaticPoint(point);
@@ -6080,8 +6080,11 @@ void main(){
    shaded.a=max(shaded.a,skinLight.a);
   float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
   vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
-  shaded.rgb+=lureTint*lure*1.65+vec3(.27,.39,.42)*pow(lure,3.0);
-  shaded.a=max(shaded.a,lure*.97);
+  float tipRegion=smoothstep(.68,.90,vAlong)*((vRole>5.5&&vRole<7.5)||(vRole>9.5&&vRole<10.5)?1.0:0.0);
+  float halo=tipRegion*exp(-pow((vAlong-.94)/.14,2.0))*(.16+.84*lure);
+  float flareCore=pow(clamp(lure,0.0,1.0),2.0);
+  shaded.rgb+=lureTint*(lure*4.4+halo*2.4)+vec3(.85,.95,1.0)*flareCore*2.0;
+  shaded.a=max(shaded.a,clamp(lure*.98+halo*.65,0.0,1.0));
   // Camera-relative silhouette emission, routed into the existing bloom extraction.
   float silhouette=pow(1.0-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.0,1.0),3.2);
   float rimCatch=pow(max(dot(normalize(vNormal),normalize(uRimDir)),0.0),1.5);
@@ -6302,8 +6305,11 @@ void main(){
  shaded.a=max(shaded.a,skinLight.a);
   float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
   vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
-  shaded.rgb+=lureTint*lure*1.65+vec3(.27,.39,.42)*pow(lure,3.0);
-  shaded.a=max(shaded.a,lure*.97);
+  float tipRegion=smoothstep(.68,.90,vAlong)*((vRole>5.5&&vRole<7.5)||(vRole>9.5&&vRole<10.5)?1.0:0.0);
+  float halo=tipRegion*exp(-pow((vAlong-.94)/.14,2.0))*(.16+.84*lure);
+  float flareCore=pow(clamp(lure,0.0,1.0),2.0);
+  shaded.rgb+=lureTint*(lure*4.4+halo*2.4)+vec3(.85,.95,1.0)*flareCore*2.0;
+  shaded.a=max(shaded.a,clamp(lure*.98+halo*.65,0.0,1.0));
   // Camera-relative silhouette emission, routed into the existing bloom extraction.
   float silhouette=pow(1.0-clamp(abs(dot(normalize(vNormal),normalize(vView))),0.0,1.0),3.2);
   float rimCatch=pow(max(dot(normalize(vNormal),normalize(uRimDir)),0.0),1.5);
