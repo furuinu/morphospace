@@ -73,28 +73,21 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   }));
   if(!beforeTap.atlasHidden||!beforeTap.viewerHidden||!beforeTap.dnaVisible)
    throw Error('Startup must remain gated until user taps: '+JSON.stringify(beforeTap));
-  // DNA must be fully assembled and motionless after loading, and labels must not jump.
+  // The progress-only loader must preserve typography and expose start action.
   const bootFinal=await page.evaluate(()=>{
-   const splash=document.querySelector('#bootSplash'),dna=splash.querySelector('#bootDnaCanvas');
+   const splash=document.querySelector('#bootSplash');
    return {
     titleTop:splash.querySelector('.boot-title').getBoundingClientRect().top,
     captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top,
-    pixels:dna.toDataURL(),
-    buttonVisible:getComputedStyle(document.querySelector('#bootStartButton')).visibility,
-    animation:getComputedStyle(dna).animationName
+    spinnerHidden:getComputedStyle(splash.querySelector('#bootDnaCanvas')).display==='none',
+    barVisible:getComputedStyle(splash.querySelector('.boot-progress')).display!=='none',
+    buttonVisible:getComputedStyle(document.querySelector('#bootStartButton')).visibility
    };
   });
-  await page.waitForTimeout(180);
-  const settledDNA=await page.locator('#bootDnaCanvas').evaluate(dna=>dna.toDataURL());
-  if(bootFinal.pixels.length<1000||bootFinal.pixels!==settledDNA||
-    Math.abs(bootFinal.titleTop-bootState.titleTop)>1.5||
+  if(Math.abs(bootFinal.titleTop-bootState.titleTop)>1.5||
     Math.abs(bootFinal.captionTop-bootState.captionTop)>1.5||
-    bootFinal.buttonVisible!=='visible'||bootFinal.animation!=='none')
-   throw Error('Completed 3D DNA must remain static with fixed loader typography: '+
-    JSON.stringify({pixels:bootFinal.pixels.length,settled:bootFinal.pixels===settledDNA,
-     titleShift:bootFinal.titleTop-bootState.titleTop,
-     captionShift:bootFinal.captionTop-bootState.captionTop,
-     buttonVisible:bootFinal.buttonVisible,animation:bootFinal.animation}));
+    !bootFinal.spinnerHidden||!bootFinal.barVisible||bootFinal.buttonVisible!=='visible')
+   throw Error('Progress-only boot screen layout regression: '+JSON.stringify(bootFinal));
   await page.locator('#bootSplash').click({position:{x:24,y:24}});
   await page.waitForFunction(()=>!document.body.classList.contains('boot-ready')&&
     document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),null,{timeout:15000});
