@@ -408,3 +408,14 @@ test('flexible appendages follow body DNA with a root-fixed delayed travelling b
  assert.match(shader,/float taper=u\*u\*\(3\.-2\.\*u\)/);
  assert.match(shader,/return flex\*taper\*/);
 });
+
+test('delicate strands use real bounded Verlet constraints and body inertia',()=>{
+ assert.match(html,/function makeVerletStrand\(mesh,d,genome\)/);
+ assert.match(html,/function stepVerletStrand\(mesh,time,moving\)/);
+ assert.match(html,/const steps=Math\.max\(1,Math\.min\(4,Math\.ceil\(elapsed\//);
+ assert.match(html,/const correction=V\.scale\(diff,error\*/);
+ assert.match(html,/const pose=wholeBodyPose\(time,p\.genome/);
+ assert.match(html,/gl\.bufferSubData\(gl\.ARRAY_BUFFER,0,mesh\.data\)/);
+ assert.match(html,/mesh\.verlet=makeVerletStrand\(mesh,d,sp\.genome\)/);
+ assert.match(html,/stepVerletStrand\(pt\.mesh,bodyTime,\$\('motion'\)\.checked\)/);
+});
