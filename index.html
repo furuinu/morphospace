@@ -6791,7 +6791,7 @@ function combineDynamicMeshes(chunks,maxVertices=55000){
 function makeVerletStrand(mesh,d,genome){
  const sides=d.sides,rows=d.rows,rest=[],last=[],lengths=[];
  for(let i=0;i<rows;i++){const p=[0,0,0];for(let j=0;j<sides;j++){const k=(i*sides+j)*17;for(let a=0;a<3;a++)p[a]+=mesh.data[k+a]/sides;}rest.push(p);last.push(p.slice());if(i)lengths.push(Math.hypot(...V.sub(p,rest[i-1])));}
- return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice()};
+ return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice(),growthDirection:V.norm(V.sub(rest[Math.min(2,rows-1)],rest[0]))};
 }
 function stepVerletStrand(mesh,time,moving){
  const p=mesh.verlet;if(!p)return;
@@ -6810,11 +6810,11 @@ function stepVerletStrand(mesh,time,moving){
  for(let sub=0;sub<steps;sub++){
   const t=time-elapsed+(sub+1)*dt,phase=t*2*Math.PI/period+p.phase;
   // Inertial drive from the organism's developmental motion; no hard tip oscillation.
-  const flow=[Math.sin(phase*.51)*5.2-bodyVelocity[0]*85,Math.cos(phase*.37)*4.8-bodyVelocity[1]*85,Math.sin(phase*.43+1.4)*5.5-bodyVelocity[2]*85];
+  const flow=[Math.sin(phase*.51)*2.5-bodyVelocity[0]*24,Math.cos(phase*.37)*2.3-bodyVelocity[1]*24,Math.sin(phase*.43+1.4)*2.6-bodyVelocity[2]*24];
   p.points[0]=anchor.slice();
   for(let i=1;i<rows;i++){
    const point=p.points[i],prev=p.last[i],old=point.slice(),u=i/(rows-1),drag=.992-.012*u;
-   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+(flow[a]+Math.sin(phase*.83-u*7.2+a*2.1+p.phase)*4.2*u)*dt*dt*(.4+1.8*u);
+   for(let a=0;a<3;a++)point[a]+=(point[a]-prev[a])*drag+(flow[a]+Math.sin(phase*.83-u*7.2+a*2.1+p.phase)*2.2*u)*dt*dt*(.15+1.35*u*u);
    p.last[i]=old;
   }
   // Distance constraints preserve length, but deliberately add no bend stiffness.
@@ -6829,7 +6829,17 @@ function stepVerletStrand(mesh,time,moving){
    // Re-pin the insertion and the first link after every constraint pass.
    p.points[0]=anchor.slice();
    const first=V.sub(p.points[1],anchor),firstDist=Math.max(1e-7,Math.hypot(...first));
-   p.points[1]=V.add(anchor,V.scale(first,p.lengths[0]/firstDist));
+   // A directionally rooted insertion: the first segment remains within a
+   // narrow cone around its growth axis, while the distal chain stays free.
+   const guide=p.growthDirection,straight=V.scale(first,1/firstDist);
+   const blended=V.norm(V.add(V.scale(guide,.88),V.scale(straight,.12)));
+   p.points[1]=V.add(anchor,V.scale(blended,p.lengths[0]));
+   // The second segment can bend, but should not fold backward across the skin.
+   if(rows>2){
+    const second=V.sub(p.points[2],p.points[1]),secondLength=Math.max(1e-7,Math.hypot(...second));
+    const secondDir=V.norm(V.add(V.scale(guide,.24),V.scale(second, .76/secondLength)));
+    p.points[2]=V.add(p.points[1],V.scale(secondDir,p.lengths[1]));
+   }
    // No Laplacian straightening: allow free serpentine curvature and lag.
   }
  }
