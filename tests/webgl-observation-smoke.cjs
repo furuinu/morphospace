@@ -48,7 +48,22 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
     ||bootState.splashVisible!=='visible'||!bootState.dnaCanvas||!bootState.dnaContext||!bootState.dnaComplete)
    throw Error('The initial frame must show the spatial DNA canvas without revealing the atlas: '+JSON.stringify(bootState));
-  await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:120000});
+  // Fail with the actual browser exception instead of hiding a syntax error behind
+  // a two-minute locator timeout. Collect startup state for rendering stalls.
+  try{
+   await page.waitForFunction(()=>document.querySelector('#gallery button.item')||
+     window.__bootSmokeError,{timeout:60000});
+  }catch(error){
+   const state=await page.evaluate(()=>({
+    bootClass:document.body.className,
+    stage:document.querySelector('#bootStatus')?.textContent,
+    message:document.querySelector('#message')?.textContent,
+    galleryCount:document.querySelectorAll('#gallery button.item').length
+   }));
+   throw Error('Gallery startup timeout: '+JSON.stringify(state)+'; browser errors: '+errors.join(' | ')+'; '+error.message);
+  }
+  if(errors.length)throw Error('Gallery startup JS errors: '+errors.join(' | '));
+  await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:5000});
   await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
     !document.querySelector('#bootStartButton')?.hidden,{timeout:120000});
   const beforeTap=await page.evaluate(()=>({
