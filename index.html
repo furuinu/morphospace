@@ -5164,16 +5164,33 @@ vec3 branchJointWarp(vec3 original,vec3 root,float progress,float phase,float ro
 // Two orthogonal travelling waves, rooted at the skin and strongest at the tip.
 // Each part has a seeded phase and is evaluated fully on the GPU for mobile performance.
 const delicateWaveGLSL=`
+// A travelling bend develops from the attachment and propagates toward the tip.
+// Body-driven curvature is shared with the living skin, with elastic delay along
+// each strand; no rigid per-object rotation or independent tip-first oscillation.
 vec3 delicateWave(vec3 position,vec3 root,float progress,float phase,float role,float t,float motion){
  if(role<9.5||role>11.5||motion<.001)return vec3(0.);
- float u=clamp(progress,0.,1.),envelope=u*u*(3.-2.*u);
+ float u=clamp(progress,0.,1.);
  vec3 axis=normalize(position-root+vec3(.0001,.0002,.0003));
  vec3 lateral=normalize(cross(axis,abs(axis.y)<.86?vec3(0.,1.,0.):vec3(1.,0.,0.)));
  vec3 other=normalize(cross(axis,lateral));
- float speed=.7+.55*(.5+.5*sin(phase*2.7));
- float w=t*speed+phase-u*(4.5+1.8*sin(phase));
- float amplitude=(role>10.5?.085:.19)*clamp(motion,0.,2.);
- return amplitude*envelope*(lateral*sin(w)+other*.48*cos(w*.81+phase*.37-u*2.1));
+ // Share the DNA-driven torso cycle, with per-strand phase only as a small variation.
+ float cycle=max(.166667,uMotionCycles.y);
+ float speed=max(.16,abs(uMotionGene0.z))*(.82+.35*uMotionGene2.z)/cycle;
+ float bodyPhase=6.2831853*t*speed+uMotionGene2.y;
+ float waveNumber=3.0+1.1*sin(phase*1.7);
+ float delayed=bodyPhase-u*waveNumber+phase*.28;
+ float delayed2=bodyPhase*.73-u*waveNumber*.76+phase*.43;
+ // Integrating the bending from its root yields continuous curvature:
+ // zero displacement and zero initial slope at the skin junction.
+ float primary=(sin(delayed)-sin(bodyPhase+phase*.28)
+    +u*waveNumber*cos(bodyPhase+phase*.28));
+ float secondary=(sin(delayed2)-sin(bodyPhase*.73+phase*.43)
+    +u*waveNumber*.76*cos(bodyPhase*.73+phase*.43));
+ float flex=clamp(motion,0.,2.)*(role>10.5?.075:.16);
+ float taper=u*u*(3.-2.*u);
+ // The body determines the motion's amplitude; tips respond after their roots.
+ float bodyActivity=.65+.35*sin(bodyPhase-.5);
+ return flex*taper*(lateral*primary*.38+other*secondary*.19)*bodyActivity;
 }
 `;
 const captureWarpGLSL=`
