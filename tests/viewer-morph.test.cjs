@@ -375,7 +375,7 @@ test('ecology DNA forms coherent appendage groups with bounded counts and GPU wa
  for(const plan of ['oral_crown','rim_crown','dorsal_rows','paired_poles','lateral_frill'])assert.ok(html.includes(plan));
  assert.match(html,/const plan=ecology\.appendagePlan,groupCount=/);
  assert.match(html,/out\.push\(\{mesh:makeSwept/);
- assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand'\}/);
+ assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',dir:outward,collarLength,collarRadius:thickness\*1\.6\}/);
  assert.match(html,/shifted\+=delicateWave\(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion\)/);
  assert.match(html,/\$\{delicateWaveGLSL\}/);
 });
