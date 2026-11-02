@@ -379,3 +379,11 @@ test('ecology DNA forms coherent appendage groups with bounded counts and GPU wa
  assert.match(html,/shifted\+=delicateWave\(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion\)/);
  assert.match(html,/\$\{delicateWaveGLSL\}/);
 });
+
+test('delicate organs attach inside the detailed implicit growth surface',()=>{
+ assert.match(html,/function anchorOnGrowthSurface\(source,origin,direction,expectedRadius\)/);
+ assert.match(html,/morphSDF\(origin\[0\]\+dir\[0\]\*t,origin\[1\]\+dir\[1\]\*t,origin\[2\]\+dir\[2\]\*t,source\)/);
+ assert.match(html,/const root=anchorOnGrowthSurface\(source,origin,outward,radius\)/);
+ assert.match(html,/anchor=anchorOnGrowthSurface\(source,finOrigin,outward,radius\)/);
+ assert.match(html,/hit-Math\.min\(\.085,expectedRadius\*\.12\)/);
+});
