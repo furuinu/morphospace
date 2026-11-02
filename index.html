@@ -4373,51 +4373,77 @@ function morphTransitionMesh(em,palette,g,low){
 }
 // Delicate organs are local to the instanced growth anatomy. They inherit the
 // existing GPU motion role instead of allocating per-frame CPU buffers.
+// Ecology precedes anatomy: organs form coordinated fields, not isolated spikes.
+// Deterministic for a seed; the biological axes are derived from the local growth body.
+function appendageEcology(g,seed){
+ const r=seedRng(seed+230191),dna=g.morphDNA||{},branch=clamp(dna.branch||0,0,1),bud=clamp(dna.budding||0,0,1);
+ const strategies=['filter','ambush','graze','explore','drift'];
+ const weights=[.8+bud,.65+branch,.8+bud,.75+branch,.9],sum=weights.reduce((a,b)=>a+b,0);
+ let roll=r()*sum,choice=0;for(let i=0;i<weights.length;i++){roll-=weights[i];if(roll<=0){choice=i;break}}
+ const strategy=strategies[choice];
+ // Functional loci are abstract: a sensory pole or intake is not necessarily a face.
+ const sensing=r()<.70?(r()<.72?'diffuse':'polar'):'none';
+ const intake=r()<.78?(strategy==='filter'?'siphon':strategy==='ambush'?'disc':'groove'):'diffuse';
+ return {strategy,sensing,intake,appendagePlan:({filter:'oral_crown',ambush:'rim_crown',graze:'dorsal_rows',explore:'paired_poles',drift:'lateral_frill'})[strategy],seed};
+}
 function makeDelicateMorphOrgans(source,g,palette,seed,density){
  const rng=seedRng(seed+11673041),out=[],blobs=source?.blobs||[];
  if(!blobs.length)return out;
- const dna=g.morphDNA||{},strength=clamp(density,0,1);
+ const ecology=appendageEcology(g,seed),dna=g.morphDNA||{},strength=clamp(density,0,1);
  const maxCount=Math.min(50,Math.max(6,Math.round(8+42*strength*(.45+.35*(dna.branch||0)+.20*(dna.budding||0)))));
  const count=4+Math.floor(rng()*(maxCount-3));
- for(let i=0;i<count;i++){
-  const blob=blobs[i%Math.min(blobs.length,4)],a=i*2.399963+rng()*.55;
-  const outDir=V.norm([Math.cos(a),-.4+rng()*.9,Math.sin(a)]);
-  const axis=blob.axes||[1,1,1],root=V.add(blob.p,V.scale(outDir,.88*Math.hypot(outDir[0]*axis[0],outDir[1]*axis[1],outDir[2]*axis[2])));
-  const tangent=V.norm(V.cross(outDir,Math.abs(outDir[1])>.9?[1,0,0]:[0,1,0]));
-  const side=V.norm(V.cross(outDir,tangent));
-  const length=(.45+rng()*1.05)*(0.65+Math.max(...axis)*.42);
-  const mode=(i+Math.floor(rng()*3))%3;
-  if(mode===1){ // Soft dorsal cerata: short, substantial root, tapering tip.
-   const pts=[],radii=[],segments=7,thick=.035+.035*rng();
-   for(let j=0;j<=segments;j++){
-    const u=j/segments;
-    pts.push(V.add(root,V.add(V.scale(outDir,length*.6*u),V.scale(tangent,length*.15*u*u*Math.sin(a*1.7)))));
-    radii.push(Math.max(.002,thick*Math.pow(1-u,1.25)+.002));
-   }
-   out.push({mesh:makeSwept(pts,radii,palette,7,4+i,a),kind:'opaque',role:'appendage',delicate:{root,phase:rng()*TAU,rows:segments+1,sides:7,type:'strand'}});
-  }else if(mode===0){ // Jellyfish-like hair-thin, flexible tapered tentacles.
-   const pts=[],radii=[],segments=11;
-   for(let j=0;j<=segments;j++){
-    const u=j/segments;
-    pts.push(V.add(root,V.add(V.scale(outDir,length*1.5*u),V.add(V.scale(tangent,length*.24*u*u*Math.sin(a+u*3)),V.scale(side,length*.11*u*u*Math.cos(a+u*4))))));
-    radii.push(Math.max(.0015,.012*Math.pow(1-u,1.4)+.0015));
-   }
-   out.push({mesh:makeSwept(pts,radii,palette,5,8+i,a),kind:'opaque',role:'appendage',delicate:{root,phase:rng()*TAU,rows:segments+1,sides:5,type:'strand'}});
-  }else{ // Nudibranch-like thin ruffled membrane; open, two-sided surface.
-   const rows=14,cols=4,p=[],colors=[],faces=[];
+ // Choose one dominant growth mass and its long axis, then generate ordered
+ // annuli, paired poles, or longitudinal rows. Minor variation is local only.
+ const blob=blobs.reduce((a,b)=>Math.max(...b.axes)>Math.max(...a.axes)?b:a,blobs[0]);
+ const axes=blob.axes||[1,1,1],main=axes.indexOf(Math.max(...axes));
+ const axis=[0,0,0];axis[main]=1;
+ const ref=Math.abs(axis[1])>.9?[1,0,0]:[0,1,0];
+ const side=V.norm(V.cross(axis,ref)),across=V.norm(V.cross(axis,side));
+ const plan=ecology.appendagePlan,groupCount=plan==='paired_poles'?Math.min(8,count):plan==='lateral_frill'?Math.min(12,count):count;
+ for(let i=0;i<groupCount;i++){
+  const u=groupCount<=1?.5:i/(groupCount-1),theta=TAU*(i+.5)/(groupCount||1);
+  const radial=V.norm(V.add(V.scale(side,Math.cos(theta)),V.scale(across,Math.sin(theta))));
+  let outward=radial,axial=0,mode='strand',lengthProfile=1;
+  if(plan==='oral_crown'){axial=.76;outward=V.norm(V.add(V.scale(axis,.55),V.scale(radial,.85)));lengthProfile=.62+.18*Math.sin(Math.PI*u);}
+  else if(plan==='rim_crown'){axial=-.56;outward=V.norm(V.add(V.scale(axis,-.75),V.scale(radial,.68)));lengthProfile=.70+.16*Math.sin(Math.PI*u);}
+  else if(plan==='dorsal_rows'){
+   const lane=i%2===0?-1:1,along=(Math.floor(i/2)+.5)/Math.ceil(groupCount/2);
+   axial=(along-.5)*1.25;outward=V.norm(V.add(V.scale(across,.83),V.scale(side,lane*.35)));
+   lengthProfile=.22+.50*Math.sin(Math.PI*along);mode='cerata';
+  }else if(plan==='paired_poles'){
+   axial=.78;outward=V.norm(V.add(V.scale(axis,.95),V.scale(side,(i%2?1:-1)*(.28+.09*Math.floor(i/2)))));
+   lengthProfile=i<2?1:.23;mode=i<2?'strand':'cerata';
+  }else{
+   axial=(u-.5)*1.3;outward=V.norm(V.add(V.scale(across,.8),V.scale(side,(i%2?1:-1)*.35)));
+   lengthProfile=.38+.26*Math.sin(Math.PI*u);mode='fin';
+  }
+  const radius=Math.hypot(outward[0]*axes[0],outward[1]*axes[1],outward[2]*axes[2]);
+  const root=V.add(blob.p,V.add(V.scale(axis,axial*axes[main]),V.scale(outward,radius*.88)));
+  const tangent=V.norm(V.cross(outward,Math.abs(outward[1])>.9?[1,0,0]:[0,1,0]));
+  const bend=V.norm(V.cross(outward,tangent));
+  const length=(.50+.15*rng())*lengthProfile*(.7+Math.max(...axes)*.5);
+  const phase=(i%2)*.24+rng()*.22+u*1.8;
+  if(mode==='fin'){
+   const rows=12,cols=4,p=[],colors=[],faces=[];
    for(let j=0;j<=rows;j++){
-    const u=j/rows,anchor=V.add(root,V.scale(tangent,(u-.5)*length*.95)),envelope=Math.pow(Math.max(0,Math.sin(Math.PI*u)),.65);
+    const x=j/rows,anchor=V.add(root,V.scale(axis,(x-.5)*length*1.3)),envelope=Math.pow(Math.max(0,Math.sin(Math.PI*x)),.65);
     for(let k=0;k<=cols;k++){
-     const v=k/cols,extent=length*.47*envelope*v;
-     p.push(V.add(anchor,V.add(V.scale(outDir,extent),V.scale(side,length*.08*v*Math.sin(u*TAU*3+a+v)))));
-     colors.push(colorFor(palette,u,a+v*TAU,10+i,'membrane'));
+     const v=k/cols;
+     p.push(V.add(anchor,V.add(V.scale(outward,length*.65*envelope*v),V.scale(bend,length*.085*v*Math.sin(x*TAU*2+phase)))));
+     colors.push(colorFor(palette,x,theta+v*TAU,10+i,'membrane'));
     }
    }
-   for(let j=0;j<rows;j++)for(let k=0;k<cols;k++){
-    const a0=j*(cols+1)+k,b0=a0+1,c0=a0+cols+1,d0=c0+1;
-    faces.push([a0,b0,c0],[b0,d0,c0]);
+   for(let j=0;j<rows;j++)for(let k=0;k<cols;k++){const a=j*(cols+1)+k,b=a+1,c=a+cols+1,d=c+1;faces.push([a,b,c],[b,d,c]);}
+   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase,rows:rows+1,sides:cols+1,type:'fin'}});
+  }else{
+   const segments=mode==='cerata'?7:11,sides=mode==='cerata'?7:5,thickness=mode==='cerata'?.040:.014;
+   const pts=[],radii=[];
+   for(let j=0;j<=segments;j++){
+    const t=j/segments;
+    pts.push(V.add(root,V.add(V.scale(outward,length*t),V.add(V.scale(tangent,length*.085*t*t*Math.sin(phase+t*2)),V.scale(bend,length*.045*t*t*Math.cos(phase+t*2))))));
+    radii.push(Math.max(.002,thickness*Math.pow(1-t,1.2)+.002));
    }
-   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase:rng()*TAU,rows:rows+1,sides:cols+1,type:'fin'}});
+   out.push({mesh:makeSwept(pts,radii,palette,sides,4+i,phase),kind:'opaque',role:'appendage',delicate:{root,phase,rows:segments+1,sides,type:'strand'}});
   }
  }
  return out;
@@ -4425,7 +4451,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
 function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGenome){
  forcedGenome.soundDNA=normalizedSoundDNA(forcedGenome.soundDNA,seed);
  forcedGenome.surfaceDNA=normalizedSurfaceDNA(forcedGenome.surfaceDNA,seed);palette.surfaceDNA=copyJSON(forcedGenome.surfaceDNA);
- const g=forcedGenome;g.architectureDNA=normalizedArchitectureDNA(g.architectureDNA,seed,g.style*8+(g.archetype||0));g.motionDNA=normalizedMotionDNA(g.motionDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);g.bioDNA=normalizedBioDNA(g.bioDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);const em=architectureGrowth(g),shell=morphTransitionMesh(em,palette,g,low),r=seedRng(seed+835171),parts=[],stats={trabeculae:0,vesicles:0,tendrils:0,fins:0,ribs:0,pores:0,cilia:0,clusters:0,crystals:0};
+ const g=forcedGenome;g.ecologyDNA=appendageEcology(g,seed);g.architectureDNA=normalizedArchitectureDNA(g.architectureDNA,seed,g.style*8+(g.archetype||0));g.motionDNA=normalizedMotionDNA(g.motionDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);g.bioDNA=normalizedBioDNA(g.bioDNA,seed,(g.style||0)*8+(g.archetype||0),g.morphDNA);const em=architectureGrowth(g),shell=morphTransitionMesh(em,palette,g,low),r=seedRng(seed+835171),parts=[],stats={trabeculae:0,vesicles:0,tendrils:0,fins:0,ribs:0,pores:0,cilia:0,clusters:0,crystals:0};
  // Stage 1 intentionally suppresses the v14 forest of ribs, microfilaments and organs.
  if(!low && shell.tri.length>0){
   let n=Math.max(1,Math.floor(Math.min(3,density*2.7)*(0.35+g.morphDNA.budding*.8)));
