@@ -4377,7 +4377,8 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
  const rng=seedRng(seed+11673041),out=[],blobs=source?.blobs||[];
  if(!blobs.length)return out;
  const dna=g.morphDNA||{},strength=clamp(density,0,1);
- const count=Math.min(12,Math.max(2,Math.round((3+7*(dna.branch||0)+3*(dna.budding||0))*strength)));
+ const maxCount=Math.min(50,Math.max(6,Math.round(8+42*strength*(.45+.35*(dna.branch||0)+.20*(dna.budding||0)))));
+ const count=4+Math.floor(rng()*(maxCount-3));
  for(let i=0;i<count;i++){
   const blob=blobs[i%Math.min(blobs.length,4)],a=i*2.399963+rng()*.55;
   const outDir=V.norm([Math.cos(a),-.4+rng()*.9,Math.sin(a)]);
@@ -4393,7 +4394,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     pts.push(V.add(root,V.add(V.scale(outDir,length*.6*u),V.scale(tangent,length*.15*u*u*Math.sin(a*1.7)))));
     radii.push(Math.max(.002,thick*Math.pow(1-u,1.25)+.002));
    }
-   out.push({mesh:makeSwept(pts,radii,palette,7,4+i,a),kind:'opaque',role:'appendage'});
+   out.push({mesh:makeSwept(pts,radii,palette,7,4+i,a),kind:'opaque',role:'appendage',delicate:{root,phase:rng()*TAU,rows:segments+1,sides:7,type:'strand'}});
   }else if(mode===0){ // Jellyfish-like hair-thin, flexible tapered tentacles.
    const pts=[],radii=[],segments=11;
    for(let j=0;j<=segments;j++){
@@ -4401,7 +4402,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     pts.push(V.add(root,V.add(V.scale(outDir,length*1.5*u),V.add(V.scale(tangent,length*.24*u*u*Math.sin(a+u*3)),V.scale(side,length*.11*u*u*Math.cos(a+u*4))))));
     radii.push(Math.max(.0015,.012*Math.pow(1-u,1.4)+.0015));
    }
-   out.push({mesh:makeSwept(pts,radii,palette,5,8+i,a),kind:'opaque',role:'appendage'});
+   out.push({mesh:makeSwept(pts,radii,palette,5,8+i,a),kind:'opaque',role:'appendage',delicate:{root,phase:rng()*TAU,rows:segments+1,sides:5,type:'strand'}});
   }else{ // Nudibranch-like thin ruffled membrane; open, two-sided surface.
    const rows=14,cols=4,p=[],colors=[],faces=[];
    for(let j=0;j<=rows;j++){
@@ -4416,7 +4417,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     const a0=j*(cols+1)+k,b0=a0+1,c0=a0+cols+1,d0=c0+1;
     faces.push([a0,b0,c0],[b0,d0,c0]);
    }
-   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin'});
+   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase:rng()*TAU,rows:rows+1,sides:cols+1,type:'fin'}});
   }
  }
  return out;
@@ -5091,6 +5092,21 @@ vec3 branchJointWarp(vec3 original,vec3 root,float progress,float phase,float ro
  return mix(original,q,clamp(smoothstep(.01,.48,progress)*(role>7.5?1.0:.85),0.,1.));
 }
 `;
+// Two orthogonal travelling waves, rooted at the skin and strongest at the tip.
+// Each part has a seeded phase and is evaluated fully on the GPU for mobile performance.
+const delicateWaveGLSL=`
+vec3 delicateWave(vec3 position,vec3 root,float progress,float phase,float role,float t,float motion){
+ if(role<9.5||role>11.5||motion<.001)return vec3(0.);
+ float u=clamp(progress,0.,1.),envelope=u*u*(3.-2.*u);
+ vec3 axis=normalize(position-root+vec3(.0001,.0002,.0003));
+ vec3 lateral=normalize(cross(axis,abs(axis.y)<.86?vec3(0.,1.,0.):vec3(1.,0.,0.)));
+ vec3 other=normalize(cross(axis,lateral));
+ float speed=.7+.55*(.5+.5*sin(phase*2.7));
+ float w=t*speed+phase-u*(4.5+1.8*sin(phase));
+ float amplitude=(role>10.5?.085:.19)*clamp(motion,0.,2.);
+ return amplitude*envelope*(lateral*sin(w)+other*.48*cos(w*.81+phase*.37-u*2.1));
+}
+`;
 const captureWarpGLSL=`
 uniform vec4 uCapture;uniform float uCaptureAspect;uniform float uSampleTug;
 vec4 captureClip(vec4 clip){
@@ -5258,6 +5274,7 @@ ${biomechanicsGLSL}
 ${wholeBodyGLSL}
 ${captureWarpGLSL}
 ${branchBendGLSL.replace('uniform float uMirrorSign;','')}
+${delicateWaveGLSL}
 ${surfaceMorphVertexGLSL}
 vec3 copyRotate(vec3 v,vec4 rot,bool inverse){
  float a=rot.x*(inverse?-1.0:1.0),c=cos(a),s=sin(a);
@@ -5316,6 +5333,7 @@ void main(){
  vec3 shifted=wholeBodyWarp(canonical+motion+bio+peristalsis,ancestralTime,uMotion*1.82);
  vec3 anchorCanonical=uCopyCount>0?copyToSource(aAnchor.xyz,copyIndex):aAnchor.xyz;
  shifted=branchJointWarp(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion*uBranchEnabled*1.72);
+ shifted+=delicateWave(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion);
  shifted=localBodyMotion(canonical,shifted,ancestralTime,uMotion);
  vec3 delta=shifted-canonical;
  vec3 p=aPos+(uCopyCount>0?copyVectorToWorld(delta,copyIndex):delta);
@@ -6686,6 +6704,7 @@ function dynamicBatches(sp){
  for(let i=0;i<parts.length;i++){
   const pt=parts[i],role=dynamicRole(pt),phase=(sp.seed*.00013+i*2.399963+role*.7)%TAU;
   const glowInfo=glowForPart(profile,role,i,sp.seed,pt.kind);
+  if(pt.delicate){const d=pt.delicate,progress=k=>d.type==='fin'?(k%d.sides)/(d.sides-1):Math.min(1,Math.floor(k/d.sides)/(d.rows-1));(pt.kind==='translucent'?translucent:opaque).push(dynamicMesh(pt.mesh,d.type==='fin'?11:10,d.phase,d.root,progress,glowInfo));continue;}
   if(pt.chain){const chain=pt.chain;const progress=k=>{const limit=chain.steps*chain.segments;return k>=limit?(k===limit?0:1):Math.floor(k/chain.segments)/(chain.steps-1)};branches.push(dynamicMesh(pt.mesh,6,chain.phase,chain.root,progress,glowInfo));}
   else (pt.kind==='translucent'?translucent:opaque).push(dynamicMesh(pt.mesh,role,phase,null,null,glowInfo));
  }
