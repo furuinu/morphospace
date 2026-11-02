@@ -367,12 +367,15 @@ test('detailed observation renders external organs and cilia at nonzero skin tra
  assert.doesNotMatch(draw,/!debugShell&&!debugGlass&&!glassAmount/,'skin transparency must never suppress appendages');
 });
 
-test('delicate organs are bounded at 50 and retain individual GPU travelling waves',()=>{
+test('ecology DNA forms coherent appendage groups with bounded counts and GPU waves',()=>{
+ assert.match(html,/function appendageEcology\(/);
+ assert.match(html,/g\.ecologyDNA=appendageEcology\(g,seed\)/);
  assert.match(html,/const maxCount=Math\.min\(50,/);
  assert.match(html,/const count=4\+Math\.floor\(rng\(\)\*\(maxCount-3\)\)/);
- assert.match(html,/function makeDelicateMorphOrgans\(/);
- assert.match(html,/delicate:\{root,phase:rng\(\)\*TAU/);
+ for(const plan of ['oral_crown','rim_crown','dorsal_rows','paired_poles','lateral_frill'])assert.ok(html.includes(plan));
+ assert.match(html,/const plan=ecology\.appendagePlan,groupCount=/);
+ assert.match(html,/out\.push\(\{mesh:makeSwept/);
+ assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand'\}/);
  assert.match(html,/shifted\+=delicateWave\(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion\)/);
  assert.match(html,/\$\{delicateWaveGLSL\}/);
- assert.match(html,/float u=clamp\(progress,0\.,1\.\),envelope=u\*u\*\(3\.-2\.\*u\)/);
 });
