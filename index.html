@@ -10224,12 +10224,17 @@ function videoFrameSize(resolution,mode,rect){
 function drawVideoViewerText(job){
  if(job.mode!=='viewer')return;
  const rect=canvas.getBoundingClientRect(),scale=job.width/Math.max(1,rect.width),ctx=job.ctx;
+ const caption=document.querySelector('.viewer-caption');
+ const navHidden=$('overlay').classList.contains('viewer-nav-hidden');
+ const captionBox=caption?.getBoundingClientRect();
+ const hiddenBottom=(window.innerHeight<=550?14:24);
+ const captionOffset=captionBox&&!navHidden?(rect.bottom-hiddenBottom-captionBox.bottom):0;
  ctx.save();ctx.textBaseline='top';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=10*scale;ctx.shadowOffsetY=scale;
  // Re-read text and layout when the selected organism changes during recording.
  for(const id of ['viewerTitleText','viewerSubtitleText','viewerName','viewerScientific','viewerTaxonomy','viewerEcology']){
   const el=$(id),style=getComputedStyle(el),box=el.getBoundingClientRect();
   if(style.display==='none'||style.visibility==='hidden'||!box.width||!box.height||!el.textContent.trim())continue;
-  const size=parseFloat(style.fontSize)||12,line=(parseFloat(style.lineHeight)||size*1.5)*scale,x=(box.left-rect.left)*scale,y=(box.top-rect.top)*scale,width=box.width*scale,scroll=(el.scrollTop||0)*scale;
+  const size=parseFloat(style.fontSize)||12,line=(parseFloat(style.lineHeight)||size*1.5)*scale,x=(box.left-rect.left)*scale,y=((box.top-rect.top)+(caption?.contains(el)?captionOffset:0))*scale,width=box.width*scale,scroll=(el.scrollTop||0)*scale;
   ctx.font=[style.fontStyle,style.fontWeight,(size*scale)+'px',style.fontFamily].join(' ');ctx.fillStyle=style.color;
   ctx.save();ctx.beginPath();ctx.rect(x,y,width,box.height*scale);ctx.clip();
   if(id==='viewerTitleText'){
@@ -11097,10 +11102,16 @@ function captureView(){
  out.yaw=modelYaw;out.cameraPitch=modelPitch;out.panX=panX;out.panY=panY;out.zoom=spec?.baseViewDistance?spec.viewDistance/spec.baseViewDistance:1;out.time=bodyTime;
  return out;
 }
+function captureGenome(rec){
+ const genome=copyJSON(spec?.genome||rec.genome||{});
+ genome.seed=Number.isInteger(spec?.seed)?spec.seed:rec.seed;
+ genome.style=Number.isInteger(spec?.style)?spec.style:rec.style;
+ return genome;
+}
 function sharedPayload(){
  const rec=currentIndividual();if(!rec)throw Error('生体を選択してください');
  const ecology=MorphospaceEcology.ensure(rec);
- return {version:1,record:{id:rec.id,name:recordDisplayName(rec),seed:rec.seed,style:rec.style,genome:copyJSON(spec?.genome||rec.genome),generation:rec.generation||0,parents:copyJSON(rec.parents||[]),sourceSeed:rec.sourceSeed||rec.seed,ecology:{version:ecology.version||'1.0.0',text:ecology.text,kind:ecology.kind||''}},view:captureView()};
+ return {version:1,record:{id:String(rec.id||'specimen-'+(spec?.seed??rec.seed)),name:recordDisplayName(rec),seed:spec?.seed??rec.seed,style:spec?.style??rec.style,genome:captureGenome(rec),generation:rec.generation||0,parents:copyJSON(rec.parents||[]),sourceSeed:rec.sourceSeed||rec.seed,ecology:{version:ecology.version||'1.0.0',text:ecology.text,kind:ecology.kind||''}},view:captureView()};
 }
 function specimenImage(){
  if(selected<0||!spec||!gl||!renderer)throw Error('3D表示の準備ができていません');
