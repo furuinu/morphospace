@@ -4473,7 +4473,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
     }
    }
    for(let j=0;j<rows;j++)for(let k=0;k<cols;k++){const a=j*(cols+1)+k,b=a+1,c=a+cols+1,d=c+1;faces.push([a,b,c],[b,d,c]);}
-   out.push({mesh:buildMesh(p,colors,faces,true),kind:'translucent',role:'fin',delicate:{root,phase,rows:rows+1,sides:cols+1,type:'fin',dir:outward,collarLength,collarRadius:.035}});
+   out.push({mesh:doubleSidedMembrane(buildMesh(p,colors,faces,true)),kind:'translucent',role:'fin',delicate:{root,phase,rows:rows+1,sides:cols+1,type:'fin',dir:outward,collarLength,collarRadius:.035}});
   }else{
    const segments=Math.max(12,Math.min(24,Math.ceil(strandLength/Math.max(.09,bodySize/13)))),sides=mode==='cerata'?7:5,thickness=mode==='cerata'?.040:.014;
    const pts=[],radii=[];
@@ -4860,6 +4860,17 @@ function combineMeshes(chunks,maxVertices=58000){
 
 function buildMesh(positions,colors,faces,isOpen=false){let normals=Array.from({length:positions.length},()=>[0,0,0]);let tri=[];for(const [a,b,c] of faces){let n=V.cross(V.sub(positions[b],positions[a]),V.sub(positions[c],positions[a]));let len=Math.hypot(...n);if(len<1e-9)continue;normals[a]=V.add(normals[a],n);normals[b]=V.add(normals[b],n);normals[c]=V.add(normals[c],n);tri.push(a,b,c)}const data=new Float32Array(positions.length*9);for(let i=0;i<positions.length;i++){let n=V.norm(normals[i]);data.set([...positions[i],...n,...colors[i]],i*9)}let unique=new Set(),edges=[];for(let i=0;i<tri.length;i+=3){for(const [x,y] of [[tri[i],tri[i+1]],[tri[i+1],tri[i+2]],[tri[i+2],tri[i]]]){let a=Math.min(x,y),b=Math.max(x,y),key=a*65536+b;if(!unique.has(key)){unique.add(key);edges.push(a,b)}}}return {data,tri:new Uint16Array(tri),edges:new Uint16Array(edges),isOpen};}
 
+// Duplicate the membrane's vertices with reversed winding AND normals.
+// Unlike disabling culling globally, this keeps the rest of the organism intact.
+function doubleSidedMembrane(mesh){
+ const n=mesh.data.length/9, data=new Float32Array(mesh.data.length*2);
+ data.set(mesh.data);
+ for(let i=0;i<n;i++){const k=i*9,q=(i+n)*9;data.set(mesh.data.subarray(k,k+9),q);for(let a=3;a<6;a++)data[q+a]=-data[q+a];}
+ const tri=new Uint16Array(mesh.tri.length*2);tri.set(mesh.tri);
+ for(let i=0;i<mesh.tri.length;i+=3){const k=mesh.tri.length+i;tri[k]=mesh.tri[i]+n;tri[k+1]=mesh.tri[i+2]+n;tri[k+2]=mesh.tri[i+1]+n;}
+ const edges=new Uint16Array(mesh.edges.length*2);edges.set(mesh.edges);for(let i=0;i<mesh.edges.length;i++)edges[mesh.edges.length+i]=mesh.edges[i]+n;
+ return {...mesh,data,tri,edges};
+}
 // v15.3.4 — Rorschach bilateral compositor.
 // Keep the underlying generation logic intact, then duplicate the completed
 // organism as a mirrored twin across the YZ plane.
@@ -6791,7 +6802,20 @@ function combineDynamicMeshes(chunks,maxVertices=55000){
 function makeVerletStrand(mesh,d,genome){
  const sides=d.sides,rows=d.rows,rest=[],last=[],lengths=[];
  for(let i=0;i<rows;i++){const p=[0,0,0];for(let j=0;j<sides;j++){const k=(i*sides+j)*17;for(let a=0;a<3;a++)p[a]+=mesh.data[k+a]/sides;}rest.push(p);last.push(p.slice());if(i)lengths.push(Math.hypot(...V.sub(p,rest[i-1])));}
- return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice(),growthDirection:V.norm(V.sub(rest[Math.min(2,rows-1)],rest[0]))};
+ // Start already immersed in the flow, not as an artificially straight rod.
+ // Ring offsets are applied to both GPU vertices and PBD state.
+ const axis=V.norm(V.sub(rest[Math.min(2,rows-1)],rest[0]));
+ const lateral=V.norm(V.cross(axis,Math.abs(axis[1])<.88?[0,1,0]:[1,0,0]));
+ const across=V.norm(V.cross(axis,lateral)),span=lengths.reduce((a,b)=>a+b,0);
+ for(let i=1;i<rows;i++){
+  const u=i/(rows-1),amp=span*.14*u*u;
+  const offset=V.add(V.scale(lateral,amp*Math.sin(u*5.1+d.phase)),V.scale(across,amp*.75*Math.cos(u*3.7+d.phase)));
+  rest[i]=V.add(rest[i],offset);last[i]=rest[i].slice();
+  for(let j=0;j<sides;j++){const k=(i*sides+j)*17;for(let a=0;a<3;a++)mesh.data[k+a]+=offset[a];}
+ }
+ for(let i=1;i<rows;i++)lengths[i-1]=Math.hypot(...V.sub(rest[i],rest[i-1]));
+ for(let cap=0;cap<2;cap++){const i=cap?rows-1:0,k=(rows*sides+cap)*17;for(let a=0;a<3;a++)mesh.data[k+a]=rest[i][a];}
+ return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice(),growthDirection:axis};
 }
 function stepVerletStrand(mesh,time,moving){
  const p=mesh.verlet;if(!p)return;
@@ -6832,12 +6856,12 @@ function stepVerletStrand(mesh,time,moving){
    // A directionally rooted insertion: the first segment remains within a
    // narrow cone around its growth axis, while the distal chain stays free.
    const guide=p.growthDirection,straight=V.scale(first,1/firstDist);
-   const blended=V.norm(V.add(V.scale(guide,.88),V.scale(straight,.12)));
+   const blended=V.norm(V.add(V.scale(guide,.72),V.scale(straight,.28)));
    p.points[1]=V.add(anchor,V.scale(blended,p.lengths[0]));
    // The second segment can bend, but should not fold backward across the skin.
    if(rows>2){
     const second=V.sub(p.points[2],p.points[1]),secondLength=Math.max(1e-7,Math.hypot(...second));
-    const secondDir=V.norm(V.add(V.scale(guide,.24),V.scale(second, .76/secondLength)));
+    const secondDir=V.norm(V.add(V.scale(guide,.12),V.scale(second, .88/secondLength)));
     p.points[2]=V.add(p.points[1],V.scale(secondDir,p.lengths[1]));
    }
    // No Laplacian straightening: allow free serpentine curvature and lag.
