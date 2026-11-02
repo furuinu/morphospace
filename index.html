@@ -4435,19 +4435,21 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
  const side=V.norm(V.cross(axis,ref)),across=V.norm(V.cross(axis,side));
  const bodyExtent=blobs.reduce((m,b)=>Math.max(m,...b.axes.map((v,k)=>Math.abs(b.p[k]-blob.p[k])+v)),0);
  const bodySize=Math.max(.3,bodyExtent*2);
+ // Per-specimen spread: 0.38–1.0 of the existing fan, never wider.
+ const spread=.38+.62*rng();
  const plan=ecology.appendagePlan,groupCount=plan==='paired_poles'?Math.min(8,count):plan==='lateral_frill'?Math.min(12,count):count;
  for(let i=0;i<groupCount;i++){
   const u=groupCount<=1?.5:i/(groupCount-1),theta=TAU*(i+.5)/(groupCount||1);
   const radial=V.norm(V.add(V.scale(side,Math.cos(theta)),V.scale(across,Math.sin(theta))));
   let outward=radial,axial=0,mode='strand',lengthProfile=1;
-  if(plan==='oral_crown'){axial=.76;outward=V.norm(V.add(V.scale(axis,.55),V.scale(radial,.85)));lengthProfile=.62+.18*Math.sin(Math.PI*u);}
-  else if(plan==='rim_crown'){axial=-.56;outward=V.norm(V.add(V.scale(axis,-.75),V.scale(radial,.68)));lengthProfile=.70+.16*Math.sin(Math.PI*u);}
+  if(plan==='oral_crown'){axial=.76;outward=V.norm(V.add(V.scale(axis,.55),V.scale(radial,.85*spread)));lengthProfile=.62+.18*Math.sin(Math.PI*u);}
+  else if(plan==='rim_crown'){axial=-.56;outward=V.norm(V.add(V.scale(axis,-.75),V.scale(radial,.68*spread)));lengthProfile=.70+.16*Math.sin(Math.PI*u);}
   else if(plan==='dorsal_rows'){
    const lane=i%2===0?-1:1,along=(Math.floor(i/2)+.5)/Math.ceil(groupCount/2);
-   axial=(along-.5)*1.25;outward=V.norm(V.add(V.scale(across,.83),V.scale(side,lane*.35)));
+   axial=(along-.5)*1.25;outward=V.norm(V.add(V.scale(across,.83),V.scale(side,lane*.35*spread)));
    lengthProfile=.22+.50*Math.sin(Math.PI*along);mode='cerata';
   }else if(plan==='paired_poles'){
-   axial=.78;outward=V.norm(V.add(V.scale(axis,.95),V.scale(side,(i%2?1:-1)*(.28+.09*Math.floor(i/2)))));
+   axial=.78;outward=V.norm(V.add(V.scale(axis,.95),V.scale(side,(i%2?1:-1)*(.28+.09*Math.floor(i/2))*spread)));
    lengthProfile=i<2?1:.23;mode=i<2?'strand':'cerata';
   }else{
    axial=(u-.5)*1.3;outward=V.norm(V.add(V.scale(across,.8),V.scale(side,(i%2?1:-1)*.35)));
@@ -4458,8 +4460,8 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
   const root=anchorOnGrowthSurface(source,origin,outward,radius);
   const tangent=V.norm(V.cross(outward,Math.abs(outward[1])>.9?[1,0,0]:[0,1,0]));
   const bend=V.norm(V.cross(outward,tangent));
-  const length=mode==='fin'?(.50+.15*rng())*lengthProfile*(.7+Math.max(...axes)*.5):bodySize*(1/3+(3-1/3)*Math.pow(rng(),1.15))*Math.max(.75,Math.min(1.15,lengthProfile+.25));
-  const strandLength=mode==='fin'?length:Math.max(bodySize/3,Math.min(bodySize*3,length));
+  const length=mode==='fin'?(.50+.15*rng())*lengthProfile*(.7+Math.max(...axes)*.5):bodySize*(.2+(2.5-.2)*Math.pow(rng(),1.15))*Math.max(.75,Math.min(1.15,lengthProfile+.25));
+  const strandLength=mode==='fin'?length:Math.max(bodySize/5,Math.min(bodySize*2.5,length));
   const phase=(i%2)*.24+rng()*.22+u*1.8;
   const collarLength=Math.min(.22,strandLength*.18);
   if(mode==='fin'){
