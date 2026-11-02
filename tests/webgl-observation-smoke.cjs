@@ -385,7 +385,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     if(!canvas)return false;
     const pixel=canvas.getContext('2d').getImageData(90,90,1,1).data;
     return pixel[3]===255;
-   },null,null,{timeout:60000});
+   },null,{timeout:60000});
    console.log('PASS: rotating DNA start gate, user-initiated observation and visible atlas thumbnail');
    console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
