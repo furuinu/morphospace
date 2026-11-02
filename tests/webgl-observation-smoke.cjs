@@ -52,7 +52,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // a two-minute locator timeout. Collect startup state for rendering stalls.
   try{
    await page.waitForFunction(()=>document.querySelector('#gallery button.item')||
-     window.__bootSmokeError,{timeout:60000});
+     window.__bootSmokeError,null,null,{timeout:60000});
   }catch(error){
    const state=await page.evaluate(()=>({
     bootClass:document.body.className,
@@ -65,7 +65,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   if(errors.length)throw Error('Gallery startup JS errors: '+errors.join(' | '));
   await page.locator('#gallery button.item').first().waitFor({state:'attached',timeout:5000});
   await page.waitForFunction(()=>document.body.classList.contains('boot-ready')&&
-    !document.querySelector('#bootStartButton')?.hidden,{timeout:120000});
+    !document.querySelector('#bootStartButton')?.hidden,null,{timeout:120000});
   const beforeTap=await page.evaluate(()=>({
     atlasHidden:getComputedStyle(document.querySelector('.wrap')).visibility==='hidden',
     viewerHidden:getComputedStyle(document.querySelector('#overlay')).visibility==='hidden',
@@ -97,8 +97,8 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      buttonVisible:bootFinal.buttonVisible,animation:bootFinal.animation}));
   await page.locator('#bootSplash').click({position:{x:24,y:24}});
   await page.waitForFunction(()=>!document.body.classList.contains('boot-ready')&&
-    document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),{timeout:15000});
-  await page.waitForFunction(()=>document.querySelector('#gallery button.item')&&!document.querySelector('#generate')?.disabled,{timeout:120000});
+    document.querySelector('#bootSplash')?.classList.contains('boot-dismissed'),null,{timeout:15000});
+  await page.waitForFunction(()=>document.querySelector('#gallery button.item')&&!document.querySelector('#generate')?.disabled,null,{timeout:120000});
   const state=await page.evaluate(()=>({
    webgl:!!(document.querySelector('#glview')?.getContext('webgl2')||document.querySelector('#glview')?.getContext('webgl')),
    gpuError:document.querySelector('#gpuDiag')?.textContent,
@@ -109,7 +109,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // Trigger the gallery item's real click handler even when startup already opened the viewer.
   // Playwright's pointer click would be intercepted by the fullscreen WebGL canvas.
   await page.locator('#gallery button.item').first().evaluate(item=>item.click());
-  await page.waitForFunction(()=>document.querySelector('#overlay')?.classList.contains('open'),{timeout:45000});
+  await page.waitForFunction(()=>document.querySelector('#overlay')?.classList.contains('open'),null,{timeout:45000});
   await page.waitForTimeout(1200);
   const observation=await page.evaluate(()=>({
    opened:document.querySelector('#overlay').classList.contains('open'),
@@ -162,7 +162,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    if(window.MorphVoiceStyles)throw Error('Experimental voice generator still loaded in production');
    if(!bioticAudioRunning())await startBioticAudio();
   });
-  await page.waitForFunction(()=>bioticAudioRunning(),{timeout:8000});
+  await page.waitForFunction(()=>bioticAudioRunning(),null,{timeout:8000});
   await page.waitForTimeout(750);
   const originalVoice=await page.evaluate(async()=>{
    tickBioticAudio();
@@ -385,7 +385,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     if(!canvas)return false;
     const pixel=canvas.getContext('2d').getImageData(90,90,1,1).data;
     return pixel[3]===255;
-   },null,{timeout:60000});
+   },null,null,{timeout:60000});
    console.log('PASS: rotating DNA start gate, user-initiated observation and visible atlas thumbnail');
    console.log('PASS: real WebGL shaders compiled and observation mode opened',observation);
  }finally{await browser.close()}
