@@ -438,3 +438,11 @@ test('strand length is bounded by body size and long flexible roots stay pinned'
  assert.match(html,/p\.points\[0\]=anchor\.slice\(\)/);
  assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(first,p\.lengths\[0\]\/firstDist\)\)/);
 });
+
+test('tentacle root keeps growth direction while distal chain remains flexible',()=>{
+ assert.match(html,/growthDirection:V\.norm\(V\.sub\(rest\[Math\.min\(2,rows-1\)\],rest\[0\]\)\)/);
+ assert.match(html,/const blended=V\.norm\(V\.add\(V\.scale\(guide,\.88\),V\.scale\(straight,\.12\)\)\)/);
+ assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
+ assert.match(html,/const secondDir=V\.norm/);
+ assert.match(html,/bodyVelocity\[0\]\*24/);
+});
