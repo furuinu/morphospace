@@ -52,7 +52,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // a two-minute locator timeout. Collect startup state for rendering stalls.
   try{
    await page.waitForFunction(()=>document.querySelector('#gallery button.item')||
-     window.__bootSmokeError,null,null,{timeout:60000});
+     window.__bootSmokeError,null,{timeout:60000});
   }catch(error){
    const state=await page.evaluate(()=>({
     bootClass:document.body.className,
