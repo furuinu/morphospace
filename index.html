@@ -4473,7 +4473,7 @@ function makeDelicateMorphOrgans(source,g,palette,seed,density){
   const phase=(i%2)*.24+rng()*.22+u*1.8;
   const collarLength=Math.min(.22,strandLength*.18);
   if(mode==='fin'){
-   const rows=12,cols=4,p=[],colors=[],faces=[];
+   const rows=16,cols=7,p=[],colors=[],faces=[];
    for(let j=0;j<=rows;j++){
     const x=j/rows,finOrigin=V.add(origin,V.scale(axis,(x-.5)*length*1.3)),anchor=anchorOnGrowthSurface(source,finOrigin,outward,radius),envelope=Math.pow(Math.max(0,Math.sin(Math.PI*x)),.65);
     for(let k=0;k<=cols;k++){
@@ -5208,6 +5208,20 @@ vec3 delicateWave(vec3 position,vec3 root,float progress,float phase,float role,
  vec3 axis=normalize(position-root+vec3(.0001,.0002,.0003));
  vec3 lateral=normalize(cross(axis,abs(axis.y)<.86?vec3(0.,1.,0.):vec3(1.,0.,0.)));
  vec3 other=normalize(cross(axis,lateral));
+ // Fins are soft membranes: rapid low-amplitude sideways undulation travels
+ // from their attached edge (u=0) to the free rim (u=1).
+ if(role>10.5){
+  float edge=u*u*(3.0-2.0*u);
+  float energy=clamp(motion,0.0,1.8);
+  float finRate=8.4+2.6*fract(sin(phase*13.71)*43758.5453);
+  float advance=t*finRate+phase*6.2831853;
+  float waveA=sin(advance-u*7.5+dot(position-root,lateral)*1.2);
+  float waveB=sin(advance*1.43-u*11.4+phase*2.1);
+  float secondary=sin(advance*.63-u*5.1-phase*1.7);
+  float flutter=.042*energy*edge*(waveA*.66+waveB*.25+secondary*.09);
+  float softTwist=.015*energy*edge*edge*sin(advance*.84-u*6.1+phase);
+  return lateral*flutter+other*softTwist;
+ }
  // Share the DNA-driven torso cycle, with per-strand phase only as a small variation.
  float cycle=max(.166667,uMotionCycles.y);
  float speed=max(.16,abs(uMotionGene0.z))*(.82+.35*uMotionGene2.z)/cycle;
