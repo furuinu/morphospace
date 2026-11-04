@@ -7107,7 +7107,7 @@ function drawGPUMotileCilia(mvp,model,wire,sourceSpec=spec,sourceMeshes=meshes){
  if(!sourceMeshes||!sourceMeshes.cilia?.length)return;
  gl.useProgram(renderer.ciliaProgram);const v=renderer.ciliaVars;
  gl.uniformMatrix4fv(v.uModel,false,model);gl.uniformMatrix4fv(v.uMvp,false,mvp);
- gl.uniform1f(v.uCamera,sourceSpec.viewDistance);gl.uniform1f(v.uTime,rigTime);gl.uniform1f(v.uBodyTime,bodyTime);
+ gl.uniform1f(v.uCamera,spec.viewDistance); // camera distance is shared; prepared B has not been adopted yetgl.uniform1f(v.uTime,rigTime);gl.uniform1f(v.uBodyTime,bodyTime);
  gl.uniform1f(v.uCiliaAmp,$('motion').checked?Number($('ciliaMotion').value)/100*Number($('motionAmp').value)/100:0);
  gl.uniform1f(v.uMotion,$('motion').checked?Number($('motionAmp').value)/100:0);gl.uniform1f(v.uStyle,sourceSpec.style);gl.uniform1f(v.uSeed,(sourceSpec.seed%100003)*.000013);gl.uniform1f(v.uShadeStrength,Number($('shadeStrength').value)/100);
  const gt=sourceSpec.glowTints||[[0.8,0.95,1],[0.6,0.9,1],[1,0.7,0.9]];
