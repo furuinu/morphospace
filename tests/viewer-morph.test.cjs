@@ -16,6 +16,29 @@ test('successor reaches full scale before previous layer starts contracting',()=
   const value=scale(layer,k/100);assert.ok(value>=0&&value<=1,layer+' scale outside range');
  }
 });
+test('full-detail arms and tentacles are excluded from body LOD and available independently',()=>{
+ const shell=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]);
+ const arm=mesh([[0,0,0],[0,2,0],[0,0,2]],[0,1,2]);
+ const strand=mesh([[0,0,0],[1,2,0],[0,0,3]],[0,1,2]);strand.verlet={};
+ const fin=mesh([[0,0,0],[2,0,0],[0,2,0]],[0,1,2]);
+ const uploaded={shell,parts:[{kind:'branch',mesh:arm},{kind:'opaque',mesh:strand},{kind:'opaque',mesh:fin}]};
+ const specimen={localGroup:null};
+ const body=ctx.viewerMorphSurfaces(specimen,uploaded,'body');
+ const appendages=ctx.viewerMorphSurfaces(specimen,uploaded,'appendages');
+ assert.equal(body.length,2);assert.equal(body[0],shell);assert.equal(body[1],fin);
+ assert.equal(appendages.length,2);assert.equal(appendages[0],arm);assert.equal(appendages[1],strand);
+ assert.deepEqual(Array.from(appendages[0].data),Array.from(arm.data));
+ assert.deepEqual(Array.from(appendages[1].data),Array.from(strand.data));
+});
+test('during layered transition A appendages remain detailed until low B, then finished B is shown',()=>{
+ assert.match(src,/viewerMorphSurfaces\(spec,meshes,'body'\)/);
+ assert.match(src,/viewerMorphSurfaces\(spec,meshes,'appendages'\)/);
+ assert.match(src,/viewerMorphSurfaces\(target,targetMeshes,'appendages'\)/);
+ assert.match(src,/const m=viewer\.morph,p=Math\.min\(1,m\.elapsed\/4\),incoming=p>=\.32/);
+ assert.match(src,/drawGPUMotileCilia\(mvp,model,wire,incoming\?m\.target:m\.source,incoming\?m\.targetMeshes:m\.originalMeshes\)/);
+ assert.match(src,/const low=batch\.layer==='lowA'\|\|batch\.layer==='lowB'/);
+ assert.match(src,/job\.appendages=\{source:/);
+});
 test('morph preserves every triangle of unequal topology at both endpoints with safe WebGL1 indices',()=>{
  const result=ctx.createMorphBatches([a],[b],1);assert.equal(result.length,3);
  const sourceBefore=Array.from(a.data),targetBefore=Array.from(b.data);
