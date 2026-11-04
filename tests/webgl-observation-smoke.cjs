@@ -242,7 +242,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   // Isolating the studio pass lets the test assess atmospheric falloff even while
   // the specimen is moving or the lens effects are enabled.
   const backgroundPixels=await page.evaluate(()=>{
-   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fromMode:backgroundCycle.fromMode,toMode:backgroundCycle.toMode,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime,psyTime:psychedelicTime,distance:spec.viewDistance,panX,panY};
+   const saved={from:backgroundCycle.from,to:backgroundCycle.to,fromMode:backgroundCycle.fromMode,toMode:backgroundCycle.toMode,fade:backgroundCycle.fade,fadeSeconds:backgroundCycle.fadeSeconds,at:environmentTime,distance:spec.viewDistance,panX,panY};
    const samples=[];
    const sample=(x,y)=>{
     const pixel=new Uint8Array(4);
@@ -282,94 +282,42 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      const a=samples[i].central,b=samples[j].central;
      if(distance(a,b)<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
     }
-    // Verify four psychedelic modes on the real GPU. The selected pattern must
-    // continue deforming even with automatic background switching disabled.
-    const psychedelicFrames=[];
-    const probes=[[.11,0],[.21,.8],[.35,2.1],[.28,4.3],[.41,1.1],[.15,5.1]];
-    for(const [id,mode] of Object.entries(PSY_CODES)){
-     const preset=backgroundProfile(id);
-     backgroundCycle.from=backgroundCycle.to=preset;
-     backgroundCycle.fromMode=backgroundCycle.toMode=mode;
-     backgroundCycle.fade=backgroundCycle.fadeSeconds=0;
-     psychedelicTime=0;drawStudioGL();
-     const start=probes.map(([r,a])=>at(r,a));
-     psychedelicTime=13.7;drawStudioGL();
-     const end=probes.map(([r,a])=>at(r,a));
-     const motion=start.reduce((sum,p,i)=>sum+distance(p,end[i]),0);
-     if(gl.getError()!==gl.NO_ERROR)throw Error('Psychedelic GPU failure: '+id);
-     if(motion<24)throw Error('Psychedelic pattern stopped moving: '+id+' / '+motion);
-     psychedelicFrames.push({id,motion:Math.round(motion),pixels:start});
-    }
-    for(let i=0;i<psychedelicFrames.length;i++)for(let j=i+1;j<psychedelicFrames.length;j++){
-     const diff=psychedelicFrames[i].pixels.reduce((sum,p,k)=>sum+distance(p,psychedelicFrames[j].pixels[k]),0);
-     if(diff<25)throw Error('Psychedelic modes visually indistinguishable: '+psychedelicFrames[i].id+'/'+psychedelicFrames[j].id);
-    }
+    // The marine gradient is infinitely distant: time, zoom and camera pan do not move it.
+    backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[0];
     backgroundCycle.fromMode=backgroundCycle.toMode=0;
-    // GPU zoom test: radial light grows and shrinks at the organism's camera depth.
-     backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[0];
-     environmentTime=0;
-     const defaultDistance=spec.viewDistance;
-     drawStudioGL();const baseLight=luminance(at(.21));
-     spec.viewDistance=defaultDistance*.55;drawStudioGL();const nearLight=luminance(at(.21));
-     spec.viewDistance=defaultDistance*1.5;drawStudioGL();const farLight=luminance(at(.21));
-     spec.viewDistance=defaultDistance;
-     if(!(nearLight>baseLight+5&&baseLight>farLight+5))
-      throw Error('Projected light does not zoom alongside the organism: '+[nearLight,baseLight,farLight]);
-     const projection=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4));
-     const origin=backgroundSceneTransform(projection,viewerCameraMatrix());
-     panX+=Math.max(2,(spec.baseViewDistance||20)*.18);
-     const shifted=backgroundSceneTransform(projection,viewerCameraMatrix());
-     panX=saved.panX;
-     if(Math.abs(shifted.center[0]-origin.center[0])<.025)
-      throw Error('Atmospheric origin should track the world-space specimen during pan');
-     // Check cloud deformation independently of the colour-changing preset timer.
-    backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[2];
-    const positions=[.025,.05,.08,.11,.14,.16,.18,.20,.23,.28,.30];
+    backgroundCycle.fade=backgroundCycle.fadeSeconds=0;
+    const probes=[[.11,0],[.21,.8],[.35,2.1],[.28,4.3],[.41,1.1],[.15,5.1]];
     environmentTime=0;drawStudioGL();
-    const first=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
+    const initial=probes.map(([r,a])=>at(r,a));
     environmentTime=235;drawStudioGL();
-    const last=positions.flatMap(r=>[at(r,0),at(r,1.3),at(r,2.7)]);
-    const cloudMotion=first.reduce((sum,p,i)=>sum+distance(p,last[i]),0);
-    if(cloudMotion<6)throw Error('Atmospheric glow shimmer must evolve independently of background selection: '+cloudMotion);
-    // Compare the real GPU output with and without ray contribution. Its very
-    // low gain must be perceptible in aggregate, but never produce hard lines.
-    // Comparing increments at two times isolates the rays from moving clouds.
-    const locations=[];
-    for(const radius of [.09,.15,.22,.30,.39])
-     for(let k=0;k<12;k++)locations.push([radius,k*Math.PI/6]);
-    const rayFrame=(time,gain)=>{
-     environmentTime=time;drawStudioGL(gain);
-     return locations.map(([radius,angle])=>at(radius,angle));
-    };
-    const increments=(lit,dark)=>lit.map((v,i)=>v.slice(0,3).map((c,j)=>c-dark[i][j]));
-    const raysAt=time=>increments(rayFrame(time,.03575),rayFrame(time,0));
-    // A camera revolution is approximately 74 seconds. Look for a moving
-    // directional pattern and independent, smoothly evolving ray strengths.
-    const initial=raysAt(32),midpoint=raysAt(69),later=raysAt(106);
-    const nearby=raysAt(69.16);
-    const values=initial.flat(),maxLift=Math.max(...values);
-    const changed=initial.filter(v=>v.some(c=>c>0)).length;
-    const difference=(a,b)=>a.reduce((sum,v,i)=>sum+v.reduce((n,c,k)=>n+Math.abs(c-b[i][k]),0),0);
-    const evolution=difference(initial,midpoint)+difference(midpoint,later);
-    const nearDelta=difference(midpoint,nearby);
-    // Inspect the 12 angular positions on a middle-distance ring. Uneven
-    // evolution means the rays have moved, rather than only fading together.
-    const ring=frame=>frame.slice(24,36).map(rgb=>rgb[0]+rgb[1]+rgb[2]);
-    const a=ring(initial),b=ring(midpoint),c=ring(later);
-    const angularEvolution=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i])+Math.abs(b[i]-c[i]),0);
-    if(changed<3||maxLift<1)throw Error('Radial glimmer is not visibly contributing to the actual WebGL image');
-    if(maxLift>7)throw Error('Radial glimmer exceeds the 45%-attenuated brightness budget: '+maxLift);
-    if(evolution<8||angularEvolution<2)throw Error('Ray angle and strength pattern fails to evolve at camera-orbit speed: '+evolution+'/'+angularEvolution);
-    if(nearDelta>25)throw Error('Radial glimmer makes abrupt rather than smooth changes: '+nearDelta);
-    return {samples,psychedelic:psychedelicFrames.map(({id,motion})=>({id,motion})),cloudMotion:Math.round(cloudMotion),rays:{maxLift,changed,evolution,angularEvolution,nearDelta}};
+    const later=probes.map(([r,a])=>at(r,a));
+    const sumDifference=(a,b)=>a.reduce((sum,p,i)=>sum+distance(p,b[i]),0);
+    if(sumDifference(initial,later)>1)throw Error('Infinite-distance gradient changes with time');
+    const originalDistance=spec.viewDistance;
+    spec.viewDistance*=.55;drawStudioGL();
+    const zoomed=probes.map(([r,a])=>at(r,a));
+    spec.viewDistance=originalDistance;
+    if(sumDifference(initial,zoomed)>1)throw Error('Infinite-distance gradient follows camera zoom');
+    const originalPan=panX;panX+=Math.max(2,(spec.baseViewDistance||20)*.18);
+    drawStudioGL();const panned=probes.map(([r,a])=>at(r,a));panX=originalPan;
+    if(sumDifference(initial,panned)>1)throw Error('Infinite-distance gradient follows camera pan');
+    const projection=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4));
+    const scene=backgroundSceneTransform(projection,viewerCameraMatrix());
+    if(Math.abs(scene.center[0]-.5)>1e-6||Math.abs(scene.center[1]-.5)>1e-6||scene.scale!==1)
+     throw Error('Infinite background coordinates must remain screen-fixed');
+    drawStudioGL(0);const noRay=probes.map(([r,a])=>at(r,a));
+    drawStudioGL(.03575);const withRay=probes.map(([r,a])=>at(r,a));
+    const rayLift=sumDifference(noRay,withRay);
+    if(gl.getError()!==gl.NO_ERROR)throw Error('Fixed marine background GPU rendering failed');
+    return {samples,staticGradient:true,rayLift:Math.round(rayLift)};
    }finally{
     Object.assign(backgroundCycle,{from:saved.from,to:saved.to,fromMode:saved.fromMode,toMode:saved.toMode,fade:saved.fade,fadeSeconds:saved.fadeSeconds});
-    psychedelicTime=saved.psyTime;environmentTime=saved.at;spec.viewDistance=saved.distance;panX=saved.panX;panY=saved.panY;
+    environmentTime=saved.at;spec.viewDistance=saved.distance;panX=saved.panX;panY=saved.panY;
     render();
    }
   });
   if(errors.length)throw new Error('GPU background readback errors: '+errors.join('\n'));
-  console.log('PASS: analytic world-space glows and static atlas background',backgroundPixels);
+  console.log('PASS: fixed infinite marine atmosphere and static atlas background',backgroundPixels);
   // An atlas that prioritizes visible cards must never leave the first one blank
    // after the viewer is closed, even when its generation was deferred.
    await page.evaluate(()=>close());
