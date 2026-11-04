@@ -7496,7 +7496,7 @@ function syncSpecimenGlassTransparency(individual){
  return percent;
 }
 function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepared=null){
- if(spec!==nextSpec&&typeof resetPulseTravel==='function')resetPulseTravel();
+ if(spec!==nextSpec&&typeof resetPulseTravel==='function')resetPulseTravel(nextSpec,true);
  const nextView=prepared?prepared.distance:specimenViewDistance(nextSpec),oldView=spec?.viewDistance;
  if(prepared)meshes=prepared.meshes;
  else{
@@ -7812,12 +7812,13 @@ function worldCameraFrame(yaw,pitch,roll,distance,targetX=0,targetY=0){
 // Pulse-driven world locomotion is independent of shader deformation and audio.
 // A single deterministic DNA mixture combines contraction jets, waves and passive drift.
 // Camera translation is locked to the organism; orbit angles remain user-controlled.
-const PULSE_TRAVEL_STRENGTH=.35;
+const PULSE_TRAVEL_STRENGTH=.175; // Half the previous propulsion strength.
 const pulseTravel={specimen:null,position:[0,0,0],velocity:[0,0,0],camera:[0,0,0],phase:0,lastEnvelope:0,breath:0,
  cycleIndex:null,heading:0,headingBase:0,steer:0,steerTarget:0,pathMode:'plane',pathAxis:0,pathSign:1};
-function resetPulseTravel(next=null){
- pulseTravel.specimen=next;pulseTravel.position.fill(0);pulseTravel.velocity.fill(0);
- pulseTravel.camera.fill(0);pulseTravel.phase=0;pulseTravel.lastEnvelope=0;pulseTravel.breath=0;
+function resetPulseTravel(next=null,preserveWorld=false){
+ pulseTravel.specimen=next;
+ if(!preserveWorld){pulseTravel.position.fill(0);pulseTravel.camera.fill(0);}
+ pulseTravel.velocity.fill(0);pulseTravel.phase=0;pulseTravel.lastEnvelope=0;pulseTravel.breath=0;
  pulseTravel.cycleIndex=null;pulseTravel.heading=0;pulseTravel.headingBase=0;
  pulseTravel.steer=0;pulseTravel.steerTarget=0;pulseTravel.pathMode='plane';pulseTravel.pathAxis=0;pulseTravel.pathSign=1;
 }
@@ -7826,7 +7827,7 @@ function pulseTravelActive(){
 }
 function stepPulseTravel(dt){
  if(!spec||!pulseTravelActive()){if(pulseTravel.specimen)resetPulseTravel();return;}
- if(pulseTravel.specimen!==spec)resetPulseTravel(spec);
+ if(pulseTravel.specimen!==spec)resetPulseTravel(spec,true);
  const seed=(spec.seed||0)>>>0,dna=normalizedMotionDNA(spec.genome?.motionDNA,seed,spec.genome?.archetype||0,spec.genome?.morphDNA);
  const a=(seed%997)/997,b=((seed>>>9)%997)/997,c=((seed>>>19)%997)/997;
  const pulsePeriod=CYCLE_PERIODS[dna.pulseCycle]||1;
