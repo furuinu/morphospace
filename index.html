@@ -6492,9 +6492,9 @@ void main(){
   // Advected capture particles already contain their full world-space position.
   if(uSnowAdvected<.5){
   // Very slow sinking, tidal drift and recirculation around the survey site.
-  p.x=uSnowCenter.x+mod(p.x-uSnowCenter.x+68.942+t*aSnowInfo.z*.025 + sin(t*.11+aSnowInfo.y+p.y*.12)*.045,137.884)-68.942;
-  p.y=uSnowCenter.y+mod(p.y-uSnowCenter.y+51.706-t*(.015+aSnowInfo.w*.025)+sin(t*.095+aSnowInfo.y)*.025,103.412)-51.706;
-  p.z=uSnowCenter.z+mod(p.z-uSnowCenter.z+68.942+t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035,137.884)-68.942;
+  p.x+=t*aSnowInfo.z*.025+sin(t*.11+aSnowInfo.y+p.y*.12)*.045;
+  p.y-=t*(.015+aSnowInfo.w*.025)-sin(t*.095+aSnowInfo.y)*.025;
+  p.z+=t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035;
   p+=snowBrownian(aSnowPos,aSnowInfo.y,t);
   }
   vec4 clip=uSnowViewProj*vec4(p,1.0);
@@ -8026,16 +8026,68 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
  const p=renderer.snowVars;
  gl.uniformMatrix4fv(p.viewProj,false,viewProj);
  const cameraSnowPosition=view?[-(view[0]*view[12]+view[1]*view[13]+view[2]*view[14]),-(view[4]*view[12]+view[5]*view[13]+view[6]*view[14]),-(view[8]*view[12]+view[9]*view[13]+view[10]*view[14])]:null;
- // Recycle only after actual travel across a sizeable world-space cell.
- // Ordinary specimen replacement does not reset particle seeds or their phase.
- if(cameraSnowPosition){
-  if(!persistentSnowOriginReady){persistentSnowOrigin.splice(0,3,...cameraSnowPosition);persistentSnowOriginReady=true;}
-  for(let axis=0;axis<3;axis++){
-   const delta=cameraSnowPosition[axis]-persistentSnowOrigin[axis];
-   if(Math.abs(delta)>34)persistentSnowOrigin[axis]+=Math.trunc(delta/34)*34;
-  }
+ // The particle field stays in world space. Only individually retired,
+ // off-screen particles are recycled; specimen changes never recenter it.
+ if(cameraSnowPosition&&!persistentSnowOriginReady){
+  persistentSnowOrigin.splice(0,3,...cameraSnowPosition);persistentSnowOriginReady=true;
  }
  const snowCenter=persistentSnowOrigin;
+ // Incrementally recycle the farthest off-frustum snow toward the organism's
+ // forward travel corridor. Never refresh the whole field or alter particle count.
+ if(view&&viewProj&&spec&&renderer.snowData&&!nanoAction){
+  const data=renderer.snowData,m=viewProj;
+  const organism=pulseTravel.position;
+  const velocity=pulseTravel.velocity;
+  const speed=Math.hypot(...velocity);
+  const forward=speed>1e-4?velocity.map(v=>v/speed):null;
+  if(forward){
+   const cameraRight=[view[0],view[4],view[8]];
+   const cameraUp=[view[1],view[5],view[9]];
+   const cameraBack=[view[2],view[6],view[10]];
+   const projected=(x,y,z)=>{
+    const w=m[3]*x+m[7]*y+m[11]*z+m[15];
+    if(w<=.001)return false;
+    const sx=(m[0]*x+m[4]*y+m[8]*z+m[12])/w;
+    const sy=(m[1]*x+m[5]*y+m[9]*z+m[13])/w;
+    const sz=(m[2]*x+m[6]*y+m[10]*z+m[14])/w;
+    return Math.abs(sx)<=1.12&&Math.abs(sy)<=1.12&&sz>=-1&&sz<=1;
+   };
+   const driftPosition=(j)=>{
+    const t=environmentTime,tone=data[j+4],x=data[j],y=data[j+1],z=data[j+2];
+    return [x+t*data[j+5]*.025+Math.sin(t*.11+tone+y*.12)*.045,
+      y-t*(.015+data[j+6]*.025)+Math.sin(t*.095+tone)*.025,
+      z+t*data[j+5]*.012+Math.cos(t*.07+tone)*.035];
+   };
+   const ranked=[];
+   for(let i=0;i<renderer.snowCount;i++){
+    const j=i*7,position=driftPosition(j);
+    if(projected(...position))continue;
+    const dx=position[0]-organism[0],dy=position[1]-organism[1],dz=position[2]-organism[2];
+    const distance2=dx*dx+dy*dy+dz*dz;
+    if(distance2>400)ranked.push({i,distance2});
+   }
+   ranked.sort((a,b)=>b.distance2-a.distance2);
+   // A small fixed budget prevents visible bursts and GPU upload spikes.
+   for(const {i} of ranked.slice(0,2)){
+    const j=i*7;
+    let candidate=null;
+    for(let attempt=0;attempt<16;attempt++){
+     const advance=16+Math.random()*28;
+     const side=(Math.random()-.5)*20,vertical=(Math.random()-.5)*14;
+     const pos=[0,1,2].map(k=>organism[k]+forward[k]*advance+cameraRight[k]*side+cameraUp[k]*vertical);
+     if(!projected(...pos)){candidate=pos;break;}
+    }
+    if(!candidate)continue;
+    const t=environmentTime,tone=data[j+4];
+    data[j]=candidate[0]-t*data[j+5]*.025-Math.sin(t*.11+tone+candidate[1]*.12)*.045;
+    data[j+1]=candidate[1]+t*(.015+data[j+6]*.025)-Math.sin(t*.095+tone)*.025;
+    data[j+2]=candidate[2]-t*data[j+5]*.012-Math.cos(t*.07+tone)*.035;
+    gl.bindBuffer(gl.ARRAY_BUFFER,renderer.snowBuffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER,j*4,data.subarray(j,j+7));
+    if(snowChimeState.visible?.length>i)snowChimeState.visible[i]=0;
+   }
+  }
+ }
  gl.uniform3fv(p.center,snowCenter);
  gl.uniform1f(p.time,environmentTime);
  // Ordinary snow keeps its original budget; capture reveals a wider bounded volume.
@@ -8115,9 +8167,9 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
     }
     snowChimeState.visible[i]=0;continue;
    }
-   const x=snowCenter[0]+mod(data[j]-snowCenter[0]+68.942+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.045,137.884)-68.942;
-   const y=snowCenter[1]+mod(data[j+1]-snowCenter[1]+51.706-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.025,103.412)-51.706;
-   const z=snowCenter[2]+mod(data[j+2]-snowCenter[2]+68.942+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.035,137.884)-68.942;
+   const x=data[j]+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.045;
+   const y=data[j+1]-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.025;
+   const z=data[j+2]+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.035;
    const w=m[3]*x+m[7]*y+m[11]*z+m[15];
    if(w<=.01){snowChimeState.visible[i]=0;continue;}
    const nx=(m[0]*x+m[4]*y+m[8]*z+m[12])/w;
