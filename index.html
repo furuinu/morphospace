@@ -8005,12 +8005,25 @@ function tickBackgroundSnowChime(){
   if(tone>=.92){playSnowChime(index,tone,now);break;}
  }
 }
+// Persistent world-space snow origin: organism changes never reseed or recenter the field.
+const persistentSnowOrigin=[0,0,0];
+let persistentSnowOriginReady=false;
 function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
  if(!renderer?.snowProgram)return;
  gl.useProgram(renderer.snowProgram);
  const p=renderer.snowVars;
  gl.uniformMatrix4fv(p.viewProj,false,viewProj);
- const snowCenter=view?[-(view[0]*view[12]+view[1]*view[13]+view[2]*view[14]),-(view[4]*view[12]+view[5]*view[13]+view[6]*view[14]),-(view[8]*view[12]+view[9]*view[13]+view[10]*view[14])]:[0,0,0];
+ const cameraSnowPosition=view?[-(view[0]*view[12]+view[1]*view[13]+view[2]*view[14]),-(view[4]*view[12]+view[5]*view[13]+view[6]*view[14]),-(view[8]*view[12]+view[9]*view[13]+view[10]*view[14])]:null;
+ // Recycle only after actual travel across a sizeable world-space cell.
+ // Ordinary specimen replacement does not reset particle seeds or their phase.
+ if(cameraSnowPosition){
+  if(!persistentSnowOriginReady){persistentSnowOrigin.splice(0,3,...cameraSnowPosition);persistentSnowOriginReady=true;}
+  for(let axis=0;axis<3;axis++){
+   const delta=cameraSnowPosition[axis]-persistentSnowOrigin[axis];
+   if(Math.abs(delta)>16)persistentSnowOrigin[axis]+=Math.trunc(delta/16)*16;
+  }
+ }
+ const snowCenter=persistentSnowOrigin;
  gl.uniform3fv(p.center,snowCenter);
  gl.uniform1f(p.time,environmentTime);
  // Ordinary snow keeps its original budget; capture reveals a wider bounded volume.
