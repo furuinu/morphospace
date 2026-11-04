@@ -7836,13 +7836,20 @@ function stepPulseTravel(dt){
  // Morphology chooses a guiding plane (flat bodies) or a guiding line (axial bodies).
  const form=spec.genome?.morphDNA||{};
  const flat=Number(form.flat)||0,axial=Number(form.axial)||0,branch=Number(form.branch)||0;
- const pathMode=flat>Math.max(axial,branch)*1.1?'plane':axial+branch>flat*1.25?'line':(seed&1)?'plane':'line';
- const pathAxis=(seed>>>5)%3; // plane normal, or line principal axis
+ // Travel orientation follows the actual copy symmetry, not arbitrary world axes.
+ // Bilateral copies mirrored across X: initial heading lies in the YZ plane.
+ // Three radial arms laid out in XZ: initial heading is +Y or -Y.
+ const architecture=normalizedArchitectureDNA(spec.genome?.architectureDNA,seed,(spec.genome?.style||0)*8+(spec.genome?.archetype||0));
+ const layout=architecture.grammar;
+ const pathMode=layout===1?'plane':layout===5?'line':
+  flat>Math.max(axial,branch)*1.1?'plane':axial+branch>flat*1.25?'line':(seed&1)?'plane':'line';
+ const pathAxis=layout===1?0:layout===5?1:(seed>>>5)%3; // YZ plane normal X; three-arm line Y
  const pathSign=((seed>>>12)&1)?-1:1;
  const cycleIndex=Math.floor(phase/6.283185307179586);
  if(pulseTravel.cycleIndex===null){
   pulseTravel.cycleIndex=cycleIndex;pulseTravel.pathMode=pathMode;
   pulseTravel.pathAxis=pathAxis;pulseTravel.pathSign=pathSign;
+  // Plane mode selects any direction in its plane; line mode starts exactly on its axis.
   pulseTravel.headingBase=pathMode==='plane'?a*6.283185307179586:0;
   pulseTravel.heading=pulseTravel.headingBase;
  }else if(cycleIndex!==pulseTravel.cycleIndex){
