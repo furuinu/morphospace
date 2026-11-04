@@ -5,23 +5,27 @@ const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 const html=readFileSync(join(__dirname,'..','index.html'),'utf8');
 
-test('marine and psychedelic backgrounds use independent family selectors',()=>{
- assert.match(html,/id="viewerBackgroundFamily"/);
- assert.match(html,/value="marine"/);
- assert.match(html,/value="psychedelic"/);
- for(const id of ['psyflow','psykaleido','psycell','psystripes']){
+test('six marine gradient presets remain available after psychedelic removal',()=>{
+ assert.doesNotMatch(html,/id="viewerBackgroundFamily"/);
+ for(const id of ['deepsea','predawn','sunrise','twilight','nebula','moonlit']){
   assert.match(html,new RegExp('value="'+id+'"'));
  }
- assert.match(html,/backgroundFamily\(p.id\)===backgroundCycle\.family/);
+ for(const id of ['psyflow','psykaleido','psycell','psystripes']){
+  assert.doesNotMatch(html,new RegExp('value="'+id+'"'));
+ }
+ assert.match(html,/const backgroundFamily=id=>'marine'/);
+ assert.match(html,/const backgroundCycle=/);
+ assert.match(html,/id="viewerBackgroundRandom"/);
 });
 
-test('the six specimen pigments and movement clock drive the WebGL backdrop',()=>{
- assert.match(html,/globalThis\.MorphospacePsyBackground=Object\.freeze/);
- assert.match(html,/\$\{globalThis\.MorphospacePsyBackground\.glsl\}/);
- for(let n=0;n<6;n++)assert.match(html,new RegExp('uPsy'+n));
- assert.match(html,/psychedelicTime\+=Math\.min\(elapsed,\.18\)/);
- assert.match(html,/paletteFade/);
- assert.match(html,/gl\.uniform1f\(surface\.uPsyTo,backgroundCycle\.toMode\)/);
+test('removed psychedelic shaders and clocks are not restored',()=>{
+ assert.doesNotMatch(html,/globalThis\.MorphospacePsyBackground/);
+ assert.doesNotMatch(html,/psyScene\(/);
+ assert.doesNotMatch(html,/uPsy[0-9]/);
+ assert.doesNotMatch(html,/psychedelicTime/);
+ assert.doesNotMatch(html,/viewerPsySpeed/);
+ assert.match(html,/vec2 p=\(vStudioUv-vec2\(\.5,\.49\)\)\*1\.0;/);
+ assert.match(html,/float t=0\.0;/);
 });
 
 test('background shader remains inline for the Pages dependency whitelist',()=>{
