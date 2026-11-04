@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.58.7 — Cellular genesis</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.59.0 — Pulse locomotion</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks label[hidden],.checks [hidden]{display:none!important}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -7512,6 +7512,7 @@ function syncSpecimenGlassTransparency(individual){
  return percent;
 }
 function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepared=null){
+ if(spec!==nextSpec)resetPulseTravel();
  const nextView=prepared?prepared.distance:specimenViewDistance(nextSpec),oldView=spec?.viewDistance;
  if(prepared)meshes=prepared.meshes;
  else{
@@ -7824,8 +7825,65 @@ function worldCameraFrame(yaw,pitch,roll,distance,targetX=0,targetY=0){
  const position=target.map((v,i)=>v+back[i]*distance);
  return {rotation,right,up,back,target,position};
 }
+// Pulse-driven world locomotion is independent of shader deformation and audio.
+// A single deterministic DNA mixture combines contraction jets, waves and passive drift.
+// Camera smoothing is applied to its target, not to the user's orbit angles.
+const PULSE_TRAVEL_STRENGTH=.35,PULSE_CAMERA_LAG=.60;
+const pulseTravel={specimen:null,position:[0,0,0],velocity:[0,0,0],camera:[0,0,0],phase:0,lastEnvelope:0,breath:0};
+function resetPulseTravel(next=null){
+ pulseTravel.specimen=next;pulseTravel.position.fill(0);pulseTravel.velocity.fill(0);
+ pulseTravel.camera.fill(0);pulseTravel.phase=0;pulseTravel.lastEnvelope=0;pulseTravel.breath=0;
+}
+function pulseTravelActive(){
+ return !!(spec&&selected>=0&&$('motion').checked&&!nanoAction&&!nanoRenderPose);
+}
+function stepPulseTravel(dt){
+ if(!spec||!pulseTravelActive()){if(pulseTravel.specimen)resetPulseTravel();return;}
+ if(pulseTravel.specimen!==spec)resetPulseTravel(spec);
+ const seed=(spec.seed||0)>>>0,dna=normalizedMotionDNA(spec.genome?.motionDNA,seed,spec.genome?.archetype||0,spec.genome?.morphDNA);
+ const a=(seed%997)/997,b=((seed>>>9)%997)/997,c=((seed>>>19)%997)/997;
+ const cycle=Math.max(.35,Number(dna.cycle)||Number(dna.frequency)||2.5);
+ const frequency=(.32+.52*b)/Math.sqrt(cycle/2.5);
+ const phase=bodyTime*frequency*6.283185307179586+a*6.283185307179586;
+ // Positive contraction impulse, with a slower travelling-wave component.
+ const envelope=Math.pow(Math.max(0,Math.sin(phase)),3);
+ const jet=Math.max(0,envelope-pulseTravel.lastEnvelope);
+ pulseTravel.lastEnvelope=envelope;
+ const wave=.5+.5*Math.sin(phase*.53+c*6.283185307179586);
+ const blendJet=.30+.45*a,blendWave=.20+.40*b,blendDrift=Math.max(.12,1-blendJet-blendWave);
+ const base=Math.max(2,spec.baseViewDistance||spec.viewDistance||12);
+ const radius=base*.12,drive=base*.026*PULSE_TRAVEL_STRENGTH;
+ const heading=bodyTime*(.10+.10*c)+a*6.283185307179586;
+ const dir=[Math.cos(heading),.38*Math.sin(heading*.73+b*5),.32*Math.sin(heading*.61+c*5)];
+ const impulse=drive*blendJet*jet*4.0;
+ const continuous=drive*(blendWave*wave*.24+blendDrift*.11)*dt;
+ for(let i=0;i<3;i++){
+  const drift=Math.sin(bodyTime*(.19+i*.07)+a*11+i*2.3)*drive*blendDrift*.12*dt;
+  const spring=-pulseTravel.position[i]*dt*.22;
+  pulseTravel.velocity[i]+=(impulse+continuous)*dir[i]+drift+spring;
+  pulseTravel.velocity[i]*=Math.exp(-dt*(1.25+.5*b));
+  pulseTravel.position[i]+=pulseTravel.velocity[i]*dt;
+ }
+ // Soft, bounded habitat prevents a specimen from swimming out of view.
+ const length=Math.hypot(...pulseTravel.position);
+ if(length>radius){const scale=radius/length;for(let i=0;i<3;i++){pulseTravel.position[i]*=scale;pulseTravel.velocity[i]*=.50;}}
+ // 60% delayed following; look-ahead shifts the composition towards travel.
+ const follow=1-Math.exp(-dt/(.20+PULSE_CAMERA_LAG*1.8));
+ for(let i=0;i<3;i++){
+  const lookAhead=pulseTravel.velocity[i]*(.18+.30*PULSE_CAMERA_LAG);
+  pulseTravel.camera[i]+=(pulseTravel.position[i]+lookAhead-pulseTravel.camera[i])*follow;
+ }
+ pulseTravel.breath+=(envelope-pulseTravel.breath)*(1-Math.exp(-dt*2.4));
+}
+function pulseCameraDistance(){
+ return spec.viewDistance*(1+.009*pulseTravel.breath);
+}
 function viewerCameraMatrix(){
- const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,spec.viewDistance,panX,panY);
+ const active=pulseTravelActive()&&pulseTravel.specimen===spec;
+ const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,active?pulseCameraDistance():spec.viewDistance,
+  panX+(active?pulseTravel.camera[0]:0),panY+(active?pulseTravel.camera[1]:0));
+ if(active){frame.position[2]+=pulseTravel.camera[2];}
+
  return mul4(frame.rotation,translate3(-frame.position[0],-frame.position[1],-frame.position[2]));
 }
 function backgroundSceneTransform(projection,view){
@@ -8530,6 +8588,7 @@ function cancelViewerMorph(commit=false){
 }
 function pauseViewerTransition(){viewer.revision++;viewer.preparing=false;discardViewerPreparation();cancelViewerMorph(false);viewer.phaseFade=null;setViewerPhaseOpacity(0);viewer.elapsed=0;$('viewerTransition').textContent='';updateViewerCountdown()}
 function stopViewer(){
+ resetPulseTravel();
  $('overlay').classList.remove('viewer-caption-fading');
  viewerTap=null;setViewerNavigationVisible(true);$('viewerSettings').open=false;
  viewer.source='gallery';$('viewerSource').value='gallery';viewer.history=[];
@@ -8868,6 +8927,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const pose=wholeBodyPose(bodyTime,spec.seed,spec.genome.motionDNA?.primary??0,$('motion').checked);
  if(viewer.morph&&spec===viewer.morph.source){const m=viewer.morph,next=wholeBodyPose(bodyTime,m.target.seed,m.target.genome.motionDNA?.primary??0,$('motion').checked);for(const key of Object.keys(pose))pose[key]+=(next[key]-pose[key])*m.t;}
  base=mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll))));
+ if(pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording))base=mul4(translate3(...pulseTravel.position),base);
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
   base=mul4(inverse,mul4(translate3((n.x-.5)*2*half*w/h,(.5-n.y)*2*half,0),mul4(scale3(n.sx,n.sy,n.sz),mul4(rotation,base))));
@@ -10422,6 +10482,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
   if($('patternMotion').checked)patternTime+=Math.min(elapsed,.18);
   const isMotion=$('motion').checked;
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/200);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);if(viewer.morph)stepBiomeSystem(viewer.morph.target.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);}
+  stepPulseTravel(Math.min(elapsed,.18));
   if(videoRecording?videoRecording.autoOrbit:auto){
    // Continuous clockwise orbit; preserve manual yaw and pitch offsets.
    cameraOrbitPhase+=Math.min(elapsed,.15)*(.10625*1.5);
