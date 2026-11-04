@@ -6492,9 +6492,9 @@ void main(){
   // Advected capture particles already contain their full world-space position.
   if(uSnowAdvected<.5){
   // Very slow sinking, tidal drift and recirculation around the survey site.
-  p.x=uSnowCenter.x+mod(p.x-uSnowCenter.x+32.0+t*aSnowInfo.z*.025 + sin(t*.11+aSnowInfo.y+p.y*.12)*.045,64.0)-32.0;
-  p.y=uSnowCenter.y+mod(p.y-uSnowCenter.y+24.0-t*(.015+aSnowInfo.w*.025)+sin(t*.095+aSnowInfo.y)*.025,48.0)-24.0;
-  p.z=uSnowCenter.z+mod(p.z-uSnowCenter.z+32.0+t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035,64.0)-32.0;
+  p.x=uSnowCenter.x+mod(p.x-uSnowCenter.x+68.942+t*aSnowInfo.z*.025 + sin(t*.11+aSnowInfo.y+p.y*.12)*.045,137.884)-68.942;
+  p.y=uSnowCenter.y+mod(p.y-uSnowCenter.y+51.706-t*(.015+aSnowInfo.w*.025)+sin(t*.095+aSnowInfo.y)*.025,103.412)-51.706;
+  p.z=uSnowCenter.z+mod(p.z-uSnowCenter.z+68.942+t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035,137.884)-68.942;
   p+=snowBrownian(aSnowPos,aSnowInfo.y,t);
   }
   vec4 clip=uSnowViewProj*vec4(p,1.0);
@@ -6547,7 +6547,8 @@ void main(){
  for(let i=0;i<snowCount;i++){
   const j=i*7;
   const near=i<snowCount*.58,mid=i<snowCount*.84;
-  const extent=near?22:mid?40:64;
+  // 10x spatial volume (cube-root scaling), unchanged particle count.
+  const extent=(near?22:mid?40:64)*2.15443469;
   snowData[j]=(snowRng()-.5)*extent; snowData[j+1]=(snowRng()-.5)*extent*.75; snowData[j+2]=(snowRng()-.5)*extent;
   snowData[j+3]=.75+snowRng()*3.0; snowData[j+4]=snowRng();
   snowData[j+5]=(snowRng()-.5)*1.5; snowData[j+6]=snowRng();
@@ -6878,7 +6879,7 @@ function makeVerletStrand(mesh,d,genome){
  }
  for(let i=1;i<rows;i++)lengths[i-1]=Math.hypot(...V.sub(rest[i],rest[i-1]));
  for(let cap=0;cap<2;cap++){const i=cap?rows-1:0,k=(rows*sides+cap)*17;for(let a=0;a<3;a++)mesh.data[k+a]=rest[i][a];}
- return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice(),growthDirection:axis};
+ return {rest,last,points:rest.map(p=>p.slice()),lengths,sides,rows,phase:d.phase,genome,initial:mesh.data.slice(),lastTime:null,anchor:rest[0].slice(),growthDirection:axis,rootDecay:1.5+((genome?.seed||1)%991)/991*7.0};
 }
 function stepVerletStrand(mesh,time,moving){
  const p=mesh.verlet;if(!p)return;
@@ -6926,19 +6927,17 @@ function stepVerletStrand(mesh,time,moving){
     p.points[i]=V.sub(p.points[i],correction);
     if(i>1)p.points[i-1]=V.add(p.points[i-1],correction);
    }
-   // Re-pin the insertion and the first link after every constraint pass.
+   // Inverse-distance root stiffness: strongest at insertion, continuously
+   // decreasing along the strand. Each specimen has a seeded decay coefficient.
    p.points[0]=anchor.slice();
-   const first=V.sub(p.points[1],anchor),firstDist=Math.max(1e-7,Math.hypot(...first));
-   // A directionally rooted insertion: the first segment remains within a
-   // narrow cone around its growth axis, while the distal chain stays free.
-   const guide=p.growthDirection,straight=V.scale(first,1/firstDist);
-   const blended=V.norm(V.add(V.scale(guide,.72),V.scale(straight,.28)));
-   p.points[1]=V.add(anchor,V.scale(blended,p.lengths[0]));
-   // The second segment can bend, but should not fold backward across the skin.
-   if(rows>2){
-    const second=V.sub(p.points[2],p.points[1]),secondLength=Math.max(1e-7,Math.hypot(...second));
-    const secondDir=V.norm(V.add(V.scale(guide,.12),V.scale(second, .88/secondLength)));
-    p.points[2]=V.add(p.points[1],V.scale(secondDir,p.lengths[1]));
+   const guide=p.growthDirection;
+   for(let i=1;i<rows;i++){
+    const segment=V.sub(p.points[i],p.points[i-1]);
+    const length=Math.max(1e-7,Math.hypot(...segment));
+    const u=i/(rows-1);
+    const stiffness=1/(1+p.rootDecay*u*12);
+    const direction=V.norm(V.add(V.scale(guide,stiffness),V.scale(segment,(1-stiffness)/length)));
+    p.points[i]=V.add(p.points[i-1],V.scale(direction,p.lengths[i-1]));
    }
    // No Laplacian straightening: allow free serpentine curvature and lag.
   }
@@ -7844,14 +7843,26 @@ function stepPulseTravel(dt){
  const layout=architecture.grammar;
  const pathMode=layout===1?'plane':layout===5?'line':
   flat>Math.max(axial,branch)*1.1?'plane':axial+branch>flat*1.25?'line':(seed&1)?'plane':'line';
- const pathAxis=layout===1?0:layout===5?1:(seed>>>5)%3; // YZ plane normal X; three-arm line Y
+ let pathAxis=layout===1?0:layout===5?1:(seed>>>5)%3; // YZ plane normal X; three-arm line Y
+ // Avoid the axis occupied by prominent tentacles. Opposing tentacles along
+ // the same axis force travel into its perpendicular plane.
+ const tentacles=(spec.parts||[]).filter(part=>part.delicate?.type==='strand').map(part=>part.delicate.dir).filter(Boolean);
+ let anatomicalPlane=false;
+ if(tentacles.length){
+  const axisWeights=[0,0,0];
+  for(const dir of tentacles)for(let k=0;k<3;k++)axisWeights[k]+=Math.abs(dir[k]);
+  const dominant=axisWeights.indexOf(Math.max(...axisWeights));
+  const alignment=axisWeights[dominant]/Math.max(1e-6,axisWeights.reduce((s,v)=>s+v,0));
+  if(alignment>.46){pathAxis=dominant;anatomicalPlane=true;}
+ }
+ const effectivePathMode=anatomicalPlane?'plane':pathMode;
  const pathSign=((seed>>>12)&1)?-1:1;
  const cycleIndex=Math.floor(phase/6.283185307179586);
  if(pulseTravel.cycleIndex===null){
-  pulseTravel.cycleIndex=cycleIndex;pulseTravel.pathMode=pathMode;
+  pulseTravel.cycleIndex=cycleIndex;pulseTravel.pathMode=effectivePathMode;
   pulseTravel.pathAxis=pathAxis;pulseTravel.pathSign=pathSign;
   // Plane mode selects any direction in its plane; line mode starts exactly on its axis.
-  pulseTravel.headingBase=pathMode==='plane'?a*6.283185307179586:0;
+  pulseTravel.headingBase=effectivePathMode==='plane'?a*6.283185307179586:0;
   pulseTravel.heading=pulseTravel.headingBase;
  }else if(cycleIndex!==pulseTravel.cycleIndex){
   // Seeded reproducible random step in [-5,+5] degrees, sampled exactly once per cycle.
@@ -8021,7 +8032,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
   if(!persistentSnowOriginReady){persistentSnowOrigin.splice(0,3,...cameraSnowPosition);persistentSnowOriginReady=true;}
   for(let axis=0;axis<3;axis++){
    const delta=cameraSnowPosition[axis]-persistentSnowOrigin[axis];
-   if(Math.abs(delta)>16)persistentSnowOrigin[axis]+=Math.trunc(delta/16)*16;
+   if(Math.abs(delta)>34)persistentSnowOrigin[axis]+=Math.trunc(delta/34)*34;
   }
  }
  const snowCenter=persistentSnowOrigin;
@@ -8087,7 +8098,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
     if(snowChimeState.visible[i]&&!active){
      // The flashed particle is consumed; replace it outside the current camera view.
      for(let attempt=0;attempt<48;attempt++){
-      const nx=snowCenter[0]+(Math.random()-.5)*64,ny=snowCenter[1]+(Math.random()-.5)*48,nz=snowCenter[2]+(Math.random()-.5)*64;
+      const nx=snowCenter[0]+(Math.random()-.5)*137.884,ny=snowCenter[1]+(Math.random()-.5)*103.412,nz=snowCenter[2]+(Math.random()-.5)*137.884;
       const w=m[3]*nx+m[7]*ny+m[11]*nz+m[15];
       const sx=(m[0]*nx+m[4]*ny+m[8]*nz+m[12])/(w||1);
       const sy=(m[1]*nx+m[5]*ny+m[9]*nz+m[13])/(w||1);
@@ -8104,9 +8115,9 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
     }
     snowChimeState.visible[i]=0;continue;
    }
-   const x=snowCenter[0]+mod(data[j]-snowCenter[0]+32+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.045,64)-32;
-   const y=snowCenter[1]+mod(data[j+1]-snowCenter[1]+24-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.025,48)-24;
-   const z=snowCenter[2]+mod(data[j+2]-snowCenter[2]+32+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.035,64)-32;
+   const x=snowCenter[0]+mod(data[j]-snowCenter[0]+68.942+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.045,137.884)-68.942;
+   const y=snowCenter[1]+mod(data[j+1]-snowCenter[1]+51.706-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.025,103.412)-51.706;
+   const z=snowCenter[2]+mod(data[j+2]-snowCenter[2]+68.942+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.035,137.884)-68.942;
    const w=m[3]*x+m[7]*y+m[11]*z+m[15];
    if(w<=.01){snowChimeState.visible[i]=0;continue;}
    const nx=(m[0]*x+m[4]*y+m[8]*z+m[12])/w;
