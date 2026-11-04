@@ -464,14 +464,15 @@ test('strand length is bounded by body size and long flexible roots stay pinned'
  assert.match(html,/Math\.max\(bodySize\/5,Math\.min\(allowLongTentacles\?bodySize\*2\.5:bodySize\*\.79,length\)\)/);
  assert.match(html,/const segments=Math\.max\(12,Math\.min\(24,/);
  assert.match(html,/p\.points\[0\]=anchor\.slice\(\)/);
- assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
+ assert.match(html,/p\.points\[i\]=V\.add\(p\.points\[i-1\],V\.scale\(direction,p\.lengths\[i-1\]\)\)/);
 });
 
-test('tentacle root keeps growth direction while distal chain remains flexible',()=>{
+test('tentacle stiffness decays inversely from the rooted insertion with specimen-specific coefficient',()=>{
  assert.match(html,/growthDirection:axis/);
- assert.match(html,/const blended=V\.norm\(V\.add\(V\.scale\(guide,\.72\),V\.scale\(straight,\.28\)\)\)/);
- assert.match(html,/p\.points\[1\]=V\.add\(anchor,V\.scale\(blended,p\.lengths\[0\]\)\)/);
- assert.match(html,/const secondDir=V\.norm/);
+ assert.match(html,/rootDecay:1\.5\+\(\(genome\?\.seed\|\|1\)\%991\)\/991\*7\.0/);
+ assert.match(html,/const stiffness=1\/\(1\+p\.rootDecay\*u\*12\)/);
+ assert.match(html,/p\.points\[i\]=V\.add\(p\.points\[i-1\],V\.scale\(direction,p\.lengths\[i-1\]\)\)/);
+ assert.match(html,/const direction=V\.norm\(V\.add\(V\.scale\(guide,stiffness\),V\.scale\(segment,\(1-stiffness\)\/length\)\)\)/);
  assert.match(html,/const force=flow\.map\(\(v,a\)=>clamp\(/);
 });
 
