@@ -6469,7 +6469,7 @@ void main(){
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
- uniform mat4 uSnowViewProj; uniform float uSnowTime; uniform float uSnowSizeScale;
+ uniform mat4 uSnowViewProj; uniform vec3 uSnowCenter; uniform float uSnowTime; uniform float uSnowSizeScale;
  varying mediump float vSnowAlpha; varying mediump float vSnowTone;
  varying mediump float vSnowDistanceFade; varying mediump float vSnowEdgeFade;
  // Smooth stochastic walk: three independent time scales per particle avoid a looping orbit.
@@ -6492,9 +6492,9 @@ void main(){
   // Advected capture particles already contain their full world-space position.
   if(uSnowAdvected<.5){
   // Very slow sinking, tidal drift and recirculation around the survey site.
-  p.x=mod(p.x+24.0+t*aSnowInfo.z*.025 + sin(t*.11+aSnowInfo.y+p.y*.12)*.045,48.0)-24.0;
-  p.y=mod(p.y+18.0-t*(.015+aSnowInfo.w*.025)+sin(t*.095+aSnowInfo.y)*.025,36.0)-18.0;
-  p.z=mod(p.z+24.0+t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035,48.0)-24.0;
+  p.x=uSnowCenter.x+mod(p.x-uSnowCenter.x+32.0+t*aSnowInfo.z*.025 + sin(t*.11+aSnowInfo.y+p.y*.12)*.045,64.0)-32.0;
+  p.y=uSnowCenter.y+mod(p.y-uSnowCenter.y+24.0-t*(.015+aSnowInfo.w*.025)+sin(t*.095+aSnowInfo.y)*.025,48.0)-24.0;
+  p.z=uSnowCenter.z+mod(p.z-uSnowCenter.z+32.0+t*aSnowInfo.z*.012+cos(t*.07+aSnowInfo.y)*.035,64.0)-32.0;
   p+=snowBrownian(aSnowPos,aSnowInfo.y,t);
   }
   vec4 clip=uSnowViewProj*vec4(p,1.0);
@@ -6538,16 +6538,16 @@ void main(){
  let snowProgram=null,snowVars=null,snowBuffer=null,snowData=null,snowCount=0;
  try{ snowProgram=linked(isWebGL2?toVertex300(snowVertex):snowVertex,isWebGL2?toFragment300(snowFragment):snowFragment,'3Dマリンスノー');
  snowVars={distanceScale:gl.getUniformLocation(snowProgram,'uSnowDistanceScale'),advected:gl.getUniformLocation(snowProgram,'uSnowAdvected'),velocity:gl.getAttribLocation(snowProgram,'aSnowVelocity'),aSnowPos:gl.getAttribLocation(snowProgram,'aSnowPos'),aSnowInfo:gl.getAttribLocation(snowProgram,'aSnowInfo'),
-  viewProj:gl.getUniformLocation(snowProgram,'uSnowViewProj'),time:gl.getUniformLocation(snowProgram,'uSnowTime'),
+  viewProj:gl.getUniformLocation(snowProgram,'uSnowViewProj'),center:gl.getUniformLocation(snowProgram,'uSnowCenter'),time:gl.getUniformLocation(snowProgram,'uSnowTime'),
   size:gl.getUniformLocation(snowProgram,'uSnowSizeScale'),depthPass:gl.getUniformLocation(snowProgram,'uSnowDepthPass'),
   farDim:gl.getUniformLocation(snowProgram,'uSnowFarDim'),edgeDim:gl.getUniformLocation(snowProgram,'uSnowEdgeDim')};
  const snowRng=seedRng(937651);
  // Foreground / midground / distant stratification makes camera translation readable.
- snowCount=1440; snowData=new Float32Array(snowCount*7);
+ snowCount=1050; snowData=new Float32Array(snowCount*7);
  for(let i=0;i<snowCount;i++){
   const j=i*7;
   const near=i<snowCount*.58,mid=i<snowCount*.84;
-  const extent=near?12:mid?24:48;
+  const extent=near?22:mid?40:64;
   snowData[j]=(snowRng()-.5)*extent; snowData[j+1]=(snowRng()-.5)*extent*.75; snowData[j+2]=(snowRng()-.5)*extent;
   snowData[j+3]=.75+snowRng()*3.0; snowData[j+4]=snowRng();
   snowData[j+5]=(snowRng()-.5)*1.5; snowData[j+6]=snowRng();
@@ -6599,7 +6599,7 @@ void main(){
  console.info('Marine snow sparkle shader linked successfully');
  snowSparkVars={};
  for(const key of ['aSnowPos','aSnowInfo','aSnowVelocity','aSnowFlash'])snowSparkVars[key]=gl.getAttribLocation(snowSparkProgram,key);
- for(const key of ['uSnowViewProj','uSnowTime','uSnowSizeScale','uSnowDistanceScale','uSnowAdvected','uSnowDepthPass'])snowSparkVars[key]=gl.getUniformLocation(snowSparkProgram,key);
+ for(const key of ['uSnowViewProj','uSnowCenter','uSnowTime','uSnowSizeScale','uSnowDistanceScale','uSnowAdvected','uSnowDepthPass'])snowSparkVars[key]=gl.getUniformLocation(snowSparkProgram,key);
  snowSparkVars.uSnowPalette=gl.getUniformLocation(snowSparkProgram,'uSnowPalette[0]');
  snowSparkFlashData=new Float32Array(snowCount);
  snowSparkFlashBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,snowSparkFlashBuffer);gl.bufferData(gl.ARRAY_BUFFER,snowSparkFlashData,gl.DYNAMIC_DRAW);
@@ -8010,6 +8010,8 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
  gl.useProgram(renderer.snowProgram);
  const p=renderer.snowVars;
  gl.uniformMatrix4fv(p.viewProj,false,viewProj);
+ const snowCenter=view?[-(view[0]*view[12]+view[1]*view[13]+view[2]*view[14]),-(view[4]*view[12]+view[5]*view[13]+view[6]*view[14]),-(view[8]*view[12]+view[9]*view[13]+view[10]*view[14])]:[0,0,0];
+ gl.uniform3fv(p.center,snowCenter);
  gl.uniform1f(p.time,environmentTime);
  // Ordinary snow keeps its original budget; capture reveals a wider bounded volume.
  const coarse=typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches;
@@ -8071,7 +8073,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
     if(snowChimeState.visible[i]&&!active){
      // The flashed particle is consumed; replace it outside the current camera view.
      for(let attempt=0;attempt<48;attempt++){
-      const nx=(Math.random()-.5)*48,ny=(Math.random()-.5)*36,nz=(Math.random()-.5)*48;
+      const nx=snowCenter[0]+(Math.random()-.5)*64,ny=snowCenter[1]+(Math.random()-.5)*48,nz=snowCenter[2]+(Math.random()-.5)*64;
       const w=m[3]*nx+m[7]*ny+m[11]*nz+m[15];
       const sx=(m[0]*nx+m[4]*ny+m[8]*nz+m[12])/(w||1);
       const sy=(m[1]*nx+m[5]*ny+m[9]*nz+m[13])/(w||1);
@@ -8088,9 +8090,9 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
     }
     snowChimeState.visible[i]=0;continue;
    }
-   const x=mod(data[j]+24+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.16,48)-24;
-   const y=mod(data[j+1]+18-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.08,36)-18;
-   const z=mod(data[j+2]+24+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.12,48)-24;
+   const x=snowCenter[0]+mod(data[j]-snowCenter[0]+32+environmentTime*data[j+5]*.025+Math.sin(environmentTime*.11+tone+data[j+1]*.12)*.045,64)-32;
+   const y=snowCenter[1]+mod(data[j+1]-snowCenter[1]+24-environmentTime*(.015+data[j+6]*.025)+Math.sin(environmentTime*.095+tone)*.025,48)-24;
+   const z=snowCenter[2]+mod(data[j+2]-snowCenter[2]+32+environmentTime*data[j+5]*.012+Math.cos(environmentTime*.07+tone)*.035,64)-32;
    const w=m[3]*x+m[7]*y+m[11]*z+m[15];
    if(w<=.01){snowChimeState.visible[i]=0;continue;}
    const nx=(m[0]*x+m[4]*y+m[8]*z+m[12])/w;
@@ -8106,7 +8108,7 @@ function drawWorldSnow(viewProj,writeDofDepth=false,view=null){
  if(renderer.snowSparkProgram){
   const s=renderer.snowSparkVars;
   gl.useProgram(renderer.snowSparkProgram);
-  gl.uniformMatrix4fv(s.uSnowViewProj,false,viewProj);gl.uniform1f(s.uSnowTime,environmentTime);
+  gl.uniformMatrix4fv(s.uSnowViewProj,false,viewProj);gl.uniform3fv(s.uSnowCenter,snowCenter);gl.uniform1f(s.uSnowTime,environmentTime);
   const flashes=renderer.snowSparkFlashData;
   if(flashes&&renderer.snowSparkFlashBuffer){
 
