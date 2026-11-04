@@ -6,20 +6,20 @@ const indexSource=require('node:fs').readFileSync(path.resolve(__dirname,'../ind
 const backgroundParameters=[
  "float broadGlow=exp(-19.0*radius*radius);",
  "float coreGlow=exp(-85.0*radius*radius);",
- "vec2 p=(vStudioUv-uBgSceneCenter+vec2(0.0,.01))*uBgSceneScale;",
+ "vec2 p=(vStudioUv-vec2(.5,.49))*1.0;",
  "colour=screenColours(colour,uBgMid*(broadGlow*shimmer));",
  "colour=screenColours(colour,uBgCenter*min(1.0,coreGlow*",
  "if(uGalleryPreview>.5){",
  "float shimmer=.94+.06*cloudNoise(",
  "ctx.scale(w,h);",
- "float spin=t*.085;",
+ "float t=0.0;",
  "float bend=(wander-.5)*.24;",
  "float strength=.70+.60*wander;",
  "function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false){"
 
 ];
 for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
- throw Error('Spatial atmospheric layers must match the expected GPU shader: '+parameter);
+ throw Error('Fixed infinite-distance marine background must match the GPU shader: '+parameter);
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
  try{
