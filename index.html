@@ -6543,7 +6543,7 @@ void main(){
   farDim:gl.getUniformLocation(snowProgram,'uSnowFarDim'),edgeDim:gl.getUniformLocation(snowProgram,'uSnowEdgeDim')};
  const snowRng=seedRng(937651);
  // Foreground / midground / distant stratification makes camera translation readable.
- snowCount=720; snowData=new Float32Array(snowCount*7);
+ snowCount=1440; snowData=new Float32Array(snowCount*7);
  for(let i=0;i<snowCount;i++){
   const j=i*7;
   const near=i<snowCount*.58,mid=i<snowCount*.84;
@@ -7829,9 +7829,9 @@ function stepPulseTravel(dt){
  if(pulseTravel.specimen!==spec)resetPulseTravel(spec);
  const seed=(spec.seed||0)>>>0,dna=normalizedMotionDNA(spec.genome?.motionDNA,seed,spec.genome?.archetype||0,spec.genome?.morphDNA);
  const a=(seed%997)/997,b=((seed>>>9)%997)/997,c=((seed>>>19)%997)/997;
- const cycle=Math.max(.35,Number(dna.cycle)||Number(dna.frequency)||2.5);
- const frequency=(.32+.52*b)/Math.sqrt(cycle/2.5);
- const phase=bodyTime*frequency*6.283185307179586+a*6.283185307179586;
+ const pulsePeriod=CYCLE_PERIODS[dna.pulseCycle]||1;
+ // Match the outer skin's primary motion-DNA contraction cycle and phase.
+ const phase=6.283185307179586*(bodyTime*dna.tempo/pulsePeriod+dna.phase);
  // One course correction per complete DNA propulsion cycle; never jitter per animation frame.
  // Morphology chooses a guiding plane (flat bodies) or a guiding line (axial bodies).
  const form=spec.genome?.morphDNA||{};
@@ -10457,7 +10457,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
   if(typeof stepPulseTravel==='function')stepPulseTravel(Math.min(elapsed,.18));
   if(videoRecording?videoRecording.autoOrbit:auto){
    // Continuous clockwise orbit; preserve manual yaw and pitch offsets.
-   cameraOrbitPhase+=Math.min(elapsed,.15)*(.10625*1.5/10);
+   cameraOrbitPhase+=Math.min(elapsed,.15)*(.10625*1.5/2);
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
    modelPitch=clamp(-25*Math.PI/180+cameraOrbitPitchOffset,-Math.PI*.48,Math.PI*.48);
    cameraRoll=0;
