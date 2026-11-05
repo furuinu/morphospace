@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.59.29 — Heritable turning agility</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.59.30 — Procedural nebula sky</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks label[hidden],.checks [hidden]{display:none!important}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -505,14 +505,14 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
  <details id="viewerSettings"><summary class="btn viewer-icon-btn" aria-label="設定" title="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 3.1h4.2l.55 2.3a7.5 7.5 0 0 1 1.65.96l2.28-.7 2.1 3.64-1.7 1.66a7.8 7.8 0 0 1 0 1.92l1.7 1.66-2.1 3.64-2.28-.7a7.5 7.5 0 0 1-1.65.96l-.55 2.3H9.9l-.55-2.3a7.5 7.5 0 0 1-1.65-.96l-2.28.7-2.1-3.64 1.7-1.66a7.8 7.8 0 0 1 0-1.92l-1.7-1.66 2.1-3.64 2.28.7a7.5 7.5 0 0 1 1.65-.96z"/><circle cx="12" cy="12" r="3"/></svg></summary><div class="viewer-settings-body">
   <details class="viewer-inner-fold" id="viewerDetailFold"><summary>詳細・個体情報</summary><div class="viewer-inner-body"><p>個体の情報、運動・発光の調整、交配などを開きます。</p><button type="button" class="btn" id="viewerFullscreen" aria-pressed="false" aria-label="個体の詳細を開く">詳細を開く</button></div></details>
   <fieldset class="viewer-setting-group"><legend>鑑賞・切替</legend>
-   <label class="viewer-interval">生体の切替<select id="viewerInterval"><option value="0">なし</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option><option value="90">90秒</option><option value="120">120秒</option></select></label>
+   <label class="viewer-interval">生体の切替<select id="viewerInterval"><option value="0" selected>なし</option><option value="10">10秒</option><option value="20">20秒</option><option value="30" selected>30秒</option><option value="60">60秒</option><option value="90">90秒</option><option value="120">120秒</option></select></label>
    <label class="viewer-interval">鑑賞対象<select id="viewerSource"><option value="gallery">現在の図鑑</option><option value="stock">キャプチャーした生体のみ</option></select></label>
    <p id="viewerPlaylistStatus" role="status" aria-live="polite"></p>
    <div class="viewer-checks" role="group" aria-label="再生と映像"><label><input id="viewerRandom" type="checkbox">ランダム再生</label><label><input id="auto" type="checkbox" checked>カメラ自動回転</label><label><input id="viewerVideoNoise" type="checkbox">映像ノイズ</label></div>
   </fieldset>
   <fieldset class="viewer-setting-group" aria-label="背景の設定"><legend>背景・光の環境</legend>
-   <label class="viewer-interval">背景パターン<select id="viewerBackground"><option value="deepsea" selected>薄く照らされた深海</option><option value="predawn">夜明け前の霧</option><option value="sunrise">朝焼け</option><option value="twilight">夕焼けから闇に至る</option><option value="nebula">星がうまれる星雲ガス</option><option value="moonlit">月光に照らされた真夜中の新緑</option></select></label>
-   <label class="viewer-interval">背景の変化サイクル<select id="viewerBackgroundInterval"><option value="0">なし</option><option value="30">30秒</option><option value="60" selected>60秒</option><option value="90">90秒</option><option value="120">120秒</option><option value="150">150秒</option><option value="180">180秒</option></select></label>
+   <label class="viewer-interval">背景パターン<select id="viewerBackground"><option value="deepsea">薄く照らされた深海</option><option value="predawn">夜明け前の霧</option><option value="sunrise">朝焼け</option><option value="twilight">夕焼けから闇に至る</option><option value="nebula" selected>星がうまれる星雲ガス</option><option value="moonlit">月光に照らされた真夜中の新緑</option></select></label>
+   <label class="viewer-interval">背景の変化サイクル<select id="viewerBackgroundInterval"><option value="0">なし</option><option value="30">30秒</option><option value="60">60秒</option><option value="90">90秒</option><option value="120">120秒</option><option value="150">150秒</option><option value="180">180秒</option></select></label>
    <div class="viewer-checks"><label><input id="viewerBackgroundRandom" type="checkbox" checked>ランダムに背景を変化</label></div>
    <p class="viewer-settings-help">深海グラデーションは無限遠に固定。水中の移動感はマリンスノーで表現します。</p>
   </fieldset>
@@ -6404,6 +6404,8 @@ uniform vec3 uBgEdge;   // opaque base fill
 uniform vec4 uBgDynamics;
 uniform float uBgRayStrength; // subtle spatial flare
 uniform float uGalleryPreview; // shared still atlas background
+uniform float uNebulaMix;
+uniform float uBgAspect;
 
 // Analytic glow lobes replace multi-octave fog; one low-frequency noise
 // field remains for shimmer and two for the softly evolving flare.
@@ -6447,6 +6449,59 @@ float softRadialGlimmer(vec2 p){
  float intoDistance=1.0-smoothstep(.22,.59,r);
  return streaks*strength*fromCore*intoDistance;
 }
+
+float nebHash(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
+float nebNoise(vec3 p){
+ vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+ return mix(mix(mix(nebHash(i),nebHash(i+vec3(1,0,0)),f.x),
+                mix(nebHash(i+vec3(0,1,0)),nebHash(i+vec3(1,1,0)),f.x),f.y),
+            mix(mix(nebHash(i+vec3(0,0,1)),nebHash(i+vec3(1,0,1)),f.x),
+                mix(nebHash(i+vec3(0,1,1)),nebHash(i+vec3(1,1,1)),f.x),f.y),f.z);
+}
+float nebFbm(vec3 p){
+ float v=0.0,a=.52;
+ for(int i=0;i<4;i++){v+=a*nebNoise(p);p=p*2.03+vec3(8.2,3.7,1.4);a*=.50;}
+ return v;
+}
+vec3 nebGradient(float t,float patch){
+ vec3 dark=vec3(.010,.005,.038);
+ vec3 blue=vec3(.055,.19,.56),violet=vec3(.34,.055,.55);
+ vec3 pink=vec3(.88,.15,.51),orange=vec3(1.0,.39,.13);
+ vec3 low=mix(blue,violet,smoothstep(.16,.70,patch));
+ vec3 high=mix(pink,orange,smoothstep(.55,.88,patch));
+ vec3 c=mix(dark,low,smoothstep(.13,.47,t));
+ c=mix(c,high,smoothstep(.45,.83,t));
+ return mix(c,vec3(1.0,.85,.85),smoothstep(.85,.99,t)*.48);
+}
+vec3 proceduralNebula(vec2 uv){
+ // Ray direction is camera-relative and independent of camera translation.
+ vec2 screen=(uv-.5)*vec2(uBgAspect,1.0)*.79;
+ vec3 ray=normalize(vec3(screen.x,screen.y,-1.0));
+ float cy=cos(uOrbit.x),sy=sin(uOrbit.x);
+ ray=vec3(cy*ray.x+sy*ray.z,ray.y,-sy*ray.x+cy*ray.z);
+ float cp=cos(uOrbit.y),sp=sin(uOrbit.y);
+ ray=vec3(ray.x,cp*ray.y-sp*ray.z,sp*ray.y+cp*ray.z);
+ float t=uTime*.0075;
+ // 3D spherical sampling avoids a seam in a 360-degree background.
+ vec3 p=ray*3.4+vec3(7.2,1.3,-2.7);
+ vec3 flow=vec3(nebNoise(p*.72+vec3(t,0.,0.)),
+                nebNoise(p*.72+vec3(13.1,-t*.65,4.5)),
+                nebNoise(p*.72+vec3(5.3,9.7,t*.78)))-.5;
+ vec3 q=p+flow*.72;
+ float mainCloud=nebFbm(q);
+ float softCloud=nebFbm(q*.66+vec3(9.1,2.8,5.2));
+ float density=smoothstep(.34,.73,mainCloud*.78+softCloud*.30);
+ float filament=nebNoise(q*5.7+flow*.4);
+ density=clamp(density*(.70+.52*filament),0.,1.);
+ float patch=nebNoise(q*.54+vec3(4.,8.,2.));
+ vec3 colour=nebGradient(density,patch)*density*.80;
+ // Sparse far-field stars, stable in world direction with gentle twinkle.
+ vec3 cell=floor(ray*260.0);
+ float rnd=nebHash(cell);
+ float star=step(.9982,rnd)*pow(max(0.,dot(normalize(cell+vec3(.5)),ray)),260000.);
+ star*=.7+.3*sin(uTime*.55+rnd*67.);
+ return vec3(.003,.002,.012)+colour+vec3(.70,.79,1.0)*star;
+}
 void main(){
  if(uGalleryPreview>.5){
   // Every atlas thumbnail has the same dark still backdrop, without noise.
@@ -6469,6 +6524,7 @@ void main(){
  colour=screenColours(colour,uBgCenter*min(1.0,coreGlow*(.975+.025*sin(t*.23))*1.15));
  vec3 rayTint=mix(uBgMid,uBgCenter,.55);
  colour=screenColours(colour,rayTint*(uBgRayStrength*softRadialGlimmer(p)));
+ colour=mix(colour,proceduralNebula(vStudioUv),uNebulaMix);
  gl_FragColor=vec4(clamp(colour,0.0,1.0),1.0);
 }
 `;
@@ -6476,7 +6532,7 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -8125,6 +8181,8 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uBgDynamics!==null&&surface.uBgDynamics!==undefined)gl.uniform4f(surface.uBgDynamics,...background.dynamics);
  if(surface.uBgRayStrength!==null&&surface.uBgRayStrength!==undefined)gl.uniform1f(surface.uBgRayStrength,rayStrength);
  if(surface.uGalleryPreview!==null&&surface.uGalleryPreview!==undefined)gl.uniform1f(surface.uGalleryPreview,preview?1:0);
+ if(surface.uNebulaMix!==null&&surface.uNebulaMix!==undefined)gl.uniform1f(surface.uNebulaMix,backgroundCycle.to.id==='nebula'?1:0);
+ if(surface.uBgAspect!==null&&surface.uBgAspect!==undefined)gl.uniform1f(surface.uBgAspect,aspect);
  gl.bindBuffer(gl.ARRAY_BUFFER,renderer.studioBuffer);
  for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
  gl.vertexAttribPointer(renderer.studioAttribute,2,gl.FLOAT,false,0,0);
@@ -8540,10 +8598,10 @@ const BACKGROUND_PRESETS=Object.freeze([
 const BACKGROUND_CYCLES=new Set([0,30,60,90,120,150,180]);
 const backgroundMode=id=>0;
 const backgroundFamily=id=>'marine';
-const lastBackgroundChoice={marine:'deepsea'};
+const lastBackgroundChoice={marine:'nebula'};
 const backgroundProfile=id=>BACKGROUND_PRESETS.find(p=>p.id===id)||BACKGROUND_PRESETS[0];
-const backgroundCycle={from:BACKGROUND_PRESETS[0],to:BACKGROUND_PRESETS[0],
- random:true,seconds:60,elapsed:0,fade:0,fadeSeconds:0,fromMode:0,toMode:0,family:'marine'};
+const backgroundCycle={from:backgroundProfile('nebula'),to:backgroundProfile('nebula'),
+ random:false,seconds:0,elapsed:0,fade:0,fadeSeconds:0,fromMode:0,toMode:0,family:'marine'};
 function backgroundMix(){
  if(backgroundCycle.fadeSeconds<=0)return 1;
  const x=clamp(backgroundCycle.fade/backgroundCycle.fadeSeconds,0,1);
