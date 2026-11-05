@@ -17,6 +17,62 @@ function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],pale
  worker.onmessage({data:{ok:true,payload:{target,distance:15,targetMeshes:{shell:b,parts:[],cilia:[]},bounds:{radius:5}}}});return target;
 }
 function stored(id,seed){return{id,payload:{record:{id,seed,name:id,genome:{}}}}}
+test('offscreen radius includes all appendages and GPU cilia',()=>{
+ const shell=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]);
+ const arm=mesh([[0,0,0],[0,0,9],[0,1,9]],[0,1,2]);
+ const cilium={data:new Float32Array(26),tri:new Uint16Array(0)};cilium.data[14]=12;
+ const bounds=ctx.transitionSpecimenBounds({localGroup:null},{shell,parts:[{kind:'branch',mesh:arm}],cilia:[cilium]});
+ assert.ok(bounds.radius>12,'GPU cilium tip omitted');
+ assert.ok(bounds.radius>9,'tentacle tip omitted');
+ const distance=ctx.cameraHandoffDistance(bounds,bounds,20,20,1.6);
+ assert.ok(distance>bounds.radius+20*Math.tan(Math.PI*43/360)*1.6);
+});
+test('camera travels monotonically in one direction; A exits before B appears',()=>{
+ const m={travelDistance:75,yawSign:1},ts=[0,.1,.22,.44,.441,.6,.8,1];
+ const frames=ts.map(p=>ctx.cameraHandoffFrame(m,p));
+ for(let i=1;i<frames.length;i++)assert.ok(frames[i].travel>=frames[i-1].travel-1e-9);
+ assert.equal(frames[0].travel,0);
+ assert.equal(frames[3].switched,false);
+ assert.equal(frames[4].switched,true);
+ assert.equal(frames[3].travel,75);
+ assert.equal(frames.at(-1).travel,150);
+ assert.equal(frames.at(-1).yaw,0);
+ assert.equal(frames.at(-1).progress,1);
+});
+test('camera transition holds A intact until fully offscreen and never uploads morph frames',()=>{
+ const {f,workers,events}=runtime(),original=f.meshes;
+ f.startViewerMorph();const target=deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ assert.equal(f.v.morph.mode,'camera-pan');
+ assert.equal(f.spec.seed,1);
+ assert.equal(f.meshes,original);
+ const before=events.filter(e=>e==='upload').length;
+ for(let i=0;i<10;i++)f.tickViewer(.12);
+ assert.equal(f.spec.seed,1,'source must still be active before the handoff');
+ assert.equal(f.v.morph.switched,false);
+ for(let i=0;i<7;i++)f.tickViewer(.12);
+ assert.equal(f.spec,target,'target must become visible only after A exits');
+ assert.equal(f.v.morph.switched,true);
+ assert.equal(f.v.morph.batches.length,0);
+ assert.equal(events.filter(e=>e==='upload').length,before,'no dynamic mesh transfer during camera movement');
+});
+test('cancelling after B becomes active restores original A meshes and view',()=>{
+ const {f,workers}=runtime(),source=f.spec,original=f.meshes;
+ f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
+ for(let i=0;i<17;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph.switched,true);
+ f.cancelViewerMorph(false);
+ assert.equal(f.v.morph,null);assert.equal(f.spec,source);assert.equal(f.meshes,original);
+ assert.equal(f.spec.viewDistance,20);
+});
+test('native A and B materials are not blended during offscreen handoff',()=>{
+ assert.ok(src.includes("m.mode==='camera-pan'||spec!==m.source"));
+ assert.ok(src.includes("viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source"));
+ assert.ok(src.includes("viewer.morph.mode==='camera-pan'"));
+ assert.ok(src.includes("if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
+ assert.ok(!src.includes("mode:'layered',index:job.index"));
+ assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
+});
 test('captured-only playback adopts saved identities without changing the gallery or its mesh cache',()=>{
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
  const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
