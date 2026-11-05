@@ -9504,7 +9504,16 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   // Skin-pulse phase travels toward -motionGPU.axis; point that anatomical
   // wave-forward vector in the actual direction of swimming (especially axial).
   const waveAxis=spec.motionGPU?.axis||[0,1,0];
-  const waveForward=V.scale(V.norm(Array.from(waveAxis)),-1);
+  const strands=(spec.parts||[]).filter(part=>part.delicate?.type==='strand'&&part.delicate.root?.length===3);
+  const rootSum=strands.reduce((sum,part)=>{
+   const root=part.delicate.root,length=Math.hypot(...root);
+   if(length>1e-5)for(let i=0;i<3;i++)sum[i]+=root[i]/length;
+   return sum;
+  },[0,0,0]);
+  const rootLength=Math.hypot(...rootSum);
+  // The anatomical tail axis must map to -heading even after pose rotation.
+  const waveForward=rootLength>.25?rootSum.map(v=>-v/rootLength):
+   V.scale(V.norm(Array.from(waveAxis)),-1);
   const orientation=pulseAlignRotation(waveForward,pulseTravel.direction);
   base=mul4(translate3(...pulseTravel.position),mul4(orientation,base));
  }
