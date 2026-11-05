@@ -7486,10 +7486,11 @@ function cameraHandoffDirection(screenPosition=[0,0],sourceBound={radius:1},dist
 // Derive the apparent drift of a fixed sky feature from the LIVE 3-axis orbit.
 // The camera travels along that drift, so the previous specimen retreats toward
 // the BACK of the moving sky. No unrelated random screen-edge direction is used.
-function cameraSkyFlowDirection(yaw,pitch,roll){
+function cameraSkyFlowDirection(yaw,pitch,roll,
+ yawSpeed=cameraOrbitSpeed,pitchSpeed=cameraOrbitPitchSpeed,rollSpeed=cameraOrbitRollSpeed){
  const now=worldCameraFrame(yaw,pitch,roll,1);
- const future=worldCameraFrame(yaw+cameraOrbitSpeed,
-  pitch+cameraOrbitPitchSpeed,roll+cameraOrbitRollSpeed,1);
+ const future=worldCameraFrame(yaw+yawSpeed,
+  pitch+pitchSpeed,roll+rollSpeed,1);
  const reference=now.right.map((v,i)=>v*.28+now.up[i]*.17-now.back[i]);
  const project=frame=>{
   const z=-reference.reduce((a,v,i)=>a+v*frame.back[i],0);
@@ -9070,7 +9071,8 @@ function activateViewerPreparation(){
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
  // Start easing the 3-axis turn before the source begins to exit.
  cameraOrbitChooseHeading();
- const planar=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll)||
+ const planar=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
+  cameraOrbitTargetSpeed,cameraOrbitTargetPitchSpeed,cameraOrbitTargetRollSpeed)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
