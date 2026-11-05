@@ -3,81 +3,18 @@ const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),
 const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncoder,TextDecoder,btoa,atob,URL,URLSearchParams});vm.runInContext(scripts[0],ctx);vm.runInContext(core,ctx);
 function mesh(vertices,tri){const data=new Float32Array(vertices.length*17);vertices.forEach((p,i)=>data.set([...p,0,0,1,1,0,0,0,0,0,0,0,0,0,0],i*17));return{data,tri:new Uint16Array(tri),edges:new Uint16Array(tri.flatMap((v,i)=>[v,tri[i-i%3+(i+1)%3]]))}}
 const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],[-2,0,1]],[0,1,2,0,2,3]);
-test('successor reaches full scale before previous layer starts contracting',()=>{
- const scale=ctx.layeredMorphScale;
- for(const [previous,next,grown,shrinkStart] of [
-  ['a','lowA',.22,.22],['lowA','lowB',.52,.52],['lowB','b',.82,.82]
- ]){
-  assert.ok(Math.abs(scale(next,grown)-1)<1e-8,next+' must finish expanding');
-  assert.ok(Math.abs(scale(previous,shrinkStart)-1)<1e-8,previous+' must still be full size');
-  assert.ok(scale(previous,shrinkStart+.05)<1,previous+' contracts only after successor has expanded');
- }
- for(const layer of ['a','lowA','lowB','b'])for(let k=0;k<=100;k++){
-  const value=scale(layer,k/100);assert.ok(value>=0&&value<=1,layer+' scale outside range');
- }
-});
-test('full-detail arms and tentacles are excluded from body LOD and available independently',()=>{
- const shell=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]);
- const arm=mesh([[0,0,0],[0,2,0],[0,0,2]],[0,1,2]);
- const strand=mesh([[0,0,0],[1,2,0],[0,0,3]],[0,1,2]);strand.verlet={};
- const fin=mesh([[0,0,0],[2,0,0],[0,2,0]],[0,1,2]);
- const uploaded={shell,parts:[{kind:'branch',mesh:arm},{kind:'opaque',mesh:strand},{kind:'opaque',mesh:fin}]};
- const specimen={localGroup:null};
- const body=ctx.viewerMorphSurfaces(specimen,uploaded,'body');
- const appendages=ctx.viewerMorphSurfaces(specimen,uploaded,'appendages');
- assert.equal(body.length,2);assert.equal(body[0],shell);assert.equal(body[1],fin);
- assert.equal(appendages.length,2);assert.equal(appendages[0],arm);assert.equal(appendages[1],strand);
- assert.deepEqual(Array.from(appendages[0].data),Array.from(arm.data));
- assert.deepEqual(Array.from(appendages[1].data),Array.from(strand.data));
-});
-test('during layered transition A appendages remain detailed until low B, then finished B is shown',()=>{
- assert.match(src,/viewerMorphSurfaces\(spec,meshes,'body'\)/);
- assert.match(src,/viewerMorphSurfaces\(spec,meshes,'appendages'\)/);
- assert.match(src,/viewerMorphSurfaces\(target,targetMeshes,'appendages'\)/);
- assert.match(src,/const m=viewer\.morph,p=Math\.min\(1,m\.elapsed\/4\),incoming=p>=\.32/);
- assert.match(src,/drawGPUMotileCilia\(mvp,model,wire,incoming\?m\.target:m\.source,incoming\?m\.targetMeshes:m\.originalMeshes\)/);
- assert.match(src,/const low=batch\.layer==='lowA'\|\|batch\.layer==='lowB'/);
- assert.match(src,/job\.appendages=\{source:/);
-});
-test('morph preserves every triangle of unequal topology at both endpoints with safe WebGL1 indices',()=>{
- const result=ctx.createMorphBatches([a],[b],1);assert.equal(result.length,3);
- const sourceBefore=Array.from(a.data),targetBefore=Array.from(b.data);
- for(const batch of result){
-  assert.ok(Math.max(...batch.tri)<65536);
-  for(const t of [0,.02,.1,.5,.9,.98,1]){
-   ctx.interpolateMorphBatch(batch,t);
-   assert.ok(Array.from(batch.data).every(Number.isFinite));
-   for(let i=0;i<batch.data.length;i++)if(i%17>=3){const expected=i%17>=9?(batch.side==='incoming'?batch.end[i]:batch.start[i]):batch.start[i]+(batch.end[i]-batch.start[i])*t;assert.ok(Math.abs(batch.data[i]-expected)<1e-5);}
-  }
-  ctx.interpolateMorphBatch(batch,batch.side==='incoming'?1:0);
-  const native=batch.side==='incoming'?batch.end:batch.start;
-  for(let i=0;i<batch.data.length;i++)assert.ok(Math.abs(batch.data[i]-native[i])<1e-5);
-  ctx.interpolateMorphBatch(batch,batch.side==='incoming'?0:1);
-  // Non-native endpoint must stay in anatomical space instead of collapsing
-  // every vertex to the origin (the previous implementation's visual defect).
-  const mapped=batch.side==='incoming'?batch.start:batch.end;
-  for(let i=0;i<batch.data.length;i++)if(i%17<3)assert.ok(Math.abs(batch.data[i]-mapped[i])<1e-5);
-  assert.ok(Array.from(batch.data).some((v,i)=>i%17<3&&Math.abs(v)>1e-4));
- }
- const faces=result.slice(1).map(x=>Array.from(x.end).filter((_,i)=>i%17<3).join(','));assert.equal(new Set(faces).size,2);
- assert.deepEqual(Array.from(a.data),sourceBefore);assert.deepEqual(Array.from(b.data),targetBefore);
-});
-test('real seeded organisms create finite intermediate geometry without changing their DNA',()=>{
- const r=vm.runInContext(`(()=>{const make=seed=>{const p=pickPalette(seed),sp=makeSpecimen(seed,0,p,true,null,.75,.84,.75,0);return {sp,surfaces:[dynamicMesh(sp.shell,0,0,[0,0,0]),...dynamicBatches(sp).map(p=>p.mesh)]}};const a=make(731029),b=make(571938),dna=JSON.stringify([a.sp.genome,b.sp.genome]),m=createMorphBatches(a.surfaces,b.surfaces);for(const batch of m)interpolateMorphBatch(batch,.5);return {finite:m.every(b=>Array.from(b.data).every(Number.isFinite)),triangles:m.reduce((n,b)=>n+b.tri.length/3,0),sameDNA:dna===JSON.stringify([a.sp.genome,b.sp.genome])}})()`,ctx);
- assert.ok(r.finite);assert.ok(r.triangles>100);assert.ok(r.sameDNA);
-});
 function runtime(){
  const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
  const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false,createElement:()=>({className:'',hidden:false,setAttribute(){},getContext:()=>null})},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],detailSpecimens:[],detailCacheOrder:[],
-  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
+  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0]}),transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.44,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
   $:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},add(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.viewerMetadata=()=>events.push('metadata');f.viewerPatternValues=()=>new Map();f.v=vm.runInContext('viewer',f);return{f,events,workers,transfers};
 }
-function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},batches=ctx.createMorphBatches([a],[b])){
- worker.onmessage({data:{ok:true,payload:{target,distance:15,targetMeshes:{shell:b,parts:[],cilia:[]},batches}}});return target;
+function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}}){
+ worker.onmessage({data:{ok:true,payload:{target,distance:15,targetMeshes:{shell:b,parts:[],cilia:[]},bounds:{radius:5}}}});return target;
 }
 function stored(id,seed){return{id,payload:{record:{id,seed,name:id,genome:{}}}}}
 test('captured-only playback adopts saved identities without changing the gallery or its mesh cache',()=>{
@@ -167,7 +104,7 @@ test('countdown hides on stopped interval, missing next specimen or hidden tab; 
  assert.equal(circle.hidden,true,'closing viewer hides the timer immediately');
  assert.equal(f.v.seconds,30);
 });
-test('timer pauses when hidden and phase transition adopts prepared meshes once',()=>{
+test('timer pauses when hidden and camera handoff adopts prepared meshes once',()=>{
  const {f,workers,events}=runtime();
  f.$('glview').parentElement={style:{setProperty(){}},appendChild(){}};
  f.v.seconds=5;f.document.hidden=true;f.tickViewer(6);
@@ -181,10 +118,6 @@ test('timer pauses when hidden and phase transition adopts prepared meshes once'
  for(let i=0;i<35;i++)f.tickViewer(.12);
  assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
 });
-test('adjacent faces keep the same mapped endpoint for every shared vertex',()=>{
- const batches=ctx.createMorphBatches([b],[a],1),v0=Array.from(batches[0].end.slice(0,3)),v1=Array.from(batches[1].end.slice(0,3));assert.deepEqual(v0,v1);
- for(const t of [.1,.5,.9]){ctx.interpolateMorphBatch(batches[0],t);ctx.interpolateMorphBatch(batches[1],t);assert.deepEqual(Array.from(batches[0].data.slice(0,3)),Array.from(batches[1].data.slice(0,3)))}
-});
 test('navigation uses worker output, uploads ahead of time, and adopts prepared GPU buffers at completion',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;
  f.createSpecimenForIndex=()=>{throw Error('Generation must not run on the rendering thread')};f.createMorphBatches=()=>{throw Error('Correspondence must not run on the rendering thread')};f.upload=()=>{throw Error('Synchronous upload must not be used')};
@@ -195,22 +128,13 @@ test('navigation uses worker output, uploads ahead of time, and adopts prepared 
 });
 
 
-test('zoom slider and pinch share distance bounds and preserve both morph endpoints when zoomed',()=>{
+test('zoom slider and pinch preserve camera handoff distance endpoints',()=>{
  const {f}=runtime();f.syncViewerZoom();const bounds=f.viewerZoomBounds();assert.equal(bounds.min,4);assert.equal(bounds.max,24);
  f.setViewerDistance(8);assert.equal(f.spec.viewDistance,8);f.setViewerDistance(100);assert.equal(f.spec.viewDistance,24);
  f.specimenViewDistance=()=>10;f.v.morph={source:f.spec,target:{},t:.5,fromDistance:20,toDistance:10};f.spec.viewDistance=15;f.setViewerDistance(7.5);assert.equal(f.v.morph.fromDistance,10);assert.equal(f.v.morph.toDistance,5);assert.equal(f.spec.viewDistance,7.5);
  f.v.morph=null;f.v.fit=2;assert.equal(f.viewerZoomBounds().max,48);
 });
 
-test('texture blending keeps the two pattern and coating identities fixed at every eased weight',()=>{
- const {f}=runtime(),values=new Map();f.gl.uniform1f=(key,value)=>values.set(key,[value]);f.gl.uniform4fv=(key,value)=>values.set(key,Array.from(value));
- f.spec={style:0,seed:1};f.v.morph={source:f.spec,target:{style:0,seed:2},patternA:new Map([['sourcePattern',[0,.3,3,.4]],['sourceCoating',[0,.6,.8,.2]]]),patternB:new Map([['nextPattern',[7,2.9,6,.8]],['nextCoating',[3,.9,.5,1.7]]]),t:0};
- for(const t of [0,.001,.25,.499,.5,.501,.75,.999,1]){
-  f.v.morph.t=t;f.applyViewerMorphUniforms({uTextureMix:'mix',uOpticsControl:'controls'});
-  assert.deepEqual(values.get('sourcePattern'),Array.from(new Float32Array([0,.3,3,.4])));assert.deepEqual(values.get('nextPattern'),Array.from(new Float32Array([7,2.9,6,.8])));
-  assert.equal(values.get('sourceCoating')[0],0);assert.equal(values.get('nextCoating')[0],3);assert.deepEqual(values.get('mix'),[t]);
- }
-});
 
 test('texture snapshots use separate uniform locations and an ordinary draw resets the blend',()=>{
  const result=vm.runInContext(`(()=>{
@@ -223,22 +147,16 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
  assert.equal(result.source,result.a);assert.equal(result.target,result.b);assert.equal(result.reset,0);assert.equal(result.separate,true);
 });
 
-test('visible morph streams interpolated polygons during four-second transition',()=>{
- const {f,workers,events}=runtime();f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- assert.equal(f.v.morph.mode,'layered');const uploaded=events.filter(e=>e==='upload').length;
- for(let i=0;i<9;i++)f.tickViewer(.12);
- assert.ok(events.filter(e=>e==='upload').length>uploaded);assert.ok(f.v.morph);
-});
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
  const {f,workers,events}=runtime(),original=f.meshes,before=Array.from(a.data);f.tickViewer(.1);
  assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.v.morph,null);assert.equal(f.meshes,original);assert.equal(events.length,0);
- const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.ok(request.from.length>0,'worker requires source geometry');assert.deepEqual(Array.from(a.data),before);
+ const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.equal('from' in request,false,'do not clone A topology');assert.equal('fromAppendages' in request,false);assert.deepEqual(Array.from(a.data),before);
  f.tickViewer(.1);assert.equal(workers.length,1);
 });
 
 test('GPU preparation obeys a byte budget and partial cancellation releases every allocated buffer',()=>{
  const {f,workers,events,transfers}=runtime();f.startViewerMorph();const huge={data:new Float32Array(17*40000),tri:new Uint16Array([0,1,2]),edges:new Uint16Array([0,1,1,2,2,0])};
- workers[0].onmessage({data:{ok:true,payload:{target:{seed:2},distance:15,targetMeshes:{shell:huge,parts:[],cilia:[]},batches:[]}}});
+ workers[0].onmessage({data:{ok:true,payload:{target:{seed:2},distance:15,targetMeshes:{shell:huge,parts:[],cilia:[]},bounds:{radius:5}}}});
  f.advanceViewerPreparation();const bytes=transfers.reduce((n,t)=>n+(t.bytes||0),0);assert.ok(bytes<=262144);assert.ok(bytes>0);assert.equal(f.v.pending.ready,false);assert.equal(f.v.morph,null);
  const allocated=events.filter(e=>e==='allocate').length;f.stopViewer();assert.equal(f.v.pending,null);assert.equal(events.filter(e=>e.startsWith('delete:')).length,allocated);
 });
@@ -262,18 +180,6 @@ test('the production adoption path uses prepared meshes without scanning, rebuil
  f.applyUploadedSpecimen(next,false,false,prepared);assert.equal(f.meshes,prepared.meshes);assert.equal(f.spec,next);assert.equal(next.viewDistance,15);
 });
 
-test('pressure, emission and bloom reach the exact incoming state while blink identities remain fixed',()=>{
- const {f}=runtime(),values=new Map(),u=new Proxy({},{get:(_,key)=>key});f.gl.uniform1f=(k,v)=>values.set(k,v);f.gl.uniform3fv=f.gl.uniform4fv=(k,v)=>values.set(k,Array.from(v));f.bioUniforms=ctx.bioUniforms;
- const bio=(p,v)=>({nodes:[{p:[p,0,0],radius:.5,pressure:p,velocity:v}],gene:new Float32Array([p,.5,.6,.7])});
- f.spec={seed:1,style:0,biome:bio(.2,.3),genome:{dev:{motionEnergy:1}}};f.$('motionAmp').value='125';
- const emission=(n,mode)=>({sites:Array.from({length:4},()=>[n,0,0,.3]),strength:n,tint:[n,.2,.3],mode,speed:n,seed:n,bloom:n*100});
- f.v.morph={source:f.spec,target:{seed:2,style:0,biome:bio(.8,.7),genome:{dev:{motionEnergy:2}}},patternA:new Map(),patternB:new Map(),emissionA:emission(.2,1),emissionB:emission(.8,6),t:0};
- for(const t of [0,.25,.5,.75,1]){
-  f.v.morph.t=t;f.applyViewerMorphUniforms(u);assert.ok(Math.abs(values.get('uBioPressure')[0]-(.2+.6*t))<1e-6);assert.equal(values.get('uBlinkMode'),1);assert.equal(values.get('uNextBlinkMode'),6);
-  assert.equal(values.get('uNextEmission'),.8);assert.ok(Math.abs(f.viewerGlowSetting('bloomRadius')-(20+60*t))<1e-6);assert.ok(Math.abs(f.viewerGlowTint()[0]-(.2+.6*t))<1e-6);
- }
- assert.deepEqual(values.get('uBioPressure'),Array.from(new Float32Array([.8,0,0,0])));assert.equal(values.get('uMotion'),2.5);
-});
 
 test('the render loop advances the incoming pressure simulation before adoption',()=>{
  const {f}=runtime(),steps=[];Object.assign(f,{animating:true,lastFrame:0,environmentTime:0,psychedelicTime:0,rigTime:0,bodyTime:0,patternTime:0,modelYaw:0,auto:false,requestAnimationFrame(){},render(){},tickViewer(){},stepBiomeSystem:(bio,elapsed,speed)=>steps.push({bio,elapsed,speed})});
@@ -282,61 +188,30 @@ test('the render loop advances the incoming pressure simulation before adoption'
  assert.equal(steps.length,2);assert.equal(steps[0].bio.name,'source');assert.equal(steps[1].bio.name,'target');assert.equal(steps[0].elapsed,steps[1].elapsed);assert.equal(steps[0].speed,steps[1].speed);
 });
 
-test('the real Worker builds identical target geometry while the main event loop keeps running',{timeout:30000},async t=>{
+test('Worker builds only native B mesh and bounding sphere without freezing main thread',{timeout:30000},async t=>{
  const {Worker}=require('node:worker_threads'),crypto=require('node:crypto');
- const request=vm.runInContext(`(()=>{const g=makeFounderGenome(731029,0,4),sp=makeSpecimen(g.seed,g.style,pickPalette(g.seed,g.colorDNA,g.patternDNA),true,null,.75,.84,.75,0,null,copyJSON(g));return {record:{seed:571938,genome:makeFounderGenome(571938,0,3)},settings:{variance:.75,density:.84,micro:.75},from:[dynamicMesh(sp.shell,0,0,[0,0,0]),...dynamicBatches(sp).map(p=>p.mesh)]}})()`,ctx);
- const before=JSON.stringify(request.record),sourceLength=request.from[0].data.byteLength;
+ const request=vm.runInContext(`(()=>({record:{seed:571938,genome:makeFounderGenome(571938,0,3)},settings:{variance:.75,density:.84,micro:.75}}))()`,ctx);
+ const before=JSON.stringify(request);
  const script="const {parentPort}=require('node:worker_threads');const self={postMessage:(value,transfer)=>parentPort.postMessage(value,transfer)};"+ctx.viewerWorkerSource(core)+";parentPort.on('message',data=>self.onmessage({data}));";
  const worker=new Worker(script,{eval:true});let ticks=0;const interval=setInterval(()=>ticks++,2);
  try{
-  const message=await new Promise((resolve,reject)=>{worker.once('message',resolve);worker.once('error',reject);worker.postMessage(request)});assert.equal(message.ok,true,message.message);assert.ok(ticks>=5,'render/event loop must be able to keep ticking');
-  ctx.transitionRequest=structuredClone(request);const direct=vm.runInContext('buildViewerTransition(transitionRequest)',ctx),hash=a=>crypto.createHash('sha256').update(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).digest('hex');
-  assert.equal(hash(message.payload.target.shell.data),hash(direct.target.shell.data));assert.equal(hash(message.payload.targetMeshes.shell.data),hash(direct.targetMeshes.shell.data));
-  assert.deepEqual(message.payload.batches.map(b=>hash(b.end)),Array.from(direct.batches,b=>hash(b.end)));
-  assert.equal(request.from[0].data.byteLength,sourceLength);assert.equal(JSON.stringify(request.record),before);assert.ok(message.payload.batches.every(b=>b.tri.length<=36000));
-  t.diagnostic('Main event-loop heartbeat during worker preparation: '+ticks+' ticks; all target/correspondence hashes match');
+  const message=await new Promise((resolve,reject)=>{worker.once('message',resolve);worker.once('error',reject);worker.postMessage(request)});
+  assert.equal(message.ok,true,message.message);assert.ok(ticks>=5);
+  ctx.transitionRequest=structuredClone(request);const direct=vm.runInContext('buildViewerTransition(transitionRequest)',ctx);
+  const hash=a=>crypto.createHash('sha256').update(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).digest('hex');
+  assert.equal(hash(message.payload.targetMeshes.shell.data),hash(direct.targetMeshes.shell.data));
+  assert.ok(message.payload.bounds.radius>=1);
+  assert.equal('batches' in message.payload,false);
+  assert.equal('from' in request,false);assert.equal(JSON.stringify(request),before);
+  t.diagnostic('Native B worker ready after '+ticks+' event-loop ticks');
  }finally{clearInterval(interval);await worker.terminate()}
 });
-
- test('duplicated corners stay welded at different triangle indices throughout morphing',()=>{
- const make=z=>mesh([[0,0,z],[1,0,z],[0,1,z],[1,1,z]],[0,1,2,2,0,3]);
- for(const limit of [1,12000]){
-  const batches=ctx.createMorphBatches([make(0)],[make(1)],limit);
-  for(const t of [.03,.13,.37,.51,.79,.97]){
-   const positions=new Map();
-   for(const batch of batches){ctx.interpolateMorphBatch(batch,t);for(let i=0;i<batch.data.length;i+=17){
-    const key=batch.side+':'+[...batch.start.slice(i,i+3),...batch.end.slice(i,i+3)].join(',');
-    const point=Array.from(batch.data.slice(i,i+3));
-    if(positions.has(key))assert.deepEqual(point,positions.get(key),'shared vertex split at t='+t);
-    positions.set(key,point);
-   }}
-  }
- }
- });
-
-test('production uses visible organic four-second mesh morph instead of phase',()=>{
- assert.ok(src.includes("mode:'layered'"));
- assert.ok(src.includes("m.elapsed/4"));
- assert.ok(src.includes("const rawBatches=from.length?createMorphBatches"));
- assert.ok(src.includes("function layeredMorphScale(layer,p)"));
- assert.ok(src.includes("function interpolateLayeredMorphBatch(batch,p)"));
- assert.ok(src.includes("for(const batch of viewer.morph.batches)drawUploaded(batch"));
- assert.ok(src.includes("No mist, occlusion, or phase particles"));
-});
-test('native mesh adoption occurs once at end of visible transition',()=>{
+test('camera handoff adopts native geometry once at end of view transition',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;f.startViewerMorph();const target=deliver(f,workers[0]);
- f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'layered');assert.equal(f.meshes,original);
+ f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'camera-pan');assert.equal(f.meshes,original);
  for(let i=0;i<35;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
-});
-test('particle phase transition does not fade the full scene or mutate topology',()=>{
- assert.match(html,/function phaseParticlesDraw\(progress,source,target\)/);
- assert.match(html,/function phaseSurfacePoints\(meshesGroup,seed,count=220,specimen=null\)/);
- assert.match(html,/canvas\.style\.opacity='1'/,'scene canvas must remain visible through transition');
- assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
- assert.match(html,/phaseParticlesDraw\(p\*\.5,phaseParticleSource,phaseParticleTargetFallback\)/);
- assert.match(html,/phaseParticlesDraw\(\.5\+reveal\*\.5,phaseParticleSource,phaseParticleTarget\)/);
 });
 test('boot screen uses progress bar only, without a rotating spinner',()=>{
  const boot=scripts.find(script=>script.includes('Progress-bar-only boot screen'))||'';
@@ -346,35 +221,7 @@ test('boot screen uses progress bar only, without a rotating spinner',()=>{
  assert.match(html,/class="boot-progress"/);
 });
 
-test('Y-propagating helical unbinding uses real mesh triangle centroids',()=>{
- assert.match(html,/viewerMorphSurfaces\(specimen,meshesGroup\)/);
- assert.match(html,/const v=tri\[f\]\*17,w=tri\[f\+1\]\*17,z=tri\[f\+2\]\*17/);
- assert.match(html,/\.sort\(\(a,b\)=>a\[1\]-b\[1\]\)/);
- assert.match(html,/const torsion=smooth\(\(t-height\*\.32\)\/\.28\)/);
- assert.match(html,/const unbind=smooth\(\(torsion-\.56\)\/\.35\)/);
- assert.match(html,/const rebond=smooth\(\(\(t-\.56\)-targetHeight\*\.22\)\/\.24\)/);
- assert.match(html,/const phase=i%2\?Math.PI:0,theta=t\*11\.5\+height\*9\+phase/);
- assert.match(html,/ctx\.rotate\(twistAngle\+theta\*separation\*\.3\)/);
- assert.match(html,/const corners=\(settle>\.5\?to\[4\]:from\[4\]\)\|\|\[\]/);
-});
-test('shards do not draw background-covering transitions',()=>{
- assert.doesNotMatch(html,/\.scene::after\{content:"";position:absolute;inset:0;z-index:13/);
- assert.match(html,/phase-particle-canvas\{position:absolute/);
-});
-test('helical fragments preserve RGB by blending real surface pigment',()=>{
- assert.match(html,/const c0=from\[2\]\|\|\[88,224,193\],c1=to\[2\]\|\|c0/);
- assert.match(html,/Math.round\(v\+\(c1\[k\]-v\)\*mix\)/);
-});
 
-test('actual organism shaders apply Y torsion and bottom-up phase clipping',()=>{
- assert.ok(html.includes("uniform float uPhaseTwist;"),'organism vertex shaders expose torsion control');
- assert.ok(html.includes("vPhaseHeight=clamp(.5+.5*p.y/max(uPhaseScale,.01),0.,1.);"));
- assert.ok(html.includes("p.xz=mat2(ca,-sa,sa,ca)*p.xz;"));
- assert.ok(html.includes("if(uPhaseCut>0.001 && vPhaseHeight<uPhaseCut)discard;"));
- assert.ok(html.includes("const phaseCut=phaseOutgoing!==null?"));
- assert.ok(html.includes("canvas.style.opacity='1';"),'background and marine snow should not disappear');
- assert.ok(html.includes("canvas.style.filter='none';"),'background should never blur during the transition');
-});
 
 test('cilia shader must not link organism-only phase varyings',()=>{
  assert.match(html,/const ciliaFragment=srcFrag/);
