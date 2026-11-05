@@ -198,8 +198,8 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    if(!equal(viewerOptions,[0,10,20,30,60,90,120]))throw Error('Viewer interval options incorrect');
    if(!equal(backgroundOptions,['deepsea','predawn','sunrise','twilight','nebula','moonlit']))throw Error('Six atmospheric backgrounds missing');
    if(!equal(cycleOptions,[0,30,60,90,120,150,180]))throw Error('Background cycle options incorrect');
-   if($('viewerBackground').value!=='deepsea'||$('viewerBackgroundInterval').value!=='60'||!$('viewerBackgroundRandom').checked)
-    throw Error('Background defaults must be deepsea / 60s / random');
+   if($('viewerBackground').value!=='nebula'||$('viewerBackgroundInterval').value!=='0'||$('viewerBackgroundRandom').checked)
+    throw Error('Background defaults must be nebula / no cycle / random OFF');
    const change=(id,value)=>{
     const el=$(id);
     if(el.type==='checkbox')el.checked=value;else el.value=String(value);
@@ -212,6 +212,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    const intermediate=currentBackgroundProfile().center.slice();
    if(equal(start,intermediate))throw Error('Background must interpolate instead of instantly switching');
    if(viewer.seconds!==0)throw Error('Organism auto-advance not stopped');
+   change('viewerBackgroundRandom',true);
    change('viewerBackgroundInterval',30);
    const before=backgroundCycle.to.id;
    backgroundCycle.elapsed=29.96;
