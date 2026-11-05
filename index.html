@@ -9010,9 +9010,9 @@ function cameraOrbitAngularSpeed(){
  return Math.max(.025,Math.hypot(cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed));
 }
 function stepCameraOrbit(dt){
- // Time-constant 8s: steering the angular-velocity vector, never snapping Euler angles.
+ // Time-constant 4s (half previous rotational inertia): steer angular velocity smoothly.
  // The phases are unbounded, permitting full-sphere observation and gentle camera roll.
- const alpha=1-Math.exp(-Math.max(0,dt)/8);
+ const alpha=1-Math.exp(-Math.max(0,dt)/4);
  cameraOrbitSpeed+=(cameraOrbitTargetSpeed-cameraOrbitSpeed)*alpha;
  cameraOrbitPitchSpeed+=(cameraOrbitTargetPitchSpeed-cameraOrbitPitchSpeed)*alpha;
  cameraOrbitRollSpeed+=(cameraOrbitTargetRollSpeed-cameraOrbitRollSpeed)*alpha;
