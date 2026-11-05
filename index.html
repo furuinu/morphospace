@@ -6406,6 +6406,7 @@ uniform float uBgRayStrength; // subtle spatial flare
 uniform float uGalleryPreview; // shared still atlas background
 uniform float uNebulaMix;
 uniform float uBgAspect;
+uniform mat3 uSkyBasis;
 
 // Analytic glow lobes replace multi-octave fog; one low-frequency noise
 // field remains for shimmer and two for the softly evolving flare.
@@ -6477,10 +6478,8 @@ vec3 proceduralNebula(vec2 uv){
  // Ray direction is camera-relative and independent of camera translation.
  vec2 screen=(uv-.5)*vec2(uBgAspect,1.0)*.79;
  vec3 ray=normalize(vec3(screen.x,screen.y,-1.0));
- float cy=cos(uOrbit.x),sy=sin(uOrbit.x);
- ray=vec3(cy*ray.x+sy*ray.z,ray.y,-sy*ray.x+cy*ray.z);
- float cp=cos(uOrbit.y),sp=sin(uOrbit.y);
- ray=vec3(ray.x,cp*ray.y-sp*ray.z,sp*ray.y+cp*ray.z);
+ // Exact current camera basis, including pitch and roll. Translation is ignored.
+ ray=normalize(uSkyBasis*ray);
  float t=uTime*.0075;
  // 3D spherical sampling avoids a seam in a 360-degree background.
  vec3 p=ray*3.4+vec3(7.2,1.3,-2.7);
@@ -6549,7 +6548,7 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -7422,10 +7421,12 @@ function cameraHandoffTravel(p){
 }
 // Shorter handoffs for nearby frame exits, without rushing large specimens.
 // Camera speed remains continuous because duration only scales the single path.
-function cameraHandoffDuration(travelDistance,fromDistance,toDistance){
- const visualDepth=Math.max(1,fromDistance,toDistance);
- const distanceRatio=travelDistance/visualDepth;
- return Math.max(2.6,Math.min(4,2.45+.5*distanceRatio));
+function cameraHandoffDuration(travelDistance,fromDistance,toDistance,angularSpeed=.0796875){
+ // Perspective converts camera angular motion into viewport travel:
+ // 2*distance is the complete A-to-B pan, angularSpeed is the sky rate.
+ const depth=Math.max(1,(fromDistance+toDistance)*.5);
+ const speed=Math.max(.025,angularSpeed);
+ return Math.max(5,Math.min(42,2*travelDistance/(depth*speed)));
 }
 function cameraHandoffFrame(m,p){
  const x=Math.max(0,Math.min(1,p));
@@ -8201,6 +8202,14 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uGalleryPreview!==null&&surface.uGalleryPreview!==undefined)gl.uniform1f(surface.uGalleryPreview,preview?1:0);
  if(surface.uNebulaMix!==null&&surface.uNebulaMix!==undefined)gl.uniform1f(surface.uNebulaMix,backgroundCycle.to.id==='nebula'?1:0);
  if(surface.uBgAspect!==null&&surface.uBgAspect!==undefined)gl.uniform1f(surface.uBgAspect,aspect);
+ if(surface.uSkyBasis!==null&&surface.uSkyBasis!==undefined){
+  const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+  // worldCameraFrame stores matrices column-major.
+  gl.uniformMatrix3fv(surface.uSkyBasis,false,new Float32Array([
+   sky.right[0],sky.right[1],sky.right[2],
+   sky.up[0],sky.up[1],sky.up[2],
+   sky.back[0],sky.back[1],sky.back[2]]));
+ }
  gl.bindBuffer(gl.ARRAY_BUFFER,renderer.studioBuffer);
  for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
  gl.vertexAttribPointer(renderer.studioAttribute,2,gl.FLOAT,false,0,0);
@@ -8698,12 +8707,34 @@ function initBackgroundControls(){
 
 const CAMERA_ORBIT_BASE_SPEED=.10625*1.5/2;
 let cameraOrbitSpeed=-CAMERA_ORBIT_BASE_SPEED,cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
+let cameraOrbitPitchPhase=0,cameraOrbitRollPhase=0;
+let cameraOrbitPitchSpeed=0,cameraOrbitRollSpeed=0;
+let cameraOrbitTargetPitchSpeed=0,cameraOrbitTargetRollSpeed=0;
+function cameraOrbitChooseHeading(){
+ // A new genuinely 3D angular-velocity direction on every handoff.
+ // At least two axes are involved and no Euler axis is treated as the default.
+ const azimuth=Math.random()*Math.PI*2;
+ const elevation=(Math.random()-.5)*Math.PI*.90;
+ const vector=[Math.cos(elevation)*Math.cos(azimuth),
+  Math.cos(elevation)*Math.sin(azimuth),Math.sin(elevation)];
+ const magnitude=Math.hypot(...vector);
+ cameraOrbitTargetSpeed=CAMERA_ORBIT_BASE_SPEED*vector[0]/magnitude;
+ cameraOrbitTargetPitchSpeed=CAMERA_ORBIT_BASE_SPEED*vector[1]/magnitude;
+ cameraOrbitTargetRollSpeed=CAMERA_ORBIT_BASE_SPEED*vector[2]/magnitude;
+}
+function cameraOrbitAngularSpeed(){
+ return Math.max(.025,Math.hypot(cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed));
+}
 function stepCameraOrbit(dt){
- // 8-second inertial steering. Angle and angular velocity are both continuous
- // even when the next specimen requests the opposite turning direction.
+ // Time-constant 8s: steering the angular-velocity vector, never snapping Euler angles.
+ // The phases are unbounded, permitting full-sphere observation and gentle camera roll.
  const alpha=1-Math.exp(-Math.max(0,dt)/8);
  cameraOrbitSpeed+=(cameraOrbitTargetSpeed-cameraOrbitSpeed)*alpha;
+ cameraOrbitPitchSpeed+=(cameraOrbitTargetPitchSpeed-cameraOrbitPitchSpeed)*alpha;
+ cameraOrbitRollSpeed+=(cameraOrbitTargetRollSpeed-cameraOrbitRollSpeed)*alpha;
  cameraOrbitPhase-=cameraOrbitSpeed*dt;
+ cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt;
+ cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt;
 }
 const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0]};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
@@ -8816,13 +8847,14 @@ function activateViewerPreparation(){
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
  const curvature=(Math.random()-.5)*.40;
  const depthCurve=(Math.random()-.5)*.18;
- // The newly selected direction is carried into the following orbit.
- cameraOrbitTargetSpeed=(planar[0]>=0?-1:1)*CAMERA_ORBIT_BASE_SPEED;
+ // The next orbit acquires its 3D heading gradually across the handoff.
+ cameraOrbitChooseHeading();
  const travelDistance=cameraHandoffDistance(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
-  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance),switched:false,fromDistance,toDistance,
+  // Match the apparent traversal speed to the sky's angular drift.
+  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),switched:false,fromDistance,toDistance,
   travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
@@ -8926,6 +8958,9 @@ function pauseViewerTransition(){viewer.revision++;viewer.preparing=false;discar
 function stopViewer(){
  viewer.worldOffset=[0,0,0];
  cameraOrbitSpeed=cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
+ cameraOrbitPitchSpeed=cameraOrbitTargetPitchSpeed=0;
+ cameraOrbitRollSpeed=cameraOrbitTargetRollSpeed=0;
+ cameraOrbitPitchPhase=0;cameraOrbitRollPhase=0;
  if(typeof resetPulseTravel==='function')resetPulseTravel();
  $('overlay').classList.remove('viewer-caption-fading');
  viewerTap=null;setViewerNavigationVisible(true);$('viewerSettings').open=false;
@@ -10845,11 +10880,11 @@ function frame(now){viewerFrameHandle=0;if(animating){
   if(isMotion){const delta=Math.min(elapsed,.18)*(Number($('motionSpeed').value)/100);rigTime+=delta;bodyTime+=delta*(Number($('bodySpeed').value)/200);stepBiomeSystem(spec.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);if(viewer.morph&&viewer.morph.target!==spec)stepBiomeSystem(viewer.morph.target.biome,Math.min(elapsed,.18),Number($('motionSpeed').value)/100*Number($('bodySpeed').value)/200);}
   if(typeof stepPulseTravel==='function')stepPulseTravel(Math.min(elapsed,.18));
   if(videoRecording?videoRecording.autoOrbit:auto){
-   // Continuous clockwise orbit; preserve manual yaw and pitch offsets.
+   // Unrestricted 3D drift with gently eased changes of angular velocity.
    stepCameraOrbit(Math.min(elapsed,.15));
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
-   modelPitch=clamp(-25*Math.PI/180+cameraOrbitPitchOffset,-Math.PI*.48,Math.PI*.48);
-   cameraRoll=0;
+   modelPitch=-25*Math.PI/180+cameraOrbitPitchOffset+cameraOrbitPitchPhase;
+   cameraRoll=cameraOrbitRollPhase;
   }else cameraRoll=0;
   if(typeof stepPulseCameraFollow==='function')stepPulseCameraFollow(Math.min(elapsed,.18));
   // Animate the entire existing body by low-frequency torsion in the vertex shaders.
