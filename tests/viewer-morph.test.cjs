@@ -6,7 +6,7 @@ const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],
 function runtime(){
  const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
  const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false,createElement:()=>({className:'',hidden:false,setAttribute(){},getContext:()=>null})},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],detailSpecimens:[],detailCacheOrder:[],
-  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
+  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitTargetSpeed:-.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
@@ -57,17 +57,15 @@ test('camera travels in one direction without stopping between the two organisms
  assert.equal(frames.at(-1).yaw,0);
  assert.equal(frames.at(-1).progress,1);
 });
-test('closest-frame-boundary exit never traverses the opposite corner',()=>{
+test('camera exits at freely sampled angles rather than nearest fixed screen boundary',()=>{
  const radius={radius:2};
- const bottomRight=Array.from(ctx.cameraHandoffDirection([6,-5],radius,20,1.7));
- const topLeft=Array.from(ctx.cameraHandoffDirection([-6,5],radius,20,1.7));
- assert.ok(bottomRight[0]<=0&&bottomRight[1]>=0,
-  'bottom-right specimen must exit right or bottom, not top-left');
- assert.ok(topLeft[0]>=0&&topLeft[1]<=0,
-  'top-left specimen must exit left or top, not bottom-right');
- const directions=new Set([[12,0],[-12,0],[0,7],[0,-7],[3,3],[-3,-3]].map(p=>
-  Array.from(ctx.cameraHandoffDirection(p,radius,20,1.7)).join(',')));
- assert.ok(directions.size>=3,'exit must not be locked to the horizontal axis');
+ const directions=new Set(Array.from({length:64},()=>Array.from(ctx.cameraHandoffDirection([6,-5],radius,20,1.7)).map(x=>x.toFixed(3)).join(',')));
+ assert.ok(directions.size>=20,'departure heading should vary across transitions');
+ for(const key of directions){
+  const [x,y]=key.split(',').map(Number);
+  assert.ok(Math.abs(Math.hypot(x,y)-1)<.003,'departure direction must be normalized');
+  assert.ok(Math.abs(x)>=.15&&Math.abs(y)>=.15,'departure requires visible horizontal and vertical travel');
+ }
 });
 test('camera has continuous non-zero velocity across offscreen gap and native swap',()=>{
  const m={travelDistance:50};
