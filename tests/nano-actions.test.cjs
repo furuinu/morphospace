@@ -48,7 +48,7 @@ test('the actual render transform aligns the moving specimen with the nozzle und
  const result=vm.runInContext(`(()=>{
   let worst=0;
   for(const modelYaw of [-2,0,.5,2])for(const modelPitch of [-.6,0,.6])for(const aspect of [.46,1.8]){
-   const spec={viewDistance:70},w=aspect*500,h=500,nanoRenderPose={x:.61,y:.44,sx:.07,sy:.05,sz:.05},recordHeight=h,videoRecording=null;
+   const spec={viewDistance:70},viewer={worldOffset:[0,0,0]},w=aspect*500,h=500,nanoRenderPose={x:.61,y:.44,sx:.07,sy:.05,sz:.05},recordHeight=h,videoRecording=null;
    let base=scale3(1,1,1);${transform}
    const camera=mul4(translate(-spec.viewDistance),mul4(rotX(-modelPitch),rotY(-modelYaw))),m=mul4(persp(Math.PI*43/180,w/h,.1,200),mul4(camera,base));
    const x=(m[12]/m[15]+1)/2,y=(1-m[13]/m[15])/2;
