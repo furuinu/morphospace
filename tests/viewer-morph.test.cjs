@@ -30,8 +30,8 @@ test('offscreen radius includes all appendages and GPU cilia',()=>{
 test('short camera sweeps complete faster without interrupting continuous travel',()=>{
  const duration=ctx.cameraHandoffDuration;
  const short=duration(9,20,20),medium=duration(25,20,20),long=duration(75,20,20);
- assert.ok(short>=5&&short<medium&&medium<long);
- assert.ok(long<=42,'large silhouettes still use a measured maximum interval');
+ assert.ok(short>=3.6&&short<medium&&medium<long);
+ assert.ok(long<=22,'large silhouettes still use a measured maximum interval');
  const {f,workers}=runtime();
  f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
