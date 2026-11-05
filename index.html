@@ -6518,7 +6518,7 @@ vec3 proceduralNebula(vec2 uv){
  for(int i=0;i<12;i++){
   vec4 st=uResidentStars[i];
   if(st.w<=0.001)continue;
-  vec3 localStar=transpose(uSkyBasis)*st.xyz;
+  vec3 localStar=vec3(dot(st.xyz,uSkyBasis[0]),dot(st.xyz,uSkyBasis[1]),dot(st.xyz,uSkyBasis[2]));
   if(localStar.z>=-.01)continue;
   vec2 starScreen=localStar.xy/max(.01,-localStar.z);
   vec2 delta=screen-starScreen;
@@ -6537,7 +6537,7 @@ vec3 proceduralNebula(vec2 uv){
  for(int i=0;i<4;i++){
   vec4 eventStar=uStarBursts[i];
   if(eventStar.w<0.0)continue;
-  vec3 localBurst=transpose(uSkyBasis)*eventStar.xyz;
+  vec3 localBurst=vec3(dot(eventStar.xyz,uSkyBasis[0]),dot(eventStar.xyz,uSkyBasis[1]),dot(eventStar.xyz,uSkyBasis[2]));
   if(localBurst.z>=-.01)continue;
   vec2 centre=localBurst.xy/max(.01,-localBurst.z);
   vec2 delta=screen-centre;
