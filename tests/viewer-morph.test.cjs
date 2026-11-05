@@ -6,7 +6,7 @@ const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],
 function runtime(){
  const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
  const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false,createElement:()=>({className:'',hidden:false,setAttribute(){},getContext:()=>null})},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],detailSpecimens:[],detailCacheOrder:[],
-  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitTargetSpeed:-.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
+  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitTargetSpeed:-.0796875,cameraOrbitChooseHeading:()=>{},cameraOrbitAngularSpeed:()=>.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
@@ -30,15 +30,15 @@ test('offscreen radius includes all appendages and GPU cilia',()=>{
 test('short camera sweeps complete faster without interrupting continuous travel',()=>{
  const duration=ctx.cameraHandoffDuration;
  const short=duration(9,20,20),medium=duration(25,20,20),long=duration(75,20,20);
- assert.ok(short>=2.6&&short<medium&&medium<long);
- assert.ok(long<=4,'large silhouettes still use a measured maximum interval');
+ assert.ok(short>=5&&short<medium&&medium<long);
+ assert.ok(long<=42,'large silhouettes still use a measured maximum interval');
  const {f,workers}=runtime();
  f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
  const m=f.v.morph;
  const expected=duration(m.travelDistance,m.fromDistance,m.toDistance);
  assert.ok(Math.abs(m.duration-expected)<1e-8,'animation must use the adaptive time');
- for(let i=0;i<60&&f.v.morph;i++)f.tickViewer(.12);
+ for(let i=0;i<Math.ceil(m.duration/.12)+2&&f.v.morph;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
 });
 test('camera travels in one direction without stopping between the two organisms',()=>{
@@ -92,10 +92,10 @@ test('camera transition holds A intact until fully offscreen and never uploads m
  assert.equal(f.spec.seed,1);
  assert.equal(f.meshes,original);
  const before=events.filter(e=>e==='upload').length;
- for(let i=0;i<10;i++)f.tickViewer(.12);
+ for(let i=0;i<Math.floor(f.v.morph.duration*.27/.12);i++)f.tickViewer(.12);
  assert.equal(f.spec.seed,1,'source must still be active before the handoff');
  assert.equal(f.v.morph.switched,false);
- for(let i=0;i<9;i++)f.tickViewer(.12);
+ for(let i=0;i<Math.ceil(f.v.morph.duration*.30/.12);i++)f.tickViewer(.12);
  assert.equal(f.spec,target,'target must become visible only after A exits');
  assert.equal(f.v.morph.switched,true);
  assert.equal(f.v.morph.batches.length,0);
@@ -104,7 +104,7 @@ test('camera transition holds A intact until fully offscreen and never uploads m
 test('cancelling after B becomes active restores original A meshes and view',()=>{
  const {f,workers}=runtime(),source=f.spec,original=f.meshes;
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- for(let i=0;i<19;i++)f.tickViewer(.12);
+ for(let i=0;i<Math.ceil(f.v.morph.duration*.55/.12);i++)f.tickViewer(.12);
  assert.equal(f.v.morph.switched,true);
  f.cancelViewerMorph(false);
  assert.equal(f.v.morph,null);assert.equal(f.spec,source);assert.equal(f.meshes,original);
@@ -115,7 +115,7 @@ test('camera and specimen preserve absolute world location at completion',()=>{
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
  const m=f.v.morph,axis=m.travelAxis.slice(),distance=m.travelDistance;
  assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
- for(let i=0;i<35;i++)f.tickViewer(.12);
+ for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
  for(let i=0;i<3;i++)assert.ok(Math.abs(f.v.worldOffset[i]-2*distance*axis[i])<1e-6);
  f.stopViewer();
@@ -154,7 +154,7 @@ test('captured-only playback adopts saved identities without changing the galler
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
  const population=JSON.stringify(f.population),cached={gallery:true};f.detailSpecimens[0]=cached;
  f.startViewerMorph();assert.equal(workers[0].request.record.seed,102);deliver(f,workers[0],{seed:102,style:0,genome:{},parts:[],rigs:[],palette:{}});
- f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
+ f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(f.activeStoredIndividual,second);assert.equal(f.spec.seed,102);assert.equal(f.detailSpecimens[0],cached);assert.equal(JSON.stringify(f.population),population);assert.equal(f.v.source,'stock');
  f.queueViewerPreparation();assert.equal(workers[1].request.record.seed,101);
 });
@@ -169,7 +169,7 @@ test('random next excludes the current organism and holds one choice throughout 
 });
 test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
  const {f,workers}=runtime();f.stockEntries=[stored('only',101)];f.v.source='stock';f.startViewerMorph();assert.equal(workers[0].request.record.seed,101);
- deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0;i<35;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
+ deliver(f,workers[0],{seed:101,style:0,genome:{},parts:[],rigs:[],palette:{}});f.advanceViewerPreparation();f.activateViewerPreparation();for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);assert.equal(f.v.morph,null);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  f.startViewerMorph();f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.activeStoredIndividual,f.stockEntries[0]);
 });
 test('captured-only selection reports an empty archive and ignores a load superseded by closing',async()=>{
@@ -245,10 +245,10 @@ test('timer pauses when hidden and camera handoff adopts prepared meshes once',(
  f.startViewerMorph();
  const target=deliver(f,workers[0],{seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}},[]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
- for(let i=0;i<35;i++)f.tickViewer(.12);
+ for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
- for(let i=0;i<35;i++)f.tickViewer(.12);
+ for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);
  assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
 });
 test('navigation uses worker output, uploads ahead of time, and adopts prepared GPU buffers at completion',()=>{
@@ -342,7 +342,7 @@ test('Worker builds only native B mesh and bounding sphere without freezing main
 test('camera handoff adopts native geometry once at end of view transition',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;f.startViewerMorph();const target=deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();assert.equal(f.v.morph.mode,'camera-pan');assert.equal(f.meshes,original);
- for(let i=0;i<35;i++)f.tickViewer(.12);
+ for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);assert.equal(f.spec,target);assert.ok(!f.v.phaseFade,'fog transition must remain inactive');
  assert.equal(events.filter(e=>e==='apply').length,1);
 });
