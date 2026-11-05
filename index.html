@@ -9074,14 +9074,17 @@ function activateViewerPreparation(){
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
  // Start easing the 3-axis turn before the source begins to exit.
  cameraOrbitChooseHeading();
- const planar=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
+ const skyFlow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
   cameraOrbitTargetSpeed,cameraOrbitTargetPitchSpeed,cameraOrbitTargetRollSpeed)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
+ // Reverse the previous handoff direction: both A's exit and B's entry
+ // now occur on the opposite viewport edges, with the same easing and path.
+ const planar=skyFlow.map(v=>-v);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
  const curvature=(Math.random()-.5)*.40;
  const depthCurve=(Math.random()-.5)*.18;
- // The camera travels WITH sky flow, so stationary A retreats against it.
+ // Reversed camera travel makes A depart the opposite edge; B arrives from its counterpart.
  const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  const travelDistance=(clearances.exit+clearances.entry)*.5;
  const switchAt=clearances.exit/(clearances.exit+clearances.entry);
