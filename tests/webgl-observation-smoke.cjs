@@ -259,7 +259,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     // The radial atmospheric invariants apply only to the six natural presets.
     // The four psychedelic patterns are tested separately for GPU motion.
     backgroundCycle.fromMode=backgroundCycle.toMode=0;
-    for(const preset of BACKGROUND_PRESETS.filter(p=>!backgroundMode(p.id))){
+    for(const preset of BACKGROUND_PRESETS.filter(p=>p.id!=='nebula'&&!backgroundMode(p.id))){
      backgroundCycle.from=backgroundCycle.to=preset;
      backgroundCycle.fade=0;
      backgroundCycle.fadeSeconds=0;
@@ -283,6 +283,21 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
      const a=samples[i].central,b=samples[j].central;
      if(distance(a,b)<7)throw Error('Two atmosphere presets are visually indistinguishable: '+a+' / '+b);
     }
+    // Procedural nebula is deliberately non-radial and evolves over time.
+    // Test its actual GPU pixels separately from legacy atmospheric falloff.
+    backgroundCycle.from=backgroundCycle.to=backgroundProfile('nebula');
+    backgroundCycle.fade=backgroundCycle.fadeSeconds=0;
+    const nebulaProbes=[];
+    for(let yi=1;yi<=5;yi++)for(let xi=1;xi<=7;xi++)
+     nebulaProbes.push([xi/8,yi/6]);
+    const nebulaFrame=()=>nebulaProbes.map(([x,y])=>sample(w*x,h*y));
+    environmentTime=0;drawStudioGL();const nebulaA=nebulaFrame();
+    environmentTime=235;drawStudioGL();const nebulaB=nebulaFrame();
+    if(gl.getError()!==gl.NO_ERROR)throw Error('Procedural nebula GPU rendering failed');
+    const nebulaMax=Math.max(...nebulaA.map(luminance));
+    const nebulaMotion=nebulaA.reduce((sum,p,i)=>sum+distance(p,nebulaB[i]),0);
+    if(nebulaMax<15)throw Error('Procedural nebula is uniformly dark: '+nebulaMax);
+    if(nebulaMotion<2)throw Error('Procedural nebula does not evolve over time: '+nebulaMotion);
     // The marine gradient is infinitely distant: time, zoom and camera pan do not move it.
     backgroundCycle.from=backgroundCycle.to=BACKGROUND_PRESETS[0];
     backgroundCycle.fromMode=backgroundCycle.toMode=0;
