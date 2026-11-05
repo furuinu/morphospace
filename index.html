@@ -6408,6 +6408,7 @@ uniform float uNebulaMix;
 uniform float uBgAspect;
 uniform mat3 uSkyBasis;
 uniform vec4 uStarBursts[4];
+uniform vec4 uResidentStars[12];
 
 // Analytic glow lobes replace multi-octave fog; one low-frequency noise
 // field remains for shimmer and two for the softly evolving flare.
@@ -6512,23 +6513,44 @@ vec3 proceduralNebula(vec2 uv){
  float youngHalo=exp(-separation*950.0);
  float newborn=(youngCore*1.9+youngHalo*.52)*clusterGate;
  colour+=mix(vec3(.65,.79,1.),vec3(1.,.85,.64),nurserySeed)*newborn;
- // Star nursery events are anchored to infinite-distance world directions.
- // A newborn star develops a glowing corona, briefly flares, then dissolves.
+ // Permanent sky-dome stars: circular halos, crisp cross flares and gentle
+ // independent twinkle. World-space directions preserve infinite distance.
+ for(int i=0;i<12;i++){
+  vec4 st=uResidentStars[i];
+  if(st.w<=0.001)continue;
+  vec3 localStar=transpose(uSkyBasis)*st.xyz;
+  if(localStar.z>=-.01)continue;
+  vec2 starScreen=localStar.xy/max(.01,-localStar.z);
+  vec2 delta=screen-starScreen;
+  float radial=length(delta);
+  float tone=float(i);
+  float slowTwinkle=.76+.24*sin(uTime*(.24+mod(tone*1.71,4.0)*.085)+tone*2.47);
+  float core=exp(-radial*1350.0);
+  float halo=exp(-radial*128.0);
+  float horizontal=exp(-abs(delta.y)*720.0)*exp(-abs(delta.x)*38.0);
+  float vertical=exp(-abs(delta.x)*720.0)*exp(-abs(delta.y)*38.0);
+  float sparkle=(core*1.7+halo*.58+(horizontal+vertical)*.48)*st.w*slowTwinkle;
+  vec3 tint=mix(vec3(.60,.80,1.0),vec3(1.0,.88,.69),mod(tone*3.11,7.0)/7.0);
+  colour+=sparkle*tint;
+ }
+ // Mortal stars extinguish with the same sharp cross and round snow-flare glow.
  for(int i=0;i<4;i++){
   vec4 eventStar=uStarBursts[i];
   if(eventStar.w<0.0)continue;
-  float distanceToStar=length(ray-eventStar.xyz);
-  float peak=1.0-smoothstep(.24,.70,eventStar.w);
-  float explosion=exp(-pow((eventStar.w-.57)*9.5,2.0));
-  float core=1.0-smoothstep(.0006,.0040,distanceToStar);
-  float glow=exp(-distanceToStar*95.0);
-  float ring=exp(-pow((distanceToStar-(.012+eventStar.w*.026))*210.0,2.0));
-  float flareChoice=step(.37,nebHash(floor(eventStar.xyz*911.0)));
-  float spikes=(1.0-smoothstep(.001,.018,abs(ray.x-eventStar.x)))+
-               (1.0-smoothstep(.001,.018,abs(ray.y-eventStar.y)));
-  float energy=(core*1.65+glow*.95)*peak+ring*explosion*.75;
-  colour+=mix(vec3(.72,.83,1.0),vec3(1.0,.78,.65),float(i)*.25)
-    *(energy+glow*spikes*.23*peak*flareChoice);
+  vec3 localBurst=transpose(uSkyBasis)*eventStar.xyz;
+  if(localBurst.z>=-.01)continue;
+  vec2 centre=localBurst.xy/max(.01,-localBurst.z);
+  vec2 delta=screen-centre;
+  float age=eventStar.w;
+  float flash=exp(-pow((age-.27)*8.0,2.0));
+  float dim=1.0-smoothstep(.23,.94,age);
+  float radius=length(delta);
+  float core=exp(-radius*1600.0);
+  float halo=exp(-radius*115.0);
+  float horizontal=exp(-abs(delta.y)*850.0)*exp(-abs(delta.x)*29.0);
+  float vertical=exp(-abs(delta.x)*850.0)*exp(-abs(delta.y)*29.0);
+  vec3 tint=mix(vec3(.64,.83,1.0),vec3(1.0,.84,.66),float(i)*.31);
+  colour+=tint*(core*1.6+halo*.88+(horizontal+vertical)*.8)*(dim*.50+flash*1.8);
  }
  // Sparse far-field stars, stable in world direction with gentle twinkle.
  vec3 cell=floor(ray*260.0);
@@ -6567,7 +6589,7 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis','uStarBursts[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis','uStarBursts[0]','uResidentStars[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -7401,19 +7423,21 @@ function transitionSpecimenBounds(sp,uploaded){
  include(uploaded?.cilia,13);
  return {radius:radius*1.5+1.5}; // Skin deformation and free appendages.
 }
-function cameraHandoffDistance(sourceBound,targetBound,fromDistance,toDistance,aspect=1,screenPosition=[0,0],unitDirection=[1,0]){
+function cameraHandoffClearances(sourceBound,targetBound,fromDistance,toDistance,aspect=1,screenPosition=[0,0],unitDirection=[1,0]){
  const tan=Math.tan(Math.PI*43/360),hx=(fromDistance+sourceBound.radius)*tan*Math.max(.4,aspect),hy=(fromDistance+sourceBound.radius)*tan;
  const tx=(toDistance+targetBound.radius)*tan*Math.max(.4,aspect),ty=(toDistance+targetBound.radius)*tan;
  const dx=unitDirection[0],dy=unitDirection[1];
- // Minimum camera travel along selected direction to clear A and keep B offscreen.
- const exitX=Math.abs(dx)>1e-5?(hx+sourceBound.radius+screenPosition[0]*Math.sign(dx))/Math.abs(dx):Infinity;
- const exitY=Math.abs(dy)>1e-5?(hy+sourceBound.radius+screenPosition[1]*Math.sign(dy))/Math.abs(dy):Infinity;
- const enterX=Math.abs(dx)>1e-5?(tx+targetBound.radius)/Math.abs(dx):Infinity;
- const enterY=Math.abs(dy)>1e-5?(ty+targetBound.radius)/Math.abs(dy):Infinity;
- const required=Math.max(0,Math.min(exitX,exitY),Math.min(enterX,enterY));
- // Margin keeps A fully outside before 1.85s and B outside until after 2.15s,
- // while the camera itself passes through both thresholds without stopping.
- return required*1.11+1.5;
+ // Distance needed to leave the visible side; do not use an oversized symmetric gap.
+ const xExit=Math.abs(dx)>1e-5?(hx+sourceBound.radius+screenPosition[0]*Math.sign(dx))/Math.abs(dx):Infinity;
+ const yExit=Math.abs(dy)>1e-5?(hy+sourceBound.radius+screenPosition[1]*Math.sign(dy))/Math.abs(dy):Infinity;
+ const xEntry=Math.abs(dx)>1e-5?(tx+targetBound.radius)/Math.abs(dx):Infinity;
+ const yEntry=Math.abs(dy)>1e-5?(ty+targetBound.radius)/Math.abs(dy):Infinity;
+ return {exit:Math.max(1,Math.min(xExit,yExit))*1.015,
+         entry:Math.max(1,Math.min(xEntry,yEntry))*1.015};
+}
+function cameraHandoffDistance(...args){
+ const clearance=cameraHandoffClearances(...args);
+ return (clearance.exit+clearance.entry)*.5;
 }
 // Every handoff receives a fresh free-angle departure, unrelated to gallery order.
 // A minimum vertical/horizontal contribution avoids repeated horizontal wipes.
@@ -7455,8 +7479,8 @@ function cameraHandoffFrame(m,p){
  const bend=Math.sin(Math.PI*u);
  const curve=m.travelDistance*m.curvature*bend;
  const depth=m.travelDistance*m.depthCurve*bend;
- return {switched:x>=.5,travel:2*m.travelDistance*u,
-  curve,depth,yaw:0,progress:x>=.5?cameraHandoffEase((x-.5)*2):0};
+ return {switched:u>=(m.switchAt??.5),travel:2*m.travelDistance*u,
+  curve,depth,yaw:0,progress:u>=(m.switchAt??.5)?cameraHandoffEase((u-(m.switchAt??.5))/(1-(m.switchAt??.5))):0};
 }
 
 // This pure CPU entry point is shared with a dedicated Worker. It does not read
@@ -8223,6 +8247,8 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uBgAspect!==null&&surface.uBgAspect!==undefined)gl.uniform1f(surface.uBgAspect,aspect);
  if(surface['uStarBursts[0]']!==null&&surface['uStarBursts[0]']!==undefined)
   gl.uniform4fv(surface['uStarBursts[0]'],starNurseryUniforms);
+ if(surface['uResidentStars[0]']!==null&&surface['uResidentStars[0]']!==undefined)
+  gl.uniform4fv(surface['uResidentStars[0]'],residentStarUniforms);
  if(surface.uSkyBasis!==null&&surface.uSkyBasis!==undefined){
   const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
   // worldCameraFrame stores matrices column-major.
@@ -8240,53 +8266,78 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
 }
 
-// Star-burst events reuse the disappearing sparkle lifecycle, but live on the sky dome.
+// 12 sky-dome residents appear immediately. Their lifetimes and radiance are
+// independent; dying visible stars chime and respawn outside the current view.
+const RESIDENT_STAR_COUNT=12;
+const residentStarUniforms=new Float32Array(RESIDENT_STAR_COUNT*4);
 const starNurseryUniforms=new Float32Array(16);
-const starNurseryEvents=Array.from({length:4},(_,i)=>({direction:[0,0,-1],start:-100-i*2.1,duration:2.0,active:false,sounded:false}));
-let nextStarNurseryEvent=2.5,starNurseryCursor=0;
+const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
+let residentStars=[],nextStarDeath=5,starNurseryCursor=0;
 starNurseryUniforms.fill(-1);
-function playStarBurstSound(index){
- const engine=typeof bioticAudio!=='undefined'?bioticAudio.engine:null;
- if(!engine||engine.context.state!=='running')return;
- const ctx=engine.context,t=ctx.currentTime+.006;
- const osc=ctx.createOscillator(),gain=ctx.createGain();
- osc.type='sine';
- const frequency=620+index*117;
- osc.frequency.setValueAtTime(frequency*1.8,t);
- osc.frequency.exponentialRampToValueAtTime(frequency*.65,t+.20);
- gain.gain.setValueAtTime(.0001,t);
- gain.gain.exponentialRampToValueAtTime(.028,t+.015);
- gain.gain.exponentialRampToValueAtTime(.0001,t+.32);
- osc.connect(gain);gain.connect(ctx.destination);
- if(engine.snowRecordingTap)gain.connect(engine.snowRecordingTap);
- osc.start(t);osc.stop(t+.34);
- osc.onended=()=>{try{osc.disconnect();gain.disconnect()}catch(e){}};
+function skyStarDirection(outside=false){
+ const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+ const aspect=Math.max(1,canvas.width)/Math.max(1,canvas.height);
+ const h=.5/.79, w=h*aspect;
+ let x=(Math.random()*1.5- .75)*w,y=(Math.random()*1.5-.75)*h;
+ if(outside){
+  const edge=Math.floor(Math.random()*4),margin=1.12+Math.random()*.65;
+  if(edge===0)x=-w*margin;
+  if(edge===1)x=w*margin;
+  if(edge===2)y=-h*margin;
+  if(edge===3)y=h*margin;
+ }
+ const v=frame.right.map((component,i)=>component*x+frame.up[i]*y-frame.back[i]);
+ const length=Math.hypot(...v)||1;return v.map(value=>value/length);
+}
+function seedResidentStars(){
+ residentStars=Array.from({length:RESIDENT_STAR_COUNT},(_,i)=>({
+  direction:skyStarDirection(false),brightness:.55+Math.random()*.75,
+  deathAt:environmentTime+6+Math.random()*42,phase:Math.random()*6.283,
+  dying:false,deathStart:0,chimed:false
+ }));
 }
 function tickStarNursery(dt){
  if(!renderer||!spec)return;
  const active=backgroundCycle.to.id==='nebula';
- if(active&&environmentTime>=nextStarNurseryEvent){
-  const index=starNurseryCursor++%starNurseryEvents.length;
-  const event=starNurseryEvents[index];
-  // Choose a visible direction, convert it to an immutable world-space ray.
-  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
-  const x=(Math.random()-.5)*.95,y=(Math.random()-.5)*.65;
-  const world=frame.right.map((v,i)=>v*x+frame.up[i]*y-frame.back[i]);
-  const length=Math.hypot(...world)||1;
-  event.direction=world.map(v=>v/length);
-  event.start=environmentTime;event.duration=1.5+Math.random()*1.0;
-  event.active=true;event.sounded=false;
-  nextStarNurseryEvent=environmentTime+2.1+Math.random()*3.6;
+ if(!residentStars.length)seedResidentStars();
+ for(let i=0;i<starNurseryEvents.length;i++){
+  const burst=starNurseryEvents[i],age=(environmentTime-burst.start)/burst.duration;
+  const slot=i*4;
+  if(!active||!burst.active||age>=1){burst.active=false;starNurseryUniforms[slot+3]=-1;continue}
+  starNurseryUniforms.set(burst.direction,slot);
+  starNurseryUniforms[slot+3]=Math.max(0,age);
  }
- for(let i=0;i<4;i++){
-  const event=starNurseryEvents[i],offset=i*4;
-  const phase=event.active?(environmentTime-event.start)/event.duration:-1;
-  if(event.active&&phase>=.57&&!event.sounded){
-   event.sounded=true;playStarBurstSound(i);
+ if(active&&environmentTime>=nextStarDeath){
+  // Prefer stars actually in view. Offscreen deaths never make a visible flash.
+  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1),forward=frame.back.map(v=>-v);
+  const visible=residentStars.filter(st=>!st.dying&&environmentTime>=st.deathAt&&
+    st.direction.reduce((sum,v,i)=>sum+v*forward[i],0)>.77);
+  if(visible.length){
+   const star=visible[Math.floor(Math.random()*visible.length)];
+   star.dying=true;star.deathStart=environmentTime;star.chimed=false;
+   const burst=starNurseryEvents[starNurseryCursor++%starNurseryEvents.length];
+   burst.direction=star.direction.slice();burst.start=environmentTime;burst.duration=1.15;burst.active=true;
   }
-  if(!active||phase>1){event.active=false;starNurseryUniforms[offset+3]=-1;continue;}
-  starNurseryUniforms.set(event.direction,offset);
-  starNurseryUniforms[offset+3]=Math.max(0,phase);
+  nextStarDeath=environmentTime+2.8+Math.random()*5.0;
+ }
+ for(let i=0;i<residentStars.length;i++){
+  const star=residentStars[i],slot=i*4;
+  let intensity=star.brightness;
+  if(star.dying){
+   const age=(environmentTime-star.deathStart)/1.15;
+   intensity*=1-Math.min(1,Math.max(0,age*2.8));
+   if(age>=.25&&!star.chimed){
+    star.chimed=true;
+    if(active)playSnowChime(i,star.brightness,environmentTime);
+   }
+   if(age>=1){
+    star.direction=skyStarDirection(true);star.dying=false;
+    star.deathAt=environmentTime+8+Math.random()*44;
+    intensity=star.brightness;
+   }
+  }
+  residentStarUniforms.set(star.direction,slot);
+  residentStarUniforms[slot+3]=active?intensity:0;
  }
 }
 // Porcelain-crazing glints: every onset is tied to an actual snow-flare cycle.
@@ -8920,13 +8971,15 @@ function activateViewerPreparation(){
  const depthCurve=(Math.random()-.5)*.18;
  // The next orbit acquires its 3D heading gradually across the handoff.
  cameraOrbitChooseHeading();
- const travelDistance=cameraHandoffDistance(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
+ const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
+ const travelDistance=(clearances.exit+clearances.entry)*.5;
+ const switchAt=clearances.exit/(clearances.exit+clearances.entry);
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
   duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),switched:false,fromDistance,toDistance,
-  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,
+  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
  $('overlay').classList.add('viewer-caption-fading');
