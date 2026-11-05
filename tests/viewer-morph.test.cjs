@@ -6,7 +6,7 @@ const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],
 function runtime(){
  const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
  const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false,createElement:()=>({className:'',hidden:false,setAttribute(){},getContext:()=>null})},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],detailSpecimens:[],detailCacheOrder:[],
-  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitTargetSpeed:-.0796875,cameraOrbitChooseHeading:()=>{},cameraOrbitAngularSpeed:()=>.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
+  VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],camera:[0,0,0]},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffClearances:ctx.cameraHandoffClearances,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitTargetSpeed:-.0796875,cameraOrbitChooseHeading:()=>{},cameraOrbitAngularSpeed:()=>.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
@@ -121,20 +121,24 @@ test('camera and specimen preserve absolute world location at completion',()=>{
  f.stopViewer();
  assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
 });
-test('camera handoff switches silhouettes while camera maintains forward motion',()=>{
+test('camera handoff joins source exit and target entry at one boundary without a dead interval',()=>{
  const source={radius:18},target={radius:25},distance=40,aspect=1.8;
- const travel=ctx.cameraHandoffDistance(source,target,distance,distance,aspect);
+ const clear=ctx.cameraHandoffClearances(source,target,distance,distance,aspect,[0,0],[1,0]);
  const halfWidth=(distance+target.radius)*Math.tan(Math.PI*43/360)*aspect;
- assert.ok(travel-source.radius>halfWidth);
- assert.ok(travel-target.radius>halfWidth);
- const m={travelDistance:travel,yawSign:1};
- const before=ctx.cameraHandoffFrame(m,.4999),at=ctx.cameraHandoffFrame(m,.5),after=ctx.cameraHandoffFrame(m,.5001);
+ assert.ok(clear.entry-target.radius>=halfWidth,'B must remain offscreen before entry');
+ assert.ok(clear.exit-source.radius>0,'A must have exited at the boundary');
+ const travel=(clear.exit+clear.entry)/2,switchAt=clear.exit/(clear.exit+clear.entry);
+ assert.ok(Math.abs(ctx.cameraHandoffDistance(source,target,distance,distance,aspect)-travel)<1e-8);
+ const m={travelDistance:travel,switchAt,yawSign:1};
+ // The switch boundary is a travel ratio; the camera's eased clock is not linear.
+ const ts=Array.from({length:1001},(_,i)=>i/1000);
+ const index=ts.findIndex(t=>ctx.cameraHandoffFrame(m,t).switched);
+ assert.ok(index>0&&index<1000);
+ const before=ctx.cameraHandoffFrame(m,ts[index-1]),at=ctx.cameraHandoffFrame(m,ts[index]);
  assert.equal(before.switched,false);assert.equal(at.switched,true);
- assert.ok(before.travel<at.travel&&at.travel<after.travel);
- const v1=(at.travel-before.travel)/.0001,v2=(after.travel-at.travel)/.0001;
- assert.ok(Math.abs(v1-v2)<1e-5,'camera should not jump in speed on the geometry swap');
+ assert.ok(before.travel<=clear.exit&&at.travel>=clear.exit,'geometry changes at exit clearance');
+ assert.ok(at.travel-before.travel<1,'handoff should not insert an empty-space traversal');
 });
-
 test('camera pan renders finished body and appendages without layered LOD',()=>{
  assert.ok(src.includes("base=mul4(translate3(...viewer.worldOffset),base)"));
  assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
