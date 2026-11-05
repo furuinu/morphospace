@@ -27,17 +27,19 @@ test('offscreen radius includes all appendages and GPU cilia',()=>{
  const distance=ctx.cameraHandoffDistance(bounds,bounds,20,20,1.6);
  assert.ok(distance>bounds.radius+20*Math.tan(Math.PI*43/360)*1.6);
 });
-test('camera travels monotonically in one direction; A exits before B appears',()=>{
- const m={travelDistance:75,yawSign:1},ts=[0,.1,.22,.4625,.5,.5375,.6,.8,1];
+test('camera travels in one direction without stopping between the two organisms',()=>{
+ const m={travelDistance:75,yawSign:1},ts=[0,.1,.22,.4625,.49,.5,.51,.5375,.6,.8,1];
  const frames=ts.map(p=>ctx.cameraHandoffFrame(m,p));
- for(let i=1;i<frames.length;i++)assert.ok(frames[i].travel>=frames[i-1].travel-1e-9);
+ for(let i=1;i<frames.length;i++)assert.ok(frames[i].travel>frames[i-1].travel,
+  'camera position must advance on every interior sample');
  assert.equal(frames[0].travel,0);
  assert.equal(frames[3].switched,false);
- assert.equal(frames[4].switched,false,'0.3s blank interval must remain between specimens');
- assert.equal(frames[5].switched,true);
- assert.equal(frames[3].travel,75);
- assert.equal(frames[4].travel,75);
- assert.equal(frames.at(-1).travel,150);
+ assert.equal(frames[4].switched,false);
+ assert.equal(frames[5].switched,true,'the native geometry swap occurs at the offscreen midpoint');
+ assert.ok(frames[3].travel<75,'A must already be moving beyond the frame at 1.85 seconds');
+ assert.equal(frames[5].travel,75);
+ assert.ok(frames[7].travel>75,'B must be moving into view by 2.15 seconds');
+ assert.ok(Math.abs(frames.at(-1).travel-150)<1e-8);
  assert.equal(frames.at(-1).yaw,0);
  assert.equal(frames.at(-1).progress,1);
 });
@@ -53,20 +55,23 @@ test('closest-frame-boundary exit never traverses the opposite corner',()=>{
   Array.from(ctx.cameraHandoffDirection(p,radius,20,1.7)).join(',')));
  assert.ok(directions.size>=3,'exit must not be locked to the horizontal axis');
 });
-test('exit and arrival occupy matching 1.85-second segments separated by 300ms',()=>{
- const m={travelDistance:50},frames=[0,1.85,2,2.15,4].map(t=>ctx.cameraHandoffFrame(m,t/4));
- assert.equal(frames[0].travel,0);
- assert.equal(frames[1].travel,50);
- assert.equal(frames[2].travel,50);
- assert.equal(frames[2].switched,false);
- assert.equal(frames[3].switched,true);
- assert.equal(frames[3].travel,50);
- assert.equal(frames[4].travel,100);
- const d=.04;
- const exit=ctx.cameraHandoffFrame(m,(1.85-d)/4).travel;
- const entrance=ctx.cameraHandoffFrame(m,(2.15+d)/4).travel-50;
- assert.ok(Math.abs((50-exit)-entrance)<1e-7,'ease profiles should have matching speed');
+test('camera has continuous non-zero velocity across offscreen gap and native swap',()=>{
+ const m={travelDistance:50};
+ const pos=t=>ctx.cameraHandoffFrame(m,t/4).travel;
+ for(const t of [1.7,1.85,1.99,2,2.01,2.15,2.3]){
+  assert.ok(pos(t+.01)>pos(t),'camera stopped during transition at '+t);
+ }
+ const h=.0005;
+ for(const t of [1.85,2,2.15]){
+  const before=(pos(t)-pos(t-h))/h,after=(pos(t+h)-pos(t))/h;
+  assert.ok(before>0&&after>0,'camera velocity must remain positive at '+t);
+  assert.ok(Math.abs(before-after)<.01,'no velocity discontinuity at '+t);
+ }
+ const left=pos(2)-pos(1.85),right=pos(2.15)-pos(2);
+ assert.ok(Math.abs(left-right)<1e-8,'matched travel over both 0.15-second halves');
+ assert.ok(Math.abs(pos(4)-100)<1e-8);
 });
+
 test('camera transition holds A intact until fully offscreen and never uploads morph frames',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;
  f.startViewerMorph();const target=deliver(f,workers[0]);
@@ -104,17 +109,20 @@ test('camera and specimen preserve absolute world location at completion',()=>{
  f.stopViewer();
  assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
 });
-test('camera handoff keeps both silhouettes outside viewport at native swap',()=>{
+test('camera handoff switches silhouettes while camera maintains forward motion',()=>{
  const source={radius:18},target={radius:25},distance=40,aspect=1.8;
  const travel=ctx.cameraHandoffDistance(source,target,distance,distance,aspect);
  const halfWidth=(distance+target.radius)*Math.tan(Math.PI*43/360)*aspect;
  assert.ok(travel-source.radius>halfWidth);
  assert.ok(travel-target.radius>halfWidth);
  const m={travelDistance:travel,yawSign:1};
- const before=ctx.cameraHandoffFrame(m,.5),after=ctx.cameraHandoffFrame(m,.53751);
- assert.equal(before.switched,false);assert.equal(after.switched,true);
- assert.ok(Math.abs(before.travel-after.travel)<1e-4);
+ const before=ctx.cameraHandoffFrame(m,.4999),at=ctx.cameraHandoffFrame(m,.5),after=ctx.cameraHandoffFrame(m,.5001);
+ assert.equal(before.switched,false);assert.equal(at.switched,true);
+ assert.ok(before.travel<at.travel&&at.travel<after.travel);
+ const v1=(at.travel-before.travel)/.0001,v2=(after.travel-at.travel)/.0001;
+ assert.ok(Math.abs(v1-v2)<1e-5,'camera should not jump in speed on the geometry swap');
 });
+
 test('camera pan renders finished body and appendages without layered LOD',()=>{
  assert.ok(src.includes("base=mul4(translate3(...viewer.worldOffset),base)"));
  assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
