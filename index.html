@@ -6590,7 +6590,7 @@ void main(){
   float twinkle=.76+.24*sin(uResidentTime*(.24+mod(id*1.71,4.0)*.085)+id*2.47);
   vResidentEnergy=fract(aResidentStar.w*1000.0)*2.0*twinkle;
   vResidentTint=fract(id*.37);
-  gl_PointSize=24.0;
+  gl_PointSize=38.0+mod(id*17.0,15.0);
  }`;
  const residentFragment=`precision mediump float;
  varying float vResidentEnergy;
@@ -6599,13 +6599,13 @@ void main(){
   vec2 delta=gl_PointCoord-.5;
   float radial=length(delta);
   float core=exp(-radial*75.0);
-  float halo=exp(-radial*11.0);
-  float horizontal=exp(-abs(delta.y)*85.0)*exp(-abs(delta.x)*6.0);
-  float vertical=exp(-abs(delta.x)*85.0)*exp(-abs(delta.y)*6.0);
+  float halo=exp(-radial*8.0);
+  float horizontal=exp(-abs(delta.y)*73.0)*exp(-abs(delta.x)*4.2);
+  float vertical=exp(-abs(delta.x)*73.0)*exp(-abs(delta.y)*4.2);
   vec3 tint=mix(vec3(.64,.82,1.0),vec3(1.0,.87,.67),vResidentTint);
   if(vResidentEnergy<=.001)discard;
-  float energy=(core*1.65+halo*.65+(horizontal+vertical)*.54)*vResidentEnergy;
-  gl_FragColor=vec4(tint*energy,clamp(energy,0.0,1.0));
+  float energy=(core*2.4+halo*.98+(horizontal+vertical)*.96)*vResidentEnergy;
+  gl_FragColor=vec4(tint*energy,clamp(.4+energy,0.0,1.0));
  }`;
  const residentProgram=linked(isWebGL2?toVertex300(residentVertex):residentVertex,isWebGL2?toFragment300(residentFragment):residentFragment,'常駐星フレア');
  const residentBuffer=gl.createBuffer();
@@ -7475,6 +7475,25 @@ function cameraHandoffDirection(screenPosition=[0,0],sourceBound={radius:1},dist
  if(Math.abs(direction[1])<min)direction[1]=Math.sign(direction[1]||1)*min;
  const norm=Math.hypot(...direction);
  return direction.map(x=>x/norm);
+}
+// Derive the apparent drift of a fixed sky feature from the LIVE 3-axis orbit.
+// The camera travels along that drift, so the previous specimen retreats toward
+// the BACK of the moving sky. No unrelated random screen-edge direction is used.
+function cameraSkyFlowDirection(yaw,pitch,roll){
+ const now=worldCameraFrame(yaw,pitch,roll,1);
+ const future=worldCameraFrame(yaw+cameraOrbitSpeed,
+  pitch+cameraOrbitPitchSpeed,roll+cameraOrbitRollSpeed,1);
+ const reference=now.right.map((v,i)=>v*.28+now.up[i]*.17-now.back[i]);
+ const project=frame=>{
+  const z=-reference.reduce((a,v,i)=>a+v*frame.back[i],0);
+  return [
+   reference.reduce((a,v,i)=>a+v*frame.right[i],0)/Math.max(.01,z),
+   reference.reduce((a,v,i)=>a+v*frame.up[i],0)/Math.max(.01,z)
+  ];
+ };
+ const start=project(now),end=project(future);
+ const dx=end[0]-start[0],dy=end[1]-start[1],length=Math.hypot(dx,dy);
+ return length>1e-5?[dx/length,dy/length]:null;
 }
 function cameraHandoffEase(x){
  x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);
@@ -9027,7 +9046,8 @@ function activateViewerPreparation(){
  const current=pulseTravel.specimen===spec;
  const offset=(current?pulseTravel.position:[0,0,0]).map((v,i)=>v-frame.position[i]-(current?pulseTravel.camera[i]:0));
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
- const planar=cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
+ const planar=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll)||
+  cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
  const curvature=(Math.random()-.5)*.40;
@@ -9037,7 +9057,9 @@ function activateViewerPreparation(){
  const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  const travelDistance=(clearances.exit+clearances.entry)*.5;
  const switchAt=clearances.exit/(clearances.exit+clearances.entry);
- const entryLead=clearances.entry*.78;
+ // Start B just beyond the advancing edge; the first visible pixels arrive
+ // during the first 0.8s after A disappears, not several seconds later.
+ const entryLead=Math.max(0,clearances.entry-targetBounds.radius*.75);
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
@@ -9064,7 +9086,7 @@ function setViewerNavigationVisible(visible){
  if(!visible)$('viewerSettings').open=false;
 }
 // Reference iPhone screenshot: thumb at ~55% on the 0-100 viewer zoom track.
-const VIEWER_DEFAULT_ZOOM=45;
+const VIEWER_DEFAULT_ZOOM=60; // Three +5 zoom steps from the previous default.
 function viewerZoomBounds(){
  let base=spec?.baseViewDistance||spec?.viewDistance||20;
  const m=viewer.morph;if(m)base=base+((m.targetDistance??specimenViewDistance(m.target))-base)*m.t;
@@ -9336,7 +9358,7 @@ function tickViewer(elapsed){
   m.cameraYawOffset=shot.yaw;m.t=shot.progress;
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
-   m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+   m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
   }
   spec.viewDistance=m.fromDistance+(m.toDistance-m.fromDistance)*shot.progress;
   if(p>=1){cancelViewerMorph(true);return;}
@@ -9519,8 +9541,17 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  }
  if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
   const m=viewer.morph;
-  const lead=(m.entryLead||0)*(1-m.t);
-  base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2-lead)),base);
+  // The new organism is placed just beyond the advancing screen edge in the
+  // very frame the previous organism disappears, then enters within 0.8s.
+  // It follows the moving camera during the remainder of the transition.
+  const reveal=clamp((m.elapsed-(m.switchedAt??m.elapsed))/.8,0,1);
+  const ease=reveal*reveal*(3-2*reveal);
+  const lead=(m.entryLead||0)*(1-ease);
+  const follow=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+  const translation=m.travelAxis.map((v,i)=>
+   v*(m.cameraTravel+lead)+m.curveAxis[i]*m.cameraCurve+
+   follow.back[i]*m.cameraDepth);
+  base=mul4(translate3(...translation),base);
  }
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
