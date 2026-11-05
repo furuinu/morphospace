@@ -6463,12 +6463,12 @@ float nebFbm(vec3 p){
  for(int i=0;i<4;i++){v+=a*nebNoise(p);p=p*2.03+vec3(8.2,3.7,1.4);a*=.50;}
  return v;
 }
-vec3 nebGradient(float t,float patch){
+vec3 nebGradient(float t,float colorRegion){
  vec3 dark=vec3(.010,.005,.038);
  vec3 blue=vec3(.055,.19,.56),violet=vec3(.34,.055,.55);
  vec3 pink=vec3(.88,.15,.51),orange=vec3(1.0,.39,.13);
- vec3 low=mix(blue,violet,smoothstep(.16,.70,patch));
- vec3 high=mix(pink,orange,smoothstep(.55,.88,patch));
+ vec3 low=mix(blue,violet,smoothstep(.16,.70,colorRegion));
+ vec3 high=mix(pink,orange,smoothstep(.55,.88,colorRegion));
  vec3 c=mix(dark,low,smoothstep(.13,.47,t));
  c=mix(c,high,smoothstep(.45,.83,t));
  return mix(c,vec3(1.0,.85,.85),smoothstep(.85,.99,t)*.48);
@@ -6493,8 +6493,8 @@ vec3 proceduralNebula(vec2 uv){
  float density=smoothstep(.34,.73,mainCloud*.78+softCloud*.30);
  float filament=nebNoise(q*5.7+flow*.4);
  density=clamp(density*(.70+.52*filament),0.,1.);
- float patch=nebNoise(q*.54+vec3(4.,8.,2.));
- vec3 colour=nebGradient(density,patch)*density*.80;
+ float colorRegion=nebNoise(q*.54+vec3(4.,8.,2.));
+ vec3 colour=nebGradient(density,colorRegion)*density*.80;
  // Sparse far-field stars, stable in world direction with gentle twinkle.
  vec3 cell=floor(ray*260.0);
  float rnd=nebHash(cell);
