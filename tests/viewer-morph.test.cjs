@@ -65,6 +65,35 @@ test('cancelling after B becomes active restores original A meshes and view',()=
  assert.equal(f.v.morph,null);assert.equal(f.spec,source);assert.equal(f.meshes,original);
  assert.equal(f.spec.viewDistance,20);
 });
+test('camera and specimen preserve absolute world location at completion',()=>{
+ const {f,workers}=runtime();
+ f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph,axis=m.travelAxis.slice(),distance=m.travelDistance;
+ assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
+ for(let i=0;i<35;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);
+ for(let i=0;i<3;i++)assert.ok(Math.abs(f.v.worldOffset[i]-2*distance*axis[i])<1e-6);
+ f.stopViewer();
+ assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
+});
+test('camera handoff keeps both silhouettes outside viewport at native swap',()=>{
+ const source={radius:18},target={radius:25},distance=40,aspect=1.8;
+ const travel=ctx.cameraHandoffDistance(source,target,distance,distance,aspect);
+ const halfWidth=(distance+target.radius)*Math.tan(Math.PI*43/360)*aspect;
+ assert.ok(travel-source.radius>halfWidth);
+ assert.ok(travel-target.radius>halfWidth);
+ const m={travelDistance:travel,yawSign:1};
+ const before=ctx.cameraHandoffFrame(m,.44),after=ctx.cameraHandoffFrame(m,.44001);
+ assert.equal(before.switched,false);assert.equal(after.switched,true);
+ assert.ok(Math.abs(before.travel-after.travel)<1e-4);
+});
+test('camera pan renders finished body and appendages without layered LOD',()=>{
+ assert.ok(src.includes("base=mul4(translate3(...viewer.worldOffset),base)"));
+ assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
+ assert.ok(src.includes("if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
+ assert.ok(src.includes("viewer.worldOffset[i]+=2*m.travelDistance*m.travelAxis[i]"));
+ assert.ok(src.includes("const rawBatches=from.length?createMorphBatches")===false);
+});
 test('native A and B materials are not blended during offscreen handoff',()=>{
  assert.ok(src.includes("m.mode==='camera-pan'||spec!==m.source"));
  assert.ok(src.includes("viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source"));
