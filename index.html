@@ -8989,7 +8989,7 @@ function initBackgroundControls(){
  $('viewerBackgroundRandom').onchange=()=>{backgroundCycle.random=$('viewerBackgroundRandom').checked;backgroundCycle.elapsed=0;saveBackgroundSettings();};
 }
 
-const CAMERA_ORBIT_BASE_SPEED=.10625*1.5/2;
+const CAMERA_ORBIT_BASE_SPEED=.10625*1.5/4; // Half the previous orbit angular speed.
 let cameraOrbitSpeed=-CAMERA_ORBIT_BASE_SPEED,cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
 let cameraOrbitPitchPhase=0,cameraOrbitRollPhase=0;
 let cameraOrbitPitchSpeed=0,cameraOrbitRollSpeed=0;
