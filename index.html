@@ -3073,7 +3073,7 @@ function motionFounderDNA(seed,index,form){
  d.pulseCycle=cyclePick(r,'pulse');d.localCycle=cyclePick(r,'local');d.hingeCycle=cyclePick(r,'local');d.hingeMode=Math.floor(r()*4);d.hingeAxisCycles=[Math.floor(r()*8),Math.floor(r()*8),Math.floor(r()*8)];
  // Heritable per-organism cone half-angle (degrees), independent of each cycle's draw.
  // Separate seed stream preserves all existing founder motion DNA values.
- d.turnConeDegrees=10+Math.floor(seedRng(seed+734991)()*41);
+ d.turnConeDegrees=5+Math.floor(seedRng(seed+734991)()*26);
  if(form){d.locality=clamp(d.locality*.75+(1-form.fusion)*.25,.14,1);d.propagation=clamp(d.propagation*.7+(form.branch||0)*.3,0,1);}
  return d;
 }
@@ -3082,7 +3082,7 @@ function normalizedMotionDNA(source,seed=0,index=0,form=null){
  if(source&&typeof source==='object'){
   for(const key of ['primary','secondary']) if(Number.isFinite(source[key]))d[key]=Math.abs(Math.floor(source[key]))%10;
   for(const key of MOTION_FIELDS)if(Number.isFinite(source[key]))d[key]=clamp(source[key],...MOTION_LIMITS[key]);
-  if(Number.isFinite(source.turnConeDegrees))d.turnConeDegrees=Math.round(clamp(source.turnConeDegrees,10,50));
+  if(Number.isFinite(source.turnConeDegrees))d.turnConeDegrees=Math.round(clamp(source.turnConeDegrees,5,30));
    d.pulseCycle=cycleIndex(source.pulseCycle,seed,'pulse');d.localCycle=cycleIndex(source.localCycle,seed,'local');
   d.hingeCycle=Number.isInteger(source.hingeCycle)&&source.hingeCycle>=0&&source.hingeCycle<9?source.hingeCycle:cyclePick(seedRng(seed+91781),'local');
   d.hingeMode=Number.isInteger(source.hingeMode)&&source.hingeMode>=0&&source.hingeMode<4?source.hingeMode:Math.floor(seedRng(seed+62143)()*4);
@@ -3108,7 +3108,7 @@ function motionCrossoverDNA(a,b,seed,mutationStrength,log,inherited){
  d.turnConeDegrees=(r()<.5?A:B).turnConeDegrees;
  if(r()<.11+.29*mutationStrength){
   const previous=d.turnConeDegrees;
-  d.turnConeDegrees=Math.round(clamp(previous+(r()+r()-1)*20*mutationStrength,10,50));
+  d.turnConeDegrees=Math.round(clamp(previous+(r()+r()-1)*14*mutationStrength,5,30));
   log.push({field:'motionDNA.turnConeDegrees',from:previous,to:d.turnConeDegrees});
  }
  for(const kind of ['pulse','local']){const key=kind+'Cycle';d[key]=(r()<.5?A:B)[key];if(r()<.10+.26*mutationStrength){const old=d[key];d[key]=cyclePick(r,kind);log.push({field:'motionDNA.'+key,from:old,to:d[key]});}}
@@ -7494,7 +7494,7 @@ function cameraHandoffDuration(travelDistance,fromDistance,toDistance,angularSpe
  // 2*distance is the complete A-to-B pan, angularSpeed is the sky rate.
  const depth=Math.max(1,(fromDistance+toDistance)*.5);
  const speed=Math.max(.025,angularSpeed);
- return Math.max(5,Math.min(42,2*travelDistance/(depth*speed)));
+ return Math.max(3.6,Math.min(22,2*travelDistance/(depth*speed)*.64));
 }
 function cameraHandoffFrame(m,p){
  const x=Math.max(0,Math.min(1,p));
@@ -8049,7 +8049,8 @@ function pulseTravelActive(){
 function pulseConeDirection(previous,maximumDegrees,seed,cycleIndex){
  const current=V.norm(previous);
  const rng=seedRng((seed^Math.imul(cycleIndex,0x9e3779b1))+917717);
- const theta=Math.acos(1-rng()*(1-Math.cos(maximumDegrees*Math.PI/180))),azimuth=rng()*TAU;
+ const minAngle=5*Math.PI/180,maxAngle=Math.max(minAngle,Math.min(30,maximumDegrees)*Math.PI/180);
+ const theta=Math.acos(Math.cos(minAngle)-rng()*(Math.cos(minAngle)-Math.cos(maxAngle))),azimuth=rng()*TAU;
  const helper=Math.abs(current[1])<.92?[0,1,0]:[1,0,0];
  const u=V.norm(V.cross(helper,current)),v=V.norm(V.cross(current,u));
  return V.norm(V.add(V.scale(current,Math.cos(theta)),
@@ -8119,6 +8120,26 @@ function stepPulseTravel(dt){
   else if(positive||negative)axialTentacleRule='single';
  }
  const effectivePathMode=axialTentacleRule==='perpendicular'?'plane':pathMode;
+ // Root-centroid direction indicates where appendages attach; swim away from it,
+ // leaving tentacles behind the body instead of plowing through their own strands.
+ const rootBias=tentacles.reduce((sum,part)=>{
+  const root=part.delicate.root;
+  const radius=Math.hypot(...root);
+  if(radius>.00001)for(let i=0;i<3;i++)sum[i]+=root[i]/radius;
+  return sum;
+ },[0,0,0]);
+ const tailAxis=Math.hypot(...rootBias)>.25?V.norm(rootBias):null;
+ const tailSafe=(heading,reference=null)=>{
+  if(!tailAxis)return heading;
+  const dot=V.dot(heading,tailAxis);
+  if(dot<=-.05)return heading;
+  // Gradually turn within the allowed angular cap: never snap through 180°.
+  const backward=V.scale(tailAxis,-1);
+  const prior=reference||heading,angle=Math.acos(clamp(V.dot(V.norm(prior),backward),-1,1));
+  if(angle<.0001)return backward;
+  return pulseSlerpDirection(prior,backward,Math.min(1,(30*Math.PI/180)/angle));
+ };
+
  const cycleIndex=Math.floor(phase/TAU);
  if(pulseTravel.cycleIndex===null){
   pulseTravel.cycleIndex=cycleIndex;pulseTravel.pathMode=effectivePathMode;
@@ -8137,15 +8158,17 @@ function stepPulseTravel(dt){
    const initial=[0,0,0];initial[pathAxis]=pathSign;
    pulseTravel.targetDirection=initial;
   }
+  if(tailAxis)pulseTravel.targetDirection=V.scale(tailAxis,-1);
   pulseTravel.direction=pulseTravel.targetDirection.slice();
   pulseTravel.startDirection=pulseTravel.direction.slice();
   pulseTravel.turnStarted=true; // Initial orientation needs no turn.
  }else if(cycleIndex!==pulseTravel.cycleIndex){
   pulseTravel.startDirection=pulseTravel.direction.slice();
   // Both path modes draw their new 3D heading inside this specimen's
-  // heritable 10–50° cone around the PREVIOUS heading, with no global clamp.
+  // heritable 5–30° cone around the PREVIOUS heading, with no global clamp.
   pulseTravel.targetDirection=pulseConeDirection(pulseTravel.targetDirection,
    dna.turnConeDegrees,seed,cycleIndex);
+  pulseTravel.targetDirection=tailSafe(pulseTravel.targetDirection,pulseTravel.startDirection);
   pulseTravel.cycleIndex=cycleIndex;
   pulseTravel.turnStarted=false; // Wait for the next forward propulsion stroke.
  }
@@ -9014,12 +9037,13 @@ function activateViewerPreparation(){
  const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  const travelDistance=(clearances.exit+clearances.entry)*.5;
  const switchAt=clearances.exit/(clearances.exit+clearances.entry);
+ const entryLead=clearances.entry*.78;
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
   duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),switched:false,fromDistance,toDistance,
-  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,
+  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
  $('overlay').classList.add('viewer-caption-fading');
@@ -9486,7 +9510,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  }
  if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
   const m=viewer.morph;
-  base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
+  const lead=(m.entryLead||0)*(1-m.t);
+  base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2-lead)),base);
  }
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
