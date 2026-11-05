@@ -6408,7 +6408,6 @@ uniform float uNebulaMix;
 uniform float uBgAspect;
 uniform mat3 uSkyBasis;
 uniform vec4 uStarBursts[4];
-uniform vec4 uResidentStars[12];
 
 // Analytic glow lobes replace multi-octave fog; one low-frequency noise
 // field remains for shimmer and two for the softly evolving flare.
@@ -6513,26 +6512,6 @@ vec3 proceduralNebula(vec2 uv){
  float youngHalo=exp(-separation*950.0);
  float newborn=(youngCore*1.9+youngHalo*.52)*clusterGate;
  colour+=mix(vec3(.65,.79,1.),vec3(1.,.85,.64),nurserySeed)*newborn;
- // Permanent sky-dome stars: circular halos, crisp cross flares and gentle
- // independent twinkle. World-space directions preserve infinite distance.
- for(int i=0;i<12;i++){
-  vec4 st=uResidentStars[i];
-  if(st.w<=0.001)continue;
-  vec3 localStar=vec3(dot(st.xyz,uSkyBasis[0]),dot(st.xyz,uSkyBasis[1]),dot(st.xyz,uSkyBasis[2]));
-  if(localStar.z>=-.01)continue;
-  vec2 starScreen=localStar.xy/max(.01,-localStar.z);
-  vec2 delta=screen-starScreen;
-  float radial=length(delta);
-  float tone=float(i);
-  float slowTwinkle=.76+.24*sin(uTime*(.24+mod(tone*1.71,4.0)*.085)+tone*2.47);
-  float core=exp(-radial*1350.0);
-  float halo=exp(-radial*128.0);
-  float horizontal=exp(-abs(delta.y)*720.0)*exp(-abs(delta.x)*38.0);
-  float vertical=exp(-abs(delta.x)*720.0)*exp(-abs(delta.y)*38.0);
-  float sparkle=(core*1.7+halo*.58+(horizontal+vertical)*.48)*st.w*slowTwinkle;
-  vec3 tint=mix(vec3(.60,.80,1.0),vec3(1.0,.88,.69),mod(tone*3.11,7.0)/7.0);
-  colour+=sparkle*tint;
- }
  // Mortal stars extinguish with the same sharp cross and round snow-flare glow.
  for(int i=0;i<4;i++){
   vec4 eventStar=uStarBursts[i];
@@ -6589,7 +6568,53 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis','uStarBursts[0]','uResidentStars[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis' ,'uStarBursts[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ // Separate GPU point pass scales to 240 flaring stars without exceeding the
+ // fragment-uniform limits on iPhone WebGL1 or looping 240x per sky pixel.
+ const residentVertex=`attribute vec4 aResidentStar;
+ uniform mat3 uResidentBasis;
+ uniform float uResidentAspect;
+ uniform float uResidentTime;
+ varying float vResidentEnergy;
+ varying float vResidentTint;
+ void main(){
+  vec3 local=vec3(dot(aResidentStar.xyz,uResidentBasis[0]),
+   dot(aResidentStar.xyz,uResidentBasis[1]),
+   dot(aResidentStar.xyz,uResidentBasis[2]));
+  float z=-local.z;
+  vec2 pos=local.xy/max(.001,z);
+  gl_Position=vec4(pos/vec2(.395*uResidentAspect,.395),0.999,1.0);
+  if(z<.05||abs(gl_Position.x)>1.15||abs(gl_Position.y)>1.15)
+   gl_Position=vec4(3.0,3.0,0.999,1.0);
+  float id=floor(aResidentStar.w*1000.0);
+  float twinkle=.76+.24*sin(uResidentTime*(.24+mod(id*1.71,4.0)*.085)+id*2.47);
+  vResidentEnergy=fract(aResidentStar.w*1000.0)*2.0*twinkle;
+  vResidentTint=fract(id*.37);
+  gl_PointSize=24.0;
+ }`;
+ const residentFragment=`precision mediump float;
+ varying float vResidentEnergy;
+ varying float vResidentTint;
+ void main(){
+  vec2 delta=gl_PointCoord-.5;
+  float radial=length(delta);
+  float core=exp(-radial*75.0);
+  float halo=exp(-radial*11.0);
+  float horizontal=exp(-abs(delta.y)*85.0)*exp(-abs(delta.x)*6.0);
+  float vertical=exp(-abs(delta.x)*85.0)*exp(-abs(delta.y)*6.0);
+  vec3 tint=mix(vec3(.64,.82,1.0),vec3(1.0,.87,.67),vResidentTint);
+  if(vResidentEnergy<=.001)discard;
+  float energy=(core*1.65+halo*.65+(horizontal+vertical)*.54)*vResidentEnergy;
+  gl_FragColor=vec4(tint*energy,clamp(energy,0.0,1.0));
+ }`;
+ const residentProgram=linked(isWebGL2?toVertex300(residentVertex):residentVertex,isWebGL2?toFragment300(residentFragment):residentFragment,'常駐星フレア');
+ const residentBuffer=gl.createBuffer();
+ gl.bindBuffer(gl.ARRAY_BUFFER,residentBuffer);
+ gl.bufferData(gl.ARRAY_BUFFER,240*4*4,gl.DYNAMIC_DRAW);
+ const residentVars={position:gl.getAttribLocation(residentProgram,'aResidentStar'),
+  basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
+  aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
+  time:gl.getUniformLocation(residentProgram,'uResidentTime')};
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -6735,7 +6760,7 @@ void main(){
  for(const u of ['uCapture','uCaptureAspect','uSampleTug','uMvp','uModel','uCamera','uCameraPos','uAlpha','uWire','uRim','uTime','uBodyTime','uCiliaAmp','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uGlassAmount','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uOptics0','uOptics1','uOpticsControl','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uFillDir','uRimDir','uLightLevels','uLowerFillDir','uLowerFillPower','uDramaticEdge','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase'])ciliaVars[u]=gl.getUniformLocation(ciliaProgram,u);
  initTextureMorphUniforms(gl,program,vars);initTextureMorphUniforms(gl,ciliaProgram,ciliaVars);
  gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.clearColor(.90,.90,.90,1);
- return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,snowProgram,snowVars,snowSparkProgram,snowSparkVars,snowSparkFlashBuffer,snowSparkFlashData,snowBuffer,snowData,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
+ return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,residentProgram,residentBuffer,residentVars,snowProgram,snowVars,snowSparkProgram,snowSparkVars,snowSparkFlashBuffer,snowSparkFlashData,snowBuffer,snowData,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
 }
 // v15.59.30: camera-tracked dramatic three-point lighting.
 const DRAMATIC_LIGHTING=Object.freeze({
@@ -8247,8 +8272,6 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uBgAspect!==null&&surface.uBgAspect!==undefined)gl.uniform1f(surface.uBgAspect,aspect);
  if(surface['uStarBursts[0]']!==null&&surface['uStarBursts[0]']!==undefined)
   gl.uniform4fv(surface['uStarBursts[0]'],starNurseryUniforms);
- if(surface['uResidentStars[0]']!==null&&surface['uResidentStars[0]']!==undefined)
-  gl.uniform4fv(surface['uResidentStars[0]'],residentStarUniforms);
  if(surface.uSkyBasis!==null&&surface.uSkyBasis!==undefined){
   const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
   // worldCameraFrame stores matrices column-major.
@@ -8263,12 +8286,29 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  gl.enableVertexAttribArray(renderer.studioAttribute);
  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
  gl.disableVertexAttribArray(renderer.studioAttribute);
+ if(backgroundCycle.to.id==='nebula'&&renderer.residentProgram&&residentStars.length){
+  const basis=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+  gl.useProgram(renderer.residentProgram);
+  gl.uniformMatrix3fv(renderer.residentVars.basis,false,new Float32Array([
+   ...basis.right,...basis.up,...basis.back]));
+  gl.uniform1f(renderer.residentVars.aspect,aspect);
+  gl.uniform1f(renderer.residentVars.time,environmentTime);
+  gl.bindBuffer(gl.ARRAY_BUFFER,renderer.residentBuffer);
+  gl.bufferSubData(gl.ARRAY_BUFFER,0,residentStarUniforms);
+  for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
+  gl.vertexAttribPointer(renderer.residentVars.position,4,gl.FLOAT,false,0,0);
+  gl.enableVertexAttribArray(renderer.residentVars.position);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+  gl.drawArrays(gl.POINTS,0,RESIDENT_STAR_COUNT);
+  gl.disableVertexAttribArray(renderer.residentVars.position);
+  gl.disable(gl.BLEND);
+ }
  gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
 }
 
 // 12 sky-dome residents appear immediately. Their lifetimes and radiance are
 // independent; dying visible stars chime and respawn outside the current view.
-const RESIDENT_STAR_COUNT=12;
+const RESIDENT_STAR_COUNT=240;
 const residentStarUniforms=new Float32Array(RESIDENT_STAR_COUNT*4);
 const starNurseryUniforms=new Float32Array(16);
 const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
@@ -8337,7 +8377,7 @@ function tickStarNursery(dt){
    }
   }
   residentStarUniforms.set(star.direction,slot);
-  residentStarUniforms[slot+3]=active?intensity:0;
+  residentStarUniforms[slot+3]=active?(i+intensity*.49)/1000:0;
  }
 }
 // Porcelain-crazing glints: every onset is tied to an actual snow-flare cycle.
