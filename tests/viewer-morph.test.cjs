@@ -49,7 +49,7 @@ test('closest-frame-boundary exit never traverses the opposite corner',()=>{
   'bottom-right specimen must exit right or bottom, not top-left');
  assert.ok(topLeft[0]>=0&&topLeft[1]<=0,
   'top-left specimen must exit left or top, not bottom-right');
- const directions=new Set([[6,0],[-6,0],[0,5],[0,-5],[3,3],[-3,-3]].map(p=>
+ const directions=new Set([[12,0],[-12,0],[0,7],[0,-7],[3,3],[-3,-3]].map(p=>
   Array.from(ctx.cameraHandoffDirection(p,radius,20,1.7)).join(',')));
  assert.ok(directions.size>=3,'exit must not be locked to the horizontal axis');
 });
