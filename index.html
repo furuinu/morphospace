@@ -7380,21 +7380,17 @@ function cameraHandoffDistance(sourceBound,targetBound,fromDistance,toDistance,a
  // while the camera itself passes through both thresholds without stopping.
  return required*1.11+1.5;
 }
+// Every handoff receives a fresh free-angle departure, unrelated to gallery order.
+// A minimum vertical/horizontal contribution avoids repeated horizontal wipes.
 function cameraHandoffDirection(screenPosition=[0,0],sourceBound={radius:1},distance=20,aspect=1){
- const tan=Math.tan(Math.PI*43/360),hx=(distance+sourceBound.radius)*tan*Math.max(.4,aspect),hy=(distance+sourceBound.radius)*tan;
- const [x,y]=screenPosition,r=sourceBound.radius;
- const options=[[1,0],[-1,0],[0,1],[0,-1],
-  [Math.SQRT1_2,Math.SQRT1_2],[-Math.SQRT1_2,Math.SQRT1_2],
-  [Math.SQRT1_2,-Math.SQRT1_2],[-Math.SQRT1_2,-Math.SQRT1_2]];
- let best=options[0],shortest=Infinity;
- for(const [dx,dy] of options){
-  const exitX=Math.abs(dx)>1e-5?(hx+r+x*Math.sign(dx))/Math.abs(dx):Infinity;
-  const exitY=Math.abs(dy)>1e-5?(hy+r+y*Math.sign(dy))/Math.abs(dy):Infinity;
-  const required=Math.max(0,Math.min(exitX,exitY));
-  const weighted=required*(Math.abs(dx)>0&&Math.abs(dy)>0?1.06:1);
-  if(weighted<shortest){shortest=weighted;best=[dx,dy]}
- }
- return best;
+ const phase=Math.random()*Math.PI*2;
+ const direction=[Math.cos(phase),Math.sin(phase)];
+ // Prevent near-axis moves without forcing one of eight fixed directions.
+ const min=.16;
+ if(Math.abs(direction[0])<min)direction[0]=Math.sign(direction[0]||1)*min;
+ if(Math.abs(direction[1])<min)direction[1]=Math.sign(direction[1]||1)*min;
+ const norm=Math.hypot(...direction);
+ return direction.map(x=>x/norm);
 }
 function cameraHandoffEase(x){
  x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);
@@ -7417,11 +7413,13 @@ function cameraHandoffDuration(travelDistance,fromDistance,toDistance){
 function cameraHandoffFrame(m,p){
  const x=Math.max(0,Math.min(1,p));
  const u=cameraHandoffTravel(x);
- // The exact halfway point swaps fully constructed A for fully constructed B
- // while both are outside the viewport. The eye never pauses or snaps.
- const switched=x>=.5;
- return {switched,travel:2*m.travelDistance*u,yaw:0,
-  progress:switched?cameraHandoffEase((x-.5)*2):0};
+ // A large, continuously differentiable arc: no position jump at the swap.
+ // Curvature vanishes at both ends, preserving the existing world handoff.
+ const bend=Math.sin(Math.PI*u);
+ const curve=m.travelDistance*m.curvature*bend;
+ const depth=m.travelDistance*m.depthCurve*bend;
+ return {switched:x>=.5,travel:2*m.travelDistance*u,
+  curve,depth,yaw:0,progress:x>=.5?cameraHandoffEase((x-.5)*2):0};
 }
 
 // This pure CPU entry point is shared with a dedicated Worker. It does not read
@@ -8153,7 +8151,10 @@ function viewerCameraMatrix(){
  const frame=worldCameraFrame(modelYaw+(m?.cameraYawOffset||0),modelPitch,cameraRoll,spec.viewDistance,panX,panY);
  if(active)for(let i=0;i<3;i++)frame.position[i]+=pulseTravel.camera[i];
  for(let i=0;i<3;i++)frame.position[i]+=viewer.worldOffset[i];
- if(m)for(let i=0;i<3;i++)frame.position[i]+=m.travelAxis[i]*m.cameraTravel;
+ if(m)for(let i=0;i<3;i++)
+  frame.position[i]+=m.travelAxis[i]*m.cameraTravel+
+   (m.curveAxis?.[i]||0)*(m.cameraCurve||0)+
+   frame.back[i]*(m.cameraDepth||0);
  return mul4(frame.rotation,translate3(-frame.position[0],-frame.position[1],-frame.position[2]));
 }
 function backgroundSceneTransform(projection,view){
@@ -8678,6 +8679,15 @@ function initBackgroundControls(){
  $('viewerBackgroundRandom').onchange=()=>{backgroundCycle.random=$('viewerBackgroundRandom').checked;backgroundCycle.elapsed=0;saveBackgroundSettings();};
 }
 
+const CAMERA_ORBIT_BASE_SPEED=.10625*1.5/2;
+let cameraOrbitSpeed=-CAMERA_ORBIT_BASE_SPEED,cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
+function stepCameraOrbit(dt){
+ // 8-second inertial steering. Angle and angular velocity are both continuous
+ // even when the next specimen requests the opposite turning direction.
+ const alpha=1-Math.exp(-Math.max(0,dt)/8);
+ cameraOrbitSpeed+=(cameraOrbitTargetSpeed-cameraOrbitSpeed)*alpha;
+ cameraOrbitPhase-=cameraOrbitSpeed*dt;
+}
 const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0]};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
 function viewerCurrentItemIndex(items){return viewer.source==='stock'?items.findIndex(item=>item.stored.id===activeStoredIndividual?.payload.record.id):(activeStoredIndividual?-1:items.findIndex(item=>item.index===selected));}
@@ -8786,12 +8796,18 @@ function activateViewerPreparation(){
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
  const planar=cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
+ const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
+ const curvature=(Math.random()-.5)*.40;
+ const depthCurve=(Math.random()-.5)*.18;
+ // The newly selected direction is carried into the following orbit.
+ cameraOrbitTargetSpeed=(planar[0]>=0?-1:1)*CAMERA_ORBIT_BASE_SPEED;
  const travelDistance=cameraHandoffDistance(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance),switched:false,fromDistance,toDistance,
-  travelAxis:axis.slice(),travelDistance,cameraTravel:0,cameraYawOffset:0,
+  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,
+  cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
  $('overlay').classList.add('viewer-caption-fading');
  viewer.morph.stored=job.stored;viewer.morph.record=job.record;viewer.morph.direction=job.direction;
@@ -8892,6 +8908,7 @@ function cancelViewerMorph(commit=false){
 function pauseViewerTransition(){viewer.revision++;viewer.preparing=false;discardViewerPreparation();cancelViewerMorph(false);viewer.phaseFade=null;setViewerPhaseOpacity(0);viewer.elapsed=0;$('viewerTransition').textContent='';updateViewerCountdown()}
 function stopViewer(){
  viewer.worldOffset=[0,0,0];
+ cameraOrbitSpeed=cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
  if(typeof resetPulseTravel==='function')resetPulseTravel();
  $('overlay').classList.remove('viewer-caption-fading');
  viewerTap=null;setViewerNavigationVisible(true);$('viewerSettings').open=false;
@@ -9075,7 +9092,8 @@ function tickViewer(elapsed){
  if(m&&m.mode==='camera-pan'){
   m.elapsed=Math.min(m.duration,m.elapsed+dt);
   const p=m.elapsed/m.duration,shot=cameraHandoffFrame(m,p);
-  m.cameraTravel=shot.travel;m.cameraYawOffset=shot.yaw;m.t=shot.progress;
+  m.cameraTravel=shot.travel;m.cameraCurve=shot.curve;m.cameraDepth=shot.depth;
+  m.cameraYawOffset=shot.yaw;m.t=shot.progress;
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
    m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
@@ -10811,7 +10829,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
   if(typeof stepPulseTravel==='function')stepPulseTravel(Math.min(elapsed,.18));
   if(videoRecording?videoRecording.autoOrbit:auto){
    // Continuous clockwise orbit; preserve manual yaw and pitch offsets.
-   cameraOrbitPhase+=Math.min(elapsed,.15)*(.10625*1.5/2);
+   stepCameraOrbit(Math.min(elapsed,.15));
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
    modelPitch=clamp(-25*Math.PI/180+cameraOrbitPitchOffset,-Math.PI*.48,Math.PI*.48);
    cameraRoll=0;
