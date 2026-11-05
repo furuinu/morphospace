@@ -7448,17 +7448,24 @@ function transitionSpecimenBounds(sp,uploaded){
  include(uploaded?.cilia,13);
  return {radius:radius*1.5+1.5}; // Skin deformation and free appendages.
 }
+// Shared perspective envelope for zoom-aware follow, handoff and visibility.
+function cameraViewEnvelope(distance,aspect=1,radius=0){
+ const depth=Math.max(.1,distance);
+ const halfHeight=depth*Math.tan(Math.PI*43/360);
+ const halfWidth=halfHeight*Math.max(.4,aspect);
+ return {halfWidth,halfHeight,radius:Math.max(0,radius)};
+}
 function cameraHandoffClearances(sourceBound,targetBound,fromDistance,toDistance,aspect=1,screenPosition=[0,0],unitDirection=[1,0]){
- const tan=Math.tan(Math.PI*43/360),hx=(fromDistance+sourceBound.radius)*tan*Math.max(.4,aspect),hy=(fromDistance+sourceBound.radius)*tan;
- const tx=(toDistance+targetBound.radius)*tan*Math.max(.4,aspect),ty=(toDistance+targetBound.radius)*tan;
+ const source=cameraViewEnvelope(fromDistance,aspect,sourceBound.radius);
+ const target=cameraViewEnvelope(toDistance,aspect,targetBound.radius);
  const dx=unitDirection[0],dy=unitDirection[1];
- // Distance needed to leave the visible side; do not use an oversized symmetric gap.
- const xExit=Math.abs(dx)>1e-5?(hx+sourceBound.radius+screenPosition[0]*Math.sign(dx))/Math.abs(dx):Infinity;
- const yExit=Math.abs(dy)>1e-5?(hy+sourceBound.radius+screenPosition[1]*Math.sign(dy))/Math.abs(dy):Infinity;
- const xEntry=Math.abs(dx)>1e-5?(tx+targetBound.radius)/Math.abs(dx):Infinity;
- const yEntry=Math.abs(dy)>1e-5?(ty+targetBound.radius)/Math.abs(dy):Infinity;
- return {exit:Math.max(1,Math.min(xExit,yExit))*1.015,
-         entry:Math.max(1,Math.min(xEntry,yEntry))*1.015};
+ const exitX=Math.abs(dx)>1e-5?(source.halfWidth+source.radius+screenPosition[0]*Math.sign(dx))/Math.abs(dx):Infinity;
+ const exitY=Math.abs(dy)>1e-5?(source.halfHeight+source.radius+screenPosition[1]*Math.sign(dy))/Math.abs(dy):Infinity;
+ const enterX=Math.abs(dx)>1e-5?(target.halfWidth+target.radius)/Math.abs(dx):Infinity;
+ const enterY=Math.abs(dy)>1e-5?(target.halfHeight+target.radius)/Math.abs(dy):Infinity;
+ // No artificial clearance margin or dead air between source and target.
+ return {exit:Math.max(1,Math.min(exitX,exitY)),
+         entry:Math.max(1,Math.min(enterX,enterY))};
 }
 function cameraHandoffDistance(...args){
  const clearance=cameraHandoffClearances(...args);
@@ -8234,6 +8241,7 @@ function stepPulseTravel(dt){
 // corrections the camera translation stays fixed. Auto-orbit remains independent.
 const cameraCorrection={active:false,elapsed:0,duration:2.2,start:[0,0,0],target:[0,0,0],specimen:null};
 function stepPulseCameraFollow(dt){
+ if(viewer.morph?.mode==='camera-pan')return; // Handoff owns the camera until B enters.
  if(!pulseTravelActive()||pulseTravel.specimen!==spec){
   cameraCorrection.active=false;cameraCorrection.specimen=null;return;
  }
@@ -8247,8 +8255,8 @@ function stepPulseCameraFollow(dt){
  const depth=-V.dot(offset,frame.back);
  const distance=Math.hypot(...offset);
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
- const tanHalf=Math.tan(Math.PI*43/360);
- const safeY=Math.max(.01,depth*tanHalf*.20),safeX=safeY*aspect;
+ const envelope=cameraViewEnvelope(Math.max(.01,depth),aspect);
+ const safeY=Math.max(.01,envelope.halfHeight*.64),safeX=Math.max(.01,envelope.halfWidth*.64);
  const nominal=Math.max(1,spec.viewDistance);
  const tooNear=distance<nominal*.94,tooFar=distance>nominal*1.06;
  const outOfFrame=depth<=0||Math.abs(right)>safeX||Math.abs(up)>safeY;
@@ -8359,14 +8367,14 @@ starNurseryUniforms.fill(-1);
 function skyStarDirection(outside=false){
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
  const aspect=Math.max(1,canvas.width)/Math.max(1,canvas.height);
- const h=.5/.79, w=h*aspect;
+ const h=Math.tan(Math.PI*43/360), w=h*aspect;
  let x=(Math.random()*1.5- .75)*w,y=(Math.random()*1.5-.75)*h;
  if(outside){
-  const edge=Math.floor(Math.random()*4),margin=1.12+Math.random()*.65;
-  if(edge===0)x=-w*margin;
-  if(edge===1)x=w*margin;
-  if(edge===2)y=-h*margin;
-  if(edge===3)y=h*margin;
+  const flow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll)||[1,0];
+  const margin=1.04+Math.random()*.32;
+  // Stars reappear ahead of camera travel (the edge opposite sky-image drift).
+  if(Math.abs(flow[0])>=Math.abs(flow[1]))x=-Math.sign(flow[0]||1)*w*margin;
+  else y=-Math.sign(flow[1]||1)*h*margin;
  }
  const v=frame.right.map((component,i)=>component*x+frame.up[i]*y-frame.back[i]);
  const length=Math.hypot(...v)||1;return v.map(value=>value/length);
@@ -8375,7 +8383,7 @@ function seedResidentStars(){
  residentStars=Array.from({length:RESIDENT_STAR_COUNT},(_,i)=>({
   direction:skyStarDirection(false),brightness:.55+Math.random()*.75,
   deathAt:environmentTime+6+Math.random()*42,phase:Math.random()*6.283,
-  dying:false,deathStart:0,chimed:false
+  dying:false,deathStart:0,chimed:false,offscreen:false,flareUntil:0
  }));
 }
 function tickStarNursery(dt){
@@ -8402,9 +8410,23 @@ function tickStarNursery(dt){
   }
   nextStarDeath=environmentTime+2.8+Math.random()*5.0;
  }
+ const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+ const half=cameraViewEnvelope(1,Math.max(.5,canvas.width/Math.max(1,canvas.height)));
  for(let i=0;i<residentStars.length;i++){
   const star=residentStars[i],slot=i*4;
-  let intensity=star.brightness;
+  const z=-star.direction.reduce((a,v,k)=>a+v*sky.back[k],0);
+  const u=star.direction.reduce((a,v,k)=>a+v*sky.right[k],0)/Math.max(.001,z);
+  const v=star.direction.reduce((a,v,k)=>a+v*sky.up[k],0)/Math.max(.001,z);
+  const onScreen=z>0&&Math.abs(u)<=half.halfWidth&&Math.abs(v)<=half.halfHeight;
+  if(!onScreen&&!star.offscreen&&!star.dying){
+   star.direction=skyStarDirection(true);
+   star.offscreen=true;star.flareUntil=0;
+  }else if(onScreen){
+   star.offscreen=false;
+   // Continuously transfer bright cross flares among stars currently in view.
+   if(!star.dying&&Math.random()<Math.max(0,dt)*.19)star.flareUntil=environmentTime+1+Math.random()*2.5;
+  }
+  let intensity=star.brightness*(environmentTime<star.flareUntil?1.45:.55);
   if(star.dying){
    const age=(environmentTime-star.deathStart)/1.15;
    intensity*=1-Math.min(1,Math.max(0,age*2.8));
@@ -8413,13 +8435,13 @@ function tickStarNursery(dt){
     if(active)playSnowChime(i,star.brightness,environmentTime);
    }
    if(age>=1){
-    star.direction=skyStarDirection(true);star.dying=false;
+    star.direction=skyStarDirection(true);star.dying=false;star.offscreen=true;
     star.deathAt=environmentTime+8+Math.random()*44;
     intensity=star.brightness;
    }
   }
   residentStarUniforms.set(star.direction,slot);
-  residentStarUniforms[slot+3]=active?(i+intensity*.49)/1000:0;
+  residentStarUniforms[slot+3]=active?(i+Math.min(.49,intensity*.37))/1000:0;
  }
 }
 // Porcelain-crazing glints: every onset is tied to an actual snow-flare cycle.
@@ -9046,25 +9068,26 @@ function activateViewerPreparation(){
  const current=pulseTravel.specimen===spec;
  const offset=(current?pulseTravel.position:[0,0,0]).map((v,i)=>v-frame.position[i]-(current?pulseTravel.camera[i]:0));
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
+ // Start easing the 3-axis turn before the source begins to exit.
+ cameraOrbitChooseHeading();
  const planar=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
  const curvature=(Math.random()-.5)*.40;
  const depthCurve=(Math.random()-.5)*.18;
- // The next orbit acquires its 3D heading gradually across the handoff.
- cameraOrbitChooseHeading();
+ // The camera travels WITH sky flow, so stationary A retreats against it.
  const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  const travelDistance=(clearances.exit+clearances.entry)*.5;
  const switchAt=clearances.exit/(clearances.exit+clearances.entry);
  // Start B just beyond the advancing edge; the first visible pixels arrive
  // during the first 0.8s after A disappears, not several seconds later.
- const entryLead=Math.max(0,clearances.entry-targetBounds.radius*.75);
+ const entryLead=0; // World-anchored B enters only via continuous camera travel.
  viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
-  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),switched:false,fromDistance,toDistance,
+  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:1.35,switched:false,fromDistance,toDistance,
   travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
@@ -9353,7 +9376,9 @@ function tickViewer(elapsed){
  }
  if(m&&m.mode==='camera-pan'){
   m.elapsed=Math.min(m.duration,m.elapsed+dt);
-  const p=m.elapsed/m.duration,shot=cameraHandoffFrame(m,p);
+  // First let the orbit's angular-velocity easing bend the line of sight.
+  // The subsequent pan is continuous, and A/B are fixed in world space.
+  const p=clamp((m.elapsed-(m.turnSeconds||0))/Math.max(.01,m.duration-(m.turnSeconds||0)),0,1),shot=cameraHandoffFrame(m,p);
   m.cameraTravel=shot.travel;m.cameraCurve=shot.curve;m.cameraDepth=shot.depth;
   m.cameraYawOffset=shot.yaw;m.t=shot.progress;
   if(shot.switched&&!m.switched){
@@ -9541,17 +9566,9 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  }
  if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
   const m=viewer.morph;
-  // The new organism is placed just beyond the advancing screen edge in the
-  // very frame the previous organism disappears, then enters within 0.8s.
-  // It follows the moving camera during the remainder of the transition.
-  const reveal=clamp((m.elapsed-(m.switchedAt??m.elapsed))/.8,0,1);
-  const ease=reveal*reveal*(3-2*reveal);
-  const lead=(m.entryLead||0)*(1-ease);
-  const follow=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
-  const translation=m.travelAxis.map((v,i)=>
-   v*(m.cameraTravel+lead)+m.curveAxis[i]*m.cameraCurve+
-   follow.back[i]*m.cameraDepth);
-  base=mul4(translate3(...translation),base);
+  // B occupies the next fixed location ahead in the NEW viewing direction.
+  // Never drag B with the camera: its arrival comes solely from camera travel.
+  base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
  }
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
