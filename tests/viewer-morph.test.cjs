@@ -25,7 +25,11 @@ test('offscreen radius includes all appendages and GPU cilia',()=>{
  assert.ok(bounds.radius>12,'GPU cilium tip omitted');
  assert.ok(bounds.radius>9,'tentacle tip omitted');
  const distance=ctx.cameraHandoffDistance(bounds,bounds,20,20,1.6);
- assert.ok(distance>bounds.radius+20*Math.tan(Math.PI*43/360)*1.6);
+ const clearance=ctx.cameraHandoffClearances(bounds,bounds,20,20,1.6);
+ assert.ok(clearance.exit>bounds.radius&&clearance.entry>bounds.radius);
+ assert.ok(Math.abs(distance-(clearance.exit+clearance.entry)/2)<1e-7);
+ assert.ok(ctx.cameraHandoffDistance(bounds,bounds,10,10,1.6)<distance,
+  'closer zoom must shrink the visible-world clearance');
 });
 test('short camera sweeps complete faster without interrupting continuous travel',()=>{
  const duration=ctx.cameraHandoffDuration;
@@ -125,7 +129,7 @@ test('camera handoff joins source exit and target entry at one boundary without 
  const source={radius:18},target={radius:25},distance=40,aspect=1.8;
  const clear=ctx.cameraHandoffClearances(source,target,distance,distance,aspect,[0,0],[1,0]);
  const halfWidth=(distance+target.radius)*Math.tan(Math.PI*43/360)*aspect;
- assert.ok(clear.entry-target.radius>=halfWidth,'B must remain offscreen before entry');
+ assert.ok(clear.entry-target.radius>=halfWidth-1e-6,'B must begin precisely at the true viewport edge');
  assert.ok(clear.exit-source.radius>0,'A must have exited at the boundary');
  const travel=(clear.exit+clear.entry)/2,switchAt=clear.exit/(clear.exit+clear.entry);
  assert.ok(Math.abs(ctx.cameraHandoffDistance(source,target,distance,distance,aspect)-travel)<1e-8);
