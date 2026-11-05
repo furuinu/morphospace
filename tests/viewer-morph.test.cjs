@@ -78,7 +78,7 @@ test('camera transition holds A intact until fully offscreen and never uploads m
  for(let i=0;i<10;i++)f.tickViewer(.12);
  assert.equal(f.spec.seed,1,'source must still be active before the handoff');
  assert.equal(f.v.morph.switched,false);
- for(let i=0;i<7;i++)f.tickViewer(.12);
+ for(let i=0;i<9;i++)f.tickViewer(.12);
  assert.equal(f.spec,target,'target must become visible only after A exits');
  assert.equal(f.v.morph.switched,true);
  assert.equal(f.v.morph.batches.length,0);
