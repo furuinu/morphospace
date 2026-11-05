@@ -6492,9 +6492,26 @@ vec3 proceduralNebula(vec2 uv){
  float softCloud=nebFbm(q*.66+vec3(9.1,2.8,5.2));
  float density=smoothstep(.34,.73,mainCloud*.78+softCloud*.30);
  float filament=nebNoise(q*5.7+flow*.4);
- density=clamp(density*(.70+.52*filament),0.,1.);
+ // Detail layers follow the same 3D domain warp as the large gas masses.
+ float filigree=nebNoise(q*13.7+flow*.9);
+ float wisps=nebNoise(q*25.3+vec3(11.3,4.7,8.1));
+ density=clamp(density*(.58+.44*filament+.27*filigree+.17*wisps),0.,1.);
  float colorRegion=nebNoise(q*.54+vec3(4.,8.,2.));
  vec3 colour=nebGradient(density,colorRegion)*density*.80;
+ // A fourth, nearly-white intensity tier occurs only in the densest gas.
+ float nursery=smoothstep(.70,.88,density)*smoothstep(.48,.70,mainCloud);
+ colour+=vec3(.87,.78,1.0)*nursery*.48;
+ // Young stellar clusters: many small, brilliant stars only near nursery cores.
+ // Hash cells are fixed to the spherical world ray, never the screen UV.
+ vec3 nurseryCell=floor(ray*360.0);
+ vec3 nurseryCenter=normalize(nurseryCell+vec3(.5));
+ float nurserySeed=nebHash(nurseryCell+vec3(13.,7.,19.));
+ float clusterGate=step(.965,nurserySeed)*nursery;
+ float separation=length(ray-nurseryCenter);
+ float youngCore=1.0-smoothstep(.0007,.0024,separation);
+ float youngHalo=exp(-separation*950.0);
+ float newborn=(youngCore*1.9+youngHalo*.52)*clusterGate;
+ colour+=mix(vec3(.65,.79,1.),vec3(1.,.85,.64),nurserySeed)*newborn;
  // Sparse far-field stars, stable in world direction with gentle twinkle.
  vec3 cell=floor(ray*260.0);
  float rnd=nebHash(cell);
