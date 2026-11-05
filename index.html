@@ -8301,10 +8301,9 @@ function stepPulseCameraFollow(dt){
  const distance=Math.hypot(...offset);
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
  const envelope=cameraViewEnvelope(Math.max(.01,depth),aspect);
- // Reserve room for the specimen silhouette, not only its centre.
- const bound=Math.max(0,Number(spec.growthModel?.bound)||0);
- const safeY=Math.max(.01,envelope.halfHeight*.64-bound*.25);
- const safeX=Math.max(.01,envelope.halfWidth*.64-bound*.25);
+ // Camera starts following at 15% of full viewport width/height from centre.
+ const safeY=Math.max(.01,envelope.halfHeight*.30);
+ const safeX=Math.max(.01,envelope.halfWidth*.30);
  const nominal=Math.max(1,spec.viewDistance);
  const tooNear=distance<nominal*.94,tooFar=distance>nominal*1.06;
  const outOfFrame=depth<=0||Math.abs(right)>safeX||Math.abs(up)>safeY;
