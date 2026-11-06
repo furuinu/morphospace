@@ -9271,6 +9271,15 @@ function warpChaseEase(t){
  const x=clamp(t,0,1);
  return x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;
 }
+// World-space flight gaze is shared by the sky and specimen rendering.
+function warpFlightAngles(m){
+ if(!m?.warpChase||m.warpStage==='frameout')return [0,0,0];
+ const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
+ const envelope=Math.pow(Math.sin(Math.PI*p),2);
+ return [m.warpYaw*envelope,
+  m.warpPitch*envelope*Math.sin(Math.PI*(.25+.55*p)),
+  m.warpRoll*envelope];
+}
 function warpChaseState(m,dt){
  m.elapsed+=Math.max(0,dt);
  const exitDuration=m.exitDuration||3;
@@ -9287,7 +9296,12 @@ function warpChaseState(m,dt){
  for(let i=0;i<3;i++)pulseTravel.camera[i]*=Math.exp(-Math.min(.12,dt)*3.5);
  m.warpStage=p<.24?'accel':p<.68?'cruise':p<.90?'decel':'acquire';
  const u=warpChaseEase(p);
- m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u);
+ // A truly curved 3D flight with lateral banking and depth excursion.
+ // sin² returns position and velocity seamlessly to the target anchor.
+ const bend=Math.pow(Math.sin(Math.PI*p),2);
+ m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u+
+  m.warpSide[i]*m.warpArc*bend+
+  m.warpBack[i]*m.warpDepth*bend*Math.sin(Math.PI*(.15+.70*p)));
  m.cameraTravel=m.warpPosition.reduce((sum,v,i)=>sum+v*m.travelAxis[i],0);
  m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
  if(!m.switched){
@@ -9344,8 +9358,15 @@ function activateViewerPreparation(){
  const farDistance=fromDistance*(6+Math.random()*6);
  const warpStart=axis.map(v=>v*exitDistance);
  const warpTarget=axis.map(v=>v*(exitDistance+farDistance));
+ const warpArc=farDistance*(.16+Math.random()*.10)*(Math.random()<.5?-1:1);
+ const warpDepth=farDistance*(.10+Math.random()*.08);
+ const warpYaw=(.75+Math.random()*.55)*(Math.random()<.5?-1:1);
+ const warpPitch=(.40+Math.random()*.25)*(Math.random()<.5?-1:1);
+ const warpRoll=(.24+Math.random()*.23)*(Math.random()<.5?-1:1);
  viewer.morph={mode:'camera-pan',warpChase:true,warpStage:'frameout',warpAmount:0,
-  warpStart,warpTarget,warpPosition:[0,0,0],exitDistance,exitDuration:3.2,warpDuration:2.5,
+  warpStart,warpTarget,warpPosition:[0,0,0],
+  warpSide:curveAxis.slice(),warpBack:frame.back.slice(),warpArc,warpDepth,warpYaw,warpPitch,warpRoll,
+  exitDistance,exitDuration:3.2,warpDuration:2.5,
   index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
@@ -11408,6 +11429,12 @@ function frame(now){viewerFrameHandle=0;if(animating){
    modelPitch=-25*Math.PI/180+cameraOrbitPitchOffset+cameraOrbitPitchPhase;
    cameraRoll=cameraOrbitRollPhase;
   }else cameraRoll=0;
+  // Wide yaw/pitch/roll manoeuvres also move the infinite-distance sky.
+  // The gaze envelope vanishes at target acquisition without a camera snap.
+  if(viewer.morph?.warpChase){
+   const flight=warpFlightAngles(viewer.morph);
+   modelYaw+=flight[0];modelPitch+=flight[1];cameraRoll+=flight[2];
+  }
   if(typeof stepPulseCameraFollow==='function')stepPulseCameraFollow(Math.min(elapsed,.18));
   // Animate the entire existing body by low-frequency torsion in the vertex shaders.
   // No new appendage geometry, CPU remeshing, or per-frame buffer transfers.
