@@ -9264,12 +9264,14 @@ function warpCameraFovDegrees(m){
 function warpFlightAngles(m){
  if(!m?.warpChase||m.warpStage==='frameout')return [0,0,0];
  const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
- const envelope=Math.pow(Math.sin(Math.PI*p),2);
- // The camera keeps turning as the wide lens returns to normal.
- const settle=cameraHandoffEase(clamp((p-.48)/.52,0,1));
- return [m.warpYaw*(envelope*.45+settle),
-  m.warpPitch*(envelope*.32+settle*.65),
-  m.warpRoll*envelope];
+ // Continue the same sweep through wide-angle cruise and lens recovery.
+ // This is an actual change of infinite-sky viewing direction (A -> B),
+ // not an outward-and-back deviation that reveals the same background.
+ const sweep=cameraHandoffEase(clamp((p-.06)/.90,0,1));
+ const bank=Math.pow(Math.sin(Math.PI*p),2);
+ return [m.warpYaw*sweep,
+  m.warpPitch*.65*sweep,
+  m.warpRoll*bank];
 }
 function warpChaseState(m,dt){
  m.elapsed+=Math.max(0,dt);
@@ -9351,8 +9353,11 @@ function activateViewerPreparation(){
  const warpTarget=axis.map(v=>v*(exitDistance+farDistance));
  const warpArc=farDistance*(.16+Math.random()*.10)*(Math.random()<.5?-1:1);
  const warpDepth=farDistance*(.10+Math.random()*.08);
- const warpYaw=(.75+Math.random()*.55)*(Math.random()<.5?-1:1);
- const warpPitch=(.40+Math.random()*.25)*(Math.random()<.5?-1:1);
+ // Pick a new distant sky sector on every transition. A 100–150 degree
+  // azimuth change is far larger than the 43-degree normal field of view,
+  // so the destination sky cannot simply be the original patch again.
+  const warpYaw=(100+Math.random()*50)*Math.PI/180*(Math.random()<.5?-1:1);
+ const warpPitch=(.20+Math.random()*.38)*(Math.random()<.5?-1:1);
  const warpRoll=(.24+Math.random()*.23)*(Math.random()<.5?-1:1);
  viewer.morph={mode:'camera-pan',warpChase:true,warpStage:'frameout',warpAmount:0,
   warpStart,warpTarget,warpPosition:[0,0,0],
@@ -9654,8 +9659,7 @@ function tickViewer(elapsed){
   if(warpChaseState(m,dt)){
    // Preserve the final gaze in the ordinary orbit before removing warp offsets.
    cameraOrbitYawOffset+=m.warpYaw;
-   cameraOrbitPitchOffset=clamp(cameraOrbitPitchOffset+m.warpPitch*.65,
-    -Math.PI*.48+25*Math.PI/180,Math.PI*.48+25*Math.PI/180);
+   cameraOrbitPitchOffset+=m.warpPitch*.65;
    m.warpPosition=m.warpTarget.slice();cancelViewerMorph(true);
   }
   return;
