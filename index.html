@@ -9285,6 +9285,14 @@ function warpFlightAngles(m){
   m.warpPitch*.65*sweep,
   m.warpRoll*bank];
 }
+// Spawn B inside the active wide-angle frustum, independently of A's exit.
+function warpEntryFrame(m){
+ const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
+ const grow=cameraHandoffEase(clamp((p-.60)/.40,0,1));
+ const focus=cameraHandoffEase(clamp((p-.64)/.36,0,1));
+ return {visible:p>=.60,x:m.entryBirthX*(1-focus),
+  y:m.entryBirthY*(1-focus),scale:.004+.996*grow,focus};
+}
 function warpChaseState(m,dt){
  m.elapsed+=Math.max(0,dt);
  const exitDuration=m.exitDuration||3;
@@ -9375,9 +9383,11 @@ function activateViewerPreparation(){
   const warpYaw=(100+Math.random()*50)*Math.PI/180*(Math.random()<.5?-1:1);
  const warpPitch=(.20+Math.random()*.38)*(Math.random()<.5?-1:1);
  const warpRoll=(.24+Math.random()*.23)*(Math.random()<.5?-1:1);
+ const entryBirthX=(Math.random()-.5)*1.15,entryBirthY=(Math.random()-.5)*1.05;
  viewer.morph={mode:'camera-pan',warpChase:true,warpStage:'frameout',warpAmount:0,
   warpStart,warpTarget,warpPosition:[0,0,0],
   warpSide:curveAxis.slice(),warpBack:frame.back.slice(),warpArc,warpDepth,warpYaw,warpPitch,warpRoll,
+   entryBirthX,entryBirthY,
   exitDistance,exitDuration:3.2,warpDuration:2.5,
   index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
@@ -9860,7 +9870,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const pose=wholeBodyPose(bodyTime,spec.seed,spec.genome.motionDNA?.primary??0,$('motion').checked);
  if(viewer.morph&&viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source){const m=viewer.morph,next=wholeBodyPose(bodyTime,m.target.seed,m.target.genome.motionDNA?.primary??0,$('motion').checked);for(const key of Object.keys(pose))pose[key]+=(next[key]-pose[key])*m.t;}
  base=mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll))));
- if(!isolatedSpecimenFrame&&!nanoAction&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
+ if(!isolatedSpecimenFrame&&!nanoAction&&!(viewer.morph?.warpChase&&viewer.morph.switched)&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
   // Skin-pulse phase travels toward -motionGPU.axis; point that anatomical
   // wave-forward vector in the actual direction of swimming (especially axial).
   const waveAxis=spec.motionGPU?.axis||[0,1,0];
@@ -9877,20 +9887,40 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   const orientation=pulseAlignRotation(waveForward,pulseTravel.direction);
   base=mul4(translate3(...pulseTravel.position),mul4(orientation,base));
  }
+ let entryHidden=false,entryPositionWorld=false;
  if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
-   const m=viewer.morph;
-  // B stays at a fixed remote world anchor, not attached to the camera.
-  base=mul4(translate3(...(m.warpChase?m.warpTarget:
-   m.travelAxis.map(v=>v*m.travelDistance*2))),base);
+  const m=viewer.morph;
+  if(m.warpChase){
+   const birth=warpEntryFrame(m);
+   entryHidden=!birth.visible;
+   // Use the live view basis, rather than the former A-to-B world path.
+   // This keeps B at its randomly chosen screen point through camera turns.
+   const eye=globalCameraPose();
+   const anchor=viewer.worldOffset.map((v,i)=>v+m.warpTarget[i]);
+   const delta=anchor.map((v,i)=>v-eye.position[i]);
+   const dot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0);
+   const finalDepth=Math.max(.1,-dot(delta,eye.back));
+   const tanHalf=Math.tan(warpCameraFovDegrees(m)*Math.PI/360),aspect=w/h;
+   const endX=clamp(dot(delta,eye.right)/(finalDepth*tanHalf*aspect),-.8,.8);
+   const endY=clamp(dot(delta,eye.up)/(finalDepth*tanHalf),-.8,.8);
+   const nx=birth.x+endX*birth.focus,ny=birth.y+endY*birth.focus;
+   const depth=spec.viewDistance*(1-birth.focus)+finalDepth*birth.focus;
+   const centre=eye.position.map((v,i)=>v-eye.back[i]*depth+
+    eye.right[i]*nx*depth*tanHalf*aspect+eye.up[i]*ny*depth*tanHalf);
+   base=mul4(translate3(...centre),mul4(scale3(birth.scale,birth.scale,birth.scale),base));
+   entryPositionWorld=true;
+  }else{
+   base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
+  }
  }
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
   base=mul4(inverse,mul4(translate3((n.x-.5)*2*half*w/h,(.5-n.y)*2*half,0),mul4(scale3(n.sx,n.sy,n.sz),mul4(rotation,base))));
  }
- if(!isolatedSpecimenFrame&&!nanoAction)base=mul4(translate3(...viewer.worldOffset),base);
+ if(!isolatedSpecimenFrame&&!nanoAction&&!entryPositionWorld)base=mul4(translate3(...viewer.worldOffset),base);
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
- const hidden=!!capturePose?.frame.hideBody;
+ const hidden=!!capturePose?.frame.hideBody||entryHidden;
  const mvpLeft=hidden?mul4(pr,mul4(cam,mLeft)):(useLocal?drawLocalCopies(base):drawCopy(mLeft,false));
  if(!hidden&&!useLocal&&spec.__mirrorRender)drawCopy(mirrorM,true);
  // Pigmented skins are drawn last, preserving opaque internal structures.
