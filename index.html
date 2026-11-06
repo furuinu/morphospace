@@ -6622,6 +6622,7 @@ void main(){
  uniform float uResidentAspect;
  uniform float uResidentTanHalfFov;
  uniform float uResidentTime;
+ uniform float uResidentWideFactor;
   varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
@@ -6650,7 +6651,8 @@ void main(){
    gl_Position=vec4(3.0,3.0,0.999,1.0);
   float id=floor(aResidentStar.w*1000.0+.0001);
   float raw=fract(aResidentStar.w*1000.0);
-  vResidentEnergy=raw*3.7; // stable stellar output; no periodic flicker
+  float wideStar=step(239.5,id);
+  vResidentEnergy=raw*3.7*mix(1.0,uResidentWideFactor,wideStar);
   vResidentTint=fract(id*.37);
   // Sample the identical spherical gas-noise coordinates and time flow used
   // by proceduralNebula; flare probability increases near luminous gas.
@@ -6674,7 +6676,8 @@ void main(){
   float flareGate=max(step(mod(id,11.0),.5),1.0-smoothstep(chance-.045,chance+.045,seed));
   float individualGlow=.58+1.10*fract(sin(id*19.41+4.73)*15731.743);
   vResidentFlare=flareGate*individualGlow; // fixed per star, no pulse
-  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate);
+  float wideArea=mix(1.0,1.65,uResidentWideFactor);
+  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate)*mix(1.0,wideArea,flareGate);
  }`;
  const residentFragment=`precision mediump float;
  varying float vResidentEnergy;
@@ -6707,12 +6710,13 @@ void main(){
  const residentProgram=linked(isWebGL2?toVertex300(residentVertex):residentVertex,isWebGL2?toFragment300(residentFragment):residentFragment,'常駐星フレア');
  const residentBuffer=gl.createBuffer();
  gl.bindBuffer(gl.ARRAY_BUFFER,residentBuffer);
- gl.bufferData(gl.ARRAY_BUFFER,240*4*4,gl.DYNAMIC_DRAW);
+ gl.bufferData(gl.ARRAY_BUFFER,720*4*4,gl.DYNAMIC_DRAW);
  const residentVars={position:gl.getAttribLocation(residentProgram,'aResidentStar'),
   basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
   aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
   tanHalfFov:gl.getUniformLocation(residentProgram,'uResidentTanHalfFov'),
-  time:gl.getUniformLocation(residentProgram,'uResidentTime')};
+  time:gl.getUniformLocation(residentProgram,'uResidentTime'),
+   wide:gl.getUniformLocation(residentProgram,'uResidentWideFactor')};
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -8525,13 +8529,14 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
   if(renderer.residentVars.tanHalfFov!==null)
    gl.uniform1f(renderer.residentVars.tanHalfFov,Math.tan(warpCameraFovDegrees(viewer.morph)*Math.PI/360));
   gl.uniform1f(renderer.residentVars.time,environmentTime);
+   if(renderer.residentVars.wide!==null)gl.uniform1f(renderer.residentVars.wide,wideStarLensFactor());
   gl.bindBuffer(gl.ARRAY_BUFFER,renderer.residentBuffer);
   gl.bufferSubData(gl.ARRAY_BUFFER,0,residentStarUniforms);
   for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
   gl.vertexAttribPointer(renderer.residentVars.position,4,gl.FLOAT,false,0,0);
   gl.enableVertexAttribArray(renderer.residentVars.position);
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
-  gl.drawArrays(gl.POINTS,0,RESIDENT_STAR_COUNT);
+  gl.drawArrays(gl.POINTS,0,residentStars.length);
   gl.disableVertexAttribArray(renderer.residentVars.position);
   gl.disable(gl.BLEND);
  }
@@ -8540,19 +8545,32 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
 
 // 240 world-space stars share a broad sky buffer. Only selected bright-gas
 // stars bloom into cross flares, leaving large dark regions calm.
-const RESIDENT_STAR_COUNT=240;
-const residentStarUniforms=new Float32Array(RESIDENT_STAR_COUNT*4);
+const RESIDENT_STAR_COUNT=240,RESIDENT_WIDE_STAR_COUNT=480;
+const RESIDENT_STAR_CAPACITY=RESIDENT_STAR_COUNT+RESIDENT_WIDE_STAR_COUNT;
+function wideStarLensFactor(){
+ return cameraHandoffEase(clamp((warpCameraFovDegrees(viewer.morph)-43)/69,0,1));
+}
+const residentStarUniforms=new Float32Array(RESIDENT_STAR_CAPACITY*4);
 const starNurseryUniforms=new Float32Array(16);
 const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
-let residentStars=[],nextStarDeath=5,starNurseryCursor=0;
+let residentStars=[],nextStarDeath=5,starNurseryCursor=0,wideStarsSeeded=false;
 starNurseryUniforms.fill(-1);
-function skyStarDirection(outside=false){
+function skyStarDirection(outside=false,wide=false){
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
- const h=Math.tan(Math.PI*43/360),w=h*aspect;
+ const h=Math.tan(Math.PI*warpCameraFovDegrees(viewer.morph)/360),w=h*aspect;
  // Keep 2.25 visible-frame radii of sky populated on every side.
  // Background motion never reaches an empty edge before recycling starts.
  let x=(Math.random()*4.5-2.25)*w,y=(Math.random()*4.5-2.25)*h;
+ if(wide){
+  // Wide-only flare positions taper in density toward all edges.
+  for(let attempt=0;attempt<16;attempt++){
+   const nx=(Math.random()*2-1)*1.48,ny=(Math.random()*2-1)*1.48;
+   const radius=Math.min(1.0,Math.hypot(nx,ny)/1.65);
+   const weight=.12+.88*Math.pow(1-radius,1.7);
+   if(Math.random()<=weight||attempt===15){x=nx*w;y=ny*h;break;}
+  }
+ }
  if(outside){
   const flow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll)||[1,0];
   const sign=Math.random()<.88?-1:1;
@@ -8570,16 +8588,23 @@ function skyStarDirection(outside=false){
  const length=Math.hypot(...v)||1;return v.map(value=>value/length);
 }
 function seedResidentStars(){
- residentStars=Array.from({length:RESIDENT_STAR_COUNT},(_,i)=>({
-  direction:skyStarDirection(false),brightness:.45+Math.random()*.55,
+ residentStars=Array.from({length:RESIDENT_STAR_CAPACITY},(_,i)=>({
+  direction:skyStarDirection(false,i>=RESIDENT_STAR_COUNT),brightness:.45+Math.random()*.55,
   deathAt:environmentTime+6+Math.random()*42,phase:Math.random()*6.283,
   dying:false,deathStart:0,chimed:false,offscreen:false,flareUntil:0
  }));
+ wideStarsSeeded=false;
 }
 function tickStarNursery(dt){
  if(!renderer||!spec)return;
  const active=backgroundCycle.to.id==='nebula';
  if(!residentStars.length)seedResidentStars();
+ const wideFactor=wideStarLensFactor(),wideActive=wideFactor>.015;
+ if(wideActive&&!wideStarsSeeded){
+  for(let i=RESIDENT_STAR_COUNT;i<residentStars.length;i++)
+   residentStars[i].direction=skyStarDirection(false,true);
+  wideStarsSeeded=true;
+ }else if(!wideActive)wideStarsSeeded=false;
  for(let i=0;i<starNurseryEvents.length;i++){
   const burst=starNurseryEvents[i],age=(environmentTime-burst.start)/burst.duration;
   const slot=i*4;
@@ -8591,7 +8616,7 @@ function tickStarNursery(dt){
   // Prefer stars actually in view. Offscreen deaths never make a visible flash.
   const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1),forward=frame.back.map(v=>-v);
   const inner=cameraViewEnvelope(1,Math.max(.5,canvas.width/Math.max(1,canvas.height)));
-  const visible=residentStars.filter(st=>{
+  const visible=residentStars.slice(0,RESIDENT_STAR_COUNT).filter(st=>{
    if(st.dying||environmentTime<st.deathAt)return false;
    const z=V.dot(st.direction,forward);
    if(z<=0)return false;
@@ -8610,9 +8635,12 @@ function tickStarNursery(dt){
   nextStarDeath=environmentTime+2.8+Math.random()*5.0;
  }
  const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
- const half=cameraViewEnvelope(1,Math.max(.5,canvas.width/Math.max(1,canvas.height)));
+ const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
+ const halfHeight=Math.tan(warpCameraFovDegrees(viewer.morph)*Math.PI/360);
+ const half={halfWidth:halfHeight*aspect,halfHeight};
  for(let i=0;i<residentStars.length;i++){
-  const star=residentStars[i],slot=i*4;
+  const star=residentStars[i],slot=i*4,extra=i>=RESIDENT_STAR_COUNT;
+  if(extra&&!wideActive){residentStarUniforms[slot+3]=0;continue;}
   const z=-star.direction.reduce((a,v,k)=>a+v*sky.back[k],0);
   const u=star.direction.reduce((a,v,k)=>a+v*sky.right[k],0)/Math.max(.001,z);
   const v=star.direction.reduce((a,v,k)=>a+v*sky.up[k],0)/Math.max(.001,z);
@@ -8621,7 +8649,7 @@ function tickStarNursery(dt){
   // visible frame boundary must not jump or disappear abruptly.
   const beyondBuffer=z<=.05||Math.abs(u)>half.halfWidth*2.35||Math.abs(v)>half.halfHeight*2.35;
   if(beyondBuffer&&!star.dying){
-   star.direction=skyStarDirection(true);
+   star.direction=skyStarDirection(true,extra);
    star.offscreen=true;
   }else if(onScreen){
    star.offscreen=false;
@@ -8637,7 +8665,7 @@ function tickStarNursery(dt){
     if(active)playSnowChime(i,star.brightness,environmentTime);
    }
    if(age>=1){
-    star.direction=skyStarDirection(true);star.dying=false;star.offscreen=true;
+    star.direction=skyStarDirection(true,extra);star.dying=false;star.offscreen=true;
     star.deathAt=environmentTime+8+Math.random()*44;
     intensity=star.brightness;
    }
