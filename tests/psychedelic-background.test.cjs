@@ -43,7 +43,11 @@ test('wide-angle star field adds only a centre-biased peripheral layer',()=>{
  assert.match(html,/const fieldFov=wide\?112:warpCameraFovDegrees\(viewer\.morph\)/);
  assert.match(html,/weight=\.12\+\.88\*Math\.pow\(1-radius,1\.7\)/);
  assert.match(html,/const halfHeight=Math\.tan\(warpCameraFovDegrees\(viewer\.morph\)\*Math\.PI\/360\)/);
- assert.match(html,/float wideArea=mix\(1\.0,1\.65,uResidentWideFactor\)/);
+ assert.match(html,/float wideArea=mix\(1\.0,1\.12,uResidentWideFactor\)/);
+ assert.match(html,/float flare=\(halo\*\.64\+\(horizontal\+vertical\)\*\.87\)\*mix\(1\.0,\.81,uResidentWideFactor\)/);
+ // Surface brightness alone cannot explain an exaggerated 1.65x footprint.
+ // The combined coverage × halo gain should remain close to unity.
+ assert.ok((1.12**2)*.81<1.05);
 });
 
 test('extra wide stars sample more densely near centre than at the rim',()=>{
