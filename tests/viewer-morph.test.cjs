@@ -554,10 +554,13 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
  f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
  const m=f.v.morph;
- m.warpStage='cruise';
- m.elapsed=m.exitDuration;
+ m.warpStage='frameout';
+ m.elapsed=0;
  assert.ok(Array.from(f.warpFlightAngles(m)).every(v=>Math.abs(v)<1e-12),
   'initial warp rotation must be numerically zero (including signed zero)');
+ m.elapsed=m.exitDuration*.7;
+ assert.ok(Math.abs(f.warpFlightAngles(m)[0])>.05,
+  'sky begins rotating before A has finished exiting');
  m.elapsed=m.exitDuration+m.warpDuration*.5;
  const angles=Array.from(f.warpFlightAngles(m));
  assert.ok(Math.abs(angles[0])>.7,'wide yaw must move the infinite-distance sky');
@@ -576,10 +579,10 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
 test('warp lens eases into ultra-wide perspective and returns to the original observation FOV',()=>{
  const {f,workers}=runtime();f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
- const m=f.v.morph,at=p=>{m.warpStage='cruise';m.elapsed=m.exitDuration+p*m.warpDuration;return f.warpCameraFovDegrees(m)};
- m.warpStage='frameout';assert.equal(f.warpCameraFovDegrees(m),43);
- assert.equal(at(0),43);assert.ok(at(.14)>43&&at(.14)<112);
- assert.ok(Math.abs(at(.30)-112)<1e-8);
+ const m=f.v.morph,at=p=>{m.elapsed=p*(m.exitDuration+m.warpDuration);return f.warpCameraFovDegrees(m)};
+ m.warpStage='frameout';assert.equal(at(0),43);
+ assert.ok(at(.20)>43&&at(.20)<112,'wide-angle begins before A exits');
+ assert.ok(Math.abs(at(.40)-112)<1e-8,'A is still present at full wide-angle');
  assert.ok(Math.abs(at(.58)-112)<1e-8);
  assert.ok(at(.80)>43&&at(.80)<112);
  assert.ok(Math.abs(at(1)-43)<1e-8);
