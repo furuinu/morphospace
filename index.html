@@ -6577,7 +6577,7 @@ vec3 proceduralNebula(vec2 uv){
  float rnd=nebHash(cell);
  float star=step(.9982,rnd)*pow(max(0.,dot(normalize(cell+vec3(.5)),ray)),260000.);
  star*=.7+.3*sin(uTime*.55+rnd*67.);
- return vec3(.003,.002,.012)+colour*.16+vec3(.70,.79,1.0)*star;
+ return vec3(.003,.002,.012)+colour+vec3(.70,.79,1.0)*star;
 }
 void main(){
  if(uGalleryPreview>.5){
@@ -9252,22 +9252,21 @@ function warpChaseEase(t){
  return x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;
 }
 // World-space flight gaze is shared by the sky and specimen rendering.
-// Lens goes 43 -> 112 degrees while accelerating, and returns to
-// 43 on deceleration with zero slope at all phase boundaries.
+// Widen while A is still exiting, not after it disappears.
+// The single continuous envelope also closes smoothly on the new sky B.
 function warpCameraFovDegrees(m){
- if(!m?.warpChase||m.warpStage==='frameout')return 43;
- const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
- const widen=cameraHandoffEase(clamp(p/.28,0,1));
- const restore=1-cameraHandoffEase(clamp((p-.62)/.38,0,1));
+ if(!m?.warpChase)return 43;
+ const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
+ const widen=cameraHandoffEase(clamp(p/.34,0,1));
+ const restore=1-cameraHandoffEase(clamp((p-.64)/.36,0,1));
  return 43+69*widen*restore;
 }
 function warpFlightAngles(m){
- if(!m?.warpChase||m.warpStage==='frameout')return [0,0,0];
- const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
- // Continue the same sweep through wide-angle cruise and lens recovery.
- // This is an actual change of infinite-sky viewing direction (A -> B),
- // not an outward-and-back deviation that reveals the same background.
- const sweep=cameraHandoffEase(clamp((p-.06)/.90,0,1));
+ if(!m?.warpChase)return [0,0,0];
+ const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
+ // Begin sky rotation as A drifts offscreen; arrive at a different
+ // infinite-distance sector as the lens returns to normal.
+ const sweep=cameraHandoffEase(clamp((p-.18)/.78,0,1));
  const bank=Math.pow(Math.sin(Math.PI*p),2);
  return [m.warpYaw*sweep,
   m.warpPitch*.65*sweep,
