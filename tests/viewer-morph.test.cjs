@@ -510,3 +510,41 @@ test('camera keeps its heading through frame out and frame in, steering only nea
  assert.equal(turns,1,'begin a single gradual heading change near the centre');
  f.tickViewer(.01);assert.equal(turns,1,'never choose a second heading within one handoff');
 });
+
+test('remote warp preserves A until frameout, accelerates toward fixed distant B and rebases at capture',()=>{
+ const {f,workers}=runtime();
+ f.startViewerMorph();const target=deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph;
+ assert.equal(m.warpChase,true);
+ assert.ok(Math.hypot(...Array.from(m.warpTarget))>=m.fromDistance*6);
+ assert.equal(m.warpAmount,0);
+ const anchor=Array.from(m.warpTarget);
+ for(let i=0;i<Math.floor(m.exitDuration*.75/.12);i++)f.tickViewer(.12);
+ assert.equal(f.spec.seed,1,'source remains visible until fully outside frame');
+ assert.equal(m.switched,false);
+ for(let i=0;i<Math.ceil((m.exitDuration*.25+.40)/.12);i++)f.tickViewer(.12);
+ assert.equal(f.spec,target,'remote B activates only after source leaves the frame');
+ assert.equal(m.switched,true);
+ assert.equal(m.warpStage,'accel');
+ for(let i=0;i<6;i++)f.tickViewer(.12);
+ assert.ok(m.warpAmount>.1,'visible star-trail energy rises with warp speed');
+ for(let i=0;i<Math.ceil(m.warpDuration/.12)+4&&f.v.morph;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);
+ for(let i=0;i<3;i++)assert.ok(Math.abs(f.v.worldOffset[i]-anchor[i])<1e-6);
+});
+test('quintic warp easing accelerates and brakes smoothly without positional jumps',()=>{
+ const {f}=runtime();
+ const u=x=>f.warpChaseEase(x);
+ assert.equal(u(0),0);assert.equal(u(1),1);assert.equal(u(.5),.5);
+ for(let p=.01;p<=1;p+=.01)assert.ok(u(p)>=u(p-.01)-1e-10);
+ const speed=p=>(u(p+.001)-u(p-.001))/.002;
+ assert.ok(speed(.5)>speed(.10)*10);
+ assert.ok(speed(.5)>speed(.90)*10);
+});
+test('warp star GPU pass uses speed strength and a directed streak',()=>{
+ assert.match(html,/uniform float uWarpAmount;/);
+ assert.match(html,/uniform vec2 uWarpDirection;/);
+ assert.match(html,/vWarpAmount\*streak\*3\.2/);
+ assert.match(html,/backgroundCycle\.to\.id==='nebula'\|\|viewer\.morph\?\.warpChase/);
+});
