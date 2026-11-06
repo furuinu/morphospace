@@ -8558,7 +8558,10 @@ starNurseryUniforms.fill(-1);
 function skyStarDirection(outside=false,wide=false){
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
- const h=Math.tan(Math.PI*warpCameraFovDegrees(viewer.morph)/360),w=h*aspect;
+ // Extra stars occupy the future ultra-wide sky before they fade in,
+ // instead of being crowded into the narrow early-widening cone.
+ const fieldFov=wide?112:warpCameraFovDegrees(viewer.morph);
+ const h=Math.tan(Math.PI*fieldFov/360),w=h*aspect;
  // Keep 2.25 visible-frame radii of sky populated on every side.
  // Background motion never reaches an empty edge before recycling starts.
  let x=(Math.random()*4.5-2.25)*w,y=(Math.random()*4.5-2.25)*h;
