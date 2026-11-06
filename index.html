@@ -8385,8 +8385,26 @@ function stepPulseCameraFollow(dt){
  // Follow ONLY deviations from that planned trajectory (orbit drift and
  // swimming), otherwise the two controllers chase B twice and overshoot.
  const plannedRemaining=handoff?2*handoff.travelDistance-handoff.cameraTravel:0;
+ // At first appearance use the original trajectory; once B is visible,
+ // ease from that trajectory to B's LIVE projected position. This lets the
+ // camera find the true centre without snapping or stopping the sky drift.
+ let arrivalBlend=0;
+ if(handoff&&handoff.switched){
+  const liveX=V.dot(offset,frame.right),liveY=V.dot(offset,frame.up);
+  const inside=depth>.01&&Math.abs(liveX)<envelope.halfWidth&&Math.abs(liveY)<envelope.halfHeight;
+  if(inside&&handoff.entrySeenAt===undefined)handoff.entrySeenAt=handoff.elapsed;
+  if(handoff.entrySeenAt!==undefined){
+   const seconds=Math.max(0,handoff.elapsed-handoff.entrySeenAt);
+   arrivalBlend=cameraHandoffEase(clamp(seconds/1.35,0,1));
+  }else{
+   // If the whole specimen missed the entrance, recover smoothly after
+   // the planned swap rather than leaving it offscreen until the end.
+   const progress=handoff.elapsed/Math.max(.01,handoff.duration);
+   arrivalBlend=.6*cameraHandoffEase(clamp((progress-.60)/.28,0,1));
+  }
+ }
  const predicted=offset.map((value,i)=>value-
-  (handoff?handoff.travelAxis[i]*plannedRemaining:0)+pulseTravel.velocity[i]*lead);
+  (handoff?handoff.travelAxis[i]*plannedRemaining*(1-arrivalBlend):0)+pulseTravel.velocity[i]*lead);
  const screenX=V.dot(predicted,frame.right),screenY=V.dot(predicted,frame.up);
  const xError=Math.abs(screenX)>safeX?screenX-Math.sign(screenX)*safeX:0;
  const yError=Math.abs(screenY)>safeY?screenY-Math.sign(screenY)*safeY:0;
@@ -8401,7 +8419,7 @@ function stepPulseCameraFollow(dt){
                              Math.abs(screenY)/Math.max(.01,envelope.halfHeight));
  // Even when the specimen strays far outside the central safe zone,
  // converge continuously instead of making a sudden high-gain correction.
- const settle=handoff&&handoff.switched?.9:(edgePressure>.50?.65:cameraCorrection.settleSeconds);
+ const settle=handoff&&handoff.switched?.55:(edgePressure>.50?.65:cameraCorrection.settleSeconds);
  const delta=Math.min(.12,Math.max(0,dt));
  const alpha=1-Math.exp(-delta/settle);
  const correction=frame.right.map((v,i)=>alpha*(
@@ -8550,8 +8568,17 @@ function tickStarNursery(dt){
  if(active&&environmentTime>=nextStarDeath){
   // Prefer stars actually in view. Offscreen deaths never make a visible flash.
   const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1),forward=frame.back.map(v=>-v);
-  const visible=residentStars.filter(st=>!st.dying&&environmentTime>=st.deathAt&&
-    st.direction.reduce((sum,v,i)=>sum+v*forward[i],0)>.77);
+  const inner=cameraViewEnvelope(1,Math.max(.5,canvas.width/Math.max(1,canvas.height)));
+  const visible=residentStars.filter(st=>{
+   if(st.dying||environmentTime<st.deathAt)return false;
+   const z=V.dot(st.direction,forward);
+   if(z<=0)return false;
+   const x=V.dot(st.direction,frame.right)/z;
+   const y=V.dot(st.direction,frame.up)/z;
+   // Death and flare must begin within the centre 70% of BOTH
+   // viewport dimensions, never in the outer 15% border.
+   return Math.abs(x)<=inner.halfWidth*.70&&Math.abs(y)<=inner.halfHeight*.70;
+  });
   if(visible.length){
    const star=visible[Math.floor(Math.random()*visible.length)];
    star.dying=true;star.deathStart=environmentTime;star.chimed=false;
