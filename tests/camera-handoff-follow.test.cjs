@@ -16,6 +16,7 @@ function setup({drift=0,pan=true}={}){
  const pulseTravel={specimen,position:[drift,0,0],velocity:[0,0,0],camera:[0,0,0]};
  const context={
   Math,spec:specimen,viewer:{morph},pulseTravel,canvas:{width:1120,height:720},
+  modelYaw:0,modelPitch:0,cameraRoll:0,panX:0,panY:0,
   pulseTravelActive:()=>true,cameraOrbitAngularSpeed:()=>.08,
   worldCameraFrame:()=>({position:[0,0,20],right:[1,0,0],up:[0,1,0],back:[0,0,1]}),
   cameraViewEnvelope:()=>({halfWidth:10,halfHeight:8}),
