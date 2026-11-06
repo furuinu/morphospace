@@ -576,6 +576,30 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
  assert.ok(Math.abs(m.warpYaw)>=100*Math.PI/180&&Math.abs(m.warpYaw)<=150*Math.PI/180,
   'each handoff must target a random distant sky sector');
 });
+test('B is born as a tiny dot within the wide lens independently of A and settles centrally',()=>{
+ const {f,workers}=runtime();
+ f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph,total=m.exitDuration+m.warpDuration;
+ assert.ok(Math.abs(m.entryBirthX)<.58&&Math.abs(m.entryBirthY)<.53);
+ m.elapsed=total*.59;
+ assert.equal(f.warpEntryFrame(m).visible,false,'B stays invisible immediately after geometry swap');
+ m.elapsed=total*.60;
+ const born=f.warpEntryFrame(m);
+ assert.equal(born.visible,true);
+ assert.ok(born.scale<.006,'B enters as a near-point rather than the full-size offscreen object');
+ assert.ok(Math.abs(born.x)<=.58&&Math.abs(born.y)<=.53,'birth remains inside the lens');
+ m.elapsed=total*.85;
+ const growing=f.warpEntryFrame(m);
+ assert.ok(growing.scale>born.scale&&growing.scale<1);
+ assert.ok(Math.abs(growing.x)<Math.abs(born.x)+1e-9);
+ m.elapsed=total;
+ const done=f.warpEntryFrame(m);
+ assert.equal(done.scale,1);
+ assert.ok(Math.abs(done.x)<1e-8&&Math.abs(done.y)<1e-8);
+ assert.equal(done.focus,1);
+ assert.match(src,/const eye=globalCameraPose\(\)/);
+ assert.match(src,/entryPositionWorld=true/);
+});
 test('warp lens eases into ultra-wide perspective and returns to the original observation FOV',()=>{
  const {f,workers}=runtime();f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
