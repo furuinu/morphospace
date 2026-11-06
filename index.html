@@ -9282,6 +9282,9 @@ function warpChaseState(m,dt){
   return false;
  }
  const p=clamp((m.elapsed-exitDuration)/m.warpDuration,0,1);
+ // Ease the previous specimen's tracking offset away in flight, so B
+ // arrives at the true centre rather than inheriting A's camera bias.
+ for(let i=0;i<3;i++)pulseTravel.camera[i]*=Math.exp(-Math.min(.12,dt)*3.5);
  m.warpStage=p<.24?'accel':p<.68?'cruise':p<.90?'decel':'acquire';
  const u=warpChaseEase(p);
  m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u);
@@ -9337,7 +9340,7 @@ function activateViewerPreparation(){
  const entryLead=0; // World-anchored B enters only via continuous camera travel.
  // B is anchored 6–12 view distances away. The camera reaches exactly
  // this anchor at the end of the warp, regardless of continued orbit motion.
- const exitDistance=clearances.exit+Math.max(1,sourceBounds.radius*.4);
+ const exitDistance=clearances.exit+Math.max(1,fromDistance*.8);
  const farDistance=fromDistance*(6+Math.random()*6);
  const warpStart=axis.map(v=>v*exitDistance);
  const warpTarget=axis.map(v=>v*(exitDistance+farDistance));
