@@ -8200,12 +8200,12 @@ function pulsePlaneDirection(axis,angle){
 }
 // Align the anatomical contraction wave (travels toward -motionDNA.axis)
 // with the swimming direction. Use the same 3D heading for pose and thrust.
-function pulseAlignRotation(from,to){
+function pulseAlignRotation(from,to,amount=1){
  const a=V.norm(from),b=V.norm(to),dot=clamp(V.dot(a,b),-1,1);
  if(dot>1-1e-6)return scale3(1,1,1);
  const helper=Math.abs(a[1])<.9?[0,1,0]:[1,0,0];
  const axis=dot< -1+1e-6?V.norm(V.cross(a,helper)):V.norm(V.cross(a,b));
- const angle=Math.acos(dot),x=axis[0],y=axis[1],z=axis[2],c=Math.cos(angle),w=1-c,t=Math.sin(angle);
+ const angle=Math.acos(dot)*clamp(amount,0,1),x=axis[0],y=axis[1],z=axis[2],c=Math.cos(angle),w=1-c,t=Math.sin(angle);
  return new Float32Array([
   c+x*x*w,y*x*w+z*t,z*x*w-y*t,0,
   x*y*w-z*t,c+y*y*w,z*y*w+x*t,0,
@@ -9167,7 +9167,7 @@ function stepCameraOrbit(dt){
  cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt;
  cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt;
 }
-const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0]};
+const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0],arrivalPoseTime:1.4};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
 function viewerCurrentItemIndex(items){return viewer.source==='stock'?items.findIndex(item=>item.stored.id===activeStoredIndividual?.payload.record.id):(activeStoredIndividual?-1:items.findIndex(item=>item.index===selected));}
 function chooseViewerItem(items,direction=1){
@@ -9482,6 +9482,8 @@ function applyViewerMorphUniforms(u){
 }
 function cancelViewerMorph(commit=false){
  const m=viewer.morph;if(!m)return;viewer.morph=null;
+ // Blend B from its cinematic orientation into its own swimming direction.
+ if(commit&&m.warpChase)viewer.arrivalPoseTime=0;
  if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)
   viewer.worldOffset[i]+=m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i];
  for(const batch of m.batches||[])retireViewerMesh(batch);
@@ -9498,7 +9500,7 @@ function cancelViewerMorph(commit=false){
 }
 function pauseViewerTransition(){viewer.revision++;viewer.preparing=false;discardViewerPreparation();cancelViewerMorph(false);viewer.phaseFade=null;setViewerPhaseOpacity(0);viewer.elapsed=0;$('viewerTransition').textContent='';updateViewerCountdown()}
 function stopViewer(){
- viewer.worldOffset=[0,0,0];
+ viewer.worldOffset=[0,0,0];viewer.arrivalPoseTime=1.4;
  cameraOrbitSpeed=cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
  cameraOrbitPitchSpeed=cameraOrbitTargetPitchSpeed=0;
  cameraOrbitRollSpeed=cameraOrbitTargetRollSpeed=0;
@@ -9653,6 +9655,7 @@ function tickViewer(elapsed){
  drainViewerRetired();
  if(!viewerCanAdvance())return;
  const dt=Math.min(elapsed,.12);
+ viewer.arrivalPoseTime=Math.min(1.4,(viewer.arrivalPoseTime??1.4)+dt);
  if(viewer.phaseFade){
   viewer.phaseFade.elapsed+=dt;
   if(!phaseParticleTarget)phaseParticleTarget=phaseParticleTargetFallback;
@@ -9886,8 +9889,9 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   // The anatomical tail axis must map to -heading even after pose rotation.
   const waveForward=rootLength>.25?rootSum.map(v=>-v/rootLength):
    V.scale(V.norm(Array.from(waveAxis)),-1);
-  const orientation=pulseAlignRotation(waveForward,pulseTravel.direction);
-  base=mul4(translate3(...pulseTravel.position),mul4(orientation,base));
+  const arrivalBlend=cameraHandoffEase(clamp((viewer.arrivalPoseTime??1.4)/1.4,0,1));
+  const orientation=pulseAlignRotation(waveForward,pulseTravel.direction,arrivalBlend);
+  base=mul4(translate3(...pulseTravel.position.map(v=>v*arrivalBlend)),mul4(orientation,base));
  }
  let entryHidden=false,entryPositionWorld=false;
  if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
