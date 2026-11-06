@@ -556,7 +556,8 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
  const m=f.v.morph;
  m.warpStage='cruise';
  m.elapsed=m.exitDuration;
- assert.deepEqual(Array.from(f.warpFlightAngles(m)),[0,0,0]);
+ assert.ok(Array.from(f.warpFlightAngles(m)).every(v=>Math.abs(v)<1e-12),
+  'initial warp rotation must be numerically zero (including signed zero)');
  m.elapsed=m.exitDuration+m.warpDuration*.5;
  const angles=Array.from(f.warpFlightAngles(m));
  assert.ok(Math.abs(angles[0])>.7,'wide yaw must move the infinite-distance sky');
@@ -574,4 +575,19 @@ test('long warp star trails are geometric lines beyond the GPU point-size limit'
  assert.match(html,/gl\.drawArrays\(gl\.LINES,0,count\*2\)/);
  assert.match(html,/const length=Math\.min\(\.85,extent\*\(\.42\/dt\)/);
  assert.match(html,/drawWarpStarTrails\(aspect\)/);
+});
+
+test('warp lens eases into ultra-wide perspective and returns to the original observation FOV',()=>{
+ const {f,workers}=runtime();f.startViewerMorph();deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph,at=p=>{m.warpStage='cruise';m.elapsed=m.exitDuration+p*m.warpDuration;return f.warpCameraFovDegrees(m)};
+ m.warpStage='frameout';assert.equal(f.warpCameraFovDegrees(m),43);
+ assert.equal(at(0),43);assert.ok(at(.14)>43&&at(.14)<112);
+ assert.ok(Math.abs(at(.30)-112)<1e-8);
+ assert.ok(Math.abs(at(.58)-112)<1e-8);
+ assert.ok(at(.80)>43&&at(.80)<112);
+ assert.ok(Math.abs(at(1)-43)<1e-8);
+ assert.match(html,/persp\(warpCameraFovDegrees\(viewer\.morph\)\*Math\.PI\/180/);
+ assert.match(html,/uniform float uResidentTanHalfFov;/);
+ assert.match(html,/uniform float uBgTanHalfFov;/);
 });
