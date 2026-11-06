@@ -7593,10 +7593,20 @@ function cameraHandoffEase(x){
 // One integrated camera path: accelerate only at departure and brake only
 // after B is centred. Velocity remains non-zero through the offscreen gap.
 function cameraHandoffTravel(p){
- const x=Math.max(0,Math.min(1,p)),r=.28; // Gently decelerate after B enters, until centred.
- const integral=x<r?x*x/(2*r):x<=1-r?x-r/2:
-  1-r-r/2+(x-(1-r))-(x-(1-r))**2/(2*r);
- return integral/(1-r);
+ const x=clamp(p,0,1);
+ // Ease into motion, then begin a long, gentle focus toward the incoming
+ // specimen BEFORE the final seconds. Never hold the edge and snap home.
+ // The speed stays positive until the final frame; only its acceleration
+ // changes, so the incoming specimen continuously approaches the centre.
+ const ramp=.16,focusStart=.42,endSpeed=.18;
+ const plateau=1-ramp*.5;
+ const integrate=u=>{
+  if(u<=ramp)return u*u/(2*ramp);
+  if(u<=focusStart)return ramp*.5+(u-ramp);
+  const t=u-focusStart,span=1-focusStart;
+  return focusStart-ramp*.5+t-(1-endSpeed)*t*t/(2*span);
+ };
+ return integrate(x)/(focusStart-ramp*.5+(1-focusStart)*(1+endSpeed)*.5);
 }
 // Shorter handoffs for nearby frame exits, without rushing large specimens.
 // Camera speed remains continuous because duration only scales the single path.
@@ -8354,7 +8364,9 @@ function stepPulseCameraFollow(dt){
  // 3.2-second smoothstep that was perpetually targeting a stale position.
  const edgePressure=Math.max(Math.abs(screenX)/Math.max(.01,envelope.halfWidth),
                              Math.abs(screenY)/Math.max(.01,envelope.halfHeight));
- const settle=edgePressure>.50?.18:cameraCorrection.settleSeconds;
+ // Even when the specimen strays far outside the central safe zone,
+ // converge continuously instead of making a sudden high-gain correction.
+ const settle=edgePressure>.50?.65:cameraCorrection.settleSeconds;
  const alpha=1-Math.exp(-Math.min(.12,Math.max(0,dt))/settle);
  for(let i=0;i<3;i++){
   pulseTravel.camera[i]+=alpha*(
