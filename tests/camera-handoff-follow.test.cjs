@@ -50,6 +50,23 @@ test('offscreen B is guided laterally before the visible swap without slowing pr
  assert.ok(pulseTravel.camera[1]<0,'camera must correct the live transverse entry error before B appears');
  assert.equal(pulseTravel.camera[0],0,'primary lateral pan speed and distance must be untouched');
 });
+test('visible incoming B eases toward its actual screen centre, not the old planned endpoint',()=>{
+ const {context,pulseTravel,advance}=setup();
+ const m=context.viewer.morph;
+ m.cameraTravel=12;m.elapsed=3;m.duration=5;
+ advance();
+ assert.equal(pulseTravel.camera[0],0,'first visible frame must begin without a corrective snap');
+ m.elapsed+=1.5;
+ advance();
+ assert.ok(pulseTravel.camera[0]>0,'once visible, camera must ease toward B actual screen position');
+ assert.ok(pulseTravel.camera[0]<.3,'correction must remain speed bounded');
+});
+test('star death eligibility is limited to the inner 70 percent of the viewport',()=>{
+ const section=html.slice(html.indexOf('function tickStarNursery('),html.indexOf('function playSnowChime('));
+ assert.match(section,/Math\.abs\(x\)<=inner\.halfWidth\*\.70/);
+ assert.match(section,/Math\.abs\(y\)<=inner\.halfHeight\*\.70/);
+ assert.match(section,/if\(z<=0\)return false/);
+});
 test('the native swap retains camera correction and resets B locomotion position',()=>{
  assert.match(html,/pulseTravelActive\(\)&&\(pulseTravel\.specimen===spec\|\|!!m\)/);
  assert.match(html,/if\(pulseTravel\.specimen!==spec\)\{resetPulseTravel\(spec,true\);pulseTravel\.position\.fill\(0\);\}/);
