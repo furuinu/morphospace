@@ -6522,7 +6522,7 @@ vec3 proceduralNebula(vec2 uv){
  colour+=filamentTint*spectralFilament*.22;
  // A fourth, nearly-white intensity tier occurs only in the densest gas.
  float nursery=smoothstep(.70,.88,density)*smoothstep(.48,.70,mainCloud);
- colour+=vec3(.87,.78,1.0)*nursery*.48;
+ // Remove the bright continuous stellar-cloud belt.
  // Layered absorbing dust: broad distant silhouettes, intermediate dark
  // filaments, and a sparse foreground veil. They flow at separate speeds.
  // All fields sample the spherical world ray, so orbit remains seamless.
@@ -6547,7 +6547,7 @@ vec3 proceduralNebula(vec2 uv){
  vec3 nurseryCell=floor(ray*360.0);
  vec3 nurseryCenter=normalize(nurseryCell+vec3(.5));
  float nurserySeed=nebHash(nurseryCell+vec3(13.,7.,19.));
- float clusterGate=step(.965,nurserySeed)*nursery;
+ float clusterGate=0.0; // No dense nursery star clusters.
  float separation=length(ray-nurseryCenter);
  float youngCore=1.0-smoothstep(.0007,.0024,separation);
  float youngHalo=exp(-separation*950.0);
@@ -6577,7 +6577,7 @@ vec3 proceduralNebula(vec2 uv){
  float rnd=nebHash(cell);
  float star=step(.9982,rnd)*pow(max(0.,dot(normalize(cell+vec3(.5)),ray)),260000.);
  star*=.7+.3*sin(uTime*.55+rnd*67.);
- return vec3(.003,.002,.012)+colour+vec3(.70,.79,1.0)*star;
+ return vec3(.003,.002,.012)+colour*.16+vec3(.70,.79,1.0)*star;
 }
 void main(){
  if(uGalleryPreview>.5){
@@ -9265,8 +9265,10 @@ function warpFlightAngles(m){
  if(!m?.warpChase||m.warpStage==='frameout')return [0,0,0];
  const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
  const envelope=Math.pow(Math.sin(Math.PI*p),2);
- return [m.warpYaw*envelope,
-  m.warpPitch*envelope*Math.sin(Math.PI*(.25+.55*p)),
+ // The camera keeps turning as the wide lens returns to normal.
+ const settle=cameraHandoffEase(clamp((p-.48)/.52,0,1));
+ return [m.warpYaw*(envelope*.45+settle),
+  m.warpPitch*(envelope*.32+settle*.65),
   m.warpRoll*envelope];
 }
 function warpChaseState(m,dt){
@@ -9649,7 +9651,13 @@ function tickViewer(elapsed){
   return;
  }
  if(m&&m.mode==='camera-pan'&&m.warpChase){
-  if(warpChaseState(m,dt)){m.warpPosition=m.warpTarget.slice();cancelViewerMorph(true);}
+  if(warpChaseState(m,dt)){
+   // Preserve the final gaze in the ordinary orbit before removing warp offsets.
+   cameraOrbitYawOffset+=m.warpYaw;
+   cameraOrbitPitchOffset=clamp(cameraOrbitPitchOffset+m.warpPitch*.65,
+    -Math.PI*.48+25*Math.PI/180,Math.PI*.48+25*Math.PI/180);
+   m.warpPosition=m.warpTarget.slice();cancelViewerMorph(true);
+  }
   return;
  }
  if(m&&m.mode==='camera-pan'){
