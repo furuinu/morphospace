@@ -483,3 +483,30 @@ test('tentacle angle diversity narrows, never widens, the established fan',()=>{
  assert.match(html,/V\.scale\(side,lane\*\.35\*spread\)/);
  assert.match(html,/Math\.max\(bodySize\/5,Math\.min\(allowLongTentacles\?bodySize\*2\.5:bodySize\*\.79,length\)\)/);
 });
+
+test('camera exit and entry ease independently without freezing the moving background',()=>{
+ const travel=t=>ctx.cameraHandoffTravel(t);
+ const speed=t=>(travel(t+.0001)-travel(t-.0001))/.0002;
+ assert.ok(Math.abs(travel(.5)-.5)<1e-10,'native swap stays exactly at half travel');
+ assert.ok(Math.abs(travel(1)-1)<1e-10);
+ for(let t=.0002;t<.999;t+=.01)assert.ok(speed(t)>.4,'ambient camera must never stop');
+ assert.ok(speed(.25)>speed(.02)*1.3,'A exit must ease in');
+ assert.ok(speed(.75)>speed(.98)*1.3,'B arrival must ease out');
+ assert.ok(speed(.5)<speed(.25),'the offscreen boundary must be eased, not rushed');
+ for(let t=.01;t<.5;t+=.03){
+  assert.ok(Math.abs((travel(.5)-travel(.5-t))-(travel(.5+t)-travel(.5)))<1e-8,
+   'A/B velocity must remain mirrored across the native swap');
+ }
+});
+test('camera keeps its heading through frame out and frame in, steering only near B centre',()=>{
+ const {f,workers}=runtime();let turns=0;
+ f.cameraOrbitChooseHeading=()=>{turns++};
+ f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
+ assert.equal(turns,0,'do not change camera heading at the beginning of handoff');
+ const m=f.v.morph;
+ m.elapsed=m.duration*.77;f.tickViewer(.01);
+ assert.equal(turns,0,'B entry should keep the existing heading');
+ m.elapsed=m.duration*.81;f.tickViewer(.01);
+ assert.equal(turns,1,'begin a single gradual heading change near the centre');
+ f.tickViewer(.01);assert.equal(turns,1,'never choose a second heading within one handoff');
+});
