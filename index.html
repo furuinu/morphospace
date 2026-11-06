@@ -9328,9 +9328,10 @@ function activateViewerPreparation(){
  const skyFlow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
   cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
- // Reverse the previous handoff direction: both A's exit and B's entry
- // now occur on the opposite viewport edges, with the same easing and path.
- const planar=skyFlow.map(v=>-v);
+ // Invert the current screen-space handoff: A exits from the opposite edge,
+ // and B enters from the corresponding opposite edge. Preserve continuous
+ // camera travel, wide-angle timing, and the independently random sky turn.
+ const planar=skyFlow.slice();
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
  // Keep the handoff on its calibrated screen-plane path. Random arcs and
