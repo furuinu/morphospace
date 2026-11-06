@@ -8370,7 +8370,9 @@ function stepPulseCameraFollow(dt){
  // Cap the camera's world-space correction to the apparent sky drift.
  // A large error must take longer to settle, never trigger a fast recenter.
  const skySpeed=Math.max(.025,cameraOrbitAngularSpeed())*nominal;
- const maximumStep=skySpeed*.85*delta;
+ // Follow must be able to catch up with the sky's apparent drift;
+ // 0.85x made off-screen specimens fall farther behind every frame.
+ const maximumStep=skySpeed*1.35*delta;
  const distance=Math.hypot(...correction);
  const scale=distance>maximumStep?maximumStep/distance:1;
  for(let i=0;i<3;i++)pulseTravel.camera[i]+=correction[i]*scale;
@@ -9067,9 +9069,15 @@ function stepCameraOrbit(dt){
  cameraOrbitSpeed+=(cameraOrbitTargetSpeed-cameraOrbitSpeed)*alpha;
  cameraOrbitPitchSpeed+=(cameraOrbitTargetPitchSpeed-cameraOrbitPitchSpeed)*alpha;
  cameraOrbitRollSpeed+=(cameraOrbitTargetRollSpeed-cameraOrbitRollSpeed)*alpha;
- cameraOrbitPhase-=cameraOrbitSpeed*dt;
- cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt;
- cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt;
+ // During a world-anchored A/B handoff, large changes to the 3-axis
+ // camera basis turn a calibrated screen-plane path into a miss or overshoot.
+ // The pan still moves the environment; retain a small continuous orbit,
+ // then seamlessly return to the normal angular speed after the handoff.
+ const handoff=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
+ const orbitRate=handoff?Math.min(1,.15/Math.max(.001,cameraOrbitAngularSpeed()*handoff.duration)):1;
+ cameraOrbitPhase-=cameraOrbitSpeed*dt*orbitRate;
+ cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt*orbitRate;
+ cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt*orbitRate;
 }
 const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0]};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
@@ -9187,8 +9195,10 @@ function activateViewerPreparation(){
  const planar=skyFlow.map(v=>-v);
  const axis=frame.right.map((v,i)=>v*planar[0]+frame.up[i]*planar[1]);
  const curveAxis=frame.right.map((v,i)=>-v*planar[1]+frame.up[i]*planar[0]);
- const curvature=(Math.random()-.5)*.40;
- const depthCurve=(Math.random()-.5)*.18;
+ // Keep the handoff on its calibrated screen-plane path. Random arcs and
+ // depth excursions can carry B past the viewport before it reaches centre.
+ const curvature=0;
+ const depthCurve=0;
  // Reversed camera travel makes A depart the opposite edge; B arrives from its counterpart.
  const clearances=cameraHandoffClearances(sourceBounds,targetBounds,fromDistance,toDistance,aspect,screenPosition,planar);
  const travelDistance=(clearances.exit+clearances.entry)*.5;
