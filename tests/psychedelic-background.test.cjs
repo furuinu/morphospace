@@ -74,3 +74,34 @@ test('extra wide stars sample more densely near centre than at the rim',()=>{
  const outerDensity=rim/(1.4**2-.95**2);
  assert.ok(nearDensity>outerDensity*2,`centre ${centre} / rim ${rim}`);
 });
+
+test('stellar flare thinning preserves strong leaders and absorbs weak nearby light',()=>{
+ const vm=require('node:vm');
+ const src=require('node:fs').readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+ const start=src.indexOf('function starFlareDensityTargets(candidates,wideFactor){');
+ const end=src.indexOf('const residentStarUniforms=',start);
+ assert.ok(start>=0&&end>start);
+ const ctx=vm.createContext({Map,Math});
+ vm.runInContext(src.slice(start,end),ctx);
+ const candidates=[
+  {id:1,x:0,y:0,brightness:1,wide:false},
+  {id:2,x:.012,y:.01,brightness:.25,wide:true},
+  {id:3,x:.9,y:.9,brightness:.4,wide:true}];
+ const normal=ctx.starFlareDensityTargets(candidates,0);
+ assert.equal(normal.get(2).opacity,1);
+ const wide=ctx.starFlareDensityTargets(candidates,1);
+ assert.equal(wide.get(1).opacity,1);
+ assert.ok(wide.get(2).opacity<.8);
+ assert.ok(wide.get(1).boost>1);
+ assert.equal(wide.get(3).opacity,1);
+});
+test('wide flare remains luminous when inside the returning normal FOV',()=>{
+ assert.match(html,/const wideVisibility=extra\?\(normal\?1:wideActive/);
+ assert.match(html,/if\(extra&&wideActive\)star\.wideSeen=Math\.max/);
+ assert.doesNotMatch(html,/vResidentEnergy=raw\*3\.7\*mix\(1\.0,uResidentWideFactor,wideStar\)/);
+ assert.match(html,/const contracting=wideFactor<previousWideLens-\.0001/);
+ assert.match(html,/if\(contracting&&wideFactor<\.68\)/);
+ assert.match(html,/const required=Math\.max\(0,Math\.min\(2,18-count\)\)/);
+ assert.match(html,/star\.entryOpacity=0;star\.flareOpacity=0/);
+ assert.match(html,/star\.entryOpacity=Math\.min\(1/);
+});
