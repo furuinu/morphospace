@@ -8566,7 +8566,6 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
 // Keep projected streaks in NDC. Star positions are infinitely distant,
 // therefore only camera ROTATION (not translation) produces their optical flow.
 let previousWarpSky=null;
-const warpTrailData=new Float32Array(RESIDENT_STAR_COUNT*6);
 function drawWarpStarTrails(aspect){
  const m=viewer.morph?.warpChase?viewer.morph:null;
  const energy=m?.warpAmount||0;
@@ -8617,6 +8616,7 @@ function drawWarpStarTrails(aspect){
 // 240 world-space stars share a broad sky buffer. Only selected bright-gas
 // stars bloom into cross flares, leaving large dark regions calm.
 const RESIDENT_STAR_COUNT=240;
+const warpTrailData=new Float32Array(RESIDENT_STAR_COUNT*6);
 const residentStarUniforms=new Float32Array(RESIDENT_STAR_COUNT*4);
 const starNurseryUniforms=new Float32Array(16);
 const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
