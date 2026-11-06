@@ -8768,7 +8768,7 @@ function tickStarNursery(dt){
   if(extra&&wideActive)star.wideSeen=Math.max(star.wideSeen||0,wideFactor);
   // Once a wide flare appears, do not attenuate it simply because FOV
   // narrows: retain it if it physically fits the future 43-degree lens.
-  const wideVisibility=extra?(normal?1:wideActive?Math.min(1,(star.wideSeen||0)*1.5):0):1;
+  const wideVisibility=extra?(normal&&star.wideSeen>.08?1:wideActive?Math.min(1,(star.wideSeen||0)*1.5):0):1;
   const density=weights.get(i)||{opacity:1,boost:1};
   const desired=wideVisibility*density.opacity;
   star.flareOpacity=(star.flareOpacity??(extra?0:1))+
