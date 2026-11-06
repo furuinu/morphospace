@@ -6615,6 +6615,10 @@ void main(){
  uniform mat3 uResidentBasis;
  uniform float uResidentAspect;
  uniform float uResidentTime;
+ uniform float uWarpAmount;
+ uniform vec2 uWarpDirection;
+ varying vec2 vWarpAxis;
+ varying float vWarpAmount;
  varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
@@ -6641,6 +6645,8 @@ void main(){
   gl_Position=vec4(pos/vec2(.395*uResidentAspect,.395),0.999,1.0);
   if(z<.05||abs(gl_Position.x)>1.20||abs(gl_Position.y)>1.20)
    gl_Position=vec4(3.0,3.0,0.999,1.0);
+  vWarpAxis=normalize(uWarpDirection+vec2(.0001));
+  vWarpAmount=uWarpAmount;
   float id=floor(aResidentStar.w*1000.0+.0001);
   float raw=fract(aResidentStar.w*1000.0);
   vResidentEnergy=raw*3.7; // stable stellar output; no periodic flicker
@@ -6667,9 +6673,12 @@ void main(){
   float flareGate=max(step(mod(id,11.0),.5),1.0-smoothstep(chance-.045,chance+.045,seed));
   float individualGlow=.58+1.10*fract(sin(id*19.41+4.73)*15731.743);
   vResidentFlare=flareGate*individualGlow; // fixed per star, no pulse
-  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate);
+  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate)
+    +uWarpAmount*58.0;
  }`;
  const residentFragment=`precision mediump float;
+ varying vec2 vWarpAxis;
+ varying float vWarpAmount;
  varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
@@ -6686,7 +6695,13 @@ void main(){
   // cross diffraction spikes and a round halo.
   float pinpoint=core*1.6;
   float flare=halo*.64+(horizontal+vertical)*.87;
-  float energy=(pinpoint+vResidentFlare*flare)*vResidentEnergy;
+  float along=dot(delta,vWarpAxis);
+  float across=dot(delta,vec2(-vWarpAxis.y,vWarpAxis.x));
+  // Streaks extend behind the moving camera during the warp.
+  float streak=exp(-pow(across*33.0,2.0))*
+   smoothstep(-.5,-.19,along)*(1.0-smoothstep(.09,.21,along));
+  float energy=(pinpoint+vResidentFlare*flare+
+   vWarpAmount*streak*3.2)*vResidentEnergy*(1.0+vWarpAmount*.55);
   float alpha=clamp(energy*.85,0.0,1.0);
   if(alpha<.006)discard;
   gl_FragColor=vec4(tint*energy,alpha);
@@ -6699,7 +6714,8 @@ void main(){
   basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
   aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
   time:gl.getUniformLocation(residentProgram,'uResidentTime'),
-  warp:gl.getUniformLocation(residentProgram,'uWarpAmount')};
+  warp:gl.getUniformLocation(residentProgram,'uWarpAmount'),
+  warpDirection:gl.getUniformLocation(residentProgram,'uWarpDirection')};
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -8506,8 +8522,16 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
    ...basis.right,...basis.up,...basis.back]));
   gl.uniform1f(renderer.residentVars.aspect,aspect);
   gl.uniform1f(renderer.residentVars.time,environmentTime);
+  const warp=viewer.morph?.warpChase?viewer.morph:null;
   if(renderer.residentVars.warp!==null)
-   gl.uniform1f(renderer.residentVars.warp,viewer.morph?.warpChase?viewer.morph.warpAmount||0:0);
+   gl.uniform1f(renderer.residentVars.warp,warp?.warpAmount||0);
+  if(renderer.residentVars.warpDirection!==null){
+   const movement=warp?warp.warpTarget.map((v,i)=>v-warp.warpStart[i]):[1,0,0];
+   const direction=[movement.reduce((sum,v,i)=>sum+v*basis.right[i],0),
+    movement.reduce((sum,v,i)=>sum+v*basis.up[i],0)];
+   const length=Math.hypot(...direction)||1;
+   gl.uniform2f(renderer.residentVars.warpDirection,direction[0]/length,direction[1]/length);
+  }
   gl.bindBuffer(gl.ARRAY_BUFFER,renderer.residentBuffer);
   gl.bufferSubData(gl.ARRAY_BUFFER,0,residentStarUniforms);
   for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
@@ -9261,7 +9285,7 @@ function warpChaseState(m,dt){
  m.warpStage=p<.24?'accel':p<.68?'cruise':p<.90?'decel':'acquire';
  const u=warpChaseEase(p);
  m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u);
- m.cameraTravel=V.dot(m.warpPosition,m.travelAxis);
+ m.cameraTravel=m.warpPosition.reduce((sum,v,i)=>sum+v*m.travelAxis[i],0);
  m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
  if(!m.switched){
   m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
