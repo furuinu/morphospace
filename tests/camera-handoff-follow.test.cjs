@@ -39,6 +39,16 @@ test('camera-pan corrects a genuinely displaced incoming specimen smoothly',()=>
  for(let i=0;i<50;i++)advance();
  assert.ok(pulseTravel.camera[0]>1&&pulseTravel.camera[0]<3,'drift correction should settle without overshooting');
 });
+test('offscreen B is guided laterally before the visible swap without slowing primary pan',()=>{
+ const {context,pulseTravel,advance}=setup();
+ const m=context.viewer.morph;
+ m.switched=false;m.entryPlanar=[1,0];m.elapsed=3;m.duration=5;
+ // An orbit changes the projected screen heading: B drifts above the entry line.
+ context.worldCameraFrame=()=>({position:[0,2,20],right:[1,0,0],up:[0,1,0],back:[0,0,1]});
+ advance();
+ assert.ok(pulseTravel.camera[1]<0,'camera must correct the live transverse entry error before B appears');
+ assert.equal(pulseTravel.camera[0],0,'primary lateral pan speed and distance must be untouched');
+});
 test('the native swap retains camera correction and resets B locomotion position',()=>{
  assert.match(html,/pulseTravelActive\(\)&&\(pulseTravel\.specimen===spec\|\|!!m\)/);
  assert.match(html,/if\(pulseTravel\.specimen!==spec\)\{resetPulseTravel\(spec,true\);pulseTravel\.position\.fill\(0\);\}/);
