@@ -9350,7 +9350,7 @@ function activateViewerPreparation(){
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
-  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:0,switched:false,headingChanged:false,fromDistance,toDistance,
+  duration:5.7,turnSeconds:0,switched:false,headingChanged:false,fromDistance,toDistance,
   travelAxis:axis.slice(),entryPlanar:planar.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
