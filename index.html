@@ -7594,19 +7594,12 @@ function cameraHandoffEase(x){
 // after B is centred. Velocity remains non-zero through the offscreen gap.
 function cameraHandoffTravel(p){
  const x=clamp(p,0,1);
- // Ease into motion, then begin a long, gentle focus toward the incoming
- // specimen BEFORE the final seconds. Never hold the edge and snap home.
- // The speed stays positive until the final frame; only its acceleration
- // changes, so the incoming specimen continuously approaches the centre.
- const ramp=.16,focusStart=.42,endSpeed=.18;
- const plateau=1-ramp*.5;
- const integrate=u=>{
-  if(u<=ramp)return u*u/(2*ramp);
-  if(u<=focusStart)return ramp*.5+(u-ramp);
-  const t=u-focusStart,span=1-focusStart;
-  return focusStart-ramp*.5+t-(1-endSpeed)*t*t/(2*span);
- };
- return integrate(x)/(focusStart-ramp*.5+(1-focusStart)*(1+endSpeed)*.5);
+ // Smoothly approach the incoming specimen throughout the second half,
+ // instead of travelling almost linearly and braking in the last seconds.
+ // Symmetric speed keeps the native A/B swap at exactly half the travel,
+ // with continuous non-zero velocity at entry, midpoint and completion.
+ const easing=.8;
+ return x-easing*Math.sin(TAU*x)/TAU;
 }
 // Shorter handoffs for nearby frame exits, without rushing large specimens.
 // Camera speed remains continuous because duration only scales the single path.
