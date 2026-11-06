@@ -105,7 +105,7 @@ test('background thumbnails preserve an open specimen and release only temporary
   const state={id:'active'},buffers={id:'active-buffers'},rigs=['active-rig'],deleted=[],rendered=[];
   const controls={motion:{checked:true},branchInspectInfo:{textContent:'active anatomy'}};
   const fixture={gl:{},renderer:{},spec:state,meshes:buffers,rigMeshes:rigs,selected:0,
-   modelYaw:1,modelPitch:2,panX:3,panY:4,bodyTime:5,canvas:{},console:{warn(){}},
+   modelYaw:1,modelPitch:2,panX:3,panY:4,bodyTime:5,isolatedSpecimenFrame:false,canvas:{},console:{warn(){}},
    $:id=>controls[id],snapshotEmissionUI:()=>({old:true}),restoreEmissionUI(){},applyEmissionDNAtoUI(){},getSpecEmissionDNA:()=>({}),drawPreview(){},
    target:{width:180,height:180,getContext:()=>({clearRect(){},drawImage(){if(failCapture)throw Error('capture failure')}})}};
   fixture.destroyMeshes=()=>{if(fixture.meshes)deleted.push(fixture.meshes.id);fixture.meshes=null;fixture.rigMeshes=[];};
@@ -116,6 +116,7 @@ test('background thumbnails preserve an open specimen and release only temporary
   assert.deepEqual(deleted,['preview-buffers']);assert.equal(rendered.at(-1),'active');
   assert.equal(controls.motion.checked,true);assert.equal(controls.branchInspectInfo.textContent,'active anatomy');
   assert.deepEqual([fixture.modelYaw,fixture.modelPitch,fixture.panX,fixture.panY,fixture.bodyTime],[1,2,3,4,5]);
+   assert.equal(fixture.isolatedSpecimenFrame,false,'thumbnail must restore the live camera mode');
  }
 });
 
