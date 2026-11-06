@@ -6652,7 +6652,9 @@ void main(){
   float id=floor(aResidentStar.w*1000.0+.0001);
   float raw=fract(aResidentStar.w*1000.0);
   float wideStar=step(239.5,id);
-  vResidentEnergy=raw*3.7*mix(1.0,uResidentWideFactor,wideStar);
+  // Per-star CPU luminance owns the crossfade. Never erase a wide-star
+  // flare solely because the lens has returned to the ordinary FOV.
+  vResidentEnergy=raw*3.7;
   vResidentTint=fract(id*.37);
   // Sample the identical spherical gas-noise coordinates and time flow used
   // by proceduralNebula; flare probability increases near luminous gas.
@@ -8550,10 +8552,43 @@ const RESIDENT_STAR_CAPACITY=RESIDENT_STAR_COUNT+RESIDENT_WIDE_STAR_COUNT;
 function wideStarLensFactor(){
  return cameraHandoffEase(clamp((warpCameraFovDegrees(viewer.morph)-43)/69,0,1));
 }
+// Each bright projected star survives while faint close neighbours dim.
+// Suppressed pinpoints feed a small, capped amount of light into the leader.
+function starFlareDensityTargets(candidates,wideFactor){
+ const weights=new Map(candidates.map(c=>[c.id,{opacity:1,boost:1}]));
+ if(wideFactor<=.001)return weights;
+ const radius=.14,grid=new Map(),key=(x,y)=>x+','+y;
+ const ordered=candidates.map(c=>({...c,score:c.brightness*(c.wide?1:1-.25*wideFactor)}))
+  .sort((a,b)=>b.score-a.score||a.id-b.id);
+ for(const c of ordered){
+  const gx=Math.floor(c.x/radius),gy=Math.floor(c.y/radius);
+  let leader=null,proximity=0;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)
+   for(const other of grid.get(key(gx+dx,gy+dy))||[]){
+    const near=Math.max(0,1-Math.hypot(c.x-other.x,c.y-other.y)/radius);
+    if(near>proximity){leader=other;proximity=near;}
+   }
+  const weight=weights.get(c.id);
+  if(leader&&proximity>0){
+   const dim=.82*wideFactor*proximity*proximity*
+    Math.min(1,leader.score/Math.max(.01,c.score));
+   weight.opacity=Math.max(.22,1-dim);
+   const primary=weights.get(leader.id);
+   primary.boost=Math.min(1.22,primary.boost+
+    (1-weight.opacity)*c.score/Math.max(.1,leader.score)*.075);
+  }
+  if(weight.opacity>.65){
+   const slot=key(gx,gy);
+   if(!grid.has(slot))grid.set(slot,[]);
+   grid.get(slot).push(c);
+  }
+ }
+ return weights;
+}
 const residentStarUniforms=new Float32Array(RESIDENT_STAR_CAPACITY*4);
 const starNurseryUniforms=new Float32Array(16);
 const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
-let residentStars=[],nextStarDeath=5,starNurseryCursor=0,wideStarsSeeded=false;
+let residentStars=[],nextStarDeath=5,starNurseryCursor=0,wideStarsSeeded=false,previousWideLens=0;
 starNurseryUniforms.fill(-1);
 function skyStarDirection(outside=false,wide=false){
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
@@ -8594,7 +8629,7 @@ function seedResidentStars(){
  residentStars=Array.from({length:RESIDENT_STAR_CAPACITY},(_,i)=>({
   direction:skyStarDirection(false,i>=RESIDENT_STAR_COUNT),brightness:.45+Math.random()*.55,
   deathAt:environmentTime+6+Math.random()*42,phase:Math.random()*6.283,
-  dying:false,deathStart:0,chimed:false,offscreen:false,flareUntil:0
+  dying:false,deathStart:0,chimed:false,offscreen:false,flareUntil:0,flareOpacity:i<RESIDENT_STAR_COUNT?1:0,flareBoost:1,wideSeen:0,entryOpacity:1
  }));
  wideStarsSeeded=false;
 }
@@ -8604,8 +8639,17 @@ function tickStarNursery(dt){
  if(!residentStars.length)seedResidentStars();
  const wideFactor=wideStarLensFactor(),wideActive=wideFactor>.015;
  if(wideActive&&!wideStarsSeeded){
-  for(let i=RESIDENT_STAR_COUNT;i<residentStars.length;i++)
-   residentStars[i].direction=skyStarDirection(false,true);
+  // Preserve former wide stars that remain in the normal frame. Only
+  // recycle currently invisible members to populate the new wide sector.
+  const sky=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+  const normalH=Math.tan(Math.PI*43/360);
+  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
+  for(let i=RESIDENT_STAR_COUNT;i<residentStars.length;i++){
+   const st=residentStars[i],z=-V.dot(st.direction,sky.back);
+   const visible=z>.05&&Math.abs(V.dot(st.direction,sky.right)/z)<normalH*aspect
+    &&Math.abs(V.dot(st.direction,sky.up)/z)<normalH;
+   if(!visible){st.direction=skyStarDirection(false,true);st.flareOpacity=0;st.wideSeen=0;}
+  }
   wideStarsSeeded=true;
  }else if(!wideActive)wideStarsSeeded=false;
  for(let i=0;i<starNurseryEvents.length;i++){
@@ -8643,7 +8687,8 @@ function tickStarNursery(dt){
  const half={halfWidth:halfHeight*aspect,halfHeight};
  for(let i=0;i<residentStars.length;i++){
   const star=residentStars[i],slot=i*4,extra=i>=RESIDENT_STAR_COUNT;
-  if(extra&&!wideActive){residentStarUniforms[slot+3]=0;continue;}
+  // Wide-only stars in the normal viewport are retained rather than faded.
+  // Stars outside the active lens may remain allocated but are not drawn.
   const z=-star.direction.reduce((a,v,k)=>a+v*sky.back[k],0);
   const u=star.direction.reduce((a,v,k)=>a+v*sky.right[k],0)/Math.max(.001,z);
   const v=star.direction.reduce((a,v,k)=>a+v*sky.up[k],0)/Math.max(.001,z);
@@ -8675,6 +8720,64 @@ function tickStarNursery(dt){
   }
   residentStarUniforms.set(star.direction,slot);
   residentStarUniforms[slot+3]=(active||viewer.morph?.warpChase)?(i+Math.min(.48,intensity*.32))/1000:0;
+ }
+ // As FOV contracts, restore ordinary-frame coverage from stars completely
+ // outside the currently displayed lens, never moving a visible flare.
+ const contracting=wideFactor<previousWideLens-.0001;
+ previousWideLens=wideFactor;
+ const normalHalf=Math.tan(Math.PI*43/360),normalWidth=normalHalf*aspect;
+ const projected=residentStars.map((star,i)=>{
+  const z=-V.dot(star.direction,sky.back);
+  return {i,z,x:z>.05?V.dot(star.direction,sky.right)/z:Infinity,
+   y:z>.05?V.dot(star.direction,sky.up)/z:Infinity};
+ });
+ const inNormal=p=>p.z>.05&&Math.abs(p.x)<normalWidth*.94&&Math.abs(p.y)<normalHalf*.94;
+ if(contracting&&wideFactor<.68){
+  const count=projected.filter(inNormal).length;
+  const required=Math.max(0,Math.min(2,18-count));
+  let added=0;
+  for(let i=0;i<RESIDENT_STAR_COUNT&&added<required;i++){
+   const p=projected[i],star=residentStars[i];
+   const offscreen=p.z<=.05||Math.abs(p.x)>half.halfWidth*1.12||Math.abs(p.y)>half.halfHeight*1.12;
+   if(!offscreen||star.dying)continue;
+   // New regular stars fade in at their own fixed world direction.
+   star.direction=skyStarDirection(false,false);
+   const u=(Math.random()*1.7-.85)*normalWidth;
+   const v=(Math.random()*1.7-.85)*normalHalf;
+   const direction=sky.right.map((n,k)=>n*u+sky.up[k]*v-sky.back[k]);
+   const length=Math.hypot(...direction)||1;
+   star.direction=direction.map(n=>n/length);
+   star.entryOpacity=0;star.flareOpacity=0;
+   added++;
+  }
+ }
+ const candidates=[];
+ for(let i=0;i<projected.length;i++){
+  const p=projected[i],star=residentStars[i];
+  if(p.z<=.05||Math.abs(p.x)>half.halfWidth*1.12||Math.abs(p.y)>half.halfHeight*1.12)continue;
+  candidates.push({id:i,x:p.x/half.halfWidth,y:p.y/half.halfHeight,
+   brightness:star.brightness,wide:i>=RESIDENT_STAR_COUNT});
+ }
+ const weights=starFlareDensityTargets(candidates,wideFactor);
+ const alpha=1-Math.exp(-Math.max(0,dt)/.26);
+ for(let i=0;i<residentStars.length;i++){
+  const star=residentStars[i],slot=i*4,packed=residentStarUniforms[slot+3];
+  if(packed<=0)continue;
+  const normal=inNormal(projected[i]);
+  const extra=i>=RESIDENT_STAR_COUNT;
+  if(extra&&wideActive)star.wideSeen=Math.max(star.wideSeen||0,wideFactor);
+  // Once a wide flare appears, do not attenuate it simply because FOV
+  // narrows: retain it if it physically fits the future 43-degree lens.
+  const wideVisibility=extra?(normal?1:wideActive?Math.min(1,(star.wideSeen||0)*1.5):0):1;
+  const density=weights.get(i)||{opacity:1,boost:1};
+  const desired=wideVisibility*density.opacity;
+  star.flareOpacity=(star.flareOpacity??(extra?0:1))+
+   (desired-(star.flareOpacity??(extra?0:1)))*alpha;
+  star.flareBoost=(star.flareBoost??1)+(density.boost-(star.flareBoost??1))*alpha;
+  star.entryOpacity=Math.min(1,(star.entryOpacity??1)+Math.max(0,dt)/.55);
+  const power=Math.min(.48,Math.max(.00001,(packed*1000-i)*
+   star.flareOpacity*star.flareBoost*star.entryOpacity));
+  residentStarUniforms[slot+3]=(i+power)/1000;
  }
 }
 // Porcelain-crazing glints: every onset is tied to an actual snow-flare cycle.
