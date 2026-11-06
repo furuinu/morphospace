@@ -9200,8 +9200,12 @@ function activateViewerPreparation(){
  const current=pulseTravel.specimen===spec;
  const offset=(current?pulseTravel.position:[0,0,0]).map((v,i)=>v-frame.position[i]-(current?pulseTravel.camera[i]:0));
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
- // Keep the EXISTING camera direction while A exits and B enters.
- // Choosing a new direction now would bend the calibrated entry path.
+ // Finish any previous turn at its current angular velocity, WITHOUT
+ // pausing the camera. Keep the same 3-axis direction through A's exit and
+ // B's entry, then ease toward a new heading near the new centre.
+ cameraOrbitTargetSpeed=cameraOrbitSpeed;
+ cameraOrbitTargetPitchSpeed=cameraOrbitPitchSpeed;
+ cameraOrbitTargetRollSpeed=cameraOrbitRollSpeed;
  const skyFlow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
   cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
