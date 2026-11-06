@@ -8349,7 +8349,7 @@ function stepOffscreenEntryGuide(m,dt){
  const onset=progress<.06?0:cameraHandoffEase(clamp((progress-.06)/.30,0,1));
  const delta=Math.min(.12,Math.max(0,dt));
  const gain=(1-Math.exp(-delta/.95))*onset;
- const nominal=Math.max(1,m.toDistance);
+ const nominal=Math.max(1,Number.isFinite(m.toDistance)?m.toDistance:(Number.isFinite(m.fromDistance)?m.fromDistance:spec.viewDistance));
  const cap=Math.max(.025,cameraOrbitAngularSpeed())*nominal*.5*delta;
  const move=clamp(error*gain,-cap,cap);
  for(let i=0;i<3;i++)pulseTravel.camera[i]+=
