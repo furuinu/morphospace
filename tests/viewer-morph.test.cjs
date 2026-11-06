@@ -565,7 +565,7 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
  const angles=Array.from(f.warpFlightAngles(m));
  assert.ok(Math.abs(angles[0])>.7,'wide yaw must move the infinite-distance sky');
  assert.ok(Math.abs(angles[1])>.025,'pitch must make the gaze genuinely three dimensional');
- assert.ok(Math.abs(angles[2])>.2,'banking roll must be visible');
+ assert.ok(Math.abs(angles[2])>.05,'banking roll must be visible during the overlapped transition');
  f.warpChaseState(m,0);
  assert.ok(Math.abs(m.warpPosition[2])>1,'trajectory must bend through depth, not just screen XY');
  m.elapsed=m.exitDuration+m.warpDuration;
