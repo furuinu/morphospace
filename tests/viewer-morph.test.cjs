@@ -603,6 +603,21 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.match(src,/m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll/);
  assert.match(src,/entryPositionWorld=true/);
 });
+test('B retains its entrance orientation at handoff and eases toward DNA swimming alignment',()=>{
+ const {f,workers}=runtime();
+ f.startViewerMorph();deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph;
+ for(let i=0;i<Math.ceil((m.exitDuration+m.warpDuration)/.12)+3&&f.v.morph;i++)f.tickViewer(.12);
+ assert.equal(f.v.morph,null);
+ assert.equal(f.v.arrivalPoseTime,0,'the DNA heading cannot jump to full strength on the first post-handoff frame');
+ f.tickViewer(.12);
+ assert.ok(f.v.arrivalPoseTime>0&&f.v.arrivalPoseTime<1.4);
+ assert.match(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,arrivalBlend\)/);
+ assert.match(src,/translate3\(\.\.\.pulseTravel.position.map\(v=>v\*arrivalBlend\)\)/);
+ for(let i=0;i<15;i++)f.tickViewer(.12);
+ assert.equal(f.v.arrivalPoseTime,1.4);
+});
 test('warp lens eases into ultra-wide perspective and returns to the original observation FOV',()=>{
  const {f,workers}=runtime();f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
