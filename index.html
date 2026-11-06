@@ -8331,11 +8331,35 @@ function stepPulseTravel(dt){
 // zone, predict forward motion and smoothly converge only when needed.
 // Camera correction translates the viewpoint; it never changes orbit angles.
 const cameraCorrection={specimen:null,leadSeconds:.42,settleSeconds:.34};
+// Before B becomes visible, steer the camera across (never along) its entry
+// line using the current, not the predicted, camera orientation. This keeps
+// the main pan and its background speed intact while correcting orbit drift.
+function stepOffscreenEntryGuide(m,dt){
+ if(!pulseTravelActive()||!m||m.switched)return;
+ const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,
+  m.fromDistance,panX,panY);
+ const remaining=2*m.travelDistance-m.cameraTravel;
+ const worldB=m.travelAxis.map((v,i)=>v*remaining-frame.position[i]-pulseTravel.camera[i]);
+ const x=V.dot(worldB,frame.right),y=V.dot(worldB,frame.up);
+ const direction=m.entryPlanar||[1,0];
+ const lateral=[-direction[1],direction[0]];
+ // Perpendicular error ONLY: never chase B along the entry direction.
+ const error=x*lateral[0]+y*lateral[1];
+ const progress=clamp(m.elapsed/Math.max(.01,m.duration),0,1);
+ const onset=progress<.06?0:cameraHandoffEase(clamp((progress-.06)/.30,0,1));
+ const delta=Math.min(.12,Math.max(0,dt));
+ const gain=(1-Math.exp(-delta/.95))*onset;
+ const nominal=Math.max(1,m.toDistance);
+ const cap=Math.max(.025,cameraOrbitAngularSpeed())*nominal*.5*delta;
+ const move=clamp(error*gain,-cap,cap);
+ for(let i=0;i<3;i++)pulseTravel.camera[i]+=
+  (frame.right[i]*lateral[0]+frame.up[i]*lateral[1])*move;
+}
 function stepPulseCameraFollow(dt){
- // During handoff the main pan owns large-scale travel; after the native
- // swap the same follow loop gently closes residual projected error for B.
+ // The incoming B is guided while it is STILL OFFSCREEN. Once it is active,
+ // follow only the residual error, never duplicate the planned main pan.
  const handoff=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
- if(handoff&&!handoff.switched)return;
+ if(handoff&&!handoff.switched){stepOffscreenEntryGuide(handoff,dt);return;}
  if(!pulseTravelActive()||pulseTravel.specimen!==spec){
   cameraCorrection.specimen=null;return;
  }
@@ -9230,7 +9254,7 @@ function activateViewerPreparation(){
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
   duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:0,switched:false,headingChanged:false,fromDistance,toDistance,
-  travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
+  travelAxis:axis.slice(),entryPlanar:planar.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
  $('overlay').classList.add('viewer-caption-fading');
