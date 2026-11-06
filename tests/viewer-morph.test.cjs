@@ -542,11 +542,11 @@ test('quintic warp easing accelerates and brakes smoothly without positional jum
  assert.ok(speed(.5)>speed(.10)*10);
  assert.ok(speed(.5)>speed(.90)*10);
 });
-test('warp star GPU pass uses speed strength and a directed streak',()=>{
- assert.match(html,/uniform float uWarpAmount;/);
- assert.match(html,/uniform vec2 uWarpDirection;/);
- assert.match(html,/vWarpAmount\*streak\*3\.2/);
- assert.match(html,/backgroundCycle\.to\.id==='nebula'\|\|viewer\.morph\?\.warpChase/);
+test('warp keeps ordinary star point rendering without streak bands',()=>{
+ assert.doesNotMatch(html,/const warpTrailVertex=/);
+ assert.doesNotMatch(html,/drawWarpStarTrails\(aspect\)/);
+ assert.doesNotMatch(html,/vWarpAmount\*streak/);
+ assert.match(html,/gl_PointSize=mix\(5\.5/);
 });
 
 test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
@@ -569,14 +569,6 @@ test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
  assert.ok(Array.from(f.warpFlightAngles(m)).every(v=>Math.abs(v)<1e-7),
   'all extra gaze rotation must disappear before ordinary observation resumes');
 });
-test('long warp star trails are geometric lines beyond the GPU point-size limit',()=>{
- assert.match(html,/const warpTrailVertex=/);
- assert.match(html,/const warpTrailProgram=linked\(/);
- assert.match(html,/gl\.drawArrays\(gl\.LINES,0,count\*2\)/);
- assert.match(html,/const length=Math\.min\(\.85,extent\*\(\.42\/dt\)/);
- assert.match(html,/drawWarpStarTrails\(aspect\)/);
-});
-
 test('warp lens eases into ultra-wide perspective and returns to the original observation FOV',()=>{
  const {f,workers}=runtime();f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
