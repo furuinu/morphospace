@@ -6617,11 +6617,7 @@ void main(){
  uniform float uResidentAspect;
  uniform float uResidentTanHalfFov;
  uniform float uResidentTime;
- uniform float uWarpAmount;
- uniform vec2 uWarpDirection;
- varying vec2 vWarpAxis;
- varying float vWarpAmount;
- varying float vResidentEnergy;
+  varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
  // Match the actual 3D nebula's density field (evaluated only at star vertices).
@@ -6647,8 +6643,6 @@ void main(){
   gl_Position=vec4(pos/(uResidentTanHalfFov*vec2(uResidentAspect,1.0)),0.999,1.0);
   if(z<.05||abs(gl_Position.x)>1.20||abs(gl_Position.y)>1.20)
    gl_Position=vec4(3.0,3.0,0.999,1.0);
-  vWarpAxis=normalize(uWarpDirection+vec2(.0001));
-  vWarpAmount=uWarpAmount;
   float id=floor(aResidentStar.w*1000.0+.0001);
   float raw=fract(aResidentStar.w*1000.0);
   vResidentEnergy=raw*3.7; // stable stellar output; no periodic flicker
@@ -6675,12 +6669,9 @@ void main(){
   float flareGate=max(step(mod(id,11.0),.5),1.0-smoothstep(chance-.045,chance+.045,seed));
   float individualGlow=.58+1.10*fract(sin(id*19.41+4.73)*15731.743);
   vResidentFlare=flareGate*individualGlow; // fixed per star, no pulse
-  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate)
-    +uWarpAmount*58.0;
+  gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate);
  }`;
  const residentFragment=`precision mediump float;
- varying vec2 vWarpAxis;
- varying float vWarpAmount;
  varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
@@ -6697,35 +6688,12 @@ void main(){
   // cross diffraction spikes and a round halo.
   float pinpoint=core*1.6;
   float flare=halo*.64+(horizontal+vertical)*.87;
-  float along=dot(delta,vWarpAxis);
-  float across=dot(delta,vec2(-vWarpAxis.y,vWarpAxis.x));
-  // Streaks extend behind the moving camera during the warp.
-  float streak=exp(-pow(across*33.0,2.0))*
-   smoothstep(-.5,-.19,along)*(1.0-smoothstep(.09,.21,along));
-  float energy=(pinpoint+vResidentFlare*flare+
-   vWarpAmount*streak*3.2)*vResidentEnergy*(1.0+vWarpAmount*.55);
+  float energy=(pinpoint+vResidentFlare*flare)*vResidentEnergy;
   float alpha=clamp(energy*.85,0.0,1.0);
   if(alpha<.006)discard;
   gl_FragColor=vec4(tint*energy,alpha);
  }`;
  const residentProgram=linked(isWebGL2?toVertex300(residentVertex):residentVertex,isWebGL2?toFragment300(residentFragment):residentFragment,'常駐星フレア');
- // Dedicated line pass bypasses the device's GL point-size limit,
- // allowing much longer camera-motion streaks even on iPhone Safari.
- const warpTrailVertex=`attribute vec3 aTrail;
- varying float vTrailAlpha;
- void main(){gl_Position=vec4(aTrail.xy,0.998,1.0);vTrailAlpha=aTrail.z;}`;
- const warpTrailFragment=`precision mediump float;
- varying float vTrailAlpha;
- uniform float uTrailEnergy;
- void main(){gl_FragColor=vec4(vec3(.69,.82,1.0)*uTrailEnergy*vTrailAlpha,
- clamp(uTrailEnergy*vTrailAlpha,0.0,1.0));}`;
- const warpTrailProgram=linked(isWebGL2?toVertex300(warpTrailVertex):warpTrailVertex,
-  isWebGL2?toFragment300(warpTrailFragment):warpTrailFragment,'ワープ星光跡');
- const warpTrailBuffer=gl.createBuffer();
- gl.bindBuffer(gl.ARRAY_BUFFER,warpTrailBuffer);
- gl.bufferData(gl.ARRAY_BUFFER,240*2*3*4,gl.DYNAMIC_DRAW);
- const warpTrailVars={position:gl.getAttribLocation(warpTrailProgram,'aTrail'),
-  energy:gl.getUniformLocation(warpTrailProgram,'uTrailEnergy')};
  const residentBuffer=gl.createBuffer();
  gl.bindBuffer(gl.ARRAY_BUFFER,residentBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,240*4*4,gl.DYNAMIC_DRAW);
@@ -6733,9 +6701,7 @@ void main(){
   basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
   aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
   tanHalfFov:gl.getUniformLocation(residentProgram,'uResidentTanHalfFov'),
-  time:gl.getUniformLocation(residentProgram,'uResidentTime'),
-  warp:gl.getUniformLocation(residentProgram,'uWarpAmount'),
-  warpDirection:gl.getUniformLocation(residentProgram,'uWarpDirection')};
+  time:gl.getUniformLocation(residentProgram,'uResidentTime')};
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -6881,7 +6847,7 @@ void main(){
  for(const u of ['uCapture','uCaptureAspect','uSampleTug','uMvp','uModel','uCamera','uCameraPos','uAlpha','uWire','uRim','uTime','uBodyTime','uCiliaAmp','uMotion','uStyle','uSeed','uMaterial','uGlow','uGlowPass','uGlassAmount','uShadeStrength','uGlowTint0','uGlowTint1','uGlowTint2','uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uOptics0','uOptics1','uOpticsControl','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uPatternA','uPatternB','uPatternC','uPatternD','uPatternE','uBiome0','uBiome1','uLampDir','uFillDir','uRimDir','uLightLevels','uLowerFillDir','uLowerFillPower','uDramaticEdge','uEmit0','uEmit1','uEmit2','uEmit3','uEmission','uEmissionColor','uBlinkMode','uBlinkSpeed','uSeedPhase'])ciliaVars[u]=gl.getUniformLocation(ciliaProgram,u);
  initTextureMorphUniforms(gl,program,vars);initTextureMorphUniforms(gl,ciliaProgram,ciliaVars);
  gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.clearColor(.90,.90,.90,1);
- return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,residentProgram,residentBuffer,residentVars,warpTrailProgram,warpTrailBuffer,warpTrailVars,snowProgram,snowVars,snowSparkProgram,snowSparkVars,snowSparkFlashBuffer,snowSparkFlashData,snowBuffer,snowData,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
+ return {program,vars,ciliaProgram,ciliaVars,studioProgram,studioBuffer,studioAttribute,studioUniforms,residentProgram,residentBuffer,residentVars,snowProgram,snowVars,snowSparkProgram,snowSparkVars,snowSparkFlashBuffer,snowSparkFlashData,snowBuffer,snowData,snowCount,studioAttribCount:gl.getParameter(gl.MAX_VERTEX_ATTRIBS),compatibility};
 }
 // v15.59.30: camera-tracked dramatic three-point lighting.
 const DRAMATIC_LIGHTING=Object.freeze({
@@ -8546,16 +8512,6 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
   if(renderer.residentVars.tanHalfFov!==null)
    gl.uniform1f(renderer.residentVars.tanHalfFov,Math.tan(warpCameraFovDegrees(viewer.morph)*Math.PI/360));
   gl.uniform1f(renderer.residentVars.time,environmentTime);
-  const warp=viewer.morph?.warpChase?viewer.morph:null;
-  if(renderer.residentVars.warp!==null)
-   gl.uniform1f(renderer.residentVars.warp,warp?.warpAmount||0);
-  if(renderer.residentVars.warpDirection!==null){
-   const movement=warp?warp.warpTarget.map((v,i)=>v-warp.warpStart[i]):[1,0,0];
-   const direction=[movement.reduce((sum,v,i)=>sum+v*basis.right[i],0),
-    movement.reduce((sum,v,i)=>sum+v*basis.up[i],0)];
-   const length=Math.hypot(...direction)||1;
-   gl.uniform2f(renderer.residentVars.warpDirection,direction[0]/length,direction[1]/length);
-  }
   gl.bindBuffer(gl.ARRAY_BUFFER,renderer.residentBuffer);
   gl.bufferSubData(gl.ARRAY_BUFFER,0,residentStarUniforms);
   for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
@@ -8566,65 +8522,12 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
   gl.disableVertexAttribArray(renderer.residentVars.position);
   gl.disable(gl.BLEND);
  }
- drawWarpStarTrails(aspect);
  gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
 }
 
-// Keep projected streaks in NDC. Star positions are infinitely distant,
-// therefore only camera ROTATION (not translation) produces their optical flow.
-let previousWarpSky=null;
-function drawWarpStarTrails(aspect){
- const m=viewer.morph?.warpChase?viewer.morph:null;
- const energy=m?.warpAmount||0;
- if(!m||energy<.002||!renderer.warpTrailProgram){previousWarpSky=null;return;}
- const current={yaw:modelYaw,pitch:modelPitch,roll:cameraRoll,time:environmentTime};
- const previous=previousWarpSky;
- previousWarpSky=current;
- if(!previous)return;
- const dt=Math.max(.008,Math.min(.12,current.time-previous.time));
- const now=worldCameraFrame(current.yaw,current.pitch,current.roll,1);
- const then=worldCameraFrame(previous.yaw,previous.pitch,previous.roll,1);
- // A camera rotation creates a coherent, directionally correct 2D sky flow.
- const tanHalf=Math.tan(warpCameraFovDegrees(m)*Math.PI/360);
- const project=(dir,frame)=>{
-  const z=-V.dot(dir,frame.back);
-  if(z<.08)return null;
-  return [V.dot(dir,frame.right)/(z*tanHalf*aspect),
-   V.dot(dir,frame.up)/(z*tanHalf)];
- };
- let count=0;
- for(const star of residentStars){
-  const a=project(star.direction,now),b=project(star.direction,then);
-  if(!a||!b||Math.abs(a[0])>1.35||Math.abs(a[1])>1.35)continue;
-  const dx=a[0]-b[0],dy=a[1]-b[1];
-  const extent=Math.hypot(dx,dy);
-  if(extent<.0002)continue;
-  // A 0.42-second exposure gives long optical trails regardless of point cap.
-  const length=Math.min(.85,extent*(.42/dt)*(1+energy*.9));
-  const k=length/extent,at=count*6;
-  warpTrailData[at]=a[0]-dx*k;warpTrailData[at+1]=a[1]-dy*k;
-  warpTrailData[at+2]=.06*energy;
-  warpTrailData[at+3]=a[0];warpTrailData[at+4]=a[1];
-  warpTrailData[at+5]=.8*energy;
-  if(++count>=RESIDENT_STAR_COUNT)break;
- }
- if(!count)return;
- gl.useProgram(renderer.warpTrailProgram);
- gl.uniform1f(renderer.warpTrailVars.energy,Math.min(1.5,energy*1.3));
- gl.bindBuffer(gl.ARRAY_BUFFER,renderer.warpTrailBuffer);
- gl.bufferSubData(gl.ARRAY_BUFFER,0,warpTrailData.subarray(0,count*6));
- for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
- gl.vertexAttribPointer(renderer.warpTrailVars.position,3,gl.FLOAT,false,0,0);
- gl.enableVertexAttribArray(renderer.warpTrailVars.position);
- gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
- gl.drawArrays(gl.LINES,0,count*2);
- gl.disableVertexAttribArray(renderer.warpTrailVars.position);
- gl.disable(gl.BLEND);
-}
 // 240 world-space stars share a broad sky buffer. Only selected bright-gas
 // stars bloom into cross flares, leaving large dark regions calm.
 const RESIDENT_STAR_COUNT=240;
-const warpTrailData=new Float32Array(RESIDENT_STAR_COUNT*6);
 const residentStarUniforms=new Float32Array(RESIDENT_STAR_COUNT*4);
 const starNurseryUniforms=new Float32Array(16);
 const starNurseryEvents=Array.from({length:4},()=>({direction:[0,0,-1],start:-100,duration:1.15,active:false}));
