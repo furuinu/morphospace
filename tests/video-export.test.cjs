@@ -37,22 +37,17 @@ test('negative CSS letter-spacing cannot wrap and clip the final digit of the ex
  assert.equal(draws.length,1);assert.equal(draws[0][0],'MORPHOSPACE 64');assert.ok(draws[0][3]>0);assert.ok(draws[0][3]<196*592/390);
 });
 
-test('recorded titles draw vector DNA instead of private-use icon-font characters',()=>{
- const {f,elements,ctx}=drawing(),text=[],paths=[];
- for(const [id,el] of Object.entries(elements))el.display=id==='viewerTitleText'?'block':'none';
- const title=elements.viewerTitleText;
- title.textContent='\uf471MORPHOSPACE';
- title.querySelector=()=>({textContent:'\uf471',getBoundingClientRect:()=>({left:20,right:38,top:60,bottom:80})});
- title.getBoundingClientRect=()=>({left:20,top:60,width:350,height:30});
- ctx.moveTo=(...args)=>paths.push(['move',...args]);
- ctx.lineTo=(...args)=>paths.push(['line',...args]);
- ctx.stroke=()=>paths.push(['stroke']);
- ctx.fillText=t=>text.push(t);
- f.getComputedStyle=el=>({display:el.display,visibility:'visible',fontSize:'14px',lineHeight:'22px',fontStyle:'normal',fontWeight:'400',fontFamily:'sans-serif',color:'white'});
+test('brand title and recorded title contain no DNA icons',()=>{
+ assert.doesNotMatch(html,/class="brand-dna"/);
+ assert.doesNotMatch(html,/function drawVideoDnaIcon\(/);
+ const {f,elements,ctx}=drawing(),draws=[];
+ for(const [id,el]of Object.entries(elements))el.display=id==='viewerTitleText'?'block':'none';
+ elements.viewerTitleText.textContent='MORPHOSPACE';
+ ctx.fillText=text=>draws.push(text);
  f.drawVideoViewerText({mode:'viewer',width:390,height:844,ctx});
- assert.deepEqual(text,['MORPHOSPACE']);
- assert.ok(paths.filter(p=>p[0]==='stroke').length>=7,'DNA must be vector drawn on the exported canvas');
+ assert.deepEqual(draws,['MORPHOSPACE']);
 });
+
 test('video effects start disabled for new visitors but remain manually opt-in',()=>{
  assert.match(html,/<input id="viewerVideoNoise" type="checkbox">映像ノイズ/);
  assert.match(html,/<input id="videoVhs" type="checkbox">VHSノイズ・グリッチを収録/);
