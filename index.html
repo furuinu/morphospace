@@ -7594,14 +7594,11 @@ function cameraHandoffEase(x){
 // after B is centred. Velocity remains non-zero through the offscreen gap.
 function cameraHandoffTravel(p){
  const x=clamp(p,0,1);
- // Smoothly approach the incoming specimen throughout the second half,
- // instead of travelling almost linearly and braking in the last seconds.
- // Symmetric speed keeps the native A/B swap at exactly half the travel,
- // with continuous non-zero velocity at entry, midpoint and completion.
- // Keep the incoming specimen nearly locked to the sky's apparent drift.
- // Strong midpoint acceleration caused a visible "snap" on frame entry.
- const easing=.18;
- return x-easing*Math.sin(TAU*x)/TAU;
+ // Two broad, mirrored acceleration/deceleration envelopes:
+ // A exits with eased motion; B enters and approaches centre with the
+ // same eased envelope. The camera never stops at the handoff boundary.
+ // The symmetric integral holds the native swap at exactly half travel.
+ return x-.12*Math.sin(TAU*x)/TAU-.24*Math.sin(2*TAU*x)/(2*TAU);
 }
 // Shorter handoffs for nearby frame exits, without rushing large specimens.
 // Camera speed remains continuous because duration only scales the single path.
@@ -9203,10 +9200,10 @@ function activateViewerPreparation(){
  const current=pulseTravel.specimen===spec;
  const offset=(current?pulseTravel.position:[0,0,0]).map((v,i)=>v-frame.position[i]-(current?pulseTravel.camera[i]:0));
  const screenPosition=[offset.reduce((n,v,i)=>n+v*frame.right[i],0),offset.reduce((n,v,i)=>n+v*frame.up[i],0)];
- // Start easing the 3-axis turn before the source begins to exit.
- cameraOrbitChooseHeading();
+ // Keep the EXISTING camera direction while A exits and B enters.
+ // Choosing a new direction now would bend the calibrated entry path.
  const skyFlow=cameraSkyFlowDirection(modelYaw,modelPitch,cameraRoll,
-  cameraOrbitTargetSpeed,cameraOrbitTargetPitchSpeed,cameraOrbitTargetRollSpeed)||
+  cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed)||
   cameraHandoffDirection(screenPosition,sourceBounds,fromDistance,aspect);
  // Reverse the previous handoff direction: both A's exit and B's entry
  // now occur on the opposite viewport edges, with the same easing and path.
@@ -9228,7 +9225,7 @@ function activateViewerPreparation(){
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
-  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:0,switched:false,fromDistance,toDistance,
+  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:0,switched:false,headingChanged:false,fromDistance,toDistance,
   travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
@@ -9522,6 +9519,10 @@ function tickViewer(elapsed){
   const p=clamp((m.elapsed-(m.turnSeconds||0))/Math.max(.01,m.duration-(m.turnSeconds||0)),0,1),shot=cameraHandoffFrame(m,p);
   m.cameraTravel=shot.travel;m.cameraCurve=shot.curve;m.cameraDepth=shot.depth;
   m.cameraYawOffset=shot.yaw;m.t=shot.progress;
+  // Only start steering when B has travelled most of the way toward
+  // centre. stepCameraOrbit's existing 4s damping makes this turn gradual;
+  // the orbit keeps running at full speed before, during and after it.
+  if(!m.headingChanged&&p>=.80){m.headingChanged=true;cameraOrbitChooseHeading();}
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
    m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
