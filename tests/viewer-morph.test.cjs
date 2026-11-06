@@ -40,8 +40,8 @@ test('short camera sweeps complete faster without interrupting continuous travel
  f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
  const m=f.v.morph;
- const expected=duration(m.travelDistance,m.fromDistance,m.toDistance);
- assert.ok(Math.abs(m.duration-expected)<1e-8,'animation must use the adaptive time');
+ const expected=m.exitDuration+m.warpDuration;
+ assert.ok(Math.abs(m.duration-expected)<1e-8,'warp duration must include both exit and high-speed travel');
  for(let i=0;i<Math.ceil(m.duration/.12)+2&&f.v.morph;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
 });
