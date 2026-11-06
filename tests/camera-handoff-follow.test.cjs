@@ -12,7 +12,7 @@ const followSource=html.slice(begin,end);
 
 function setup({drift=0,pan=true}={}){
  const specimen={viewDistance:20};
- const morph=pan?{mode:'camera-pan',switched:true,travelDistance:10,cameraTravel:10,travelAxis:[1,0,0]}:null;
+ const morph=pan?{mode:'camera-pan',switched:true,travelDistance:10,cameraTravel:10,fromDistance:20,toDistance:20,travelAxis:[1,0,0]}:null;
  const pulseTravel={specimen,position:[drift,0,0],velocity:[0,0,0],camera:[0,0,0]};
  const context={
   Math,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),cameraHandoffEase:x=>x*x*(3-2*x),
