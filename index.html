@@ -7598,7 +7598,9 @@ function cameraHandoffTravel(p){
  // instead of travelling almost linearly and braking in the last seconds.
  // Symmetric speed keeps the native A/B swap at exactly half the travel,
  // with continuous non-zero velocity at entry, midpoint and completion.
- const easing=.8;
+ // Keep the incoming specimen nearly locked to the sky's apparent drift.
+ // Strong midpoint acceleration caused a visible "snap" on frame entry.
+ const easing=.18;
  return x-easing*Math.sin(TAU*x)/TAU;
 }
 // Shorter handoffs for nearby frame exits, without rushing large specimens.
@@ -8360,13 +8362,18 @@ function stepPulseCameraFollow(dt){
  // Even when the specimen strays far outside the central safe zone,
  // converge continuously instead of making a sudden high-gain correction.
  const settle=edgePressure>.50?.65:cameraCorrection.settleSeconds;
- const alpha=1-Math.exp(-Math.min(.12,Math.max(0,dt))/settle);
- for(let i=0;i<3;i++){
-  pulseTravel.camera[i]+=alpha*(
-   frame.right[i]*xError+frame.up[i]*yError+
-   frame.back[i]*depthCorrection
-  );
- }
+ const delta=Math.min(.12,Math.max(0,dt));
+ const alpha=1-Math.exp(-delta/settle);
+ const correction=frame.right.map((v,i)=>alpha*(
+  v*xError+frame.up[i]*yError+frame.back[i]*depthCorrection
+ ));
+ // Cap the camera's world-space correction to the apparent sky drift.
+ // A large error must take longer to settle, never trigger a fast recenter.
+ const skySpeed=Math.max(.025,cameraOrbitAngularSpeed())*nominal;
+ const maximumStep=skySpeed*.85*delta;
+ const distance=Math.hypot(...correction);
+ const scale=distance>maximumStep?maximumStep/distance:1;
+ for(let i=0;i<3;i++)pulseTravel.camera[i]+=correction[i]*scale;
 }
 function pulseCameraDistance(){
  return spec.viewDistance*(1+.009*pulseTravel.breath);
