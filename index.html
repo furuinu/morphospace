@@ -8354,13 +8354,18 @@ function stepPulseCameraFollow(dt){
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
  const envelope=cameraViewEnvelope(Math.max(.01,depth),aspect);
  // The free-drift zone extends 5% of the FULL viewport on each axis.
- const safeRatio=handoff?.switched?.08:.10;
+ const safeRatio=handoff&&handoff.switched?.08:.10;
  const safeX=Math.max(.01,envelope.halfWidth*safeRatio);
  const safeY=Math.max(.01,envelope.halfHeight*safeRatio);
  // Track a short distance ahead of the organism to compensate for camera lag.
  // Prediction is bounded so a very fast stroke cannot throw the camera ahead.
  const lead=Math.min(cameraCorrection.leadSeconds,Math.max(0,dt)*3+0.30);
- const predicted=offset.map((value,i)=>value+pulseTravel.velocity[i]*lead);
+ // The main pan already accounts for B's approach from the viewport edge.
+ // Follow ONLY deviations from that planned trajectory (orbit drift and
+ // swimming), otherwise the two controllers chase B twice and overshoot.
+ const plannedRemaining=handoff?2*handoff.travelDistance-handoff.cameraTravel:0;
+ const predicted=offset.map((value,i)=>value-
+  (handoff?handoff.travelAxis[i]*plannedRemaining:0)+pulseTravel.velocity[i]*lead);
  const screenX=V.dot(predicted,frame.right),screenY=V.dot(predicted,frame.up);
  const xError=Math.abs(screenX)>safeX?screenX-Math.sign(screenX)*safeX:0;
  const yError=Math.abs(screenY)>safeY?screenY-Math.sign(screenY)*safeY:0;
@@ -8375,7 +8380,7 @@ function stepPulseCameraFollow(dt){
                              Math.abs(screenY)/Math.max(.01,envelope.halfHeight));
  // Even when the specimen strays far outside the central safe zone,
  // converge continuously instead of making a sudden high-gain correction.
- const settle=handoff?.switched?.9:(edgePressure>.50?.65:cameraCorrection.settleSeconds);
+ const settle=handoff&&handoff.switched?.9:(edgePressure>.50?.65:cameraCorrection.settleSeconds);
  const delta=Math.min(.12,Math.max(0,dt));
  const alpha=1-Math.exp(-delta/settle);
  const correction=frame.right.map((v,i)=>alpha*(
