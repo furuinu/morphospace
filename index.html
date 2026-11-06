@@ -9090,15 +9090,12 @@ function stepCameraOrbit(dt){
  cameraOrbitSpeed+=(cameraOrbitTargetSpeed-cameraOrbitSpeed)*alpha;
  cameraOrbitPitchSpeed+=(cameraOrbitTargetPitchSpeed-cameraOrbitPitchSpeed)*alpha;
  cameraOrbitRollSpeed+=(cameraOrbitTargetRollSpeed-cameraOrbitRollSpeed)*alpha;
- // During a world-anchored A/B handoff, large changes to the 3-axis
- // camera basis turn a calibrated screen-plane path into a miss or overshoot.
- // The pan still moves the environment; retain a small continuous orbit,
- // then seamlessly return to the normal angular speed after the handoff.
- const handoff=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
- const orbitRate=handoff?Math.min(1,.15/Math.max(.001,cameraOrbitAngularSpeed()*handoff.duration)):1;
- cameraOrbitPhase-=cameraOrbitSpeed*dt*orbitRate;
- cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt*orbitRate;
- cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt*orbitRate;
+ // Never throttle or pause ambient camera motion for specimen handoff.
+ // The incoming specimen's projected error is corrected by camera-follow,
+ // while the background maintains its normal uninterrupted 3D orbit.
+ cameraOrbitPhase-=cameraOrbitSpeed*dt;
+ cameraOrbitPitchPhase+=cameraOrbitPitchSpeed*dt;
+ cameraOrbitRollPhase+=cameraOrbitRollSpeed*dt;
 }
 const viewer={full:false,source:'gallery',random:false,history:[],seconds:30,elapsed:0,preparing:false,revision:0,morph:null,fit:1,pending:null,retired:[],prepareError:null,worldOffset:[0,0,0]};
 function viewerItems(){return viewer.source==='stock'?stockEntries.map((stored,index)=>({index,stored,record:stored.payload.record,key:'stock:'+stored.id})):population.map((record,index)=>({index,stored:null,record,key:'gallery:'+index}));}
@@ -9231,7 +9228,7 @@ function activateViewerPreparation(){
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
-  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:1.0,switched:false,fromDistance,toDistance,
+  duration:cameraHandoffDuration(travelDistance,fromDistance,toDistance,cameraOrbitAngularSpeed()),turnSeconds:0,switched:false,fromDistance,toDistance,
   travelAxis:axis.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
   yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
