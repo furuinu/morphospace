@@ -96,10 +96,10 @@ test('camera transition holds A intact until fully offscreen and never uploads m
  assert.equal(f.spec.seed,1);
  assert.equal(f.meshes,original);
  const before=events.filter(e=>e==='upload').length;
- for(let i=0;i<Math.floor(f.v.morph.duration*.27/.12);i++)f.tickViewer(.12);
+ for(let i=0;i<Math.floor(f.v.morph.exitDuration*.8/.12);i++)f.tickViewer(.12);
  assert.equal(f.spec.seed,1,'source must still be active before the handoff');
  assert.equal(f.v.morph.switched,false);
- for(let i=0;i<Math.ceil(f.v.morph.duration*.30/.12);i++)f.tickViewer(.12);
+ for(let i=0;i<Math.ceil((f.v.morph.exitDuration*.2+.25)/.12);i++)f.tickViewer(.12);
  assert.equal(f.spec,target,'target must become visible only after A exits');
  assert.equal(f.v.morph.switched,true);
  assert.equal(f.v.morph.batches.length,0);
@@ -108,7 +108,7 @@ test('camera transition holds A intact until fully offscreen and never uploads m
 test('cancelling after B becomes active restores original A meshes and view',()=>{
  const {f,workers}=runtime(),source=f.spec,original=f.meshes;
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- for(let i=0;i<Math.ceil(f.v.morph.duration*.55/.12);i++)f.tickViewer(.12);
+ for(let i=0;i<Math.ceil((f.v.morph.exitDuration+.25)/.12);i++)f.tickViewer(.12);
  assert.equal(f.v.morph.switched,true);
  f.cancelViewerMorph(false);
  assert.equal(f.v.morph,null);assert.equal(f.spec,source);assert.equal(f.meshes,original);
@@ -117,11 +117,11 @@ test('cancelling after B becomes active restores original A meshes and view',()=
 test('camera and specimen preserve absolute world location at completion',()=>{
  const {f,workers}=runtime();
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- const m=f.v.morph,axis=m.travelAxis.slice(),distance=m.travelDistance;
+ const m=f.v.morph,anchor=m.warpTarget.slice();
  assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
  for(let i=0,steps=f.v.morph?Math.ceil(f.v.morph.duration/.12)+2:35;i<steps;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
- for(let i=0;i<3;i++)assert.ok(Math.abs(f.v.worldOffset[i]-2*distance*axis[i])<1e-6);
+ for(let i=0;i<3;i++)assert.ok(Math.abs(f.v.worldOffset[i]-anchor[i])<1e-6);
  f.stopViewer();
  assert.deepEqual(Array.from(f.v.worldOffset),[0,0,0]);
 });
@@ -504,9 +504,9 @@ test('camera keeps its heading through frame out and frame in, steering only nea
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
  assert.equal(turns,0,'do not change camera heading at the beginning of handoff');
  const m=f.v.morph;
- m.elapsed=m.duration*.77;f.tickViewer(.01);
+ m.elapsed=m.exitDuration+m.warpDuration*.77;f.tickViewer(.01);
  assert.equal(turns,0,'B entry should keep the existing heading');
- m.elapsed=m.duration*.81;f.tickViewer(.01);
+ m.elapsed=m.exitDuration+m.warpDuration*.81;f.tickViewer(.01);
  assert.equal(turns,1,'begin a single gradual heading change near the centre');
  f.tickViewer(.01);assert.equal(turns,1,'never choose a second heading within one handoff');
 });
