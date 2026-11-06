@@ -9285,13 +9285,12 @@ function warpFlightAngles(m){
   m.warpPitch*.65*sweep,
   m.warpRoll*bank];
 }
-// Spawn B inside the active wide-angle frustum, independently of A's exit.
+// Spawn B precisely on the optical axis, independently of A's exit.
 function warpEntryFrame(m){
  const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
  const grow=cameraHandoffEase(clamp((p-.60)/.40,0,1));
  const focus=cameraHandoffEase(clamp((p-.64)/.36,0,1));
- return {visible:p>=.60,x:m.entryBirthX*(1-focus),
-  y:m.entryBirthY*(1-focus),scale:.004+.996*grow,focus};
+ return {visible:p>=.60,x:0,y:0,scale:.004+.996*grow,focus};
 }
 function warpChaseState(m,dt){
  m.elapsed+=Math.max(0,dt);
@@ -9319,6 +9318,10 @@ function warpChaseState(m,dt){
  m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
  if(!m.switched){
   m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+   // Capture the incoming body's camera-relative orientation once. Any
+   // additional camera rotation is compensated during the point-to-body reveal,
+   // then eased back to the specimen's native coordinates by acquisition.
+   m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll;
   if(pulseTravel.specimen!==spec){resetPulseTravel(spec,true);pulseTravel.position.fill(0);}
  }
  spec.viewDistance=m.fromDistance+(m.toDistance-m.fromDistance)*cameraHandoffEase(p);
@@ -9383,11 +9386,10 @@ function activateViewerPreparation(){
   const warpYaw=(100+Math.random()*50)*Math.PI/180*(Math.random()<.5?-1:1);
  const warpPitch=(.20+Math.random()*.38)*(Math.random()<.5?-1:1);
  const warpRoll=(.24+Math.random()*.23)*(Math.random()<.5?-1:1);
- const entryBirthX=(Math.random()-.5)*1.15,entryBirthY=(Math.random()-.5)*1.05;
+ // B starts at the optical centre; no independent random screen offset.
  viewer.morph={mode:'camera-pan',warpChase:true,warpStage:'frameout',warpAmount:0,
   warpStart,warpTarget,warpPosition:[0,0,0],
   warpSide:curveAxis.slice(),warpBack:frame.back.slice(),warpArc,warpDepth,warpYaw,warpPitch,warpRoll,
-   entryBirthX,entryBirthY,
   exitDistance,exitDuration:3.2,warpDuration:2.5,
   index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
@@ -9893,21 +9895,23 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   if(m.warpChase){
    const birth=warpEntryFrame(m);
    entryHidden=!birth.visible;
-   // Use the live view basis, rather than the former A-to-B world path.
-   // This keeps B at its randomly chosen screen point through camera turns.
+   // Compose B in the live camera basis at the exact screen centre.
+   // A's final world-space exit position cannot drag B across the screen.
    const eye=globalCameraPose();
    const anchor=viewer.worldOffset.map((v,i)=>v+m.warpTarget[i]);
    const delta=anchor.map((v,i)=>v-eye.position[i]);
    const dot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0);
    const finalDepth=Math.max(.1,-dot(delta,eye.back));
-   const tanHalf=Math.tan(warpCameraFovDegrees(m)*Math.PI/360),aspect=w/h;
-   const endX=clamp(dot(delta,eye.right)/(finalDepth*tanHalf*aspect),-.8,.8);
-   const endY=clamp(dot(delta,eye.up)/(finalDepth*tanHalf),-.8,.8);
-   const nx=birth.x+endX*birth.focus,ny=birth.y+endY*birth.focus;
    const depth=spec.viewDistance*(1-birth.focus)+finalDepth*birth.focus;
-   const centre=eye.position.map((v,i)=>v-eye.back[i]*depth+
-    eye.right[i]*nx*depth*tanHalf*aspect+eye.up[i]*ny*depth*tanHalf);
-   base=mul4(translate3(...centre),mul4(scale3(birth.scale,birth.scale,birth.scale),base));
+   const centre=eye.position.map((v,i)=>v-eye.back[i]*depth);
+   // Match the local body's visible orientation to the changing camera
+   // during growth. Release this correction smoothly before normal viewing.
+   const align=1-birth.focus;
+   const yaw=(modelYaw-(m.entryYaw??modelYaw))*align;
+   const pitch=(modelPitch-(m.entryPitch??modelPitch))*align;
+   const roll=(cameraRoll-(m.entryRoll??cameraRoll))*align;
+   const aligned=mul4(rotY(yaw),mul4(rotX(pitch),mul4(rotZ(roll),base)));
+   base=mul4(translate3(...centre),mul4(scale3(birth.scale,birth.scale,birth.scale),aligned));
    entryPositionWorld=true;
   }else{
    base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
