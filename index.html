@@ -6406,6 +6406,7 @@ uniform float uBgRayStrength; // subtle spatial flare
 uniform float uGalleryPreview; // shared still atlas background
 uniform float uNebulaMix;
 uniform float uBgAspect;
+uniform float uBgTanHalfFov;
 uniform mat3 uSkyBasis;
 uniform vec4 uStarBursts[4];
 
@@ -6491,7 +6492,7 @@ vec3 darkNebulaTint(float warm){
 }
 vec3 proceduralNebula(vec2 uv){
  // Ray direction is camera-relative and independent of camera translation.
- vec2 screen=(uv-.5)*vec2(uBgAspect,1.0)*.79;
+ vec2 screen=(uv-.5)*vec2(uBgAspect,1.0)*(2.0*uBgTanHalfFov);
  vec3 ray=normalize(vec3(screen.x,screen.y,-1.0));
  // Exact current camera basis, including pitch and roll. Translation is ignored.
  ray=normalize(uSkyBasis*ray);
@@ -6608,12 +6609,13 @@ void main(){
  const studioBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,studioBuffer);
  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
  const studioAttribute=gl.getAttribLocation(studioProgram,'aPos2');
- const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uSkyBasis' ,'uStarBursts[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
+ const studioUniforms={};for(const name of ['uTime','uOrbit','uBgSceneCenter','uBgSceneScale','uBgCenter','uBgMid','uBgEdge','uBgDynamics','uBgRayStrength','uGalleryPreview','uNebulaMix','uBgAspect','uBgTanHalfFov','uSkyBasis' ,'uStarBursts[0]'])studioUniforms[name]=gl.getUniformLocation(studioProgram,name);
  // Separate GPU point pass scales to 240 flaring stars without exceeding the
  // fragment-uniform limits on iPhone WebGL1 or looping 240x per sky pixel.
  const residentVertex=`attribute vec4 aResidentStar;
  uniform mat3 uResidentBasis;
  uniform float uResidentAspect;
+ uniform float uResidentTanHalfFov;
  uniform float uResidentTime;
  uniform float uWarpAmount;
  uniform vec2 uWarpDirection;
@@ -6642,7 +6644,7 @@ void main(){
    dot(aResidentStar.xyz,uResidentBasis[2]));
   float z=-local.z;
   vec2 pos=local.xy/max(.001,z);
-  gl_Position=vec4(pos/vec2(.395*uResidentAspect,.395),0.999,1.0);
+  gl_Position=vec4(pos/(uResidentTanHalfFov*vec2(uResidentAspect,1.0)),0.999,1.0);
   if(z<.05||abs(gl_Position.x)>1.20||abs(gl_Position.y)>1.20)
    gl_Position=vec4(3.0,3.0,0.999,1.0);
   vWarpAxis=normalize(uWarpDirection+vec2(.0001));
@@ -6730,6 +6732,7 @@ void main(){
  const residentVars={position:gl.getAttribLocation(residentProgram,'aResidentStar'),
   basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
   aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
+  tanHalfFov:gl.getUniformLocation(residentProgram,'uResidentTanHalfFov'),
   time:gl.getUniformLocation(residentProgram,'uResidentTime'),
   warp:gl.getUniformLocation(residentProgram,'uWarpAmount'),
   warpDirection:gl.getUniformLocation(residentProgram,'uWarpDirection')};
@@ -8516,6 +8519,8 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
  if(surface.uGalleryPreview!==null&&surface.uGalleryPreview!==undefined)gl.uniform1f(surface.uGalleryPreview,preview?1:0);
  if(surface.uNebulaMix!==null&&surface.uNebulaMix!==undefined)gl.uniform1f(surface.uNebulaMix,backgroundCycle.to.id==='nebula'?1:0);
  if(surface.uBgAspect!==null&&surface.uBgAspect!==undefined)gl.uniform1f(surface.uBgAspect,aspect);
+ if(surface.uBgTanHalfFov!==null&&surface.uBgTanHalfFov!==undefined)
+  gl.uniform1f(surface.uBgTanHalfFov,Math.tan(warpCameraFovDegrees(viewer.morph)*Math.PI/360));
  if(surface['uStarBursts[0]']!==null&&surface['uStarBursts[0]']!==undefined)
   gl.uniform4fv(surface['uStarBursts[0]'],starNurseryUniforms);
  if(surface.uSkyBasis!==null&&surface.uSkyBasis!==undefined){
@@ -8538,6 +8543,8 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
   gl.uniformMatrix3fv(renderer.residentVars.basis,false,new Float32Array([
    ...basis.right,...basis.up,...basis.back]));
   gl.uniform1f(renderer.residentVars.aspect,aspect);
+  if(renderer.residentVars.tanHalfFov!==null)
+   gl.uniform1f(renderer.residentVars.tanHalfFov,Math.tan(warpCameraFovDegrees(viewer.morph)*Math.PI/360));
   gl.uniform1f(renderer.residentVars.time,environmentTime);
   const warp=viewer.morph?.warpChase?viewer.morph:null;
   if(renderer.residentVars.warp!==null)
@@ -8578,11 +8585,12 @@ function drawWarpStarTrails(aspect){
  const now=worldCameraFrame(current.yaw,current.pitch,current.roll,1);
  const then=worldCameraFrame(previous.yaw,previous.pitch,previous.roll,1);
  // A camera rotation creates a coherent, directionally correct 2D sky flow.
+ const tanHalf=Math.tan(warpCameraFovDegrees(m)*Math.PI/360);
  const project=(dir,frame)=>{
   const z=-V.dot(dir,frame.back);
   if(z<.08)return null;
-  return [V.dot(dir,frame.right)/(z*.395*aspect),
-   V.dot(dir,frame.up)/(z*.395)];
+  return [V.dot(dir,frame.right)/(z*tanHalf*aspect),
+   V.dot(dir,frame.up)/(z*tanHalf)];
  };
  let count=0;
  for(const star of residentStars){
@@ -9341,6 +9349,15 @@ function warpChaseEase(t){
  return x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;
 }
 // World-space flight gaze is shared by the sky and specimen rendering.
+// Lens goes 43 -> 112 degrees while accelerating, and returns to
+// 43 on deceleration with zero slope at all phase boundaries.
+function warpCameraFovDegrees(m){
+ if(!m?.warpChase||m.warpStage==='frameout')return 43;
+ const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
+ const widen=cameraHandoffEase(clamp(p/.28,0,1));
+ const restore=1-cameraHandoffEase(clamp((p-.62)/.38,0,1));
+ return 43+69*widen*restore;
+}
 function warpFlightAngles(m){
  if(!m?.warpChase||m.warpStage==='frameout')return [0,0,0];
  const p=clamp((m.elapsed-m.exitDuration)/m.warpDuration,0,1);
@@ -9789,7 +9806,7 @@ window.addEventListener('keydown',event=>{if(event.key!=='Escape'||selected<0||!
 
 function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if(typeof thumbSize!=='number'||!Number.isFinite(thumbSize))thumbSize=0;if(!gl||!renderer||!meshes)return;let rect=canvas.getBoundingClientRect();let w=thumbSize||Math.max(1,Math.round(rect.width*Math.min(devicePixelRatio||1,1.35))),h=recordHeight||thumbSize||Math.max(1,Math.round(rect.height*Math.min(devicePixelRatio||1,1.35)));
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const lens=postEffects?ensureLensFlare(w,h):null;gl.bindFramebuffer(gl.FRAMEBUFFER,lens?lens.targets[0].framebuffer:null);gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- const pr=persp(Math.PI*43/180,w/h,.1,Math.max(100,spec.viewDistance*2.4)),cam=viewerCameraMatrix();
+ const pr=persp(warpCameraFovDegrees(viewer.morph)*Math.PI/180,w/h,.1,Math.max(100,spec.viewDistance*2.4)),cam=viewerCameraMatrix();
  drawStudioGL(undefined,pr,cam,thumbSize>0&&!postEffects);gl.useProgram(renderer.program);
  // Phase-only shader uniforms; WebGL snow and studio passes stay unchanged.
  if(renderer.phaseProgram!==renderer.program){renderer.phaseProgram=renderer.program;renderer.phaseTwistLoc=gl.getUniformLocation(renderer.program,'uPhaseTwist');renderer.phaseCutLoc=gl.getUniformLocation(renderer.program,'uPhaseCut');renderer.phaseScaleLoc=gl.getUniformLocation(renderer.program,'uPhaseScale');}
