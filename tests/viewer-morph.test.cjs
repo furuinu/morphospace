@@ -149,7 +149,7 @@ test('camera handoff joins source exit and target entry at one boundary without 
 test('camera pan renders finished body and appendages without layered LOD',()=>{
  assert.ok(src.includes("base=mul4(translate3(...viewer.worldOffset),base)"));
  assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
- assert.ok(src.includes("if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
+ assert.ok(src.includes("if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
  assert.ok(src.includes("m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i]"));
  assert.ok(src.includes("const rawBatches=from.length?createMorphBatches")===false);
 });
@@ -157,7 +157,7 @@ test('native A and B materials are not blended during offscreen handoff',()=>{
  assert.ok(src.includes("m.mode==='camera-pan'||spec!==m.source"));
  assert.ok(src.includes("viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source"));
  assert.ok(src.includes("viewer.morph.mode==='camera-pan'"));
- assert.ok(src.includes("if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
+ assert.ok(src.includes("if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
  assert.ok(!src.includes("mode:'layered',index:job.index"));
  assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
 });
