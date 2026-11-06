@@ -96,7 +96,7 @@ test('stellar flare thinning preserves strong leaders and absorbs weak nearby li
  assert.equal(wide.get(3).opacity,1);
 });
 test('wide flare remains luminous when inside the returning normal FOV',()=>{
- assert.match(html,/const wideVisibility=extra\?\(normal\?1:wideActive/);
+ assert.match(html,/const wideVisibility=extra\?\(normal&&star\.wideSeen>\.08\?1:wideActive/);
  assert.match(html,/if\(extra&&wideActive\)star\.wideSeen=Math\.max/);
  assert.doesNotMatch(html,/vResidentEnergy=raw\*3\.7\*mix\(1\.0,uResidentWideFactor,wideStar\)/);
  assert.match(html,/const contracting=wideFactor<previousWideLens-\.0001/);
