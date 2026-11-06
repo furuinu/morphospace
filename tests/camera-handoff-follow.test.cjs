@@ -33,10 +33,18 @@ test('camera-pan tracks only projected drift, never chases the intended incoming
  assert.equal(pulseTravel.camera[0],0,'following the planned approach would overshoot B');
 });
 test('camera-pan corrects a genuinely displaced incoming specimen smoothly',()=>{
- const {pulseTravel,advance}=setup({drift:3});
+ const {context,pulseTravel,advance}=setup({drift:3});
+ const m=context.viewer.morph;
+ // While B remains outside the frame, preserve the planned entry path.
  advance();
- assert.ok(pulseTravel.camera[0]>0,'follow must steer toward the displaced specimen');
- assert.ok(pulseTravel.camera[0]<.3,'first frame must not snap to centre');
+ assert.equal(pulseTravel.camera[0],0,'the offscreen arrival must not snap toward centre');
+ // B arrives within the viewport as the principal pan reaches its endpoint.
+ m.cameraTravel=20;
+ m.elapsed=4;
+ m.duration=5;
+ advance();
+ assert.ok(pulseTravel.camera[0]>0,'follow must begin steering toward the actually visible specimen');
+ assert.ok(pulseTravel.camera[0]<.3,'the first visible frame must not snap to centre');
  for(let i=0;i<50;i++)advance();
  assert.ok(pulseTravel.camera[0]>1&&pulseTravel.camera[0]<3,'drift correction should settle without overshooting');
 });
