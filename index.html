@@ -8203,7 +8203,13 @@ function pulseAlignRotation(from,to){
 }
 function stepPulseTravel(dt){
  if(!spec||!pulseTravelActive()){if(pulseTravel.specimen)resetPulseTravel();return;}
- if(pulseTravel.specimen!==spec)resetPulseTravel(spec,true);
+ if(pulseTravel.specimen!==spec){
+  const incoming=viewer.morph?.mode==='camera-pan'&&viewer.morph.switched&&viewer.morph.target===spec;
+  resetPulseTravel(spec,true);
+  // B starts at its own world-space anchor, never at the outgoing A's
+  // accumulated swimming position. Preserve camera offset for continuity.
+  if(incoming)pulseTravel.position.fill(0);
+ }
  const seed=(spec.seed||0)>>>0,dna=normalizedMotionDNA(spec.genome?.motionDNA,seed,spec.genome?.archetype||0,spec.genome?.morphDNA);
  const a=(seed%997)/997,b=((seed>>>9)%997)/997,c=((seed>>>19)%997)/997;
  const pulsePeriod=CYCLE_PERIODS[dna.pulseCycle]||1;
@@ -8329,20 +8335,28 @@ function stepPulseTravel(dt){
 // Camera correction translates the viewpoint; it never changes orbit angles.
 const cameraCorrection={specimen:null,leadSeconds:.42,settleSeconds:.34};
 function stepPulseCameraFollow(dt){
- if(viewer.morph?.mode==='camera-pan')return; // Handoff owns the camera.
+ // During handoff the main pan owns large-scale travel; after the native
+ // swap the same follow loop gently closes residual projected error for B.
+ const handoff=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
+ if(handoff&&!handoff.switched)return;
  if(!pulseTravelActive()||pulseTravel.specimen!==spec){
   cameraCorrection.specimen=null;return;
  }
  cameraCorrection.specimen=spec;
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,spec.viewDistance,panX,panY);
- const camera=frame.position.map((value,i)=>value+pulseTravel.camera[i]);
- const offset=pulseTravel.position.map((value,i)=>value-camera[i]);
+ // Use exactly the same local coordinates as viewerCameraMatrix and the
+ // incoming B model. The common viewer.worldOffset cancels on both sides.
+ const camera=frame.position.map((value,i)=>value+pulseTravel.camera[i]+
+  (handoff?handoff.travelAxis[i]*handoff.cameraTravel:0));
+ const offset=pulseTravel.position.map((value,i)=>value+
+  (handoff?handoff.travelAxis[i]*handoff.travelDistance*2:0)-camera[i]);
  const depth=-V.dot(offset,frame.back);
  const aspect=Math.max(.5,canvas.width/Math.max(1,canvas.height));
  const envelope=cameraViewEnvelope(Math.max(.01,depth),aspect);
  // The free-drift zone extends 5% of the FULL viewport on each axis.
- const safeX=Math.max(.01,envelope.halfWidth*.10);
- const safeY=Math.max(.01,envelope.halfHeight*.10);
+ const safeRatio=handoff?.switched?.08:.10;
+ const safeX=Math.max(.01,envelope.halfWidth*safeRatio);
+ const safeY=Math.max(.01,envelope.halfHeight*safeRatio);
  // Track a short distance ahead of the organism to compensate for camera lag.
  // Prediction is bounded so a very fast stroke cannot throw the camera ahead.
  const lead=Math.min(cameraCorrection.leadSeconds,Math.max(0,dt)*3+0.30);
@@ -8361,7 +8375,7 @@ function stepPulseCameraFollow(dt){
                              Math.abs(screenY)/Math.max(.01,envelope.halfHeight));
  // Even when the specimen strays far outside the central safe zone,
  // converge continuously instead of making a sudden high-gain correction.
- const settle=edgePressure>.50?.65:cameraCorrection.settleSeconds;
+ const settle=handoff?.switched?.9:(edgePressure>.50?.65:cameraCorrection.settleSeconds);
  const delta=Math.min(.12,Math.max(0,dt));
  const alpha=1-Math.exp(-delta/settle);
  const correction=frame.right.map((v,i)=>alpha*(
@@ -8381,8 +8395,10 @@ function pulseCameraDistance(){
  return spec.viewDistance*(1+.009*pulseTravel.breath);
 }
 function viewerCameraMatrix(){
- const active=pulseTravelActive()&&pulseTravel.specimen===spec;
  const m=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
+ // The pan's camera correction must survive the exact frame that swaps A
+ // for B, even before B's DNA travel state has been initialized.
+ const active=pulseTravelActive()&&(pulseTravel.specimen===spec||!!m);
  // Continuously track right as A exits left and B enters from the other edge.
  const frame=worldCameraFrame(modelYaw+(m?.cameraYawOffset||0),modelPitch,cameraRoll,spec.viewDistance,panX,panY);
  if(active)for(let i=0;i<3;i++)frame.position[i]+=pulseTravel.camera[i];
@@ -9507,6 +9523,9 @@ function tickViewer(elapsed){
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
    m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+   // Start B at its own anchor immediately, including the swap frame.
+   // Keep the camera's prior offset to avoid a one-frame visual jump.
+   if(pulseTravel.specimen!==spec){resetPulseTravel(spec,true);pulseTravel.position.fill(0);}
   }
   spec.viewDistance=m.fromDistance+(m.toDistance-m.fromDistance)*shot.progress;
   if(p>=1){cancelViewerMorph(true);return;}
