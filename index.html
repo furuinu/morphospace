@@ -6678,13 +6678,15 @@ void main(){
   float flareGate=max(step(mod(id,11.0),.5),1.0-smoothstep(chance-.045,chance+.045,seed));
   float individualGlow=.58+1.10*fract(sin(id*19.41+4.73)*15731.743);
   vResidentFlare=flareGate*individualGlow; // fixed per star, no pulse
-  float wideArea=mix(1.0,1.65,uResidentWideFactor);
+  // The previous 1.65x diameter created 2.72x the flare footprint.
+  float wideArea=mix(1.0,1.12,uResidentWideFactor);
   gl_PointSize=mix(5.5+mod(id*3.7,3.5),36.0+mod(id*7.0,13.0),flareGate)*mix(1.0,wideArea,flareGate);
  }`;
  const residentFragment=`precision mediump float;
  varying float vResidentEnergy;
  varying float vResidentTint;
  varying float vResidentFlare;
+ uniform float uResidentWideFactor;
  void main(){
   vec2 delta=gl_PointCoord-.5;
   float radial=length(delta);
@@ -6703,7 +6705,8 @@ void main(){
   // Most stars are small, quiet pinpoints. Only selected stars receive
   // cross diffraction spikes and a round halo.
   float pinpoint=core*1.6;
-  float flare=halo*.64+(horizontal+vertical)*.87;
+  // Counterbalance larger wide-angle footprints while preserving the star core.
+  float flare=(halo*.64+(horizontal+vertical)*.87)*mix(1.0,.81,uResidentWideFactor);
   float energy=(pinpoint+vResidentFlare*flare)*vResidentEnergy;
   float alpha=clamp(energy*.85,0.0,1.0);
   if(alpha<.006)discard;
