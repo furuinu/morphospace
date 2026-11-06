@@ -7650,6 +7650,7 @@ const VIEWER_CORE_SOURCE=typeof document!=='undefined'&&document.currentScript?d
 const canvas=$('glview'),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true})||canvas.getContext('webgl',{alpha:false,antialias:false,depth:true,preserveDrawingBuffer:true});
 let genomes=[],population=[],pedigree={},parentSlots={A:null,B:null},generation=0,collectionMode='wild',currentBuildContext=null,previewSpecimens=[],detailSpecimens=[],detailCacheOrder=[];
 let activeStoredIndividual=null;
+let isolatedSpecimenFrame=false;
 let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,patternTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,cameraOrbitPhase=0,cameraOrbitYawOffset=0,cameraOrbitPitchOffset=0,cameraRoll=0,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
 const EMIT_COUNT=4;
 const EMIT_COLORS=[[.28,.90,1.0],[.10,1,.70],[.65,.34,1],[1,.68,.12],[1,.28,.66],[.62,1,.20],[.92,.97,1]];
@@ -8446,13 +8447,14 @@ function viewerCameraMatrix(){
  const m=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
  // The pan's camera correction must survive the exact frame that swaps A
  // for B, even before B's DNA travel state has been initialized.
- const active=pulseTravelActive()&&(pulseTravel.specimen===spec||!!m);
+ const isolated=isolatedSpecimenFrame||!!nanoAction;
+  const active=!isolated&&pulseTravelActive()&&(pulseTravel.specimen===spec||!!m);
  // Continuously track right as A exits left and B enters from the other edge.
- const frame=worldCameraFrame(modelYaw+(m?.cameraYawOffset||0),modelPitch,cameraRoll,spec.viewDistance,panX,panY);
+ const frame=worldCameraFrame(modelYaw+(!isolated?(m?.cameraYawOffset||0):0),modelPitch,isolated?0:cameraRoll,spec.viewDistance,panX,panY);
  if(active)for(let i=0;i<3;i++)frame.position[i]+=pulseTravel.camera[i];
- for(let i=0;i<3;i++)frame.position[i]+=viewer.worldOffset[i];
- if(m)for(let i=0;i<3;i++)
-  frame.position[i]+=m.warpChase?m.warpPosition[i]:
+ if(!isolated)for(let i=0;i<3;i++)frame.position[i]+=viewer.worldOffset[i];
+ if(m&&!isolated)for(let i=0;i<3;i++)
+   frame.position[i]+=m.warpChase?m.warpPosition[i]:
    (m.travelAxis[i]*m.cameraTravel+
    (m.curveAxis?.[i]||0)*(m.cameraCurve||0)+
    frame.back[i]*(m.cameraDepth||0));
@@ -9278,7 +9280,7 @@ function warpChaseState(m,dt){
  if(m.elapsed<exitDuration){
   m.warpStage='frameout';m.warpAmount=0;
   const u=cameraHandoffEase(clamp(m.elapsed/exitDuration,0,1));
-  m.warpPosition=m.travelAxis.map(v=>v*m.exitDistance*u);
+  m.warpPosition=m.warpStart.map(v=>v*u);
   m.cameraTravel=m.exitDistance*u;
   return false;
  }
@@ -9349,7 +9351,10 @@ function activateViewerPreparation(){
  // this anchor at the end of the warp, regardless of continued orbit motion.
  const exitDistance=clearances.exit+Math.max(1,fromDistance*.8);
  const farDistance=fromDistance*(6+Math.random()*6);
- const warpStart=axis.map(v=>v*exitDistance);
+ // During the wide-angle exit, retreat in depth as well as laterally:
+ // A moves away from frame centre and eases down to a remote point.
+ const exitDepth=fromDistance*11;
+ const warpStart=axis.map((v,i)=>v*exitDistance+frame.back[i]*exitDepth);
  const warpTarget=axis.map(v=>v*(exitDistance+farDistance));
  const warpArc=farDistance*(.16+Math.random()*.10)*(Math.random()<.5?-1:1);
  const warpDepth=farDistance*(.10+Math.random()*.08);
@@ -9844,7 +9849,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const pose=wholeBodyPose(bodyTime,spec.seed,spec.genome.motionDNA?.primary??0,$('motion').checked);
  if(viewer.morph&&viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source){const m=viewer.morph,next=wholeBodyPose(bodyTime,m.target.seed,m.target.genome.motionDNA?.primary??0,$('motion').checked);for(const key of Object.keys(pose))pose[key]+=(next[key]-pose[key])*m.t;}
  base=mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll))));
- if(pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
+ if(!isolatedSpecimenFrame&&!nanoAction&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
   // Skin-pulse phase travels toward -motionGPU.axis; point that anatomical
   // wave-forward vector in the actual direction of swimming (especially axial).
   const waveAxis=spec.motionGPU?.axis||[0,1,0];
@@ -9861,8 +9866,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   const orientation=pulseAlignRotation(waveForward,pulseTravel.direction);
   base=mul4(translate3(...pulseTravel.position),mul4(orientation,base));
  }
- if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
-  const m=viewer.morph;
+ if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
+   const m=viewer.morph;
   // B stays at a fixed remote world anchor, not attached to the camera.
   base=mul4(translate3(...(m.warpChase?m.warpTarget:
    m.travelAxis.map(v=>v*m.travelDistance*2))),base);
@@ -9871,7 +9876,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
   base=mul4(inverse,mul4(translate3((n.x-.5)*2*half*w/h,(.5-n.y)*2*half,0),mul4(scale3(n.sx,n.sy,n.sz),mul4(rotation,base))));
  }
- base=mul4(translate3(...viewer.worldOffset),base);
+ if(!isolatedSpecimenFrame&&!nanoAction)base=mul4(translate3(...viewer.worldOffset),base);
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
  const hidden=!!capturePose?.frame.hideBody;
@@ -11565,7 +11570,7 @@ function queueAtlasPreview(canvas,draw){
 }
 function drawGpuPreview(target,sp){
  if(!gl||!renderer){drawPreview(target,sp);return;}
- const oldYaw=modelYaw,oldPitch=modelPitch,oldX=panX,oldY=panY,oldTime=bodyTime;
+ const oldYaw=modelYaw,oldPitch=modelPitch,oldX=panX,oldY=panY,oldTime=bodyTime,oldIsolation=isolatedSpecimenFrame;
  const oldEmissionUI=snapshotEmissionUI(),oldMotion=$('motion').checked;
  const oldSpec=spec,oldMeshes=meshes,oldRigs=rigMeshes,oldBranchInfo=$('branchInspectInfo').textContent;
  // The shared-link gallery also fills while its detailed organism is open.
@@ -11576,7 +11581,8 @@ function drawGpuPreview(target,sp){
   applyEmissionDNAtoUI(getSpecEmissionDNA(sp));
   applyUploadedSpecimen(sp,false,false);
   modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;bodyTime=0;
-  render(target.width,false);
+   isolatedSpecimenFrame=true;
+   render(target.width,false);
   const ctx=target.getContext('2d');
   ctx.clearRect(0,0,target.width,target.height);
   ctx.drawImage(canvas,0,0,target.width,target.height);
@@ -11585,7 +11591,7 @@ function drawGpuPreview(target,sp){
   drawPreview(target,sp);
  }finally{
   destroyMeshes();spec=oldSpec;meshes=oldMeshes;rigMeshes=oldRigs;
-  modelYaw=oldYaw;modelPitch=oldPitch;panX=oldX;panY=oldY;bodyTime=oldTime;
+  modelYaw=oldYaw;modelPitch=oldPitch;panX=oldX;panY=oldY;bodyTime=oldTime;isolatedSpecimenFrame=oldIsolation;
   restoreEmissionUI(oldEmissionUI);$('motion').checked=oldMotion;
   $('branchInspectInfo').textContent=oldBranchInfo;
   if(selected>=0&&spec&&meshes)render();
@@ -12165,10 +12171,18 @@ function specimenImage(){
  if(selected<0||!spec||!gl||!renderer)throw Error('3D表示の準備ができていません');
  const out=document.createElement('canvas');out.width=1080;out.height=1080;const ctx=out.getContext('2d');
  const showRig=$('rigviz').checked;
+ const originalDistance=spec.viewDistance,originalPanX=panX,originalPanY=panY,originalIsolation=isolatedSpecimenFrame;
  try{
+  isolatedSpecimenFrame=true;
+  spec.viewDistance=Math.max(4,(spec.baseViewDistance||originalDistance)*1.12);
+  panX=0;panY=0;
   $('rigviz').checked=false;bloomFrame=0;render(1080);
   ctx.drawImage(canvas,0,0,1080,1080);ctx.drawImage(rigCanvas,0,0,1080,1080);
- }finally{$('rigviz').checked=showRig;bloomFrame=0;render()}
+ }finally{
+  spec.viewDistance=originalDistance;panX=originalPanX;panY=originalPanY;
+  isolatedSpecimenFrame=originalIsolation;
+  $('rigviz').checked=showRig;bloomFrame=0;render();
+ }
  return out;
 }
 function canvasBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('画像を作成できませんでした')),'image/png'))}
