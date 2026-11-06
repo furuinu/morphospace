@@ -6698,7 +6698,8 @@ void main(){
  const residentVars={position:gl.getAttribLocation(residentProgram,'aResidentStar'),
   basis:gl.getUniformLocation(residentProgram,'uResidentBasis'),
   aspect:gl.getUniformLocation(residentProgram,'uResidentAspect'),
-  time:gl.getUniformLocation(residentProgram,'uResidentTime')};
+  time:gl.getUniformLocation(residentProgram,'uResidentTime'),
+  warp:gl.getUniformLocation(residentProgram,'uWarpAmount')};
  // World-space marine snow. Every particle belongs to the 3D scene; no screen-locked dots.
  const snowVertex=`attribute vec3 aSnowPos; attribute vec4 aSnowInfo; attribute vec3 aSnowVelocity;
  uniform float uSnowDistanceScale; uniform float uSnowAdvected; varying mediump vec2 vSnowFlow; varying mediump float vSnowStretch;
@@ -8359,6 +8360,7 @@ function stepPulseCameraFollow(dt){
  // The incoming B is guided while it is STILL OFFSCREEN. Once it is active,
  // follow only the residual error, never duplicate the planned main pan.
  const handoff=viewer.morph?.mode==='camera-pan'?viewer.morph:null;
+ if(handoff?.warpChase)return; // Warp owns camera targeting until B is centred.
  if(handoff&&!handoff.switched){stepOffscreenEntryGuide(handoff,dt);return;}
  if(!pulseTravelActive()||pulseTravel.specimen!==spec){
   cameraCorrection.specimen=null;return;
@@ -8448,9 +8450,10 @@ function viewerCameraMatrix(){
  if(active)for(let i=0;i<3;i++)frame.position[i]+=pulseTravel.camera[i];
  for(let i=0;i<3;i++)frame.position[i]+=viewer.worldOffset[i];
  if(m)for(let i=0;i<3;i++)
-  frame.position[i]+=m.travelAxis[i]*m.cameraTravel+
+  frame.position[i]+=m.warpChase?m.warpPosition[i]:
+   (m.travelAxis[i]*m.cameraTravel+
    (m.curveAxis?.[i]||0)*(m.cameraCurve||0)+
-   frame.back[i]*(m.cameraDepth||0);
+   frame.back[i]*(m.cameraDepth||0));
  return mul4(frame.rotation,translate3(-frame.position[0],-frame.position[1],-frame.position[2]));
 }
 function backgroundSceneTransform(projection,view){
@@ -8503,6 +8506,8 @@ function drawStudioGL(rayStrength=.03575,projection=null,view=null,preview=false
    ...basis.right,...basis.up,...basis.back]));
   gl.uniform1f(renderer.residentVars.aspect,aspect);
   gl.uniform1f(renderer.residentVars.time,environmentTime);
+  if(renderer.residentVars.warp!==null)
+   gl.uniform1f(renderer.residentVars.warp,viewer.morph?.warpChase?viewer.morph.warpAmount||0:0);
   gl.bindBuffer(gl.ARRAY_BUFFER,renderer.residentBuffer);
   gl.bufferSubData(gl.ARRAY_BUFFER,0,residentStarUniforms);
   for(let i=0;i<renderer.studioAttribCount;i++)gl.disableVertexAttribArray(i);
@@ -9237,6 +9242,36 @@ function advanceViewerPreparation(){
   if(!job.tasks.length)job.ready=true;
  }catch(error){failViewerPreparation(job,error)}
 }
+// Remote-object warp uses a C1-continuous quintic acceleration curve.
+function warpChaseEase(t){
+ const x=clamp(t,0,1);
+ return x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;
+}
+function warpChaseState(m,dt){
+ m.elapsed+=Math.max(0,dt);
+ const exitDuration=m.exitDuration||3;
+ if(m.elapsed<exitDuration){
+  m.warpStage='frameout';m.warpAmount=0;
+  const u=cameraHandoffEase(clamp(m.elapsed/exitDuration,0,1));
+  m.warpPosition=m.travelAxis.map(v=>v*m.exitDistance*u);
+  m.cameraTravel=m.exitDistance*u;
+  return false;
+ }
+ const p=clamp((m.elapsed-exitDuration)/m.warpDuration,0,1);
+ m.warpStage=p<.24?'accel':p<.68?'cruise':p<.90?'decel':'acquire';
+ const u=warpChaseEase(p);
+ m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u);
+ m.cameraTravel=V.dot(m.warpPosition,m.travelAxis);
+ m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
+ if(!m.switched){
+  m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+  if(pulseTravel.specimen!==spec){resetPulseTravel(spec,true);pulseTravel.position.fill(0);}
+ }
+ spec.viewDistance=m.fromDistance+(m.toDistance-m.fromDistance)*cameraHandoffEase(p);
+ if(!m.headingChanged&&p>.80){m.headingChanged=true;cameraOrbitChooseHeading();}
+ m.t=p;
+ return p>=1;
+}
 function activateViewerPreparation(){
  const job=viewer.pending;if(!job?.ready||job.source!==spec||job.revision!==viewer.revision)return;
  viewer.pending=null;viewer.preparing=false;
@@ -9276,7 +9311,15 @@ function activateViewerPreparation(){
  // Start B just beyond the advancing edge; the first visible pixels arrive
  // during the first 0.8s after A disappears, not several seconds later.
  const entryLead=0; // World-anchored B enters only via continuous camera travel.
- viewer.morph={mode:'camera-pan',index:job.index,source:spec,target:job.target,
+ // B is anchored 6–12 view distances away. The camera reaches exactly
+ // this anchor at the end of the warp, regardless of continued orbit motion.
+ const exitDistance=clearances.exit+Math.max(1,sourceBounds.radius*.4);
+ const farDistance=fromDistance*(6+Math.random()*6);
+ const warpStart=axis.map(v=>v*exitDistance);
+ const warpTarget=axis.map((v,i)=>v*(exitDistance+farDistance)+frame.back[i]*fromDistance*.25);
+ viewer.morph={mode:'camera-pan',warpChase:true,warpStage:'frameout',warpAmount:0,
+  warpStart,warpTarget,warpPosition:[0,0,0],exitDistance,exitDuration:3.2,warpDuration:2.5,
+  index:job.index,source:spec,target:job.target,
   targetMeshes:job.targetMeshes,targetDistance:job.distance,
   originalMeshes:meshes,originalRigs:rigMeshes,batches:[],elapsed:0,t:0,
   // Match the apparent traversal speed to the sky's angular drift.
@@ -9367,7 +9410,8 @@ function applyViewerMorphUniforms(u){
 }
 function cancelViewerMorph(commit=false){
  const m=viewer.morph;if(!m)return;viewer.morph=null;
- if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)viewer.worldOffset[i]+=2*m.travelDistance*m.travelAxis[i];
+ if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)
+  viewer.worldOffset[i]+=m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i];
  for(const batch of m.batches||[])retireViewerMesh(batch);
  for(const part of [...(m.appendages?.source||[]),...(m.appendages?.target||[])])retireViewerMesh(part);
  if(commit){
@@ -9565,6 +9609,10 @@ function tickViewer(elapsed){
    viewer.phaseFade={elapsed:0};
    setViewerPhaseOpacity(1);
   }
+  return;
+ }
+ if(m&&m.mode==='camera-pan'&&m.warpChase){
+  if(warpChaseState(m,dt)){m.warpPosition=m.warpTarget.slice();cancelViewerMorph(true);}
   return;
  }
  if(m&&m.mode==='camera-pan'){
@@ -9766,9 +9814,9 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  }
  if(viewer.morph?.mode==='camera-pan'&&viewer.morph.switched){
   const m=viewer.morph;
-  // B occupies the next fixed location ahead in the NEW viewing direction.
-  // Never drag B with the camera: its arrival comes solely from camera travel.
-  base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
+  // B stays at a fixed remote world anchor, not attached to the camera.
+  base=mul4(translate3(...(m.warpChase?m.warpTarget:
+   m.travelAxis.map(v=>v*m.travelDistance*2))),base);
  }
  if(nanoRenderPose&&recordHeight>0&&!videoRecording){
   const n=nanoRenderPose,half=spec.viewDistance*Math.tan(Math.PI*43/360),inverse=mul4(rotY(modelYaw),rotX(modelPitch)),rotation=mul4(rotX(-modelPitch),rotY(-modelYaw));
