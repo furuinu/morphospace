@@ -548,3 +548,30 @@ test('warp star GPU pass uses speed strength and a directed streak',()=>{
  assert.match(html,/vWarpAmount\*streak\*3\.2/);
  assert.match(html,/backgroundCycle\.to\.id==='nebula'\|\|viewer\.morph\?\.warpChase/);
 });
+
+test('warp-flight gaze banks in three axes and settles at acquisition',()=>{
+ const {f,workers}=runtime();
+ f.startViewerMorph();deliver(f,workers[0]);
+ f.advanceViewerPreparation();f.activateViewerPreparation();
+ const m=f.v.morph;
+ m.warpStage='cruise';
+ m.elapsed=m.exitDuration;
+ assert.deepEqual(Array.from(f.warpFlightAngles(m)),[0,0,0]);
+ m.elapsed=m.exitDuration+m.warpDuration*.5;
+ const angles=Array.from(f.warpFlightAngles(m));
+ assert.ok(Math.abs(angles[0])>.7,'wide yaw must move the infinite-distance sky');
+ assert.ok(Math.abs(angles[1])>.2,'pitch must make the gaze genuinely three dimensional');
+ assert.ok(Math.abs(angles[2])>.2,'banking roll must be visible');
+ f.warpChaseState(m,0);
+ assert.ok(Math.abs(m.warpPosition[2])>1,'trajectory must bend through depth, not just screen XY');
+ m.elapsed=m.exitDuration+m.warpDuration;
+ assert.ok(Array.from(f.warpFlightAngles(m)).every(v=>Math.abs(v)<1e-7),
+  'all extra gaze rotation must disappear before ordinary observation resumes');
+});
+test('long warp star trails are geometric lines beyond the GPU point-size limit',()=>{
+ assert.match(html,/const warpTrailVertex=/);
+ assert.match(html,/const warpTrailProgram=linked\(/);
+ assert.match(html,/gl\.drawArrays\(gl\.LINES,0,count\*2\)/);
+ assert.match(html,/const length=Math\.min\(\.85,extent\*\(\.42\/dt\)/);
+ assert.match(html,/drawWarpStarTrails\(aspect\)/);
+});
