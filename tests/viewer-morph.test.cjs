@@ -432,8 +432,8 @@ test('delicate strands use real bounded Verlet constraints and body inertia',()=
  assert.match(html,/const pose=sample\(time\),minus=sample\(time-h\),plus=sample\(time\+h\)/);
  assert.match(html,/gl\.bufferSubData\(gl\.ARRAY_BUFFER,0,mesh\.data\)/);
  assert.match(html,/mesh\.verlet=makeVerletStrand\(mesh,d,sp\.genome\)/);
- assert.match(html,/stepWorldStrand\(mesh,model,bodyTime,strandMotion\)/);
- assert.match(html,/const strandMotion=\$\('motion'\)\.checked&&\!\(viewer\.morph\?\.warpChase&&viewer\.morph\.switched\)/);
+ assert.match(html,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided\)/);
+ assert.match(html,/const strandMotion=\$\('motion'\)\.checked&&!nanoAction&&!captureShareIsOpen&&!strandGuided/);
  assert.match(html,/function strandLocalPoint\(m,p\)/);
  assert.match(html,/function strandCopyMesh\(pt,index\)/);
 });
