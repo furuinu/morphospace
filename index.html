@@ -9512,10 +9512,13 @@ function warpChaseState(m,dt){
  // arrives at the true centre rather than inheriting A's camera bias.
  for(let i=0;i<3;i++)pulseTravel.camera[i]*=Math.exp(-Math.min(.12,dt)*3.5);
  m.warpStage=p<.24?'accel':p<.68?'cruise':p<.90?'decel':'acquire';
- const u=warpChaseEase(p);
- // A truly curved 3D flight with lateral banking and depth excursion.
- // sin² returns position and velocity seamlessly to the target anchor.
- const bend=Math.pow(Math.sin(Math.PI*p),2);
+ // Complete the camera's large-scale translation before B begins aligning
+ // to the world anchor. This removes the residual arc displacement that
+ // previously became a late vertical wobble in the growing specimen.
+ const flight=clamp(p/.72,0,1);
+ const u=warpChaseEase(flight);
+ // The curved arc must settle on the same schedule as camera translation.
+ const bend=Math.pow(Math.sin(Math.PI*flight),2);
  m.warpPosition=m.warpStart.map((v,i)=>v+(m.warpTarget[i]-v)*u+
   m.warpSide[i]*m.warpArc*bend+
   m.warpBack[i]*m.warpDepth*bend*Math.sin(Math.PI*(.15+.70*p)));
