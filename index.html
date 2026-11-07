@@ -8382,7 +8382,7 @@ function stepPulseTravel(dt){
  const speed=forwardPeak*(forwardSpeed-.38*recoverySpeed);
  const dir=pulseTravel.direction;
  for(let i=0;i<3;i++){
-  pulseTravel.velocity[i]=-dir[i]*speed; // Move opposite to the classified heading; keep direction rules unchanged.
+  pulseTravel.velocity[i]=dir[i]*speed; // The classified heading is the forward swimming direction; tentacles trail behind.
   pulseTravel.position[i]+=pulseTravel.velocity[i]*dt;
  }
  // Soft, bounded habitat prevents a specimen from swimming out of view.
