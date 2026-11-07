@@ -9735,7 +9735,9 @@ function updateViewerCountdown(){
 }
 function viewerCanAdvance(){return selected>=0&&spec&&!busy&&(!videoRecording||videoRecording.mode==='viewer')&&!nanoAction&&!nanoOperationBusy&&!stockDialog.open&&!captureShareIsOpen&&(!$('videoSaveDialog').open||videoRecording?.mode==='viewer')&&!document.hidden}
 function startViewerMorph(direction=1){
- if(!viewerCanAdvance()||viewer.morph||viewer.preparing||viewer.phaseFade)return;
+ if(!viewerCanAdvance()||viewer.morph||viewer.phaseFade)return;
+ // A reverse request must invalidate the pending forward Worker, not be ignored.
+ if(viewer.preparing){if(viewer.pending?.direction===direction)return;discardViewerPreparation();viewer.preparing=false;}
  const items=viewerItems();if(!items.length||(viewer.source==='stock'&&items.length===1&&viewerCurrentItemIndex(items)===0))return;
  viewer.prepareError=null;viewer.preparing=true;$('viewerTransition').textContent='次の生体を準備しています…';updateViewerCountdown();
  const job=queueViewerPreparation(direction);if(job?.ready)activateViewerPreparation();else if(!job)viewer.preparing=false;
