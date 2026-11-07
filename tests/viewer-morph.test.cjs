@@ -613,6 +613,11 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.ok(nearEdge(f.warpEntryFrame(m).focus,0),'alignment starts with zero displacement');
  m.elapsed=total;
  assert.ok(nearEdge(f.warpEntryFrame(m).focus,1),'alignment finishes at the exact world anchor');
+ // Camera flight must settle before the main visible B alignment:
+ // the reveal begins at overall .80, equivalent to warp progress .544.
+ assert.match(src,/const flight=clamp\(p\/\.72,0,1\)/);
+ assert.match(src,/const u=warpChaseEase\(flight\)/);
+ assert.match(src,/const bend=Math.pow\(Math.sin\(Math.PI\*flight\),2\)/);
  assert.match(src,/const opticalCentre=eye.position.map\(\(v,i\)=>v-eye.back\[i\]\*depth\)/);
  assert.match(src,/const centre=opticalCentre.map\(\(v,i\)=>v\+\(anchor\[i\]-v\)\*birth.focus\)/);
  assert.match(src,/Math.max\(spec.viewDistance,\(m.targetBounds\?\.radius\|\|0\)\*1\.15\)/);
