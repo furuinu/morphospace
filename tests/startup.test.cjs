@@ -11,7 +11,7 @@ function harness({payload=null,error=null,gpu=true,selection=-1}={}){
  const ctx={stockReady:Promise.resolve(),location:{hash:''},Math:Object.create(Math),gl:gpu,renderer:gpu,population:[],selected:selection,
  $:id=>fields[id],CaptureShare:{fromHash(){if(error)throw error;return payload}},
  async restoreSharedSpecimen(p){calls.push(['share',p])},
- async build(seed){calls.push(['build',seed]);ctx.population=[{}]},loadSpecimen(i){calls.push(['open',i])}};
+ restoreEvolutionState(){},async build(seed){calls.push(['build',seed]);ctx.population=[{}]},loadSpecimen(i){calls.push(['open',i])}};
  vm.createContext(ctx);vm.runInContext(source,ctx);return {ctx,fields,calls};
 }
 test('fresh visits choose new seeds and open the generated specimen',async()=>{
