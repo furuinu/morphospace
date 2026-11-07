@@ -11998,7 +11998,7 @@ async function build(seed,par=null,context=null){
     const sp=makeSpecimen(individualSeed,g.style,palette,true,null,variance,density,micro,g.archetype,null,g);
     drawGpuPreview(img,sp);
    });
-   if(i%8===7){$('progress').style.width=Math.round((i+1)/64*100)+'%';await new Promise(ok=>requestAnimationFrame(ok));}
+   if(i%8===7){$('progress').style.width=Math.round((i+1)/Math.max(1,seeds.length)*100)+'%';await new Promise(ok=>requestAnimationFrame(ok));}
   }
   if(selected<0)destroyMeshes();
   $('message').textContent='第'+generation+'世代の個体を準備（'+((performance.now()-buildStarted)/1000).toFixed(1)+'秒）。画像は表示範囲から順次描画。';$('progress').style.width='100%';renderPedigree();
@@ -12063,46 +12063,12 @@ async function redrawPopulation(){
   if(i%2===1)await new Promise(ok=>requestAnimationFrame(ok));
  }
 }
-let sharedGalleryFill=null,sharedGalleryPopulation=null;
+// Shared links restore only the linked specimen; observation continues lazily.
 function completeSharedGallery(expected=population){
- if(collectionMode!=='shared'||population!==expected||expected.length>=64)return Promise.resolve();
- if(sharedGalleryPopulation===expected&&sharedGalleryFill)return sharedGalleryFill;
- sharedGalleryPopulation=expected;
- const task=(async()=>{
-  // Show the linked organism first. Add only lightweight thumbnails, without
-  // replacing the active 3D specimen, camera or its detail cache.
-  await new Promise(ok=>requestAnimationFrame(()=>setTimeout(ok,0)));
-  const current=()=>population===expected&&collectionMode==='shared';
-  if(!current())return;
-  const shared=expected[0],rng=seedRng((shared.seed^0x6d2b79f5)>>>0);
-  const profile=readPatternProfile(),variance=Number($('variance').value)/100;
-  const names=new Set(expected.map(r=>r.name)),ids=new Set(expected.map(r=>r.id)),usedSeeds=new Set(seeds);
-  while(current()&&expected.length<64){
-   if(nanoOperationBusy||nanoAction)await waitForNanoIdle();if(!current())return;
-   const i=expected.length;let seed,id;
-   do{seed=100000+Math.floor(rng()*899899999);id=hashLineageId(seed,i,'shared-fill',0)}while(usedSeeds.has(seed)||ids.has(id));
-   let best=null,bestScore=-Infinity;
-   for(let attempt=0;attempt<1+Math.round(profile.scatter*10);attempt++){
-    const result=generateGenomeCandidate('wild',[],(seed+attempt*104729+i*97)>>>0,i,variance,profile,attempt);
-    const score=noveltyScore(result.genome,genomes);
-    if(score>bestScore){bestScore=score;best=result}
-    if(score>=.52+profile.scatter*.78){best=result;break}
-   }
-   const g=best.genome,palette=pickPalette(seed,g.colorDNA,g.patternDNA);
-   g.colorDNA={rows:palette.rows.slice(),cols:palette.cols.map(c=>c.slice())};
-   const rec={id,name:makeSpecimenName(g,seed,names),seed,style:g.style,genome:copyJSON(g),generation:0,parents:[],mutationLog:best.mutationLog,inherited:best.inherited,sourceSeed:Number(collectionSeed),index:i,mode:'wild'};
-   MorphospaceEcology.ensure(rec);usedSeeds.add(seed);ids.add(id);
-   seeds.push(seed);genomes.push(g);expected.push(rec);pedigree[id]=copyJSON(rec);
-   appendPopulationPreview(i,variance);
-   $('progress').style.width=Math.round(expected.length/64*100)+'%';
-   $('message').textContent='共有個体を残して図鑑を補充中… '+expected.length+' / 64体';
-   if(i%2===1)await new Promise(ok=>requestAnimationFrame(ok));
-  }
-  if(current()){$('message').textContent='共有された「'+shared.name+'」と野生63体を表示しています。';$('progress').style.width='100%';renderPedigree()}
- })().catch(error=>{if(population===expected){console.error(error);$('message').textContent='図鑑の補充を再試行できます。'+(error.message||'')}});
- sharedGalleryFill=task;
- void task.finally(()=>{if(sharedGalleryFill===task){sharedGalleryFill=null;sharedGalleryPopulation=null}});
- return task;
+ if(collectionMode==='shared'&&population===expected){
+  $('message').textContent='共有された生体を観察中。次へ進むと新しい野生個体を生成します。';
+ }
+ return Promise.resolve();
 }
 
 const SHARE_SERVICE='https://morphospace-share.bloomyflint66.chatgpt.site';
@@ -12149,7 +12115,7 @@ function renderStockParents(){
  }
  const a=parentSlots.A,b=parentSlots.B,same=a&&b&&a.id===b.id;
  $('stockBreed').disabled=busy||!a||!b||!!same;
- $('stockBreedHint').textContent=same?'同じ個体どうしは掛け合わせられません。別の生体を選んでください。':(a&&b?'2体のDNAから新しい64体を生成します。親の生体サンプルは残ります。':'一覧から、異なる2体を親A・親Bに選んでください。');
+ $('stockBreedHint').textContent=same?'同じ個体どうしは掛け合わせられません。別の生体を選んでください。':(a&&b?'2体のDNAから進化系統を作り、次々に新しい子孫を観察します。親のサンプルは残ります。':'一覧から、異なる2体を親A・親Bに選んでください。');
  for(const card of $('stockGrid').querySelectorAll('.stock-card')){
   card.dataset.parentA=String(!!a&&a.id===card.dataset.id);card.dataset.parentB=String(!!b&&b.id===card.dataset.id);
   for(const slot of ['A','B'])card.querySelector('[data-slot="'+slot+'"]').setAttribute('aria-pressed',String(parentSlots[slot]?.id===card.dataset.id));
@@ -12385,7 +12351,7 @@ function playNanoScene(options){
      const messages=options.kind==='capture'?{observe:'生体を追跡しています',pullback:'視野を広げ、プローブが接近しています',approach:'採取位置へプローブを合わせています',align:'先端を静止し、吸引圧を整えています',flow:'微粒子が先に吸い込まれています',suction:'生体を吸引しています',held:'ガラス管の内側へ移送しています'}:
       options.kind==='extract'?{pullback:'採取部位を観察しています',approach:'ガラスプローブを表面へ合わせています',contact:'先端を接触させています',flow:'微粒子が先に流れ込んでいます',sample:'微量の生体サンプルを採取しています',transfer:'採取したサンプルを管内へ送っています',recover:'採取を完了しました。生体は残ります。'}:
       options.kind==='release'?{prepare:'ガラス管の出口を観察しています',fluid:'微粒子が先に流れ出しています',release:'生体をガラス管から送り出しています',recover:'生体が広がり、動きを取り戻しています'}:
-      {ready:'親A・Bのサンプルを流路へ送り出します',converge:'二つの流路からサンプルが近づいています',combine:'親A・Bのサンプルが合流しています',transfer:'交配したDNAから子64体を生成します'};
+      {ready:'親A・Bのサンプルを流路へ送り出します',converge:'二つの流路からサンプルが近づいています',combine:'親A・Bのサンプルが合流しています',transfer:'交配したDNAから進化系統を生成します'};
      $('nanoSceneStatus').textContent=messages[f.phase]||'';
     }
    }catch(error){console.warn('Nano animation skipped',error);finishNanoAction(true);return}
