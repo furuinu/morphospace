@@ -174,7 +174,7 @@ test('random next excludes the current organism and holds one choice throughout 
  for(const source of ['gallery','stock']){
   const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.stockEntries=[stored('x',101),stored('y',102),stored('z',103)];f.v.source=source;f.v.random=true;
   if(source==='stock')f.activeStoredIndividual=f.stockEntries[0];
-  vm.runInContext('Math.random=()=>.99',f);f.queueViewerPreparation();const chosen=workers[0].request.record.seed;assert.equal(chosen,source==='stock'?103:3);
+  vm.runInContext('Math.random=()=>.99',f);f.queueViewerPreparation();const chosen=workers[0].request.record.seed;assert.equal(chosen,source==='stock'?103:2); // Wild stream fixture appends seed 2; it replaces the old fixed gallery successor.
   for(let i=0;i<30;i++)f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(workers[0].terminated,undefined);
   f.startViewerMorph(-1);assert.equal(workers[0].terminated,true);if(source==='stock')assert.equal(workers[1].request.record.seed,103);else assert.equal(workers.length,1,'the first wild specimen has no previous organism');
  }
