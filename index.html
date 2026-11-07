@@ -7220,14 +7220,14 @@ function strandLocalPoint(m,p){
  ((f*g-d*i)*x+(a*i-c*g)*y+(c*d-a*f)*z)/det,
  ((d*h-e*g)*x+(b*g-a*h)*y+(a*e-b*d)*z)/det];
 }
-function stepWorldStrand(mesh,model,time,moving){
+function stepWorldStrand(mesh,model,time,moving,freedom=1,guided=false){
  const p=mesh.verlet;if(!p)return;
  const root=strandWorldPoint(model,p.anchor),rows=p.rows,sides=p.sides;
  if(!p.worldPoints||!moving||!Number.isFinite(p.lastTime)||time<p.lastTime||time-p.lastTime>.20){
   p.worldPoints=p.rest.map(q=>strandWorldPoint(model,q));
   p.worldPrevious=p.worldPoints.map(q=>q.slice());p.lastTime=time;
  }
- const elapsed=moving?Math.max(0,Math.min(.066,time-p.lastTime)):0;
+ const elapsed=moving&&!guided?Math.max(0,Math.min(.066,time-p.lastTime)):0;
  p.lastTime=time;
  const step=1/60,count=Math.max(1,Math.min(5,Math.ceil(elapsed/step))),dt=elapsed/count;
  const axis=V.norm(V.sub(strandWorldPoint(model,V.add(p.anchor,p.growthDirection)),root));
@@ -7253,6 +7253,21 @@ function stepWorldStrand(mesh,model,time,moving){
    const aligned=V.norm(V.add(V.scale(axis,.57),V.scale(first,.43)));
    p.worldPoints[1]=V.add(root,V.scale(aligned,p.lengths[0]));
   }
+ }
+ // B's model changes scale during the reveal. Guide its strands gently around
+ // the current rest pose instead of integrating world inertia across scale jumps.
+ // Reset previous positions to the guided pose for a kick-free handover.
+ if(guided){
+  const length=p.lengths.reduce((sum,v)=>sum+v,0);
+  const amount=Math.min(.12,length*.035)*clamp(freedom,0,1);
+  const side=V.norm(V.cross(axis,Math.abs(axis[1])<.85?[0,1,0]:[1,0,0]));
+  const other=V.norm(V.cross(axis,side));
+  for(let j=1;j<rows;j++){
+   const u=j/(rows-1),phase=time*.9+p.phase-u*1.8;
+   const sway=V.add(V.scale(side,Math.sin(phase)),V.scale(other,Math.cos(phase*.73)*.55));
+   p.worldPoints[j]=V.add(p.worldPoints[j],V.scale(sway,amount*u*u));
+  }
+  p.worldPrevious=p.worldPoints.map(q=>q.slice());
  }
  // Vertex buffers remain in their copy's local space; inverse transforming the
  // WORLD simulation cancels the parent's rotation when the model matrix is applied.
@@ -10013,7 +10028,15 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  // During a point-to-body reveal, the model grows many times its size.
  // Hold world-space strand inertia until the model reaches the final anchor;
  // the initial normal frame then resumes from the exact same strand pose.
- const strandMotion=$('motion').checked&&!(viewer.morph?.warpChase&&viewer.morph.switched);
+ const enteringB=viewer.morph?.warpChase&&viewer.morph.switched?viewer.morph:null;
+ const entryProgress=enteringB?clamp(enteringB.elapsed/Math.max(.01,enteringB.exitDuration+enteringB.warpDuration),0,1):1;
+ // As B grows into view at 60%, free the strands progressively from 64%
+ // through arrival, then resume normal Verlet integration.
+ const strandFreedom=enteringB?handoffEase((entryProgress-.64)/.36):1;
+ const strandGuided=!!enteringB;
+ // A capture switches poses and timing. Do not integrate strand inertia
+ // while the specimen is being captured or its modal is displayed.
+ const strandMotion=$('motion').checked&&!nanoAction&&!captureShareIsOpen&&!strandGuided;
  // Local strands are integrated per articulated copy in world coordinates.
  function drawLocalCopies(baseModel,glassPass=false){
   // All parts share one canonical tissue clock. Each whole symmetry copy
@@ -10051,7 +10074,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      gl.disable(gl.CULL_FACE);
      if(viewer.morph?.mode==='layered'){for(const batch of viewer.morph.batches)drawUploaded(batch,1,true,0);drawLayeredAppendages(mvp,model,true);return mvp;}
      if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,true,0);
-     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion);drawUploaded(mesh,1,true,0);}
+     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);drawUploaded(mesh,1,true,0);}
      drawGPUMotileCilia(mvp,model,true);
    }else{
      if(viewer.morph?.mode==='layered'){
@@ -10091,7 +10114,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      }else{
        gl.disable(gl.BLEND);
        if(!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
-       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion);drawUploaded(mesh,1,false,0,0);}
+       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);drawUploaded(mesh,1,false,0,0);}
        if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
