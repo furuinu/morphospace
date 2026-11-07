@@ -174,9 +174,9 @@ test('random next excludes the current organism and holds one choice throughout 
  for(const source of ['gallery','stock']){
   const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.stockEntries=[stored('x',101),stored('y',102),stored('z',103)];f.v.source=source;f.v.random=true;
   if(source==='stock')f.activeStoredIndividual=f.stockEntries[0];
-  vm.runInContext('Math.random=()=>.99',f);f.queueViewerPreparation();const chosen=workers[0].request.record.seed;assert.equal(chosen,source==='stock'?103:3);
+  vm.runInContext('Math.random=()=>.99',f);f.queueViewerPreparation();const chosen=workers[0].request.record.seed;assert.equal(chosen,source==='stock'?103:2);
   for(let i=0;i<30;i++)f.queueViewerPreparation();assert.equal(workers.length,1);assert.equal(workers[0].terminated,undefined);
-  f.startViewerMorph(-1);assert.equal(workers[0].terminated,true);assert.equal(workers[1].request.record.seed,source==='stock'?103:3);
+  f.startViewerMorph(-1);assert.equal(workers[0].terminated,true);if(source==='stock')assert.equal(workers[1].request.record.seed,103);else assert.equal(workers.length,1,'the first wild specimen has no previous organism');
  }
 });
 test('a single capture can be entered from the gallery but never morphs back into the gallery',()=>{
@@ -313,8 +313,8 @@ test('worker failure preserves rendering state and is not retried every animatio
 });
 
 test('reversing navigation invalidates an old worker result',()=>{
- const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.queueViewerPreparation(1);const old=workers[0];f.startViewerMorph(-1);const current=workers[1];
- assert.equal(old.terminated,true);assert.equal(current.request.record.seed,3);deliver(f,old);assert.equal(f.v.pending.target,undefined);deliver(f,current,{seed:3});assert.equal(f.v.pending.target.seed,3);
+ const {f,workers}=runtime();f.population.push({id:'c',seed:3,genome:{}});f.selected=1;f.queueViewerPreparation(1);const old=workers[0];f.startViewerMorph(-1);const current=workers[1];
+ assert.equal(old.terminated,true);assert.equal(current.request.record.seed,1);deliver(f,old);assert.equal(f.v.pending.target,undefined);deliver(f,current,{seed:1});assert.equal(f.v.pending.target.seed,1);
 });
 
 test('the production adoption path uses prepared meshes without scanning, rebuilding, deleting or uploading',()=>{
