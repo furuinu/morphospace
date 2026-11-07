@@ -145,8 +145,8 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    ariaHidden:document.querySelector('#bootSplash').getAttribute('aria-hidden'),
    atlasCount:document.querySelectorAll('#gallery button.item').length
   }));
-  if(!settledBoot.splashHidden||settledBoot.ariaHidden!=='true'||settledBoot.atlasCount!==64)
-   throw Error('The viewer should replace the DNA splash without breaking the 64-item atlas: '+JSON.stringify(settledBoot));
+  if(!settledBoot.splashHidden||settledBoot.ariaHidden!=='true'||settledBoot.atlasCount!==1)
+   throw Error('The viewer must boot with exactly one on-demand specimen: '+JSON.stringify(settledBoot));
   // Production audio regression: this page must run only the original voice.
   // The five experimental styles are archived as a separate JS source.
   await page.locator('#viewerSettings > summary').click({force:true});
