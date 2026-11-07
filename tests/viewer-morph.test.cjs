@@ -600,6 +600,11 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.equal(done.scale,1);
  assert.equal(done.x,0);assert.equal(done.y,0);
  assert.equal(done.focus,1);
+ m.elapsed=total*.90;
+ assert.equal(f.warpEntryFrame(m).focus,0,'B remains centred throughout its approach, before warp finishes');
+ m.elapsed=total*.95;
+ const settling=f.warpEntryFrame(m);
+ assert.ok(settling.focus>0&&settling.focus<1,'world-anchor correction begins only after the flight has nearly settled');
  assert.match(src,/const opticalCentre=eye.position.map\(\(v,i\)=>v-eye.back\[i\]\*depth\)/);
  assert.match(src,/const centre=opticalCentre.map\(\(v,i\)=>v\+\(anchor\[i\]-v\)\*birth.focus\)/);
  assert.match(src,/Math.max\(spec.viewDistance,\(m.targetBounds\?\.radius\|\|0\)\*1\.15\)/);
