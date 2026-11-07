@@ -28,6 +28,6 @@ test('single-pole tentacles trail the actual swimming velocity for either attach
 });
 test('rendered pose aligns anatomical tail opposition with the same forward heading',()=>{
  assert.match(html,/const waveForward=rootLength>\.25\?rootSum\.map\(v=>-v\/rootLength\)/);
- assert.match(html,/pulseAlignRotation\(waveForward,pulseTravel\.direction,arrivalBlend\)/);
+ assert.match(html,/pulseAlignRotation\(waveForward,pulseTravel\.direction,1\)/);
  assert.match(code,/pulseTravel\.velocity\[i\]=dir\[i\]\*speed/);
 });
