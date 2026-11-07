@@ -9534,9 +9534,11 @@ function activateViewerPreparation(){
  const job=viewer.pending;if(!job?.ready||job.source!==spec||job.revision!==viewer.revision)return;
  viewer.pending=null;viewer.preparing=false;
  const zoom=spec.viewDistance/(spec.baseViewDistance*viewer.fit);
- const fromDistance=spec.viewDistance,toDistance=job.distance*viewer.fit*zoom;
+ const fromDistance=spec.viewDistance;
  const sourceBounds=transitionSpecimenBounds(spec,meshes);
  const targetBounds=job.bounds||transitionSpecimenBounds(job.target,job.targetMeshes);
+ // Do not end the handoff inside the incoming organism's outer envelope.
+ const toDistance=Math.max(job.distance*viewer.fit*zoom,targetBounds.radius*1.15);
  const rect=canvas.getBoundingClientRect();
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,fromDistance,panX,panY);
  const aspect=(rect.width||canvas.width||1)/Math.max(1,rect.height||canvas.height||1);
@@ -10001,6 +10003,10 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const debugShell=depthDebug==='shell',debugOrgans=depthDebug==='organs',debugGlass=depthDebug==='glass-shell',debugBias=depthDebug==='skin-bias';
  const glassAmount=debugShell||debugOrgans||wire?0:debugGlass?Math.max(.30,Math.min(.40,Number($('transparency').value)/100||0)):Math.max(0,Math.min(.40,Number($('transparency').value)/100||0));
  const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'));
+ // During a point-to-body reveal, the model grows many times its size.
+ // Hold world-space strand inertia until the model reaches the final anchor;
+ // the initial normal frame then resumes from the exact same strand pose.
+ const strandMotion=$('motion').checked&&!(viewer.morph?.warpChase&&viewer.morph.switched);
  // Local strands are integrated per articulated copy in world coordinates.
  function drawLocalCopies(baseModel,glassPass=false){
   // All parts share one canonical tissue clock. Each whole symmetry copy
@@ -10038,7 +10044,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      gl.disable(gl.CULL_FACE);
      if(viewer.morph?.mode==='layered'){for(const batch of viewer.morph.batches)drawUploaded(batch,1,true,0);drawLayeredAppendages(mvp,model,true);return mvp;}
      if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,true,0);
-     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,$('motion').checked);drawUploaded(mesh,1,true,0);}
+     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion);drawUploaded(mesh,1,true,0);}
      drawGPUMotileCilia(mvp,model,true);
    }else{
      if(viewer.morph?.mode==='layered'){
@@ -10078,7 +10084,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      }else{
        gl.disable(gl.BLEND);
        if(!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
-       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,$('motion').checked);drawUploaded(mesh,1,false,0,0);}
+       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion);drawUploaded(mesh,1,false,0,0);}
        if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
