@@ -10086,7 +10086,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  const pose=wholeBodyPose(bodyTime,spec.seed,spec.genome.motionDNA?.primary??0,$('motion').checked);
  if(viewer.morph&&viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source){const m=viewer.morph,next=wholeBodyPose(bodyTime,m.target.seed,m.target.genome.motionDNA?.primary??0,$('motion').checked);for(const key of Object.keys(pose))pose[key]+=(next[key]-pose[key])*m.t;}
  base=mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll))));
- if(!isolatedSpecimenFrame&&!nanoAction&&!(viewer.morph?.warpChase&&viewer.morph.switched)&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
+ if(!isolatedSpecimenFrame&&!nanoAction&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
   // Skin-pulse phase travels toward -motionGPU.axis; point that anatomical
   // wave-forward vector in the actual direction of swimming (especially axial).
   const waveAxis=spec.motionGPU?.axis||[0,1,0];
@@ -10100,8 +10100,10 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   // The anatomical tail axis must map to -heading even after pose rotation.
   const waveForward=rootLength>.25?rootSum.map(v=>-v/rootLength):
    V.scale(V.norm(Array.from(waveAxis)),-1);
+  // Begin the swimming alignment during the distant reveal, not after the
+  // specimen has filled the viewport. Only translation eases in afterward.
   const arrivalBlend=cameraHandoffEase(clamp((viewer.arrivalPoseTime??1.4)/1.4,0,1));
-  const orientation=pulseAlignRotation(waveForward,pulseTravel.direction,arrivalBlend);
+  const orientation=pulseAlignRotation(waveForward,pulseTravel.direction,1);
   base=mul4(translate3(...pulseTravel.position.map(v=>v*arrivalBlend)),mul4(orientation,base));
  }
  let entryHidden=false,entryPositionWorld=false;
@@ -10119,14 +10121,14 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
    const finalDepth=Math.max(.1,-dot(delta,eye.back));
    const depth=spec.viewDistance*(1-birth.focus)+finalDepth*birth.focus;
    const centre=eye.position.map((v,i)=>v-eye.back[i]*depth);
-   // Match the local body's visible orientation to the changing camera
-   // during growth. Release this correction smoothly before normal viewing.
-   const align=1-birth.focus;
-   const yaw=(modelYaw-(m.entryYaw??modelYaw))*align;
-   const pitch=(modelPitch-(m.entryPitch??modelPitch))*align;
-   const roll=(cameraRoll-(m.entryRoll??cameraRoll))*align;
-   const aligned=mul4(rotY(yaw),mul4(rotX(pitch),mul4(rotZ(roll),base)));
-   base=mul4(translate3(...centre),mul4(scale3(birth.scale,birth.scale,birth.scale),aligned));
+   // Screen-space size must never exceed its final size while the camera
+   // closes the remaining depth gap. This prevents a near-camera fly-through
+   // followed by an apparent retreat to the ordinary viewing distance.
+   const projectedScale=Math.min(birth.scale,birth.scale*depth/Math.max(.1,finalDepth));
+   // Keep the anatomical swimming orientation through the reveal. Applying
+   // a second, camera-relative Euler correction made long tentacles sweep
+   // violently as it was released at the end of the transition.
+   base=mul4(translate3(...centre),mul4(scale3(projectedScale,projectedScale,projectedScale),base));
    entryPositionWorld=true;
   }else{
    base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
