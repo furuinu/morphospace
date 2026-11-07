@@ -12063,7 +12063,7 @@ function generateGenomeCandidate(mode,ancestors,candidateSeed,i,variance,profile
 async function setParent(slot){const rec=currentIndividual();if(!rec)return;if(await assignNanoParent(rec,slot))close();}
 async function build(seed,par=null,context=null){
  const buildStarted=performance.now();
- if(!context||context.mode==='wild')streamMode='wild';else if(context.mode==='breed')streamMode='evolution';syncStreamUI();
+ if(!context||context.mode==='wild'||context.mode==='photo')streamMode='wild';else if(context.mode==='breed')streamMode='evolution';syncStreamUI();
  if(busy||nanoAction||nanoOperationBusy)return;busy=true;close();destroyMeshes();collectionSeed=String(seed);parentGenome=par;
  const cx=context||{mode:par?'mutate':'wild',parent:par?{id:'legacy-'+seed,genome:par,generation:generation}:null};
  currentBuildContext=copyJSON(cx);collectionMode=cx.mode||'wild';
