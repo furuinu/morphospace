@@ -605,6 +605,9 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.doesNotMatch(src,/const projectedScale=Math\.min/);
  assert.match(src,/m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll/);
  assert.match(src,/entryPositionWorld=true/);
+ assert.match(src,/const strandMotion=\$\('motion'\)\.checked&&\!\(viewer.morph\?\.warpChase&&viewer.morph.switched\)/);
+ assert.match(src,/stepWorldStrand\(mesh,model,bodyTime,strandMotion\)/);
+ assert.match(src,/const toDistance=Math.max\(job.distance\*viewer.fit\*zoom,targetBounds.radius\*1\.15\)/);
 });
 test('B aligns its swimming heading during entrance and eases only its travel translation afterward',()=>{
  const {f,workers}=runtime();
