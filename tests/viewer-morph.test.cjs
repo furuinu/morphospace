@@ -599,9 +599,10 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.equal(done.scale,1);
  assert.equal(done.x,0);assert.equal(done.y,0);
  assert.equal(done.focus,1);
- assert.match(src,/const centre=eye.position.map\(\(v,i\)=>v-eye.back\[i\]\*depth\)/);
- assert.match(src,/const projectedScale=Math\.min\(birth\.scale,birth\.scale\*depth\/Math\.max\(\.1,finalDepth\)\)/);
- assert.doesNotMatch(src,/const align=1-birth\.focus/);
+ assert.match(src,/const opticalCentre=eye.position.map\(\(v,i\)=>v-eye.back\[i\]\*depth\)/);
+ assert.match(src,/const centre=opticalCentre.map\(\(v,i\)=>v\+\(anchor\[i\]-v\)\*birth.focus\)/);
+ assert.match(src,/Math.max\(spec.viewDistance,\(m.targetBounds\?\.radius\|\|0\)\*1\.15\)/);
+ assert.doesNotMatch(src,/const projectedScale=Math\.min/);
  assert.match(src,/m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll/);
  assert.match(src,/entryPositionWorld=true/);
 });
@@ -612,9 +613,9 @@ test('B aligns its swimming heading during entrance and eases only its travel tr
  const m=f.v.morph;
  for(let i=0;i<Math.ceil((m.exitDuration+m.warpDuration)/.12)+3&&f.v.morph;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
- assert.equal(f.v.arrivalPoseTime,0,'translation blend begins after the handoff');
+ assert.equal(f.v.arrivalPoseTime,1.4,'the final reveal and normal pose must share the same travel offset');
  f.tickViewer(.12);
- assert.ok(f.v.arrivalPoseTime>0&&f.v.arrivalPoseTime<1.4);
+ assert.equal(f.v.arrivalPoseTime,1.4);
  assert.match(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,1\)/);
  assert.doesNotMatch(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,arrivalBlend\)/);
  assert.match(src,/translate3\(\.\.\.pulseTravel.position.map\(v=>v\*arrivalBlend\)\)/);
