@@ -16,7 +16,7 @@ test('a fresh visit generates one specimen and exposes the wild/evolution contro
 });
 function runtime(){
  const src=between('function streamSeed(){','let isolatedSpecimenFrame=false;');
- const data={genomes:[],population:[],pedigree:{},previewSpecimens:[],detailSpecimens:[],detailCacheOrder:[],seeds:[],selected:0,streamMode:'wild',evolutionState:null,
+ const data={genomes:[],population:[],pedigree:{},previewSpecimens:[],detailSpecimens:[],detailCacheOrder:[],seeds:[],selected:0,streamMode:'wild',evolutionState:null,STREAM_WINDOW:24,
   Math,console,localStorage:{data:{},setItem(k,v){this.data[k]=v},getItem(k){return this.data[k]||null}},
   $:()=>({value:'75'}),readPatternProfile:()=>({}),seedRng:n=>()=>((n%97)+1)/101,
   generateGenomeCandidate:(mode,ancestors,seed,i)=>({genome:{seed,style:Math.floor(i/8),archetype:i%8},mutationLog:[],inherited:{mode,parents:ancestors.length}}),
