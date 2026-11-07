@@ -600,21 +600,23 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.equal(done.x,0);assert.equal(done.y,0);
  assert.equal(done.focus,1);
  assert.match(src,/const centre=eye.position.map\(\(v,i\)=>v-eye.back\[i\]\*depth\)/);
- assert.match(src,/const align=1-birth.focus/);
+ assert.match(src,/const projectedScale=Math\.min\(birth\.scale,birth\.scale\*depth\/Math\.max\(\.1,finalDepth\)\)/);
+ assert.doesNotMatch(src,/const align=1-birth\.focus/);
  assert.match(src,/m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll/);
  assert.match(src,/entryPositionWorld=true/);
 });
-test('B retains its entrance orientation at handoff and eases toward DNA swimming alignment',()=>{
+test('B aligns its swimming heading during entrance and eases only its travel translation afterward',()=>{
  const {f,workers}=runtime();
  f.startViewerMorph();deliver(f,workers[0]);
  f.advanceViewerPreparation();f.activateViewerPreparation();
  const m=f.v.morph;
  for(let i=0;i<Math.ceil((m.exitDuration+m.warpDuration)/.12)+3&&f.v.morph;i++)f.tickViewer(.12);
  assert.equal(f.v.morph,null);
- assert.equal(f.v.arrivalPoseTime,0,'the DNA heading cannot jump to full strength on the first post-handoff frame');
+ assert.equal(f.v.arrivalPoseTime,0,'translation blend begins after the handoff');
  f.tickViewer(.12);
  assert.ok(f.v.arrivalPoseTime>0&&f.v.arrivalPoseTime<1.4);
- assert.match(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,arrivalBlend\)/);
+ assert.match(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,1\)/);
+ assert.doesNotMatch(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,arrivalBlend\)/);
  assert.match(src,/translate3\(\.\.\.pulseTravel.position.map\(v=>v\*arrivalBlend\)\)/);
  for(let i=0;i<15;i++)f.tickViewer(.12);
  assert.equal(f.v.arrivalPoseTime,1.4);
