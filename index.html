@@ -7258,6 +7258,9 @@ function stepWorldStrand(mesh,model,time,moving,freedom=1,guided=false){
  // the current rest pose instead of integrating world inertia across scale jumps.
  // Reset previous positions to the guided pose for a kick-free handover.
  if(guided){
+  // Never accumulate sway across frames: the reference pose follows the
+  // current world transform, including the changing scale of B's reveal.
+  p.worldPoints=p.rest.map(q=>strandWorldPoint(model,q));
   const length=p.lengths.reduce((sum,v)=>sum+v,0);
   const amount=Math.min(.12,length*.035)*clamp(freedom,0,1);
   const side=V.norm(V.cross(axis,Math.abs(axis[1])<.85?[0,1,0]:[1,0,0]));
