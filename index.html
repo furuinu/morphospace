@@ -7686,17 +7686,20 @@ function streamNextIndividual(){
   mode='breed';state.steps++;
  }else streamMode='wild';
  const generationNext=ancestors.length?Math.max(...ancestors.map(p=>p.generation||0))+1:0;
- const result=generateGenomeCandidate(mode,ancestors,seed,index,Math.min(1,variance*(1+Math.min(.4,(evolutionState?.steps||0)*.008))),profile,0);
+ const founderIndex=mode==='wild'?Math.floor(seedRng(seed+4219)()*8)*8+Math.floor(seedRng(seed+173)()*8):index;
+ const result=generateGenomeCandidate(mode,ancestors,seed,founderIndex,Math.min(1,variance*(1+Math.min(.4,(evolutionState?.steps||0)*.008))),profile,0);
  const g=result.genome,palette=pickPalette(seed,g.colorDNA,g.patternDNA);g.colorDNA={rows:palette.rows.slice(),cols:palette.cols.map(c=>c.slice())};ensureEmissionDNA(g,seed);
  const record={id:hashLineageId(seed,index,mode,generationNext,ancestors.map(p=>p.id)),name:makeSpecimenName(g,seed,new Set()),seed,style:g.style,genome:copyJSON(g),generation:generationNext,parents:ancestors.map(p=>p.id),mutationLog:result.mutationLog,inherited:result.inherited,sourceSeed:seed,index,mode};
  MorphospaceEcology.ensure(record);population.push(record);genomes.push(g);seeds.push(seed);previewSpecimens.push(null);detailSpecimens.push(null);pedigree[record.id]=copyJSON(record);
  if(mode==='breed'){
   const state=evolutionState;state.pool.push(snapshotIndividual(record));
-  if(state.pool.length>10){const oldest=state.pool.shift();if(oldest&&state.parents.every(p=>p.id!==oldest.id))delete pedigree[oldest.id];}
+  if(state.pool.length>10)state.pool.shift();persistEvolutionState();
  }
- if(population.length>STREAM_WINDOW){population.shift();genomes.shift();seeds.shift();previewSpecimens.shift();detailSpecimens.shift();detailCacheOrder=detailCacheOrder.map(i=>i-1).filter(i=>i>=0);selected=Math.max(0,selected-1);}
+ if(population.length>STREAM_WINDOW){const evicted=population.shift();genomes.shift();seeds.shift();previewSpecimens.shift();detailSpecimens.shift();detailCacheOrder=detailCacheOrder.map(i=>i-1).filter(i=>i>=0);selected=Math.max(0,selected-1);if(!evolutionState?.pool.some(p=>p.id===evicted.id)&&!evolutionState?.parents.some(p=>p.id===evicted.id))delete pedigree[evicted.id];}
  return record;
 }
+function persistEvolutionState(){try{if(evolutionState)localStorage.setItem('morphospace-evolution-v1',JSON.stringify(evolutionState));}catch(error){console.warn('Evolution state storage',error);}}
+function restoreEvolutionState(){try{const saved=JSON.parse(localStorage.getItem('morphospace-evolution-v1')||'null');if(saved&&Array.isArray(saved.parents)&&saved.parents.length===2&&saved.parents.every(p=>p&&p.id&&p.genome)&&Array.isArray(saved.pool)&&saved.pool.length<=10)evolutionState=saved;}catch(error){console.warn('Evolution restore',error);}}
 function streamModeLabel(){return streamMode==='evolution'?'進化':'野生';}
 function syncStreamUI(){const q=$('viewerModeQuick');if(q)q.value=streamMode;}
 
@@ -9938,7 +9941,10 @@ $('viewerModeQuick').onchange=()=>{
  if(next==='evolution'&&!evolutionState){syncStreamUI();$('viewerTransition').textContent='進化を始めるには保存個体から親A・親Bを選んで交配してください。';void openStock();return;}
  if(videoRecording||nanoOperationBusy){syncStreamUI();return;}
  pauseViewerTransition();streamMode=next;viewer.source='gallery';$('viewerSource').value='gallery';syncStreamUI();viewer.history=[];
- if(selected>=0){streamNextIndividual();startViewerMorph(1);}else viewerMetadata();
+ if(selected>=0){
+  if(!activeStoredIndividual&&selected<population.length-1){population.splice(selected+1);genomes.splice(selected+1);seeds.splice(selected+1);previewSpecimens.splice(selected+1);detailSpecimens.splice(selected+1);detailCacheOrder=detailCacheOrder.filter(i=>i<=selected);}
+  streamNextIndividual();startViewerMorph(1);
+ }else viewerMetadata();
 };
 $('viewerRandom').onchange=()=>{pauseViewerTransition();viewer.random=$('viewerRandom').checked;viewer.history=[];viewer.prepareError=null;try{localStorage.setItem('morphospace-viewer-random',viewer.random?'1':'0')}catch(error){}};
 try{viewer.random=localStorage.getItem('morphospace-viewer-random')==='1';$('viewerRandom').checked=viewer.random}catch(error){}
@@ -11957,7 +11963,8 @@ async function build(seed,par=null,context=null){
   let best=null,bestScore=-Infinity;
   for(let attempt=0;attempt<tryCount;attempt++){
     const candidateSeed=(individualSeed + attempt*104729 + i*97)>>>0;
-    const result=generateGenomeCandidate(mode,ancestors,candidateSeed,i,variance,patternProfile,attempt);
+    const founderIndex=mode==='wild'?Math.floor(seedRng(candidateSeed+4219)()*8)*8+Math.floor(seedRng(candidateSeed+173)()*8):i;
+    const result=generateGenomeCandidate(mode,ancestors,candidateSeed,founderIndex,variance,patternProfile,attempt);
     const score=noveltyScore(result.genome,genomes);
     if(score>bestScore){bestScore=score;best=result;}
     if(score>=threshold){best=result;break;}
@@ -12003,7 +12010,7 @@ async function startBreeding(){
  catch(error){console.warn('Breeding animation skipped',error)}finally{nanoBusy(false)}
  if(revision!==nanoLabRevision)return;
  const seed=Math.floor(100000+Math.random()*899999);$('seed').value=String(seed);
- evolutionState={parents,pool:parents.slice(),steps:0};streamMode='evolution';syncStreamUI();
+ evolutionState={parents,pool:parents.slice(),steps:0};persistEvolutionState();streamMode='evolution';syncStreamUI();
  await build(seed,null,{mode:'breed',parents});
  if(population.length&&gl&&renderer)loadSpecimen(0);
 }
@@ -12627,6 +12634,7 @@ async function bootMorphospace(){
  try{
   if(typeof setBootStage==='function')setBootStage('遺伝情報を読み込んでいます');
   await stockReady;
+  restoreEvolutionState();
   let shareError=null;
   try{
    const payload=CaptureShare.fromHash(location.hash);
