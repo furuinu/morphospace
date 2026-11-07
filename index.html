@@ -9685,7 +9685,9 @@ function applyViewerMorphUniforms(u){
 function cancelViewerMorph(commit=false){
  const m=viewer.morph;if(!m)return;viewer.morph=null;
  // Blend B from its cinematic orientation into its own swimming direction.
- if(commit&&m.warpChase)viewer.arrivalPoseTime=0;
+ // Do not reset the swimming translation at handoff: the final reveal frame
+ // and the first ordinary frame must use the same organism position.
+ if(commit&&m.warpChase)viewer.arrivalPoseTime=1.4;
  if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)
   viewer.worldOffset[i]+=m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i];
  for(const batch of m.batches||[])retireViewerMesh(batch);
@@ -10118,17 +10120,17 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
    const anchor=viewer.worldOffset.map((v,i)=>v+m.warpTarget[i]);
    const delta=anchor.map((v,i)=>v-eye.position[i]);
    const dot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0);
-   const finalDepth=Math.max(.1,-dot(delta,eye.back));
-   const depth=spec.viewDistance*(1-birth.focus)+finalDepth*birth.focus;
-   const centre=eye.position.map((v,i)=>v-eye.back[i]*depth);
-   // Screen-space size must never exceed its final size while the camera
-   // closes the remaining depth gap. This prevents a near-camera fly-through
-   // followed by an apparent retreat to the ordinary viewing distance.
-   const projectedScale=Math.min(birth.scale,birth.scale*depth/Math.max(.1,finalDepth));
-   // Keep the anatomical swimming orientation through the reveal. Applying
-   // a second, camera-relative Euler correction made long tentacles sweep
-   // violently as it was released at the end of the transition.
-   base=mul4(translate3(...centre),mul4(scale3(projectedScale,projectedScale,projectedScale),base));
+   // B grows at a fixed, safe viewing depth. Never send its centre toward
+   // the eye while the camera is crossing the warp path.
+   const depth=Math.max(spec.viewDistance,(m.targetBounds?.radius||0)*1.15);
+   const opticalCentre=eye.position.map((v,i)=>v-eye.back[i]*depth);
+   // Move the reveal onto the EXACT world-space anchor before ending the
+   // transition. Otherwise the first ordinary frame jumps sideways from
+   // the camera's optical axis to the specimen's real world location.
+   const centre=opticalCentre.map((v,i)=>v+(anchor[i]-v)*birth.focus);
+   // The body's DNA pose and travel are already applied to base; keep that
+   // identical transform on either side of the handoff boundary.
+   base=mul4(translate3(...centre),mul4(scale3(birth.scale,birth.scale,birth.scale),base));
    entryPositionWorld=true;
   }else{
    base=mul4(translate3(...m.travelAxis.map(v=>v*m.travelDistance*2)),base);
