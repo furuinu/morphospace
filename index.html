@@ -9353,6 +9353,8 @@ function chooseViewerItem(items,direction=1){
  if(!items.length)return null;
  const current=viewerCurrentItemIndex(items);
  if(items.length===1&&current===0)return null;
+ if(viewer.source==='gallery'&&direction>0)return items[items.length-1];
+ if(viewer.source==='gallery'&&direction<0&&current<=0)return null;
  if(viewer.random&&direction<0&&viewer.history.length){const key=viewer.history[viewer.history.length-1];const previous=items.find(item=>item.key===key);if(previous)return previous;}
  if(viewer.random&&direction>0){const choices=items.filter((item,i)=>i!==current);return choices[Math.floor(Math.random()*choices.length)]||null;}
  return items[current<0?(direction>0?0:items.length-1):(current+direction+items.length)%items.length];
@@ -9394,7 +9396,10 @@ function failViewerPreparation(job,error){
 }
 function queueViewerPreparation(direction=1){
  if(!viewerCanAdvance()||viewer.morph||viewer.prepareError===spec)return null;
- if(viewer.source==='gallery'&&direction>0&&selected===population.length-1)streamNextIndividual();
+ if(viewer.source==='gallery'&&direction>0&&!(viewer.pending&&viewer.pending.source===spec&&viewer.pending.direction===direction)){
+  if(!activeStoredIndividual&&selected>=0&&selected<population.length-1){population.splice(selected+1);genomes.splice(selected+1);seeds.splice(selected+1);previewSpecimens.splice(selected+1);detailSpecimens.splice(selected+1);detailCacheOrder=detailCacheOrder.filter(i=>i<=selected);}
+  streamNextIndividual();
+ }
  const items=viewerItems(),settings={variance:Number($('variance').value)/100,density:Number($('density').value)/100,micro:Number($('micro').value)/100},key=JSON.stringify([settings,viewer.source,viewer.random]),old=viewer.pending;
  // Latch the random choice during preloading; never reroll on every render tick.
  if(old&&old.source===spec&&old.direction===direction&&old.key===key&&items.some(item=>item.key===old.itemKey))return old;
@@ -9941,10 +9946,7 @@ $('viewerModeQuick').onchange=()=>{
  if(next==='evolution'&&!evolutionState){syncStreamUI();$('viewerTransition').textContent='進化を始めるには保存個体から親A・親Bを選んで交配してください。';void openStock();return;}
  if(videoRecording||nanoOperationBusy){syncStreamUI();return;}
  pauseViewerTransition();streamMode=next;viewer.source='gallery';$('viewerSource').value='gallery';syncStreamUI();viewer.history=[];
- if(selected>=0){
-  if(!activeStoredIndividual&&selected<population.length-1){population.splice(selected+1);genomes.splice(selected+1);seeds.splice(selected+1);previewSpecimens.splice(selected+1);detailSpecimens.splice(selected+1);detailCacheOrder=detailCacheOrder.filter(i=>i<=selected);}
-  streamNextIndividual();startViewerMorph(1);
- }else viewerMetadata();
+ if(selected>=0)startViewerMorph(1);else viewerMetadata();
 };
 $('viewerRandom').onchange=()=>{pauseViewerTransition();viewer.random=$('viewerRandom').checked;viewer.history=[];viewer.prepareError=null;try{localStorage.setItem('morphospace-viewer-random',viewer.random?'1':'0')}catch(error){}};
 try{viewer.random=localStorage.getItem('morphospace-viewer-random')==='1';$('viewerRandom').checked=viewer.random}catch(error){}
