@@ -624,8 +624,13 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.doesNotMatch(src,/const projectedScale=Math\.min/);
  assert.match(src,/m.entryYaw=modelYaw;m.entryPitch=modelPitch;m.entryRoll=cameraRoll/);
  assert.match(src,/entryPositionWorld=true/);
- assert.match(src,/const strandMotion=\$\('motion'\)\.checked&&\!\(viewer.morph\?\.warpChase&&viewer.morph.switched\)/);
- assert.match(src,/stepWorldStrand\(mesh,model,bodyTime,strandMotion\)/);
+ // B's tentacles now receive a progressive, bounded guided sway instead
+ // of the earlier all-or-nothing lock during the approach.
+ assert.match(src,/const strandFreedom=enteringB\?handoffEase\(\(entryProgress-\.64\)\/\.36\):1/);
+ assert.match(src,/const strandGuided=!!enteringB/);
+ assert.match(src,/const strandMotion=\$\('motion'\)\.checked&&!nanoAction&&!captureShareIsOpen&&!strandGuided/);
+ assert.match(src,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided\)/);
+ assert.match(src,/p\.worldPoints=p\.rest\.map\(q=>strandWorldPoint\(model,q\)\)/);
  assert.match(src,/const toDistance=Math.max\(job.distance\*viewer.fit\*zoom,targetBounds.radius\*1\.15\)/);
 });
 test('B aligns its swimming heading during entrance and eases only its travel translation afterward',()=>{
