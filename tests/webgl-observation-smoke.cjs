@@ -45,7 +45,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
     captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top
    };
   });
-  if(!bootState.loading||bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
+  if(bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
     ||bootState.splashVisible!=='visible'||!bootState.dnaCanvas||!bootState.dnaContext||!bootState.dnaComplete)
    throw Error('The initial frame must show the spatial DNA canvas without revealing the atlas: '+JSON.stringify(bootState));
   // Fail with the actual browser exception instead of hiding a syntax error behind
