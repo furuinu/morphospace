@@ -9476,10 +9476,11 @@ function handoffEase(x){x=clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);}
 function warpEntryFrame(m){
  const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
  const grow=clamp(handoffEase((p-.60)/.40),0,1);
- // Do not pull the growing specimen toward the far-away world anchor
- // while the flight camera is still moving. Only match that anchor once
- // the quintic warp is almost settled, at the very end of the reveal.
- const focus=clamp(handoffEase((p-.93)/.07),0,1);
+ // Begin aligning B with its final world-space anchor while it is still
+ // growing, over the last 20% of the entire handoff instead of compressing
+ // the correction into the final 7%. Quintic easing gives zero endpoint
+ // velocity and reduces the visible vertical snap near arrival.
+ const focus=clamp(handoffEase((p-.80)/.20),0,1);
  return {visible:p>=.60,x:0,y:0,scale:.004+.996*grow,focus};
 }
 function warpHandoffGlow(m,mvp){
