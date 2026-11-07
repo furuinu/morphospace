@@ -7982,6 +7982,7 @@ precision highp float;
 #endif
 varying vec2 vPost; uniform sampler2D uScene; uniform sampler2D uFlare;
 uniform float uFlareGain; uniform float uVideoTime; uniform vec4 uTracking; uniform float uVhsEnabled;
+uniform vec4 uHandoffFlare; uniform vec3 uHandoffTint; uniform float uHandoffAspect;
 float videoHash(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+19.19);return fract((q.x+q.y)*q.z);}
 void main(){
  float tick=floor(uVideoTime*24.0);
@@ -8005,6 +8006,14 @@ void main(){
  if(damage>.01){base.r=texture2D(uScene,vec2(fract(tape.x+.012*damage),tape.y)).r;base.b=texture2D(uScene,vec2(fract(tape.x-.009*damage),tape.y)).b;}
  vec3 flare=vec3(0.0);if(uFlareGain>.5)flare=min(texture2D(uFlare,tape).rgb,vec3(.18));
  vec3 color=base+(1.0-base)*flare;
+ // Subtle stellar point, mixed after scene bloom but before VHS treatment.
+ vec2 d=(vPost-uHandoffFlare.xy)*vec2(uHandoffAspect,1.0);
+ float r=length(d);
+ float core=exp(-pow(r/.0035,2.0));
+ float halo=exp(-r*110.0)*.15;
+ float rays=(exp(-abs(d.y)*410.0)*exp(-abs(d.x)*105.0)+exp(-abs(d.x)*410.0)*exp(-abs(d.y)*105.0))*.055;
+ vec3 stellar=uHandoffTint*min(.23,uHandoffFlare.z*(core*.20+halo+rays));
+ color+=(vec3(1.0)-color)*stellar;
  float scan=.5+.5*sin(gl_FragCoord.y*3.14159265);
  float grain=videoHash(floor(gl_FragCoord.xy)+vec2(tick*7.1,tick*3.7))-.5;
  float rowNoise=videoHash(vec2(floor(gl_FragCoord.y*.5),tick))-.5;
@@ -8037,7 +8046,7 @@ function ensureLensFlare(w,h){
      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('レンズフレア: '+gl.getProgramInfoLog(program));
     }finally{for(const shader of shaders)gl.deleteShader(shader)}
     p.a=gl.getAttribLocation(program,'aPost');
-    for(const name of ['uScene','uBright','uFlare','uPixel','uAspect','uTint','uHaloRadius','uFlareGain','uVideoTime','uTracking','uVhsEnabled'])p.u[name]=gl.getUniformLocation(program,name);
+    for(const name of ['uScene','uBright','uFlare','uPixel','uAspect','uTint','uHaloRadius','uFlareGain','uVideoTime','uTracking','uVhsEnabled','uHandoffFlare','uHandoffTint','uHandoffAspect'])p.u[name]=gl.getUniformLocation(program,name);
    }
    f.buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,f.buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
    const supportedDepth=modern||!!gl.getExtension('WEBGL_depth_texture');
@@ -8111,7 +8120,7 @@ function vhsTrackingSignal(time,state=vhsTracking){
  state.signal[0]=amount;state.signal[1]=amount>0?phase:0;state.signal[2]=state.seed;state.signal[3]=state.mode;
  return state.signal;
 }
-function paintLensFlare(f,w,h,flareEnabled=true){
+function paintLensFlare(f,w,h,flareEnabled=true,handoff=null){
  let scene=f.targets[0].texture;
  if($('dofState'))$('dofState').textContent=f.dofProgram&&f.depthTexture?'DOF準備完了':'DOF利用不可: '+(f.dofError||'深度非対応').split('\n')[0].slice(0,110);
  if(false&&f.dofProgram&&f.depthTexture&&$('macroDof').checked&&!$('wire').checked){
@@ -8145,7 +8154,7 @@ function paintLensFlare(f,w,h,flareEnabled=true){
   texture(0,i===1?f.targets[1].texture:scene);
   if(i===0){gl.uniform1i(p.u.uScene,0);gl.uniform2f(p.u.uPixel,1/f.lowW,1/f.lowH)}
   else if(i===1){gl.uniform1i(p.u.uBright,0);gl.uniform1f(p.u.uAspect,w/h);if(p.u.uHaloRadius)gl.uniform1f(p.u.uHaloRadius,viewerGlowSetting('bloomRadius')/100);gl.uniform3fv(p.u.uTint,new Float32Array(viewerGlowTint()))}
-  else{texture(1,f.targets[2].texture);gl.uniform1i(p.u.uScene,0);gl.uniform1i(p.u.uFlare,1);gl.uniform1f(p.u.uFlareGain,flareEnabled?1:0);gl.uniform1f(p.u.uVideoTime,environmentTime%120);gl.uniform4fv(p.u.uTracking,vhsTrackingSignal(environmentTime));if(p.u.uVhsEnabled)gl.uniform1f(p.u.uVhsEnabled,viewerVideoNoiseEnabled()?1:0)}
+  else{texture(1,f.targets[2].texture);gl.uniform1i(p.u.uScene,0);gl.uniform1i(p.u.uFlare,1);gl.uniform1f(p.u.uFlareGain,flareEnabled?1:0);gl.uniform1f(p.u.uVideoTime,environmentTime%120);gl.uniform4fv(p.u.uTracking,vhsTrackingSignal(environmentTime));if(p.u.uVhsEnabled)gl.uniform1f(p.u.uVhsEnabled,viewerVideoNoiseEnabled()?1:0);if(p.u.uHandoffFlare)gl.uniform4fv(p.u.uHandoffFlare,new Float32Array(handoff?.point||[.5,.5,0,.015]));if(p.u.uHandoffTint)gl.uniform3fv(p.u.uHandoffTint,new Float32Array(handoff?.tint||[.86,.94,1]));if(p.u.uHandoffAspect)gl.uniform1f(p.u.uHandoffAspect,w/h)}
   gl.bindBuffer(gl.ARRAY_BUFFER,f.buffer);gl.vertexAttribPointer(p.a,2,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(p.a);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.disableVertexAttribArray(p.a);
  }
  gl.activeTexture(gl.TEXTURE0);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);gl.useProgram(renderer.program);
@@ -9422,12 +9431,28 @@ function warpFlightAngles(m){
   m.warpPitch*.65*sweep,
   m.warpRoll*bank];
 }
+// C2-continuous easing keeps velocity and acceleration smooth.
+function handoffEase(x){x=clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);}
 // Spawn B precisely on the optical axis, independently of A's exit.
 function warpEntryFrame(m){
  const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
- const grow=cameraHandoffEase(clamp((p-.60)/.40,0,1));
- const focus=cameraHandoffEase(clamp((p-.64)/.36,0,1));
+ const grow=handoffEase((p-.60)/.40);
+ const focus=handoffEase((p-.64)/.36);
  return {visible:p>=.60,x:0,y:0,scale:.004+.996*grow,focus};
+}
+function warpHandoffGlow(m,mvp){
+ if(!m?.warpChase)return null;
+ const p=clamp(m.elapsed/Math.max(.01,m.exitDuration+m.warpDuration),0,1);
+ if(!m.switched){
+  const u=clamp(m.elapsed/m.exitDuration,0,1);
+  if(mvp&&mvp[15]>.001)m.exitFlareUV=[.5+.5*mvp[12]/mvp[15],.5+.5*mvp[13]/mvp[15]];
+  const strength=.70*handoffEase((u-.40)/.28)*(1-handoffEase((u-.78)/.30));
+  return {point:[...(m.exitFlareUV||[.5,.5]),strength,.014],tint:m.exitTint};
+ }
+ const oldStrength=.20*(1-handoffEase((m.elapsed-m.exitDuration)/.42));
+ const birth=handoffEase((p-.52)/.11)*(1-handoffEase((p-.68)/.25));
+ if(birth>.001)return {point:[.5,.5,.74*birth,.015],tint:m.entryTint};
+ return {point:[...(m.exitFlareUV||[.5,.5]),Math.max(0,oldStrength),.014],tint:m.exitTint};
 }
 function warpChaseState(m,dt){
  m.elapsed+=Math.max(0,dt);
@@ -9535,7 +9560,8 @@ function activateViewerPreparation(){
   duration:5.7,turnSeconds:0,switched:false,headingChanged:false,fromDistance,toDistance,
   travelAxis:axis.slice(),entryPlanar:planar.slice(),curveAxis,curvature,depthCurve,travelDistance,switchAt,entryLead,
   cameraTravel:0,cameraCurve:0,cameraDepth:0,cameraYawOffset:0,
-  yawSign:job.direction<0?-1:1,sourceBounds,targetBounds};
+  yawSign:job.direction<0?-1:1,sourceBounds,targetBounds,
+  exitTint:viewerEmissionValues(spec,true).tint,entryTint:viewerEmissionValues(job.target).tint};
  $('overlay').classList.add('viewer-caption-fading');
  viewer.morph.stored=job.stored;viewer.morph.record=job.record;viewer.morph.direction=job.direction;
  viewer.morph.itemKey=job.itemKey;viewer.morph.sourceItemKey=job.sourceItemKey;
@@ -10063,6 +10089,11 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   base=mul4(inverse,mul4(translate3((n.x-.5)*2*half*w/h,(.5-n.y)*2*half,0),mul4(scale3(n.sx,n.sy,n.sz),mul4(rotation,base))));
  }
  if(!isolatedSpecimenFrame&&!nanoAction&&!entryPositionWorld)base=mul4(translate3(...viewer.worldOffset),base);
+ if(viewer.morph?.warpChase&&!viewer.morph.switched){
+  const u=clamp(viewer.morph.elapsed/viewer.morph.exitDuration,0,1);
+  const shrink=1-.985*handoffEase((u-.24)/.76);
+  base=mul4(base,scale3(shrink,shrink,shrink));
+ }
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
  const hidden=!!capturePose?.frame.hideBody||entryHidden;
@@ -10075,7 +10106,8 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  lastSceneViewProj=mul4(pr,cam);
  // World-space marine snow is hidden: sky-born stars now own the sparkle lifecycle.
  if(!lens&&nanoRenderPose&&recordHeight>0&&!videoRecording)drawGlassProbe(pr,w,h,nanoRenderPose.frame);
- if(lens)paintLensFlare(lens,w,h,!$('wire').checked&&viewerGlowSetting('emissionStrength')>0);
+ if(lens)paintLensFlare(lens,w,h,!$('wire').checked&&viewerGlowSetting('emissionStrength')>0,
+  !isolatedSpecimenFrame&&!nanoAction?warpHandoffGlow(viewer.morph,mvpLeft):null);
  if($('sceneAlert'))$('sceneAlert').hidden=true;drawRigOverlay(mvpLeft,w,h);$('yaw').textContent=Math.round((((modelYaw%TAU)+TAU)%TAU)*180/Math.PI)+'°';$('pitch').textContent=Math.round(modelPitch*180/Math.PI)+'°';
 }
 function drawUploaded(mesh,alpha=1,wire=false,rim=.2,glowPass=0,glass=0){
