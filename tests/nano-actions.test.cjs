@@ -252,7 +252,7 @@ test('temporary lab rendering restores the real specimen and GPU buffers even af
 
 test('breeding starts exactly once after the convergence scene, while a navigation interruption cancels generation',async()=>{
  let finish;const calls=[],parents={A:{id:'a',name:'A',genome:{}},B:{id:'b',name:'B',genome:{}}},f={nanoAction:null,nanoOperationBusy:false,busy:false,parentSlots:parents,nanoLabRevision:0,snapshotIndividual:plain,recordDisplayName:r=>r.name,
-  nanoBusy:v=>{f.nanoOperationBusy=v},withNanoSpecimen:async(rec,run)=>run(),playNanoScene:()=>new Promise(resolve=>{finish=resolve}),$:()=>({value:''}),build:async(seed,g,cx)=>calls.push(cx),Math,console};
+  nanoBusy:v=>{f.nanoOperationBusy=v},withNanoSpecimen:async(rec,run)=>run(),playNanoScene:()=>new Promise(resolve=>{finish=resolve}),$:()=>({value:''}),build:async(seed,g,cx)=>calls.push(cx),syncStreamUI(){},Math,console};
  vm.createContext(f);vm.runInContext(section('async function startBreeding(){','function exportPedigree(){'),f);
  const operation=f.startBreeding();await tick();await f.startBreeding();assert.equal(calls.length,0);finish({skipped:true});await operation;assert.equal(calls.length,1);assert.equal(calls[0].parents[0].id,'a');assert.equal(f.nanoOperationBusy,false);
  const interrupted=f.startBreeding();await tick();f.nanoLabRevision++;finish({skipped:true});await interrupted;assert.equal(calls.length,1);
