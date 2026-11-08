@@ -22,7 +22,7 @@ test('six grammars each produce nonempty bounded implicit growth geometry',()=>{
   return results;
  });
  assert.equal(families.length,6);
- assert.equal(new Set(families.map(x=>x.code)).size,5);
+ assert.equal(new Set(families.map(x=>x.code)).size,6);
  for(const a of families){
   assert.ok(a.tri>8,'grammar '+a.id+' generated no visible 3D body');
   assert.ok(a.blobs<=26&&a.links<=32,'grammar '+a.id+' exceeded its complexity budget');
