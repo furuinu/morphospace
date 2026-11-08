@@ -390,7 +390,7 @@ test('ecology DNA forms coherent appendage groups with bounded counts and GPU wa
  for(const plan of ['oral_crown','rim_crown','dorsal_rows','paired_poles','lateral_frill'])assert.ok(html.includes(plan));
  assert.match(html,/const plan=ecology\.appendagePlan,groupCount=/);
  assert.match(html,/out\.push\(\{mesh:makeSwept/);
- assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',dir:outward,collarLength,collarRadius:thickness\*1\.6\}/);
+ assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',dir:outward,length:strandLength,collarLength,collarRadius:thickness\*1\.6\}/);
  assert.match(html,/shifted\+=delicateWave\(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion\)/);
  assert.match(html,/\$\{delicateWaveGLSL\}/);
 });
@@ -406,9 +406,12 @@ test('delicate organs attach inside the detailed implicit growth surface',()=>{
 test('growth collars are fused into the source SDF before detailed skin tessellation',()=>{
  assert.match(html,/if\(em\.appendageBases\)for\(const base of em\.appendageBases\)/);
  assert.match(html,/acc=Math\.min\(acc,bd\)-h\*h\*k\*\.25/);
- assert.match(html,/const delicateParts=low\?\[\]:makeDelicateMorphOrgans\(source,g,palette,seed,detailDensity\)/);
+ assert.match(html,/const producedAppendages=low\?\[\]:makeDelicateMorphOrgans\(source,g,palette,seed,detailDensity\)/);
+ assert.match(html,/const safeAppendages=safeSpecimenAppendages\(em,producedAppendages,seed\)/);
+ assert.match(html,/const delicateParts=safeAppendages\.parts/);
  assert.match(html,/source\.appendageBases=delicateParts\.map/);
  assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts\)/);
+ assert.ok(html.indexOf('const safeAppendages=safeSpecimenAppendages(em,producedAppendages,seed)')<html.indexOf('source.appendageBases=delicateParts.map'));
  assert.ok(html.indexOf('source.appendageBases=delicateParts.map')<html.indexOf('localShell=morphImplicitMesh(source,palette,g,false,n)'));
 });
 
