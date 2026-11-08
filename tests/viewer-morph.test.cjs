@@ -500,19 +500,25 @@ test('camera exit and entry ease independently without freezing the moving backg
    'A/B velocity must remain mirrored across the native swap');
  }
 });
-test('camera keeps its heading through frame out and frame in, steering only near B centre',()=>{
+test('camera keeps the orbit axis through B arrival, then changes it after settling',()=>{
  const {f,workers}=runtime();let turns=0;
  f.cameraOrbitChooseHeading=()=>{turns++};
  f.startViewerMorph();deliver(f,workers[0]);f.advanceViewerPreparation();f.activateViewerPreparation();
- assert.equal(turns,0,'do not change camera heading at the beginning of handoff');
  const m=f.v.morph;
- m.elapsed=m.exitDuration+m.warpDuration*.77;f.tickViewer(.01);
- assert.equal(turns,0,'B entry should keep the existing heading');
  m.elapsed=m.exitDuration+m.warpDuration*.81;f.tickViewer(.01);
- assert.equal(turns,1,'begin a single gradual heading change near the centre');
- f.tickViewer(.01);assert.equal(turns,1,'never choose a second heading within one handoff');
+ assert.equal(turns,0,'no new rotation axis during B approach');
+ m.elapsed=m.exitDuration+m.warpDuration-.005;f.tickViewer(.01);
+ assert.equal(f.v.morph,null,'B acquisition must complete');
+ assert.equal(turns,0,'acquisition frame must preserve the previous orbit axis');
+ assert.equal(f.v.orbitHeadingPending,true);
+ assert.ok(f.v.orbitHeadingDelay>=1.1);
+ for(let i=0;i<9;i++)f.tickViewer(.12);
+ assert.equal(turns,0,'the orbit stays stable for at least a second after arrival');
+ for(let i=0;i<3;i++)f.tickViewer(.12);
+ assert.equal(turns,1,'choose a new angular-velocity target only after the landing delay');
+ for(let i=0;i<6;i++)f.tickViewer(.12);
+ assert.equal(turns,1,'never reselect the axis each frame');
 });
-
 test('remote warp preserves A until frameout, accelerates toward fixed distant B and rebases at capture',()=>{
  const {f,workers}=runtime();
  f.startViewerMorph();const target=deliver(f,workers[0]);
@@ -643,8 +649,8 @@ test('B aligns its swimming heading during entrance and eases only its travel tr
  assert.equal(f.v.arrivalPoseTime,1.4,'the final reveal and normal pose must share the same travel offset');
  f.tickViewer(.12);
  assert.equal(f.v.arrivalPoseTime,1.4);
- assert.match(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,1\)/);
- assert.doesNotMatch(src,/pulseAlignRotation\(waveForward,pulseTravel.direction,arrivalBlend\)/);
+ assert.match(src,/pulseAlignRotation\(posed,pulseTravel.direction,1,true\)/);
+ assert.doesNotMatch(src,/pulseAlignRotation\(posed,pulseTravel.direction,arrivalBlend\)/);
  assert.match(src,/translate3\(\.\.\.pulseTravel.position.map\(v=>v\*arrivalBlend\)\)/);
  for(let i=0;i<15;i++)f.tickViewer(.12);
  assert.equal(f.v.arrivalPoseTime,1.4);
