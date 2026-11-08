@@ -5,7 +5,7 @@ function between(start,end){const a=html.indexOf(start),b=html.indexOf(end,a+sta
 const dna=between('function architectureFounderDNA(','function architectureDirections(');
 const copied=between('function copiedAnatomy(','function architectureGrowth(');
 const sdf=between('function morphSDF(','// Pigment fields use');
-const stubs=String.raw\`
+const stubs=String.raw`
 const TAU=2*Math.PI,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const seedRng=seed=>{let n=seed>>>0;return()=>((n=(Math.imul(n,1664525)+1013904223)>>>0)/4294967296)};
 const ARCH_SYM_CHOICES=[[0,2],[1,3],[1,4],[1,6],[1,8],[2,4],[2,6],[2,8]];
@@ -13,7 +13,7 @@ const ARCH_GROWTH_FIELDS=['mass','reach','lobes','membrane','branching','cavity'
 const morphGrowth=()=>({blobs:[{p:[0,0,0],axes:[.72,.65,.8],s:0,c:1,kind:'nucleus'}],
  links:[],cuts:[],fuse:.14,rough:.04,bound:2.2,d:{twist:.2,shear:.2,flat:.3,lobation:.5}});
 const developmentalBodyPlan=(g,b)=>b,hierarchicalOrganGrowth=()=>{};
-\`;
+`;
 const api=new Function(stubs+dna+copied+sdf+
  'return {copiedAnatomy,morphSDF,normalizedArchitectureDNA,architectureFounderDNA};')();
 const photo={version:1,source:'camera',seed:128442,points:[[.2,.3,.8,.4],[-.4,.6,.9,.2],[.7,-.3,.6,.9]]};
