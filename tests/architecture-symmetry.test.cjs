@@ -6,10 +6,10 @@ const ctx=vm.createContext({document:{querySelectorAll:()=>[]},TextEncoder,TextD
 vm.runInContext(scripts[0],ctx);
 vm.runInContext(scripts[2].slice(0,scripts[2].indexOf("const canvas=$('glview'),gl=")),ctx);
 const run=fn=>vm.runInContext('('+fn.toString()+')()',ctx,{timeout:120000});
-test('five grammars each produce nonempty bounded implicit growth geometry',()=>{
+test('six grammars each produce nonempty bounded implicit growth geometry',()=>{
  const families=run(function(){
   const results=[];
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=6;i++){
    const seed=731029+i*197,genome=makeFounderGenome(seed,i%8,i%8);
    genome.architectureDNA={...genome.architectureDNA,grammar:i,mode:1,order:4};
    genome.structureDNA.mix=1; // Explicitly exercise the spatial-copy grammar, not single-body organogenesis.
@@ -21,7 +21,7 @@ test('five grammars each produce nonempty bounded implicit growth geometry',()=>
   }
   return results;
  });
- assert.equal(families.length,5);
+ assert.equal(families.length,6);
  assert.equal(new Set(families.map(x=>x.code)).size,5);
  for(const a of families){
   assert.ok(a.tri>8,'grammar '+a.id+' generated no visible 3D body');
@@ -41,7 +41,7 @@ test('bilateral, threefold and 3D vertex symmetry are distinct bounded direction
  assert.equal(cases[1].points.every(p=>p[1]===0),true);
  assert.ok(cases[5].points.some(p=>p[1]!==0),'tetrahedral must be truly 3D');
 });
-test('founder distribution covers five grammars and crossover transmits structural genes',()=>{
+test('founder distribution covers six grammars and crossover transmits structural genes',()=>{
  const data=run(function(){
   const all=Array.from({length:64},(_,i)=>makeFounderGenome(120001+i*1237,Math.floor(i/8),i%8));
   const grammars=new Set(all.map(g=>g.architectureDNA.grammar));
@@ -52,11 +52,11 @@ test('founder distribution covers five grammars and crossover transmits structur
    const d=result.genome.architectureDNA;
    if(result.inherited.architecture)inherited++;
    mutations+=result.mutationLog.filter(x=>x.field.startsWith('architectureDNA.')).length;
-   if(d.grammar>=1&&d.grammar<=5&&d.order>=2&&d.order<=8)valid++;
+   if(d.grammar>=1&&d.grammar<=6&&d.order>=2&&d.order<=8)valid++;
   }
   return {grammars:grammars.size,symmetries:symmetries.size,inherited,mutations,valid};
  });
- assert.equal(data.grammars,5);
+ assert.equal(data.grammars,6);
  assert.ok(data.symmetries>=5);
  assert.equal(data.inherited,35);
  assert.equal(data.valid,35);
@@ -100,7 +100,7 @@ test('population exercises distinct copy layouts without exceeding mobile SDF bo
   const layouts=new Set(),counts=[],range=[];
   for(let i=0;i<96;i++){
    const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8)%8,i%8);
-   g.architectureDNA.grammar=1+i%5;
+   g.architectureDNA.grammar=1+i%6;
    g.structureDNA.mix=1; // Copy-mode coverage; the developmental identity layout has its own tests.
    const em=architectureGrowth(g);
    layouts.add(em.copyLayout);
@@ -111,7 +111,7 @@ test('population exercises distinct copy layouts without exceeding mobile SDF bo
    safe:counts.every(x=>x[0]>0&&x[0]<=26&&x[1]<=32&&x[2]>=2&&x[2]<=4.4&&x[3]>=0),
    variation:Math.max(...range)-Math.min(...range)};
  });
- assert.equal(data.layouts,5);
+ assert.equal(data.layouts,6);
  assert.equal(data.safe,true,'all copy layouts must respect mobile memory budgets');
  assert.ok(data.variation>.3,'copy layouts must produce differing extents');
 });
@@ -157,7 +157,7 @@ test('new architectural traits are heritable, not merely the name of a body plan
 });
 
 test('GPU applies the selected copy transform to canonical motion',()=>{
- assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[6\]/);
+ assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[12\]/);
  assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
  assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
  assert.match(html,/vec3 canonical=uCopyCount>0\?copyToSource\(aPos,copyIndex\):aPos/);
@@ -174,15 +174,15 @@ test('threefold is a planar 120-degree rotational copy and four-way is doubly mi
  assert.match(html,/if\(em\.copyLayout===4\)\{x=Math\.abs\(x\);y=Math\.abs\(y\);\}/);
 });
 
-test('the source SDF is fused before one of five spatial-copy operators',()=>{
+test('the source SDF is fused before one of six spatial-copy operators',()=>{
  assert.match(html,/fusedSource:\{\.\.\.base,copyLayout:0\}/);
  assert.match(html,/copyTransforms:layouts\.map/);
  assert.match(html,/if\(em\.fusedSource&&em\.copyTransforms\)/);
- assert.equal(run(function(){return COPY_LAYOUTS.length}),5);
+ assert.equal(run(function(){return COPY_LAYOUTS.length}),6);
 });
 
 test('copy transforms propagate to the GPU deformation field',()=>{
- assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[6\]/);
+ assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[12\]/);
  assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
  assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
  assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.growthModel\)/);
