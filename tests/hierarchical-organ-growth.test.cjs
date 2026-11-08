@@ -57,3 +57,25 @@ test('the actual anatomy is modified before existing whole-body copy transformat
  assert.match(html,/fusedSource:\{\.\.\.base,copyLayout:0\}/);
  assert.match(html,/if\(em\.structures\)acc=structureSDF\(x,y,z,em,acc\)/);
 });
+
+test('new hierarchic DNA passes capture validation and persists through JSON records',()=>{
+ const begin=html.indexOf(' function validatePayload(p){');
+ const end=html.indexOf(' function encode(payload)',begin);
+ assert.ok(begin>=0&&end>begin,'Capture validation API is missing');
+ const validation=vm.createContext({});
+ vm.runInContext(`const VERSION=1,PALETTE_ROW_LIMIT=252;
+ const forbidden=k=>['__proto__','constructor','prototype'].includes(k);`+
+ html.slice(begin,end)+'globalThis.check=validatePayload;',validation);
+ const morph=Object.fromEntries(['axial','flat','radial','branch','fusion','void','lobation','asymmetry','twist','budding','extension','lamella','surface','polarity','strain','shear'].map(k=>[k,.5]));
+ const dna=copy(api.structureFounderDNA(4294967295,3));
+ const payload={version:1,record:{id:'local-order-sample',name:'階層標本',seed:79123,
+  genome:{seed:79123,style:2,morphDNA:morph,structureDNA:dna},generation:0,parents:[]}};
+ assert.doesNotThrow(()=>validation.check(payload));
+ const restored=copy(payload);
+ assert.doesNotThrow(()=>validation.check(restored));
+ assert.deepEqual(restored.record.genome.structureDNA,dna);
+ const withPhoto=copy(payload);withPhoto.record.genome.photoDNA={
+  version:1,source:'camera',seed:121321,
+  points:[[.1,.3,.4,.5],[-.5,.2,.7,.8],[.6,-.2,.8,.3]]};
+ assert.doesNotThrow(()=>validation.check(withPhoto));
+});
