@@ -4584,8 +4584,8 @@ function copiedAnatomy(g){
  // placement of each copy, rather than replacing anatomy with a grammar template.
  for(const t of layouts){
   const localSeed=seedRng(g.seed+blobs.length*4177+1103),jitter=arch.distortion*.16;
-  t.p=t.p.map(v=>v+([1,2,4].includes(layout)?0:(localSeed()-.5)*jitter));
-  t.scale*=[1,2,4].includes(layout)?1:.96+(localSeed()-.5)*arch.distortion*.30;
+  t.p=t.p.map(v=>v+([1,2,4,7].includes(layout)?0:(localSeed()-.5)*jitter));
+  t.scale*=[1,2,4,7].includes(layout)?1:.96+(localSeed()-.5)*arch.distortion*.30;
   for(const b of selected){
    const p=point(b.p,t),ex=[b.axes[0]*t.scale,b.axes[1]*t.scale,b.axes[2]*t.scale];
    const angle=Math.atan2(b.s,b.c),u=[Math.cos(angle),Math.sin(angle),0],v=[-Math.sin(angle),Math.cos(angle),0],w=[0,0,1];
