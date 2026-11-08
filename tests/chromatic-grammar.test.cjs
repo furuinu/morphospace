@@ -54,6 +54,7 @@ test('pattern category controls still affect grammar selection',()=>{
 test('high detail pigment is baked in its own local developmental frame while preview stays bounded',()=>{
  const result=run(`(()=>{
   const g=makeFounderGenome(731029,0,4),a=pickPalette(g.seed,g.colorDNA,g.patternDNA),b=pickPalette(g.seed,g.colorDNA,g.patternDNA);
+  g.structureDNA.mix=1; // Verify copied pigment instances; single-body organogenesis is covered separately.
   const low=makeSpecimen(g.seed,g.style,a,true,null,.7,.84,.75,0,null,copyJSON(g));
   const high=makeSpecimen(g.seed,g.style,b,false,null,.7,.84,.75,0,null,copyJSON(g));
   const local=high.localGroup,data=local.shell.data;
