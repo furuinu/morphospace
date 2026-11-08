@@ -6,6 +6,12 @@ Offline-compatible, static WebGL artificial-life specimen gallery with a same-or
 - **App:** [index.html](index.html) — v15.21.4. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
 
+## Kinetic network and mirrored serial bodies (v15.67.0)
+
+The seventh spatial grammar connects 3–5 mirrored segment pairs, each pair reusing the same ancestral source anatomy instead of constructing new bead primitives. Existing six layouts remain available. A small topology-aware motion network follows the actual copy centres: serial chains (including spiral), radiating networks, square groups and branch-like minimum spanning trees. Wave travel, folding/extension and short recoil events are combined from inheritable motion DNA; branch and skin motion continue to work independently. A bounded link-length correction and rigid copy matrices prevent uncontrolled joint separation without rebuilding the source mesh every frame. Disabling motion disables the new network as well. Archived genomes receive deterministic defaults for the new genes.
+
+Validation: node pairing, deterministic networks, bounded inter-node distances and the legacy copy articulation regressions are checked in the Node test suite. Mobile Safari visual performance and complete capture-to-viewer transitions should be checked on-device.
+
 ## Full-screen specimen viewing
 
 Tap a specimen in the atlas or saved-sample list to open the immersive, edge-to-edge 3D viewer by default. The upper-left **詳細** button switches to the inspector, where DNA, appearance controls, capture options and parent breeding controls remain accessible; **鑑賞へ** returns to the immersive view without changing individuals.

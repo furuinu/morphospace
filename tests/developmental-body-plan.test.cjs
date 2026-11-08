@@ -52,7 +52,7 @@ test('old genomes without structureDNA are not subjected to the new organ-growth
 test('developmental source organogenesis always feeds a multi-copy final anatomy',()=>{
  assert.match(html,/const developmental=!!\(!g\.photoDNA&&g\.structureDNA\?\.version===1&&g\.structureDNA\.mix<\.74\)/);
  assert.match(html,/const base=developmental\?developmentalBodyPlan\(g,morphGrowth\(g\)\):morphGrowth\(g\)/);
- assert.match(html,/layout=arch\.grammar>=1&&arch\.grammar<=6\?arch\.grammar:1/);
+ assert.match(html,/layout=arch\.grammar===7\?7:\(arch\.grammar>=1&&arch\.grammar<=6\?arch\.grammar:1\)/);
  assert.doesNotMatch(html,/if\(layout===0\)add\(\[0,0,0\]\)/);
  assert.match(html,/if\(layouts\.length<2\)throw new Error/);
 });
