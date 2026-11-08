@@ -63,3 +63,15 @@ test('new genome grammar persists and photo generation exposes explicit and auto
  assert.match(html,/uniform vec4 uCopyPos\[12\];uniform vec4 uCopyRot\[12\]/);
  assert.match(html,/slice\(0,12\),p=new Float32Array\(48\)/);
 });
+test('spiral photo DNA passes capture and share schema, malformed photos are rejected',()=>{
+ const source=between('function validatePayload(p){','function encode(payload)');
+ const validate=new Function("const VERSION=1,PALETTE_ROW_LIMIT=252,forbidden=k=>['__proto__','prototype','constructor'].includes(k);\n"+source+"return validatePayload;")();
+ const fields=['axial','flat','radial','branch','fusion','void','lobation','asymmetry','twist','budding','extension','lamella','surface','polarity','strain','shear'];
+ const g={seed:123451,style:0,morphDNA:Object.fromEntries(fields.map(k=>[k,.5])),
+  structureDNA:{version:1,seed:123451,repeat:.7,localSymmetry:.4},
+  architectureDNA:{version:4,grammar:6,chirality:-.5,segmentation:.7},photoDNA:photo};
+ const payload={version:1,record:{id:'photo-shell-01',name:'写真由来螺旋体',seed:g.seed,genome:g,generation:0,parents:[]}};
+ assert.equal(validate(payload),payload);
+ const bad=JSON.parse(JSON.stringify(payload));bad.record.genome.photoDNA.points.push(['invalid',0,.3,.5]);
+ assert.throws(()=>validate(bad));
+});
