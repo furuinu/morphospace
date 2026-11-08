@@ -12,6 +12,7 @@ test('five grammars each produce nonempty bounded implicit growth geometry',()=>
   for(let i=1;i<=5;i++){
    const seed=731029+i*197,genome=makeFounderGenome(seed,i%8,i%8);
    genome.architectureDNA={...genome.architectureDNA,grammar:i,mode:1,order:4};
+   genome.structureDNA.mix=1; // Explicitly exercise the spatial-copy grammar, not single-body organogenesis.
    const palette=pickPalette(seed,genome.colorDNA,genome.patternDNA);
    const sp=makeSpecimen(seed,genome.style,palette,true,null,.7,.84,.75,genome.archetype,null,copyJSON(genome));
    const em=sp.growthModel;
@@ -100,6 +101,7 @@ test('population exercises distinct copy layouts without exceeding mobile SDF bo
   for(let i=0;i<96;i++){
    const seed=120001+i*1237,g=makeFounderGenome(seed,Math.floor(i/8)%8,i%8);
    g.architectureDNA.grammar=1+i%5;
+   g.structureDNA.mix=1; // Copy-mode coverage; the developmental identity layout has its own tests.
    const em=architectureGrowth(g);
    layouts.add(em.copyLayout);
    counts.push([em.blobs.length,em.links.length,em.bound,em.cuts.length]);
@@ -131,6 +133,7 @@ test('bilateral layout remains symmetric after fusing the source and applying it
   for(let i=0;i<12;i++){
    const seed=731029+i*197,g=makeFounderGenome(seed,i%8,i%8);
    g.architectureDNA={...g.architectureDNA,grammar:1,mode:0,order:2};
+   g.structureDNA.mix=1; // Strict bilateral symmetry is a property of copy mode only.
    const em=architectureGrowth(g),points=[[.44,.2,.13],[.87,.2,.26],[1.07,.4,.1],[.61,-.33,.27],[1.35,.12,.44]];
    errors.push(Math.max(...points.map(q=>Math.abs(morphSDF(q[0],q[1],q[2],em)-morphSDF(-q[0],q[1],q[2],em)))));
   }
@@ -206,6 +209,7 @@ test('local body is generated once and all symmetry copies retain its palette, m
  const d=run(function(){
   const seed=731029,genome=makeFounderGenome(seed,1,1);
   genome.architectureDNA={...genome.architectureDNA,grammar:1,distortion:0};
+  genome.structureDNA.mix=1; // Ensure two actual copy transforms for this regression fixture.
   const palette=pickPalette(seed,genome.colorDNA,genome.patternDNA);
   const sp=makeSpecimen(seed,genome.style,palette,false,null,.7,.84,.75,genome.archetype,null,copyJSON(genome));
   const g=sp.localGroup;
