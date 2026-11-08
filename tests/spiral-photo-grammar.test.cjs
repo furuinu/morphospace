@@ -56,10 +56,10 @@ test('spiral taper has genuine continuous signed-distance volume',()=>{
 test('new genome grammar persists and photo generation exposes explicit and automatic choices',()=>{
  const g=genome(6);
  assert.equal(api.normalizedArchitectureDNA(g.architectureDNA,g.seed,0).grammar,6);
- assert.equal(new Set(Array.from({length:64},(_,i)=>api.architectureFounderDNA(100000+i*791,i).grammar)).size,6);
+ assert.equal(new Set(Array.from({length:64},(_,i)=>api.architectureFounderDNA(100000+i*791,i).grammar)).size,7);
  assert.match(html,/id="photoCopyGrammar"/);
  assert.match(html,/photoGrammar:\$\('photoCopyGrammar'\)\.value/);
- assert.match(html,/1\+\(cx\.photoDNA\.seed>>>0\)%6/);
+ assert.match(html,/1\+\(cx\.photoDNA\.seed>>>0\)%7/);
  assert.match(html,/uniform vec4 uCopyPos\[12\];uniform vec4 uCopyRot\[12\]/);
  assert.match(html,/slice\(0,12\),p=new Float32Array\(48\)/);
 });

@@ -41,7 +41,7 @@ test('selection is deterministic and does not alter non-strand organs',()=>{
  assert.ok(a.parts.some(x=>x.role==='lung'));
 });
 test('genomes, including historic ones, cannot bypass the completed-body copy grammar',()=>{
- assert.match(html,/layout=arch\.grammar>=1&&arch\.grammar<=6\?arch\.grammar:1/);
+ assert.match(html,/layout=arch\.grammar===7\?7:\(arch\.grammar>=1&&arch\.grammar<=6\?arch\.grammar:1\)/);
  assert.match(html,/if\(layouts\.length<2\)throw new Error/);
  assert.doesNotMatch(html,/layout=developmental\?0:arch\.grammar/);
  assert.match(html,/frontAxis:safeAppendages\.forward/);
