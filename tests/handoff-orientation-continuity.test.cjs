@@ -49,7 +49,9 @@ test('specimen changes reset the stored quaternion without retaining A orientati
 test('orbit heading changes only after B finishes the camera handoff',()=>{
  assert.doesNotMatch(html,/if\(!m\.headingChanged&&p>\.80\)/);
  assert.doesNotMatch(html,/if\(!m\.headingChanged&&p>=\.80\)/);
- assert.match(html,/if\(!m\.headingChanged&&p>=1\)\{m\.headingChanged=true;cameraOrbitChooseHeading\(\);\}/);
- assert.match(html,/m\.warpPosition=m\.warpTarget\.slice\(\);cancelViewerMorph\(true\);\s*if\(!m\.headingChanged\)/);
+ assert.match(html,/viewer\.orbitHeadingDelay=1\.2/);
+ assert.match(html,/viewer\.orbitHeadingPending=true/);
+ assert.match(html,/if\(viewer\.orbitHeadingPending&&!viewer\.morph\)/);
+ assert.match(html,/if\(viewer\.orbitHeadingDelay===0\)/);
  assert.match(html,/pulseAlignRotation\(posed,pulseTravel\.direction,1,true\)/);
 });
