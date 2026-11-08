@@ -16,7 +16,7 @@ function trace(rootY){
  const v={norm:a=>{const n=Math.hypot(...a);return n?a.map(x=>x/n):[0,1,0]},dot:(a,b)=>a.reduce((sum,x,i)=>sum+x*b[i],0),scale:(a,b)=>a.map(x=>x*b),add:(a,b)=>a.map((x,i)=>x+b[i]),cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]};
  const ctx={spec:specimen,selected:0,nanoAction:false,nanoRenderPose:false,viewer:{morph:null},pulseTravel:travel,PULSE_TRAVEL_STRENGTH:.175,bodyTime:.2,TAU:Math.PI*2,CYCLE_PERIODS:[1],V:v,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),normalizedMotionDNA:()=>({pulseCycle:0,tempo:1,phase:0,turnConeDegrees:18}),normalizedArchitectureDNA:()=>({grammar:5}),pulseConeDirection:()=>{throw Error('Unexpected turn')},pulseSlerpDirection:(a,b,t)=>a.map((x,i)=>x*(1-t)+b[i]*t),pulsePlaneDirection:()=>[1,0,0],resetPulseTravel(next,preserve){travel.specimen=next;travel.cycleIndex=null;travel.position=[0,0,0];travel.velocity=[0,0,0]},pulseTravelActive:()=>true,seedRng:()=>()=>.5};
  vm.createContext(ctx);vm.runInContext(code,ctx);ctx.stepPulseTravel(.12);
- return {position:travel.position,velocity:travel.velocity,direction:travel.direction};
+ return {position:Array.from(travel.position),velocity:Array.from(travel.velocity),direction:Array.from(travel.direction)};
 }
 
 const safetyBegin=html.indexOf('function safeSpecimenAppendages(');
