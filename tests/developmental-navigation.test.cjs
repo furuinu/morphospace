@@ -22,5 +22,6 @@ test('tentacle roots never override the swimming heading, and a protected anteri
  assert.ok(idx>0);
  const slice=html.slice(idx,idx+780);
  assert.match(slice,/base\[0\]\*forward\[0\]\+base\[4\]\*forward\[1\]\+base\[8\]\*forward\[2\]/);
- assert.match(slice,/pulseAlignRotation\(posed,pulseTravel.direction,1\)/);
+ assert.match(slice,/pulseAlignRotation\(posed,pulseTravel.direction,1,true\)/);
+ assert.match(html,/function pulseAlignRotation\(from,to,amount=1,continuous=false\)/);
 });
