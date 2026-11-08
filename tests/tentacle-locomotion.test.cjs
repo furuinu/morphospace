@@ -18,16 +18,54 @@ function trace(rootY){
  vm.createContext(ctx);vm.runInContext(code,ctx);ctx.stepPulseTravel(.12);
  return {position:travel.position,velocity:travel.velocity,direction:travel.direction};
 }
-test('single-pole tentacles trail the actual swimming velocity for either attachment pole',()=>{
+
+const safetyBegin=html.indexOf('function safeSpecimenAppendages(');
+const safetyEnd=html.indexOf('function makeMorphSpecimen(',safetyBegin);
+const alignBegin=html.indexOf('function pulseAlignRotation(');
+const alignEnd=html.indexOf('function stepPulseTravel(',alignBegin);
+assert.ok(safetyBegin>0&&safetyEnd>safetyBegin&&alignEnd>alignBegin);
+const safetyCode=html.slice(safetyBegin,safetyEnd);
+const safety=new Function(safetyCode+'return safeSpecimenAppendages;')();
+const v={norm:a=>{const n=Math.hypot(...a)||1;return a.map(x=>x/n)},dot:(a,b)=>a.reduce((sum,x,i)=>sum+x*b[i],0),scale:(a,b)=>a.map(x=>x*b),add:(a,b)=>a.map((x,i)=>x+b[i]),cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]};
+const scale3=(x,y,z)=>new Float32Array([x,0,0,0,0,y,0,0,0,0,z,0,0,0,0,1]);
+const align=new Function('V','scale3','clamp',html.slice(alignBegin,alignEnd)+'return pulseAlignRotation;')(v,scale3,(x,a,b)=>Math.max(a,Math.min(b,x)));
+function sourceGeometry(){
+ const copy=(x,mirror)=>({p:[x,0,0],angle:0,axis:'y',scale:1,mirror,mirrorY:false});
+ return {copyLayout:5,bound:4,copyTransforms:[copy(-.4,false),copy(.4,true)],
+  blobs:[{p:[-.4,0,0],axes:[.6,.7,.6]},{p:[.4,0,0],axes:[.6,.7,.6]}]};
+}
+function rotatePoint(m,p){return [
+ m[0]*p[0]+m[4]*p[1]+m[8]*p[2],
+ m[1]*p[0]+m[5]*p[1]+m[9]*p[2],
+ m[2]*p[0]+m[6]*p[1]+m[10]*p[2]
+];}
+test('the swimming heading is determined by the copy grammar, never by unfiltered tentacle roots',()=>{
+ const positive=trace(3),negative=trace(-3);
+ assert.deepEqual(positive.direction,negative.direction);
+ assert.deepEqual(positive.velocity,negative.velocity);
+ assert.ok(positive.direction.every(Number.isFinite));
+ assert.ok(positive.direction[1]*positive.velocity[1]>0,'movement and heading must agree');
+ assert.doesNotMatch(code,/axialTentacleRule|frontHasTentacle|tailSafe|tailAxis/);
+});
+test('both attachment poles become trailing organs after copied-anatomy safety filtering and final pose alignment',()=>{
  for(const pole of [-3,3]){
-  const result=trace(pole);
-  assert.ok(result.position[1]*pole<0,'body must move away from tentacle root: '+JSON.stringify(result));
-  assert.ok(result.velocity[1]*pole<0,'velocity must match the tail-safe direction: '+JSON.stringify(result));
-  assert.ok(result.direction[1]*result.velocity[1]>0,'rendered heading and actual propulsion must agree');
+  const direction=Math.sign(pole);
+  const part={delicate:{type:'strand',root:[0,pole,0],dir:[0,direction,0],length:.8}};
+  const em=sourceGeometry(),result=safety(em,[part],100);
+  assert.equal(result.parts.length,1,'the strand should be retained when the opposite anterior is chosen');
+  assert.ok(result.forward[1]*pole<0,'the protected anterior must be opposite the tentacle roots');
+  const swim=trace(pole).direction;
+  const m=align(result.forward,swim,1);
+  for(const point of [part.delicate.root,[0,pole+direction*.8,0]]){
+   const transformed=rotatePoint(m,point);
+   assert.ok(v.dot(transformed,swim)<-.02,'the entire strand must trail the final swimming direction');
+  }
  }
 });
-test('rendered pose aligns anatomical tail opposition with the same forward heading',()=>{
- assert.match(html,/const waveForward=rootLength>\.25\?rootSum\.map\(v=>-v\/rootLength\)/);
- assert.match(html,/pulseAlignRotation\(waveForward,pulseTravel\.direction,1\)/);
+test('the rendered pose aligns the protected anterior after body pose without a discontinuous axis flip',()=>{
+ assert.match(html,/frontAxis:safeAppendages\.forward/);
+ assert.match(html,/const forward=spec\.frontAxis\?\.length===3\?spec\.frontAxis:/);
+ assert.match(html,/const posed=V\.norm\(\[/);
+ assert.match(html,/pulseAlignRotation\(posed,pulseTravel\.direction,1,true\)/);
  assert.match(code,/pulseTravel\.velocity\[i\]=dir\[i\]\*speed/);
 });
