@@ -3080,11 +3080,11 @@ const MOTION_FIELDS=['tempo','amplitude','duty','rest','propagation','asymmetry'
 const MOTION_LIMITS={tempo:[.36,1.65],amplitude:[.56,1.55],duty:[.19,.88],rest:[.0,.65],propagation:[0,1],asymmetry:[0,1],locality:[.14,1],phase:[0,1],accent:[.12,1],axisBias:[-.9,.9],hingeAmplitude:[.26,.43],hingeSecondary:[.12,.35],hingeLag:[.04,.34],hingePhase:[0,1],networkEnergy:[.24,1],networkWave:[0,1],networkStartle:[0,1]};
 const HINGE_AXIS_PERIODS=[.5,1,1.5,2,2.5,3,4,6];
 function motionFounderDNA(seed,index,form){
- const r=seedRng(seed+625781),d={version:7};
+ const r=seedRng(seed+625781),networkRng=seedRng(seed+944021),d={version:7};
  // Cohort-wide mode coverage without mapping modes to the old eight style categories.
  d.primary=(index*7+Math.floor(r()*3))%10;
  d.secondary=(d.primary+2+Math.floor(r()*7))%10;
- for(const field of MOTION_FIELDS){const [lo,hi]=MOTION_LIMITS[field];d[field]=Number((lo+(hi-lo)*r()).toFixed(5));}
+ for(const field of MOTION_FIELDS){const [lo,hi]=MOTION_LIMITS[field];d[field]=Number((lo+(hi-lo)*(field.startsWith('network')?networkRng():r())).toFixed(5));}
  d.pulseCycle=cyclePick(r,'pulse');d.localCycle=cyclePick(r,'local');d.hingeCycle=cyclePick(r,'local');d.hingeMode=Math.floor(r()*4);d.hingeAxisCycles=[Math.floor(r()*8),Math.floor(r()*8),Math.floor(r()*8)];
  // Heritable per-organism cone half-angle (degrees), independent of each cycle's draw.
  // Separate seed stream preserves all existing founder motion DNA values.
@@ -3113,7 +3113,7 @@ function motionCrossoverDNA(a,b,seed,mutationStrength,log,inherited){
  if(d.secondary===d.primary)d.secondary=(d.primary+1+Math.floor(r()*8))%10;
  if(r()<.11+.31*mutationStrength){const old=d.primary;d.primary=Math.floor(r()*10);log.push({field:'motionDNA.primary',from:old,to:d.primary});}
  if(r()<.14+.31*mutationStrength){const old=d.secondary;d.secondary=Math.floor(r()*10);log.push({field:'motionDNA.secondary',from:old,to:d.secondary});}
- for(const key of MOTION_FIELDS){
+ for(const key of MOTION_FIELDS.slice(0,14)){
   let value=r()<.56?(dominance==='A'?A:B)[key]:r()<.5?A[key]:B[key];
   if(r()<.29)value=A[key]*(.2+.6*r())+B[key]*(.8-.6*r());
   if(r()<.11+.29*mutationStrength){const old=value;value+=(r()+r()+r()-1.5)*(.08+.37*mutationStrength)*(MOTION_LIMITS[key][1]-MOTION_LIMITS[key][0]);value=clamp(value,...MOTION_LIMITS[key]);log.push({field:'motionDNA.'+key,from:+old.toFixed(4),to:+value.toFixed(4)});}
@@ -3131,6 +3131,13 @@ function motionCrossoverDNA(a,b,seed,mutationStrength,log,inherited){
  for(const key of ['hingeCycle','hingeMode']){
   d[key]=(r()<.5?A:B)[key];
   if(r()<.10+.26*mutationStrength){const old=d[key];d[key]=key==='hingeCycle'?cyclePick(r,'local'):Math.floor(r()*4);log.push({field:'motionDNA.'+key,from:old,to:d[key]});}
+ }
+ // New temperament genes consume random draws only after all legacy genetics.
+ for(const key of MOTION_FIELDS.slice(14)){
+  let value=(r()<.5?A:B)[key];
+  if(r()<.24)value=A[key]*(.25+.5*r())+B[key]*(.75-.5*r());
+  if(r()<.13+.25*mutationStrength){const old=value;value+=(r()+r()-1)*.22*mutationStrength*(MOTION_LIMITS[key][1]-MOTION_LIMITS[key][0]);value=clamp(value,...MOTION_LIMITS[key]);log.push({field:'motionDNA.'+key,from:+old.toFixed(4),to:+value.toFixed(4)});}
+  d[key]=+clamp(value,...MOTION_LIMITS[key]).toFixed(5);
  }
  return d;
 }
