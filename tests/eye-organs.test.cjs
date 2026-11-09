@@ -163,16 +163,19 @@ test('one-lens ocellus, compound facet array and camera iris remain morphologica
  assert.ok(count(compound)>count(camera)*1.25,'Compound eye must consist of conspicuous geometric facets');
  assert.notEqual(count(ocellus),count(camera),'Single lens cap must have its own topology');
 });
-test('compound cornea forms a dense contiguous shallow lens mosaic',()=>{
+test('compound cornea uses a smooth ellipsoid and shader-driven hexagonal bump',()=>{
  const dna=eyes.normalizedEyeDNA({count:1,type:2,support:0,size:.42,compoundShape:0},1871);
  const part=eyes.makeEyeOrgans({seed:1871,eyeDNA:dna},source,palette)[0];
  const optical=part.eyeRig.meta.filter(m=>m.node===1);
- assert.ok(optical.length>1000,'Compound eye needs hundreds of contiguous polygon lens cells, not sparse spikes');
+ assert.ok(optical.length>1000,'Smooth compound cornea must have sufficient resolution for stable normal interpolation');
  assert.ok(part.eyeRig.meta.length<2600,'Facet mesh must fit the mobile vertex budget');
  const r=part.eyeRig.radius,cz=part.eyeRig.cz;
  const farthest=Math.max(...optical.map(m=>Math.hypot(m.p[0],m.p[1],m.p[2]-cz)))/r;
  assert.ok(farthest<1.08,'Corneal relief must be shallow rather than cone-like');
- assert.ok(html.includes('Continuous corneal mosaic'),'Do not restore detached protrusion generation');
+ assert.ok(html.includes('hexCorneaSample'),'The dense hexagonal lenses must be a procedural bump map');
+ assert.equal((html.match(/hexCorneaSample\\(normalize\\(vObj\\)\\)/g)||[]).length,2,
+  'Both high-quality and compatibility shaders must use the hexagonal corneal bump');
+ assert.ok(!html.includes('const corners=triangles.map('),'Individual polygon spikes must remain disabled');
 });
 test('eye sizes cover a broad DNA range and different eyes vary on one body',()=>{
  const sizes=[.09,.20,.38,.79].map(size=>{
@@ -187,7 +190,7 @@ test('eye sizes cover a broad DNA range and different eyes vary on one body',()=
 test('socket and eyelid do not follow independent gaze rotation',()=>{
  assert.match(html,/else if\(m\.node===2\|\|m\.node===3\|\|m\.node===4\)/);
  assert.match(html,/Lids and socket move with the support/);
- assert.match(html,/const bx=radius\*\.80\*Math\.cos\(a\),by=radius\*\(\.18\+\.56\*Math\.sin\(a\)\)/);
+ assert.match(html,/const bx=radius\*\(kind===2\?\.96:\.80\)\*Math\.cos\(a\)/);
  assert.match(html,/function ocularLidProfile\(/);
  assert.match(html,/const sclera=kind===1\?blend\(look\.shadow,look\.coat,\.24\)/);
 });
