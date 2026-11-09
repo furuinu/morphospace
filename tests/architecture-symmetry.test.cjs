@@ -190,9 +190,8 @@ test('copy transforms propagate to the GPU deformation field',()=>{
 });
 
 test('copied body shares ancestral texture and peristaltic motion before copy transforms',()=>{
- // Only compound corneas use normal-direction coordinates for their hex bump.
- // Every other anatomical role must retain canonical source-space pigment.
- assert.match(html,/vObj=\(role>13\.28&&role<13\.48\)\?normalize\(aNormal\):canonical;vAlong=u;/);
+ // All copied tissue uses the shared ancestral pigment coordinates.
+ assert.match(html,/vObj=canonical;vAlong=u;/);
  assert.match(html,/vec3 peristalsis=surfaceMotion\(canonical,canonicalNormal,ancestralTime/);
  assert.match(html,/wholeBodyWarp\(canonical\+motion\+bio\+peristalsis,ancestralTime,uMotion\*1\.82\)/);
  assert.match(html,/shifted=branchJointWarp\(shifted,anchorCanonical/);
@@ -245,9 +244,8 @@ test('local symmetry draw is shared by Safari compatibility and full shaders',()
  assert.match(html,/drawUploaded\(useLocal\?meshes\.localShell:meshes\.shell/);
  assert.match(html,/data=\(sp\.localGroup\?\.shell\|\|sp\.shell\)\.data/);
  assert.match(html,/const srcVert=compatibility\?compatibleVert:vert/);
- // Safari/full local-shell shaders retain the source position for body texture,
- // while the compound cornea uses its stable normal for six-sided lens relief.
- assert.match(html,/vColor=aColor;vRole=role;vObj=\(role>13\.28&&role<13\.48\)\?normalize\(aNormal\):aPos;/);
+ // Both shader variants use the same source-space body coordinates.
+ assert.match(html,/vColor=aColor;vRole=role;vObj=aPos;/);
 });
 
 test('high-fidelity instance tessellation follows copy budget and safely falls back',()=>{
