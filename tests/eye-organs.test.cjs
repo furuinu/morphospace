@@ -186,17 +186,17 @@ test('compound cornea uses a smooth ellipsoid and shader-driven hexagonal bump',
  assert.ok(!html.includes('const corners=triangles.map('),'Individual polygon spikes must remain disabled');
 });
 test('compound cornea is a two-times-finer interference of circular gradients',()=>{
- const glsl=html.match(/const hexCorneaGLSL=`([\\s\\S]*?)`;/)?.[1];
+ const glsl=html.match(/const hexCorneaGLSL=`([\s\S]*?)`;/)?.[1];
  assert.ok(glsl,'Procedural compound cornea shader must exist');
- assert.match(glsl,/float density=16\\.4;/,
+ assert.match(glsl,/float density=16\.4;/,
   'Double the previous grid frequency (8.2) on each sphere projection');
- assert.match(glsl,/float height=exp\\(-2\\.7\\*r2\\);/,
+ assert.match(glsl,/float height=exp\(-2\.7\*r2\);/,
   'Each ommatidium begins as a round radial gradient');
- assert.equal((glsl.match(/waves\\+=circularCorneaLobe/g)||[]).length,6,
+ assert.equal((glsl.match(/waves\+=circularCorneaLobe/g)||[]).length,6,
   'Six overlapping neighbours surround each centre at 60-degree intervals');
- assert.match(glsl,/vec2 slope=-5\\.4\\*waves\\.xy/,
+ assert.match(glsl,/vec2 slope=-5\.4\*waves\.xy/,
   'The bump normal derives from the radial-gradient field');
- assert.doesNotMatch(glsl,/float boundary=max\\(/,
+ assert.doesNotMatch(glsl,/float boundary=max\(/,
   'Never draw an explicit hexagon mask instead of circular interference');
  const offsets=[[0,0],[Math.sqrt(3),0],[-Math.sqrt(3),0],
   [Math.sqrt(3)/2,1.5],[-Math.sqrt(3)/2,1.5],
