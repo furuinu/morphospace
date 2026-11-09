@@ -8951,7 +8951,7 @@ function syncStreamUI(){const q=$('viewerModeQuick');if(q)q.value=streamMode;}
 
 let isolatedSpecimenFrame=false;
 let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,patternTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,cameraOrbitPhase=0,cameraOrbitYawOffset=0,cameraOrbitPitchOffset=0,cameraRoll=0,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
-let specimenDragQuat=[0,0,0,1],specimenDragManual=false;
+let specimenDragQuat=[0,0,0,1];
 function rotateSpecimenByPointer(dx,dy){
  const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
  // Camera-space axes preserve the visual direction of touch at every attitude.
@@ -9182,7 +9182,7 @@ function refreshAnimatedSpecimen(forceStatic=false){if(selected<0||!gl||!rendere
 // All visible cilia are animated by the GPU every rendered frame.
 // The parent body can be regenerated at lower frequency without interrupting them.
 let viewerReturnFocus=null;
-function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;specimenDragQuat=[0,0,0,1];specimenDragManual=false;scheduleViewerFrame();rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();setViewerZoomValue(VIEWER_DEFAULT_ZOOM);updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
+function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;specimenDragQuat=[0,0,0,1];scheduleViewerFrame();rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();setViewerZoomValue(VIEWER_DEFAULT_ZOOM);updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
 const rigCanvas=$('rigCanvas');
 let lastSceneViewProj=null;
 function drawRigOverlay(mvp,w,h){
@@ -10826,7 +10826,7 @@ function warpChaseState(m,dt){
  m.cameraTravel=m.warpPosition.reduce((sum,v,i)=>sum+v*m.travelAxis[i],0);
  m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
  if(!m.switched){
-  m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+  m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];specimenDragQuat=[0,0,0,1];
    // Capture the incoming body's camera-relative orientation once. Any
    // additional camera rotation is compensated during the point-to-body reveal,
    // then eased back to the specimen's native coordinates by acquisition.
@@ -11238,7 +11238,7 @@ function tickViewer(elapsed){
   // Do not select a new orbit axis on B's arrival frame.
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
-   m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];
+   m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];specimenDragQuat=[0,0,0,1];
    // Start B at its own anchor immediately, including the swap frame.
    // Keep the camera's prior offset to avoid a one-frame visual jump.
    if(pulseTravel.specimen!==spec){resetPulseTravel(spec,true);pulseTravel.position.fill(0);}
@@ -13436,18 +13436,27 @@ function frame(now){viewerFrameHandle=0;if(animating){
     stepBiomeSystem(viewer.morph.target.biome,dt,speed*bodySpeed*(typeof ambientSense!=='undefined'?ambientSense.motionFactor(viewer.morph.target):1));
   }
   if(typeof stepPulseTravel==='function')stepPulseTravel(Math.min(elapsed,.18));
-  if(videoRecording?videoRecording.autoOrbit:auto){
-   // Unrestricted 3D drift with gently eased changes of angular velocity.
-   stepCameraOrbit(Math.min(elapsed,.15));
+  const orbitActive=videoRecording?videoRecording.autoOrbit:auto;
+  if(orbitActive){
+   // Hold the sky at its current attitude only while the finger is dragging.
+   // Never disable the user's automatic orbit setting.
+   if(typeof drag==='undefined'||!drag)stepCameraOrbit(Math.min(elapsed,.15));
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
    modelPitch=-25*Math.PI/180+cameraOrbitPitchOffset+cameraOrbitPitchPhase;
    cameraRoll=cameraOrbitRollPhase;
-  }else if(typeof specimenDragManual==='undefined'||!specimenDragManual)cameraRoll=0;
-  // Wide yaw/pitch/roll manoeuvres also move the infinite-distance sky.
-  // The gaze envelope vanishes at target acquisition without a camera snap.
+  }else cameraRoll=0;
+  // Flight angles are absolute offsets. In manual-camera mode repeatedly
+  // adding them each frame caused runaway roll and gimbal-like behaviour.
   if(viewer.morph?.warpChase){
-   const flight=warpFlightAngles(viewer.morph);
-   modelYaw+=flight[0];modelPitch+=flight[1];cameraRoll+=flight[2];
+   const m=viewer.morph,flight=warpFlightAngles(m);
+   if(orbitActive){
+    modelYaw+=flight[0];modelPitch+=flight[1];cameraRoll+=flight[2];
+   }else{
+    if(!m.manualGazeBase)m.manualGazeBase=[modelYaw,modelPitch];
+    modelYaw=m.manualGazeBase[0]+flight[0];
+    modelPitch=m.manualGazeBase[1]+flight[1];
+    cameraRoll=flight[2];
+   }
   }
   if(typeof stepPulseCameraFollow==='function')stepPulseCameraFollow(Math.min(elapsed,.18));
   if(typeof tickSpecimenInspection==='function')tickSpecimenInspection(Math.min(elapsed,.15));
@@ -14461,8 +14470,7 @@ canvas.addEventListener('pointermove',e=>{
  if(!drag||!previous)return;
  const dx=e.clientX-previous[0],dy=e.clientY-previous[1];
  if(dx||dy){
-  // Stop the automatic camera orbit at its present attitude, without a snap.
-  if(auto){auto=false;$('auto').checked=false;specimenDragManual=true;}
+  // Touch rotates only the organism; keep the automatic sky orbit enabled.
   rotateSpecimenByPointer(dx,dy);
  }
  previous=[e.clientX,e.clientY];
@@ -14479,7 +14487,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEve
 // Bubble after the canvas records whether this tap only dismisses the settings.
 document.addEventListener('pointerdown',event=>{const settings=$('viewerSettings');if(settings.open&&!settings.contains(event.target))settings.open=false});
 canvas.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&!event.repeat&&!nanoOperationBusy&&!nanoAction&&!captureShareIsOpen){event.preventDefault();if($('viewerSettings').open)$('viewerSettings').open=false;else setViewerNavigationVisible($('overlay').classList.contains('viewer-nav-hidden'))}});
-$('reset').onclick=()=>{resetSpecimenInspection();cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;specimenDragQuat=[0,0,0,1];specimenDragManual=false;modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;if(spec&&spec.baseViewDistance){const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,VIEWER_DEFAULT_ZOOM/100));}activePointers.clear();pinchState=null;render()};
+$('reset').onclick=()=>{resetSpecimenInspection();cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;specimenDragQuat=[0,0,0,1];modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;if(spec&&spec.baseViewDistance){const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,VIEWER_DEFAULT_ZOOM/100));}activePointers.clear();pinchState=null;render()};
 $('density').oninput=()=>{$('densityNum').textContent=$('density').value+'%'};$('density').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual,{fullscreen:viewer.full})}catch(e){fail(e)}}};$('micro').oninput=()=>{$('microNum').textContent=$('micro').value+'%'};$('micro').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual,{fullscreen:viewer.full})}catch(e){fail(e)}}};$('motion').onchange=()=>{rigPrevious=performance.now();render()};$('patternMotion').onchange=()=>render();$('triplanarTrial').onchange=()=>render();for(const id of ['patternStrength','patternSpeed','patternRest'])$(id).oninput=()=>{$(id+'Num').textContent=$(id).value+'%';render()};$('transparency').oninput=()=>{$('transNum').textContent=$('transparency').value+'%';render()};$('glow').oninput=()=>{$('glowNum').textContent=$('glow').value+'%';render()};$('layerLight').oninput=()=>{$('layerLightNum').textContent=$('layerLight').value+'%';render()};$('wire').onchange=render;$('rigviz').onchange=render;$('emissionStrength').oninput=()=>{$('emissionNum').textContent=$('emissionStrength').value+'%';render()};$('emitColor').onchange=render;$('emitBlink').onchange=render;$('blinkSpeed').oninput=()=>{$('blinkSpeedOut').textContent=$('blinkSpeed').value+'%';render()};$('bloomRadius').oninput=()=>{$('bloomNum').textContent=$('bloomRadius').value+'%';render()};$('shadeStrength').oninput=()=>{$('shadeNum').textContent=$('shadeStrength').value+'%';render()};
 for(const [id,out] of [['snowFarDim','snowFarDimNum'],['snowEdgeDim','snowEdgeDimNum'],['fresnelStrength','fresnelStrengthNum'],['iridescenceStrength','iridescenceStrengthNum']]){
  $(id).oninput=()=>{$(out).textContent=$(id).value+'%';render()};
