@@ -150,9 +150,11 @@ test('speech articulator and phonemes are initialized before first BODY sound',(
  assert.ok(render.indexOf('const articulate=(v,phoneme,attack)=>')<render.indexOf('if(speechMode)articulate(state.body,bodyPhoneme'));
 });
 
-test('recording and upload experiments are absent from the production page',()=>{
+test('experimental upload UI is absent; environmental hearing is opt-in',()=>{
  for(const id of ['voiceRecordStart','voiceRecordStop','voiceSampleFile','voiceSamplePreview','voiceSampleUpload','voiceSampleMode'])assert.doesNotMatch(app,new RegExp('id="'+id+'"'));
- assert.doesNotMatch(app,/navigator\.mediaDevices\.getUserMedia/);
+ assert.match(app,/navigator\.mediaDevices\.getUserMedia/);
+ assert.match(app,/id="viewerMic" type="checkbox"/);
+ assert.match(app,/function stopAmbientSense\(/);
  assert.match(app,/id="heartbeatEnabled"[^>]*hidden/);
 });
 
