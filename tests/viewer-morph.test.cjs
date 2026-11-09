@@ -326,6 +326,21 @@ test('the production adoption path uses prepared meshes without scanning, rebuil
 });
 
 
+test('one-finger specimen rotation does not disable sky orbit or accumulate warp roll',()=>{
+ const start=src.indexOf("canvas.addEventListener('pointermove'");
+ const end=src.indexOf("for(const ev of ['pointerup'",start);
+ assert.ok(start>=0&&end>start,'Pointer handling must be present');
+ const pointer=src.slice(start,end);
+ assert.match(pointer,/rotateSpecimenByPointer\(dx,dy\)/,'The finger must rotate the specimen');
+ assert.doesNotMatch(pointer,/auto=false|\$\('auto'\)\.checked=false/,
+  'Touch must not permanently freeze the background orbit');
+ assert.match(src,/if\(typeof drag==='undefined'\|\|!drag\)stepCameraOrbit/,
+  'Sky movement must resume after the touch ends');
+ assert.match(src,/if\(!m\.manualGazeBase\)m\.manualGazeBase=/,
+  'Manual-camera flight offsets must be based on one stable angle');
+ assert.match(src,/cameraRoll=flight\[2\]/,
+  'Manual-camera roll must not accumulate every frame');
+});
 test('the render loop advances the incoming pressure simulation before adoption',()=>{
  const {f}=runtime(),steps=[];Object.assign(f,{animating:true,lastFrame:0,environmentTime:0,psychedelicTime:0,rigTime:0,bodyTime:0,patternTime:0,modelYaw:0,auto:false,requestAnimationFrame(){},render(){},tickViewer(){},stepBiomeSystem:(bio,elapsed,speed)=>steps.push({bio,elapsed,speed}),ambientSense:{active:false,onsetSerial:0,biomeSerial:0,motionFactor:()=>1,response:()=>({impact:0})}});
  f.tickBackgroundCycle=()=>{};f.tickStarNursery=()=>{};f.spec={biome:{name:'source'},genome:{}};f.v.morph={target:{biome:{name:'target'}}};f.$('motionSpeed').value='100';f.$('bodySpeed').value='100';
