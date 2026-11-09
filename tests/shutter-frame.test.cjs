@@ -31,7 +31,8 @@ test('save/capture/share press freezes before async work and never triggers a se
  assert.doesNotMatch(save,/render\(/);assert.doesNotMatch(save,/drawStudioBackground\(/);
  assert.doesNotMatch(source,/render\(/);
 });
-test('card and social preview fit the whole shot without cropping or stretching',()=>{
+test('card, sample thumbnail and social preview fit the whole shot without cropping or stretching',()=>{
  assert.match(html,/Math\.min\(w\/image\.width,h\/image\.height\)/);
  assert.match(html,/Math\.min\(size\/image\.width,size\/image\.height\)/);
+ assert.match(html,/const thumbScale=Math\.min\(240\/image\.width,240\/image\.height\)/);
 });

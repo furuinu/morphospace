@@ -13220,7 +13220,10 @@ async function openCaptureShare(mode){
   if(!captureShareDialog.open)captureShareDialog.showModal();
   const base=cleanFilePart(record.name)+'-'+record.seed;
   if(mode==='capture'){
-   const thumb=document.createElement('canvas');thumb.width=240;thumb.height=240;thumb.getContext('2d').drawImage(image,0,0,240,240);
+   const thumb=document.createElement('canvas');thumb.width=240;thumb.height=240;
+   const thumbContext=thumb.getContext('2d');thumbContext.fillStyle='#06101b';thumbContext.fillRect(0,0,240,240);
+   const thumbScale=Math.min(240/image.width,240/image.height);
+   thumbContext.drawImage(image,(240-image.width*thumbScale)/2,(240-image.height*thumbScale)/2,image.width*thumbScale,image.height*thumbScale);
    const preview=thumb.toDataURL('image/jpeg',.78);state.stockPreview=preview;
    if(state.stockSaved){try{await stockStore.save({payload:state.stockPayload,preview,updatedAt:new Date().toISOString()});await refreshStock()}catch(error){console.warn('Stock preview could not be saved',error)}}
    if(seq!==captureShareSequence)return;
