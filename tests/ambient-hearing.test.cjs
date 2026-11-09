@@ -84,18 +84,16 @@ test('microphone capture failure returns audio session to playback',async()=>{
  assert.match(elements.viewerMicStatus.textContent,/No input device/);
 });
 
-test('audible mimicry samples a post-onset pitched frame and uses a single safety-limited bus',()=>{
+test('sampled microaudio feeds inherited music notes via shared limiter',()=>{
  const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
  assert.match(html,/analyser\.fftSize=8192/);
  assert.match(hearing,/this\.captureAt=t\+\.12/);
- assert.match(hearing,/const count=Math\.min\(this\.wave\.length,Math\.floor\(ctx\.sampleRate\*\.17\)\)/);
  assert.match(hearing,/const pitch=ambientEstimatePitch\(clip,ctx\.sampleRate\)/);
  assert.match(hearing,/this\.adopt\(candidate,spec,ctx,t\)/);
- assert.match(hearing,/voice\.connect\(hp\);hp\.connect\(bp\);bp\.connect\(saturation\);saturation\.connect\(lp\);lp\.connect\(amp\)/);
+ assert.match(hearing,/voice\.playbackRate\.value=clamp\(frequency\/detected,\.20,10\)/);
+ assert.match(hearing,/res\.frequency\.setValueAtTime\(frequency,at\)/);
  assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
  assert.doesNotMatch(hearing,/amp\.connect\(engine\.reverbInput\)/);
- assert.match(hearing,/Number\(\$\('viewerSoundVolume'\)\.value\)\/50/);
- assert.match(hearing,/this\.playedCount\+\+/);
  assert.match(hearing,/this\.playMotifs\(spec,t\)/);
 });
 test('sample-only gain normalization has a bounded peak and leaves the base volume untouched',()=>{
@@ -175,9 +173,8 @@ test('two retained memory lanes repeat, stage replacements and fade old motifs',
  ear.motifs=ear.motifs.filter(m=>m.until>28);
  assert.equal(ear.motifs.length,2);
 });
-test('motifs are filtered before the shared limiter; basic choir never receives input-driven gain',()=>{
- const start=html.indexOf('const ambientSense={'),end=html.indexOf('async function startAmbientSense(){',start);
- const hearing=html.slice(start,end);
+test('processed sample instruments preserve the original heartbeat and star bus',()=>{
+ const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
  assert.match(hearing,/hp\.type='highpass'/);
  assert.match(hearing,/bp\.type='bandpass'/);
  assert.match(hearing,/saturation\.curve=curve/);
@@ -186,11 +183,11 @@ test('motifs are filtered before the shared limiter; basic choir never receives 
  assert.match(hearing,/weightIn\*weightOut/);
  assert.match(hearing,/this\.motifs\.filter\(m=>now<m\.until\)/);
  assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
- assert.doesNotMatch(hearing,/amp\.connect\(engine\.reverbInput\)/);
  assert.doesNotMatch(hearing,/state\.master\.gain/);
- assert.doesNotMatch(hearing,/engine\.output\.gain/);
+ assert.match(html,/if\(ambientSense\.active\)quiet=true;/);
+ assert.match(html,/updateHeartbeat\(individuals,quiet,Number\(\$\('viewerSoundVolume'\)\.value\)\/100\)/);
+ assert.match(html,/amp\.connect\(ctx\.destination\);amp\.connect\(engine\.snowRecordingTap\)/);
 });
-
 test('100 Hz bass detection and quieter capture thresholds',()=>{
  const a=html.indexOf('function ambientEstimatePitch('),b=html.indexOf('function ambientConsonantRate(',a);
  const sandbox={clamp:(x,lo,hi)=>Math.max(lo,Math.min(hi,x))};
@@ -206,37 +203,24 @@ test('100 Hz bass detection and quieter capture thresholds',()=>{
  assert.match(html,/rms>this\.previous\*1\.13&&rms-this\.previous>\.003/);
  assert.match(html,/if\(rms<\.004\|\|peak<\.012\)return null/);
 });
-test('environmental motifs use the original choir phrase clock',()=>{
- const a=html.indexOf('function ambientPhraseClock('),b=html.indexOf('const ambientSense={',a);
- assert.ok(a>=0&&b>a);
- const sandbox={vocalCharacterDNA:()=>({phraseLength:5,silence:.5}),clamp:(x,lo,hi)=>Math.max(lo,Math.min(hi,x))};
- vm.createContext(sandbox);
- vm.runInContext(html.slice(a,b)+'this.phrase=ambientPhraseClock;',sandbox);
- const first=sandbox.phrase({seed:0},0);
- assert.equal(first.cycle,6.05);
- assert.ok(Math.abs(first.cues[0]-1.15)<1e-7);
- assert.ok(Math.abs(first.cues[1]-3.15)<1e-7);
- assert.ok(first.length>=.85&&first.length<=1.75);
- const next=sandbox.phrase({seed:0},first.cycle+first.cues[0]);
- assert.equal(next.index,1);
- assert.ok(Math.abs(next.phase-first.cues[0])<1e-7);
- const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
- assert.match(hearing,/ambientPhraseClock\(sp,clockTime\)/);
- assert.match(hearing,/motif\.slot===1&&phrase\.index%2!==0/);
- assert.match(hearing,/motif\.lastPhraseIndex===phrase\.index/);
- assert.doesNotMatch(hearing,/const heard=this\.period>/);
+test('original vocal layers expose MIDI and sampled voice triggers',()=>{
+ const ear=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(html,/layer\.micCallStrength=envelope\*shape\.voiced/);
+ assert.match(html,/layer\.micCallKey=phrase\+':'\+activeStep/);
+ assert.match(ear,/const voiceBank=bioticAudio\.engine\.voices/);
+ assert.match(ear,/layer\.micCallStrength<\.17/);
+ assert.match(ear,/layer\.micLastCallKey===layer\.micCallKey/);
+ assert.match(ear,/const frequency=440\*Math\.pow\(2,\(layer\.noteMidi-69\)\/12\)/);
+ assert.doesNotMatch(ear,/const heard=this\.period>/);
 });
-test('slow highpass and lowpass sweeps align to extended syllables',()=>{
- const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
- assert.match(hearing,/voice\.loop=true/);
- assert.match(hearing,/const length=phrase\.length\*\(motif\.slot===0\?1:\.86\)/);
- assert.match(hearing,/const middle=at\+attack,release=endAt-tail/);
- assert.match(hearing,/hp\.frequency\.linearRampToValueAtTime\(hpOpen,middle\)/);
- assert.match(hearing,/hp\.frequency\.linearRampToValueAtTime\(hpClosed,endAt\)/);
- assert.match(hearing,/lp\.frequency\.exponentialRampToValueAtTime\(lpOpen,middle\)/);
- assert.match(hearing,/lp\.frequency\.exponentialRampToValueAtTime\(lpClosed,endAt\)/);
- assert.match(hearing,/amp\.gain\.linearRampToValueAtTime\(gain,middle\)/);
- assert.match(hearing,/amp\.gain\.linearRampToValueAtTime\(0,endAt\)/);
- assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
- assert.doesNotMatch(hearing,/state\.master\.gain/);
+test('microphone is exclusive music source while heartbeat and star sounds are unchanged',()=>{
+ const ear=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(ear,/voice\.loop=true/);
+ assert.match(ear,/amp\.gain\.linearRampToValueAtTime\(gain,middle\)/);
+ assert.match(ear,/amp\.gain\.linearRampToValueAtTime\(0,endAt\)/);
+ assert.match(ear,/amp\.connect\(engine\.sampleInput\)/);
+ assert.match(html,/function updatePureChoir\(quiet=false\)\{[\s\S]*?if\(ambientSense\.active\)quiet=true;/);
+ assert.match(html,/try\{engine\.update\(individuals,0\);updatePureChoir\(quiet\)/);
+ assert.doesNotMatch(ear,/state\.master\.gain/);
 });
+
