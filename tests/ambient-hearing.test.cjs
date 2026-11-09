@@ -106,7 +106,11 @@ test('sample-only gain normalization has a bounded peak and leaves the base volu
  assert.equal(ctx.normalize(silence),null);
  const noiseOnly=new Float32Array(8192);
  for(let i=0;i<noiseOnly.length;i++)noiseOnly[i]=.01*Math.sin(i*Math.PI*2*220/48000);
- assert.equal(ctx.normalize(noiseOnly),null,'very quiet mic noise should not be amplified');
+ assert.ok(ctx.normalize(noiseOnly),'very quiet non-silent input is now eligible');
+ const nearSilence=new Float32Array(8192).fill(.000001);
+ assert.equal(ctx.normalize(nearSilence),null,'near-digital silence is ignored');
+ const whisper=new Float32Array(8192).fill(.00008);
+ assert.ok(ctx.normalize(whisper),'very faint input is accepted');
  for(const amplitude of [.025,.04,.12,.4,.8]){
   const sample=new Float32Array(8192);
   for(let i=0;i<sample.length;i++)sample[i]=amplitude*Math.sin(i*Math.PI*2*220/48000);
@@ -201,7 +205,39 @@ test('100 Hz bass detection and quieter capture thresholds',()=>{
  }
  assert.match(html,/const floor=Math\.max\(\.008,this\.noise\*2\.0\)/);
  assert.match(html,/rms>this\.previous\*1\.13&&rms-this\.previous>\.003/);
- assert.match(html,/if\(rms<\.004\|\|peak<\.012\)return null/);
+ assert.match(html,/if\(rms<\.00001\|\|peak<\.00003\)return null/);
+});
+test('sampling every four biological pulse cycles retains memory during silence',()=>{
+ const helper=html.slice(html.indexOf('function ambientSampleCyclePhase('),html.indexOf('const ambientSense={'));
+ const source=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ const context={currentTime:0,sampleRate:48000};
+ let amplitude=.05,adoptions=0;
+ const specimen={seed:301,genome:{motionDNA:{tempo:1,pulseCycle:4,phase:0}}};
+ const sandbox={selected:0,spec:specimen,bodyTime:0,bioticAudio:{engine:{context}},
+  bioticAudioRunning:()=>true,clamp:(x,lo,hi)=>Math.max(lo,Math.min(hi,x)),
+  normalizedMotionDNA:g=>g,CYCLE_PERIODS:[1/6,1/4,1/3,1/2,1,1.5,2,3,4],
+  ambientClipNormalizer:wave=>wave[0]===0?null:{rms:.05,peak:.05,multiplier:1},
+  ambientEstimatePitch:()=>220,
+  ambientMotifFeatures:()=>({pitch:220,score:.8,motion:.5,texture:.5,rms:.05}),
+  $:()=>({textContent:''}),Float32Array};
+ vm.createContext(sandbox);
+ vm.runInContext(helper+source+'\nthis.ear=ambientSense;',sandbox);
+ const ear=sandbox.ear;
+ ear.active=true;ear.wave=new Float32Array(8192);ear.spectrum=new Float32Array(4096);
+ ear.analyser={getFloatTimeDomainData:a=>a.fill(amplitude),getFloatFrequencyData:a=>a.fill(-80)};
+ ear.playMotifs=()=>{};
+ ear.adopt=()=>{adoptions++;return true;};
+ const tick=(t,cycleTime)=>{context.currentTime=t;sandbox.bodyTime=cycleTime;ear.tick();};
+ tick(0,0);assert.equal(ear.captureAt,.12,'prime first sound immediately');
+ tick(.13,.13);assert.equal(ear.clips.length,1);
+ tick(3.99,3.99);assert.equal(ear.captureAt,-1,'do not sample early');
+ tick(4.01,4.01);assert.equal(ear.captureAt,4.13);
+ tick(4.15,4.15);assert.equal(ear.clips.length,2);
+ amplitude=0;tick(8.02,8.02);assert.equal(ear.captureAt,8.14);
+ tick(8.16,8.16);
+ assert.equal(ear.clips.length,2,'silence does not erase memory');
+ assert.equal(adoptions,2,'silence cannot replace a playing motif');
+ assert.match(source,/lp\.frequency\.setValueAtTime\(950,at\);[\s\S]*?lp\.frequency\.exponentialRampToValueAtTime\(950,endAt\);/);
 });
 test('original vocal layers expose MIDI and sampled voice triggers',()=>{
  const ear=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
