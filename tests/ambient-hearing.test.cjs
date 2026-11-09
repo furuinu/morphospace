@@ -12,7 +12,8 @@ test('hearing adapts existing voice, chorus pulse, and movement',()=>{
  assert.match(html,/state\.grooveNote=\(seed\+ambientSense\.onsetSerial\)%4/);
  assert.match(html,/const response=typeof ambientSense!=='undefined'\?ambientSense\.motionFactor\(spec\):1/);
  assert.match(html,/node\.velocity=clamp\(node\.velocity\+ambientSense\.response/);
- assert.match(html,/out\.connect\(engine\.sampleInput\);out\.connect\(engine\.reverbInput\)/);
+ assert.match(html,/amp\.connect\(engine\.sampleInput\)/);
+ assert.doesNotMatch(html,/amp\.connect\(engine\.reverbInput\)/);
 });
 test('the environmental ear uses bounded pitch and inherited identity',()=>{
  const a=html.indexOf('function ambientEstimatePitch'),b=html.indexOf('const ambientSense={');
@@ -58,7 +59,7 @@ test('iPhone microphone capture resets playback-only AudioSession before getUser
  vm.createContext(f);vm.runInContext(html.slice(start,end)+'this.startAmbientSense=startAmbientSense;',f);
  await f.startAmbientSense();
  assert.equal(observedType,'auto');
- assert.equal(session.type,'play-and-record');
+ assert.equal(session.type,'auto');
  assert.equal(ambientSense.active,true);
  assert.equal(stops,0);
  assert.match(elements.viewerMicStatus.textContent,/聴覚作動中/);
@@ -81,4 +82,44 @@ test('microphone capture failure returns audio session to playback',async()=>{
  assert.equal(elements.viewerMic.checked,false);
  assert.equal(ambientSense.starting,false);
  assert.match(elements.viewerMicStatus.textContent,/No input device/);
+});
+
+test('audible mimicry samples a post-onset pitched frame and uses a single safety-limited bus',()=>{
+ const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(html,/analyser\.fftSize=8192/);
+ assert.match(hearing,/this\.captureAt=t\+\.12/);
+ assert.match(hearing,/const count=Math\.min\(this\.wave\.length,Math\.floor\(ctx\.sampleRate\*\.17\)\)/);
+ assert.match(hearing,/const pitch=ambientEstimatePitch\(clip,ctx\.sampleRate\)/);
+ assert.match(hearing,/voice\.connect\(filter\);filter\.connect\(amp\)/);
+ assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
+ assert.doesNotMatch(hearing,/amp\.connect\(engine\.reverbInput\)/);
+ assert.match(hearing,/Number\(\$\('viewerSoundVolume'\)\.value\)\/50/);
+ assert.match(hearing,/this\.playedCount\+\+/);
+});
+test('sample-only gain normalization has a bounded peak and leaves the base volume untouched',()=>{
+ const start=html.indexOf('function ambientClipNormalizer('),end=html.indexOf('const ambientSense={',start);
+ assert.ok(start>0&&end>start);
+ const source=html.slice(start,end);
+ const ctx=vm.createContext({});
+ vm.runInContext(source+'this.normalize=ambientClipNormalizer;',ctx);
+ const silence=new Float32Array(8192);
+ assert.equal(ctx.normalize(silence),null);
+ for(const amplitude of [.01,.04,.12,.4,.8]){
+  const sample=new Float32Array(8192);
+  for(let i=0;i<sample.length;i++)sample[i]=amplitude*Math.sin(i*Math.PI*2*220/48000);
+  const n=ctx.normalize(sample);
+  assert.ok(n&&n.multiplier>0&&n.multiplier<=14);
+  assert.ok(n.peak*n.multiplier<=.880001,'never exceed normalised source ceiling');
+ }
+ const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.doesNotMatch(hearing,/engine\.output\.gain/);
+ assert.doesNotMatch(hearing,/state\.master\.gain/);
+});
+test('mic timbre returns to neutral when the environment is silent',()=>{
+ const start=html.indexOf('const ambientSense={'),end=html.indexOf('async function startAmbientSense(){',start);
+ const sense=html.slice(start,end);
+ assert.match(sense,/timbre:clamp\(\(this\.level\*\.9\+this\.pulse\*\.35\)/);
+ assert.match(sense,/this\.level\+=/);
+ assert.match(sense,/this\.pulse\*=\.88/);
+ assert.doesNotMatch(sense,/timbre:this\.brightness\*gain\*traits\.colour/);
 });
