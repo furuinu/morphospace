@@ -90,11 +90,13 @@ test('audible mimicry samples a post-onset pitched frame and uses a single safet
  assert.match(hearing,/this\.captureAt=t\+\.12/);
  assert.match(hearing,/const count=Math\.min\(this\.wave\.length,Math\.floor\(ctx\.sampleRate\*\.17\)\)/);
  assert.match(hearing,/const pitch=ambientEstimatePitch\(clip,ctx\.sampleRate\)/);
- assert.match(hearing,/voice\.connect\(filter\);filter\.connect\(amp\)/);
+ assert.match(hearing,/this\.adopt\(candidate,spec,ctx,t\)/);
+ assert.match(hearing,/voice\.connect\(hp\);hp\.connect\(bp\);bp\.connect\(saturation\);saturation\.connect\(lp\);lp\.connect\(amp\)/);
  assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
  assert.doesNotMatch(hearing,/amp\.connect\(engine\.reverbInput\)/);
  assert.match(hearing,/Number\(\$\('viewerSoundVolume'\)\.value\)\/50/);
  assert.match(hearing,/this\.playedCount\+\+/);
+ assert.match(hearing,/this\.playMotifs\(spec,t\)/);
 });
 test('sample-only gain normalization has a bounded peak and leaves the base volume untouched',()=>{
  const start=html.indexOf('function ambientClipNormalizer('),end=html.indexOf('const ambientSense={',start);
@@ -125,4 +127,66 @@ test('mic timbre returns to neutral when the environment is silent',()=>{
  assert.match(sense,/this\.level\+=/);
  assert.match(sense,/this\.pulse\*=\.88/);
  assert.doesNotMatch(sense,/timbre:this\.brightness\*gain\*traits\.colour/);
+});
+
+test('characteristic acoustic identity, pitch and novelty determine motif selection',()=>{
+ const start=html.indexOf('function ambientClipNormalizer('),end=html.indexOf('const ambientSense={',start);
+ const source=html.slice(start,end);
+ const f={clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v))};
+ vm.createContext(f);
+ vm.runInContext(source+'\nthis.features=ambientMotifFeatures;this.distance=ambientMotifDistance;',f);
+ const wave=new Float32Array(8192);
+ for(let i=0;i<wave.length;i++)wave[i]=.19*Math.sin(2*Math.PI*220*i/48000)*(i<wave.length/2?.4:1);
+ const a=f.features(wave,220),b=f.features(wave,440),c=f.features(wave,220);
+ assert.ok(a&&a.score>.30);
+ assert.equal(f.distance(a,c),0);
+ assert.ok(f.distance(a,b)>.35);
+ assert.equal(f.features(new Float32Array(8192),null),null);
+});
+test('two retained memory lanes repeat, stage replacements and fade old motifs',()=>{
+ const start=html.indexOf('const ambientSense={'),end=html.indexOf('async function startAmbientSense(){',start);
+ const source=html.slice(start,end);
+ const sandbox={
+  ambientMotifDistance:(a,b)=>Math.abs(a.texture-b.texture)+Math.abs(a.motion-b.motion)+
+   (a.pitch&&b.pitch?Math.min(1,Math.abs(Math.log2(a.pitch/b.pitch))):.5),
+  ambientClipNormalizer:()=>({rms:.16,peak:.3,multiplier:1}),
+  ambientTraits:()=>({latency:.07}),
+  clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v)),
+  $:()=>({value:50}),
+  bioticAudioRunning:()=>true,
+  bioticAudio:{engine:{sampleInput:{},context:{}}},
+  Float32Array
+ };
+ vm.createContext(sandbox);
+ vm.runInContext(source+'\nthis.ear=ambientSense;',sandbox);
+ const ear=sandbox.ear;
+ const ctx={sampleRate:48000,createBuffer:(channels,len)=>({duration:len/48000,getChannelData:()=>new Float32Array(len)})};
+ const specimen={seed:7654321};
+ const candidate=(pitch,motion,texture,score)=>({wave:new Float32Array(4096),pitch,features:{pitch,motion,texture,score,rms:.15}});
+ assert.equal(ear.adopt(candidate(220,.3,.1,.68),specimen,ctx,0),true);
+ assert.equal(ear.adopt(candidate(440,.9,.9,.91),specimen,ctx,1),true);
+ assert.equal(ear.motifs.length,2);
+ assert.equal(ear.adopt(candidate(660,.1,.5,.89),specimen,ctx,4),false,'hold distinct motifs long enough');
+ assert.equal(ear.adopt(candidate(660,.1,.5,.89),specimen,ctx,22),true,'replace after minimum hold');
+ assert.equal(ear.motifs.filter(m=>m.retireAt<0).length,2);
+ assert.equal(ear.motifs.filter(m=>m.retireAt>=0).length,1);
+ assert.equal(ear.replacedCount,1);
+ assert.ok(ear.motifs.some(m=>m.until===27.2));
+ ear.motifs=ear.motifs.filter(m=>m.until>28);
+ assert.equal(ear.motifs.length,2);
+});
+test('motifs are filtered before the shared limiter; basic choir never receives input-driven gain',()=>{
+ const start=html.indexOf('const ambientSense={'),end=html.indexOf('async function startAmbientSense(){',start);
+ const hearing=html.slice(start,end);
+ assert.match(hearing,/hp\.type='highpass'/);
+ assert.match(hearing,/bp\.type='bandpass'/);
+ assert.match(hearing,/saturation\.curve=curve/);
+ assert.match(hearing,/lp\.type='lowpass'/);
+ assert.match(hearing,/motif\.step\+\+/);
+ assert.match(hearing,/weightIn\*weightOut/);
+ assert.match(hearing,/this\.motifs\.filter\(m=>now<m\.until\)/);
+ assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
+ assert.doesNotMatch(hearing,/amp\.connect\(engine\.reverbInput\)/);
+ assert.doesNotMatch(hearing,/state\.master\.gain/);
+ assert.doesNotMatch(hearing,/engine\.output\.gain/);
 });

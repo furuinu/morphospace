@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.69.0 — Image driven morphogenesis</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.70.0 — Image driven morphogenesis</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks label[hidden],.checks [hidden]{display:none!important}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -488,7 +488,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 .phase-particle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;filter:blur(2.4px)}.phase-particle-canvas[hidden]{display:none}
 
 #viewerModeQuick{width:auto;max-width:95px;min-width:72px;min-height:36px;background:rgba(5,24,34,.9);color:#d4f9f3;border:1px solid #466b70;border-radius:8px;font-size:12px;padding:6px;position:relative;z-index:25}#viewerModeQuick:focus-visible{outline:2px solid #86e2bd}
-</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.69.0</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">読み込み中…</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.69.0</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
+</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.70.0</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">読み込み中…</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.70.0</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
 <div id="gallery" class="gallery" aria-label="現在の観察個体"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">新しい野生個体を生成</button><button id="same" class="btn">同じシードで再現</button></div><div class="field photo-origin-panel" style="margin-top:12px"><label for="photoOriginInput">写真から未知の生体を生成（1枚 → 1体）</label><label for="photoCopyGrammar">全体の複製法則</label><select id="photoCopyGrammar"><option value="auto">自動（写真DNAで決定）</option><option value="1">左右鏡像</option><option value="2">三つ巴</option><option value="3">多放射</option><option value="4">上下左右鏡像</option><option value="5">樹状分岐</option><option value="6">螺旋縮小</option><option value="7">鏡像体節連結</option></select><input id="photoOriginInput" type="file" accept="image/*" style="max-width:100%;min-height:42px"><p id="photoOriginStatus" class="minor" role="status" aria-live="polite">「ファイルを選択」を押して「写真ライブラリ」から選択してください。撮影も選べます。</p></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -498,7 +498,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
   <div class="breed-actions"><button id="stockToLab" class="btn" type="button">生体サンプルから親を選ぶ</button></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">野生個体を無限に観察し、保存した2体から進化を始められます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.69.0</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.69.0：共有サムネイルをXServer本体へ保存する同一オリジンAPIに対応。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.70.0</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.70.0：共有サムネイルをXServer本体へ保存する同一オリジンAPIに対応。</div></div>
 </section>
 
 </div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作"><select id="viewerModeQuick" aria-label="生体生成モード" title="生体生成モード"><option value="wild">野生</option><option value="evolution">進化</option></select>
@@ -540,7 +540,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 <div class="viewer-caption"><div class="viewer-name"><h2 id="viewerName"></h2></div><p id="viewerScientific"></p><p id="viewerTaxonomy"></p><p id="viewerEcology"></p></div>
 <div class="viewer-state"><span id="viewerPosition"></span><span id="viewerTransition" role="status"></span></div>
 <div class="viewer-countdown" id="viewerTimer" role="timer" aria-label="次の生体まで30秒" aria-live="off" hidden><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle class="countdown-track" cx="32" cy="32" r="24"/><circle class="countdown-arc" id="viewerTimerArc" cx="32" cy="32" r="24"/></svg><span class="countdown-seconds" id="viewerTimerSeconds" aria-hidden="true">30</span></div>
-<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="inspector-subhead">表面・陰影</div><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div><div class="inspector-subhead">発光・明滅</div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="inspector-subhead">ピント・背景粒子</div><div class="checks"><label><input id="macroDof" type="checkbox" disabled/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><select id="dofDebug" aria-label="DOF診断"><option value="0" selected>通常表示</option><option value="1">深度表示</option><option value="2">ぼけ量表示</option></select><output id="dofState" hidden></output><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="inspector-subhead">運動の調整</div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="control"><span>模様活動の強さ</span><input id="patternStrength" type="range" min="0" max="200" value="125"/><output id="patternStrengthNum">125%</output></div><div class="control"><span>模様活動の速度</span><input id="patternSpeed" type="range" min="25" max="250" value="100"/><output id="patternSpeedNum">100%</output></div><div class="control"><span>模様の休止割合</span><input id="patternRest" type="range" min="0" max="100" value="35"/><output id="patternRestNum">35%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked id="patternMotion" type="checkbox"/> 模様活動を再生</label><label><input checked id="triplanarTrial" type="checkbox"/> 立体投影模様（トライプラナー）</label><label hidden aria-hidden="true"><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label hidden aria-hidden="true"><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite" hidden>枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="inspector-subhead">内部構造</div><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>色ガラス透過（個体別）</span><input id="transparency" max="40" min="0" step="1" type="range" value="0"/><output id="transNum">0%</output></div><p class="mini">個体ごとに0〜40%を自動生成。透過率が高いほどフレネル反射が強まり、模様色と内部構造を保ちます。手動調整も可能です。</p><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><p class="export-help">2親交配：この個体を親A・親Bのどちらかに登録し、もう一方の親も選んでから64体を生成します。</p><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div><p id="breedingReadiness" class="export-help" role="status" aria-live="polite">親A・親Bの選択状態を確認中…</p><p class="export-help">単親変異：現在表示している1体から64体を生成します。親A・親Bの指定は不要です。</p></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><p class="export-help">画像・動画・遺伝子データを保存できます。カードとして残す場合は画面下部の capture を使用してください。</p><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><p class="export-help">PNGは静止画、遺伝子JSONは個体の再現・共有用データです。</p><label class="btn file-label" style="width:100%;margin:3px 0 9px">遺伝子JSONを取り込む<input id="importIndividualDNA" type="file" accept=".json,application/json"></label><p id="importIndividualStatus" class="export-help" role="status" aria-live="polite">この画面から保存した個体のJSONを読み込み、3D表示で復元します。</p><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button><p class="export-help">動画の形式は端末の対応状況によって変わります。</p></div></section><div class="note">MORPHOSPACE v15.69.0 — QUALIA ECOLOGY</div></div></div><div class="capture-dock" role="group" aria-label="撮影と共有"><button type="button" class="btn" id="viewerPicMov" aria-label="画像または動画を保存"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="15" height="14" rx="2"/><circle cx="10" cy="11.5" r="3.5"/><path d="m17.5 9 4-2.5v11l-4-2.5"/></svg><span>pic/mov</span></button><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="inspector-subhead">表面・陰影</div><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div><div class="inspector-subhead">発光・明滅</div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="inspector-subhead">ピント・背景粒子</div><div class="checks"><label><input id="macroDof" type="checkbox" disabled/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><select id="dofDebug" aria-label="DOF診断"><option value="0" selected>通常表示</option><option value="1">深度表示</option><option value="2">ぼけ量表示</option></select><output id="dofState" hidden></output><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="inspector-subhead">運動の調整</div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="control"><span>模様活動の強さ</span><input id="patternStrength" type="range" min="0" max="200" value="125"/><output id="patternStrengthNum">125%</output></div><div class="control"><span>模様活動の速度</span><input id="patternSpeed" type="range" min="25" max="250" value="100"/><output id="patternSpeedNum">100%</output></div><div class="control"><span>模様の休止割合</span><input id="patternRest" type="range" min="0" max="100" value="35"/><output id="patternRestNum">35%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked id="patternMotion" type="checkbox"/> 模様活動を再生</label><label><input checked id="triplanarTrial" type="checkbox"/> 立体投影模様（トライプラナー）</label><label hidden aria-hidden="true"><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label hidden aria-hidden="true"><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite" hidden>枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="inspector-subhead">内部構造</div><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>色ガラス透過（個体別）</span><input id="transparency" max="40" min="0" step="1" type="range" value="0"/><output id="transNum">0%</output></div><p class="mini">個体ごとに0〜40%を自動生成。透過率が高いほどフレネル反射が強まり、模様色と内部構造を保ちます。手動調整も可能です。</p><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><p class="export-help">2親交配：この個体を親A・親Bのどちらかに登録し、もう一方の親も選んでから64体を生成します。</p><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div><p id="breedingReadiness" class="export-help" role="status" aria-live="polite">親A・親Bの選択状態を確認中…</p><p class="export-help">単親変異：現在表示している1体から64体を生成します。親A・親Bの指定は不要です。</p></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><p class="export-help">画像・動画・遺伝子データを保存できます。カードとして残す場合は画面下部の capture を使用してください。</p><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><p class="export-help">PNGは静止画、遺伝子JSONは個体の再現・共有用データです。</p><label class="btn file-label" style="width:100%;margin:3px 0 9px">遺伝子JSONを取り込む<input id="importIndividualDNA" type="file" accept=".json,application/json"></label><p id="importIndividualStatus" class="export-help" role="status" aria-live="polite">この画面から保存した個体のJSONを読み込み、3D表示で復元します。</p><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button><p class="export-help">動画の形式は端末の対応状況によって変わります。</p></div></section><div class="note">MORPHOSPACE v15.70.0 — QUALIA ECOLOGY</div></div></div><div class="capture-dock" role="group" aria-label="撮影と共有"><button type="button" class="btn" id="viewerPicMov" aria-label="画像または動画を保存"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="15" height="14" rx="2"/><circle cx="10" cy="11.5" r="3.5"/><path d="m17.5 9 4-2.5v11l-4-2.5"/></svg><span>pic/mov</span></button><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
 <dialog id="mediaChoiceDialog" aria-labelledby="mediaChoiceTitle"><h2 id="mediaChoiceTitle">画像・動画の保存</h2><p>形式を選択してください。</p><div class="media-choice-actions"><button class="btn" type="button" id="mediaPicture">pic / 静止画 PNG</button><button class="btn" type="button" id="mediaMovie">mov / 動画</button></div><button class="btn media-choice-close" type="button" id="mediaChoiceClose">閉じる</button></dialog>
 <dialog id="aboutDialog" aria-labelledby="aboutTitle" lang="ja">
  <div class="about-heading">
@@ -12197,53 +12197,158 @@ function ambientClipNormalizer(samples){
  if(rms<.006||peak<.018)return null;
  return {rms,peak,multiplier:Math.min(14,.30/rms,.88/peak)};
 }
+// The ear retains two identifiable sounds as biological motifs. Novel sounds
+// replace established phrases slowly instead of being emitted once on arrival.
+function ambientMotifFeatures(wave,pitch){
+ const normal=ambientClipNormalizer(wave);
+ if(!normal)return null;
+ let crossings=0,shapeMin=Infinity,shapeMax=0,shapeTotal=0;
+ const n=wave.length,bands=8,size=Math.floor(n/bands);
+ for(let b=0;b<bands;b++){
+  let power=0;
+  for(let i=b*size;i<(b+1)*size;i++){
+   const v=wave[i];power+=v*v;
+   if(i>0&&(v<0)!==(wave[i-1]<0))crossings++;
+  }
+  const rms=Math.sqrt(power/size);
+  shapeMin=Math.min(shapeMin,rms);shapeMax=Math.max(shapeMax,rms);shapeTotal+=rms;
+ }
+ const motion=clamp((shapeMax-shapeMin)/Math.max(.01,shapeTotal/bands)*.45,0,1);
+ const texture=clamp(crossings/(n-1)*9,0,1);
+ const pitched=Number.isFinite(pitch)&&pitch>100&&pitch<1300;
+ const score=clamp(.24+(pitched?.23:0)+motion*.28+texture*.18+
+  clamp(normal.rms/.18,0,1)*.13,0,1);
+ return {pitch:pitched?pitch:null,motion,texture,score,...normal};
+}
+function ambientMotifDistance(a,b){
+ if(!a||!b)return 1;
+ const pitch=a.pitch&&b.pitch?clamp(Math.abs(Math.log2(a.pitch/b.pitch))*.95,0,1):a.pitch!==b.pitch?.45:0;
+ return clamp(pitch*.48+Math.abs(a.texture-b.texture)*.30+
+  Math.abs(a.motion-b.motion)*.22+
+  Math.abs(a.rms-b.rms)*.22,0,1);
+}
 const ambientSense={
  active:false,starting:false,revision:0,stream:null,source:null,analyser:null,mute:null,
  wave:null,spectrum:null,level:0,brightness:.3,pulse:0,previous:0,noise:.005,
  lastOnset:-100,onsetAt:-100,onsetSerial:0,biomeSerial:0,period:0,clips:[],lastStatus:-100,
- captureAt:-1,lastPitch:null,playedCount:0,
+ captureAt:-1,lastPitch:null,playedCount:0,motifs:[],replacedCount:0,activeSpecSeed:null,
+ feedbackUntil:0,
  influence(){return Number($('viewerMicInfluence').value)/100;},
  response(sp){const traits=ambientTraits(sp),gain=this.influence();
   return {energy:this.level*gain*traits.hearing,impact:this.pulse*gain*traits.reflex,
-   // Silence must return to the ORIGINAL vocal timbre. Brightness alone is not a stimulus.
    timbre:clamp((this.level*.9+this.pulse*.35)*gain*traits.colour*
-      (.75+this.brightness*.7),0,.85)};},
+    (.75+this.brightness*.7),0,.85)};},
  motionFactor(sp){if(!this.active)return 1;const r=this.response(sp);
   return clamp(1+r.energy*.13+r.impact*.18,1,1.27);},
- imitate(sp){
-  if(!this.clips.length||!sp||!bioticAudioRunning())return;
-  const ctx=bioticAudio.engine.context,engine=bioticAudio.engine,seed=sp.seed>>>0;
-  const clip=this.clips[this.clips.length-1],normal=ambientClipNormalizer(clip.wave);
-  if(!normal)return;
-  const buffer=ctx.createBuffer(1,clip.wave.length,ctx.sampleRate),dst=buffer.getChannelData(0);
-  for(let i=0;i<dst.length;i++){
-   // Rounded biological articulations without onset/end clicks or abrupt volume jumps.
-   const taper=Math.sin(Math.PI*(i+.5)/dst.length);
-   dst[i]=clip.wave[i]*normal.multiplier*taper*taper;
+ // A motif owns a reusable, windowed buffer. No continuous re-copying of the
+ // microphone stream into playback, and no unprocessed passthrough path.
+ prepareMotif(clip,ctx,sp,now,slot){
+  const normalized=ambientClipNormalizer(clip.wave);if(!normalized)return null;
+  const buffer=ctx.createBuffer(1,clip.wave.length,ctx.sampleRate),out=buffer.getChannelData(0);
+  const phase=((sp.seed>>>0)%23)*.17;
+  for(let i=0;i<out.length;i++){
+   const x=i/out.length;
+   const taper=Math.pow(Math.sin(Math.PI*(i+.5)/out.length),.7);
+   const breath=.88+.12*Math.sin(x*17+phase);
+   out[i]=clip.wave[i]*normalized.multiplier*taper*breath;
   }
-  const voice=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),amp=ctx.createGain();
-  voice.buffer=buffer;
-  filter.type='bandpass';
-  filter.frequency.value=clamp(520+this.brightness*1350+(seed%7)*45,380,2600);
-  filter.Q.value=.58+((seed>>>11)%6)*.12;
-  const ratio=ambientConsonantRate(clip.pitch,sp);
-  if(ratio!==null)voice.playbackRate.value=ratio;
-  // The original choir/master has NO input-driven gain automation.
-  // Clips are independent but follow the same user volume setting and limiter.
+  return {slot,buffer,pitch:clip.pitch,features:clip.features,
+   born:now,nextAt:now+.28+slot*.15,step:0,retireAt:-1,until:Infinity};
+ },
+ adopt(clip,sp,ctx,now){
+  if(!clip?.features||!sp)return false;
+  const active=this.motifs.filter(m=>m.retireAt<0);
+  const novelty=active.length?Math.min(...active.map(m=>ambientMotifDistance(m.features,clip.features))):1;
+  if(active.length&&novelty<.19)return false;
+  let slot;
+  if(active.length<2){
+   slot=active.some(m=>m.slot===0)?1:0;
+   if(slot===1&&novelty<.27)return false;
+  }else{
+   const due=active.filter(m=>now-m.born>(m.slot===0?18:12));
+   if(!due.length)return false;
+   due.sort((a,b)=>(now-b.born)-(now-a.born));
+   const target=due[0];
+   if(novelty<.23)return false;
+   if(now-target.born<32&&clip.features.score+.24*novelty<target.features.score*.82)return false;
+   slot=target.slot;
+   target.retireAt=now;target.until=now+5.2;
+   this.replacedCount++;
+  }
+  const created=this.prepareMotif(clip,ctx,sp,now,slot);
+  if(!created)return false;
+  this.motifs.push(created);
+  this.motifs=this.motifs.filter(m=>now<m.until);
+  return true;
+ },
+ // Distinct per-seed motifs keep the original musical cadence, with a little
+ // asynchronous character and rests. The environment does not set master gain.
+ motifStepSeconds(sp,motif){
+  const seed=sp.seed>>>0;
+  const natural=.57+((seed>>>7)%8)*.085;
+  const heard=this.period>.32&&this.period<1.7?this.period:natural;
+  return clamp(heard*(motif.slot===0?1:1.5)*(.91+((seed>>>13)%7)*.028),.45,2.2);
+ },
+ imitate(sp,motif,now){
+  if(!motif||!bioticAudioRunning())return;
+  const engine=bioticAudio.engine,ctx=engine.context,seed=sp.seed>>>0;
+  const weightIn=clamp((now-motif.born)/4.4,0,1);
+  const weightOut=motif.retireAt<0?1:clamp((motif.until-now)/5.2,0,1);
+  const weight=weightIn*weightOut;
   const userVolume=clamp(Number($('viewerSoundVolume').value)/50,0,1.6);
-  const level=clamp(this.influence()*.26*(ratio===null?.70:1)*userVolume,0,.22);
-  if(level<.001)return;
-  const at=ctx.currentTime+ambientTraits(sp).latency;
+  const gain=clamp(this.influence()*.23*userVolume*weight*(motif.slot===0?1:.7),0,.16);
+  if(gain<.001)return;
+  const voice=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),bp=ctx.createBiquadFilter(),
+   saturation=ctx.createWaveShaper(),lp=ctx.createBiquadFilter(),amp=ctx.createGain();
+  voice.buffer=motif.buffer;
+  const ratio=ambientConsonantRate(motif.pitch,sp);
+  const character=((seed>>>3)%7)/7;
+  // Even noisy unpitched material gets a stable organism-specific transposition.
+  const timeWarp=ratio===null?.76+character*.32:ratio;
+  voice.playbackRate.value=timeWarp*(1+((motif.step%4)-1.5)*.012);
+  hp.type='highpass';hp.frequency.value=180+((seed>>>10)%7)*30;hp.Q.value=.65;
+  bp.type='bandpass';
+  bp.frequency.value=clamp(650+character*900+
+   motif.features.texture*480+(motif.step%4-1.5)*85,450,2600);
+  bp.Q.value=.75+motif.features.motion*.65;
+  const curve=new Float32Array(257),drive=1.5+((seed>>>17)%7)*.24;
+  for(let i=0;i<curve.length;i++){
+   const x=(i/(curve.length-1))*2-1;
+   curve[i]=Math.tanh(drive*x)/Math.tanh(drive);
+  }
+  saturation.curve=curve;saturation.oversample='2x';
+  lp.type='lowpass';lp.frequency.value=1700+((seed>>>5)%8)*140;lp.Q.value=.6;
+  // The repeated sample fades in/out without ever automating the basic choir.
+  const at=now+ambientTraits(sp).latency;
   amp.gain.setValueAtTime(0,at);
-  amp.gain.linearRampToValueAtTime(level,at+.018);
-  amp.gain.setTargetAtTime(0,at+.105,.030);
-  voice.connect(filter);filter.connect(amp);
-  // One safety-limited path. This output already feeds the original reverb:
-  // connecting it a second time to reverbInput would double the wet level.
+  amp.gain.linearRampToValueAtTime(gain,at+.022);
+  const endAt=at+Math.min(.27,motif.buffer.duration/voice.playbackRate.value+.01);
+  const release=Math.max(at+.025,endAt-.045);
+  amp.gain.setValueAtTime(gain,release);
+  amp.gain.linearRampToValueAtTime(0,endAt);
+  voice.connect(hp);hp.connect(bp);bp.connect(saturation);saturation.connect(lp);lp.connect(amp);
   amp.connect(engine.sampleInput);
-  voice.onended=()=>{try{voice.disconnect();filter.disconnect();amp.disconnect();}catch(e){}};
-  voice.start(at);voice.stop(at+Math.min(.26,buffer.duration/voice.playbackRate.value+.018));
+  voice.onended=()=>{try{voice.disconnect();hp.disconnect();bp.disconnect();saturation.disconnect();lp.disconnect();amp.disconnect()}catch(e){}};
+  voice.start(at);voice.stop(endAt);
+  this.feedbackUntil=Math.max(this.feedbackUntil,at+.16);
   this.playedCount++;
+ },
+ playMotifs(sp,now){
+  if(!sp||!bioticAudioRunning()||!this.motifs.length)return;
+  if(this.activeSpecSeed!==sp.seed){
+   // New organisms inherit the environment, but evolve their own sampled voice.
+   // Keep the memories; reset only scheduling and individual tone.
+   this.activeSpecSeed=sp.seed;
+   for(const motif of this.motifs)motif.nextAt=now+.25+motif.slot*.2;
+  }
+  this.motifs=this.motifs.filter(m=>now<m.until);
+  for(const motif of this.motifs){
+   if(now<motif.nextAt)continue;
+   motif.step++;
+   motif.nextAt=now+this.motifStepSeconds(sp,motif);
+   const speak=motif.slot===0||motif.step%4!==2;
+   if(speak)this.imitate(sp,motif,now);
+  }
  },
  tick(){
   if(!this.active||!this.analyser||!bioticAudioRunning())return;
@@ -12254,7 +12359,8 @@ const ambientSense={
   const rms=Math.sqrt(sum/Math.ceil(this.wave.length/3));
   this.noise=.995*this.noise+.005*Math.min(rms,this.noise+.002);
   const floor=Math.max(.014,this.noise*2.5);
-  const onset=rms>floor&&rms>this.previous*1.2&&rms-this.previous>.005&&t-this.lastOnset>.32;
+  const onset=rms>floor&&rms>this.previous*1.2&&rms-this.previous>.005&&
+   t-this.lastOnset>.32&&t>this.feedbackUntil;
   this.previous=this.previous*.52+rms*.48;
   const energy=clamp((rms-floor)*9.5,0,1);
   this.level+=(energy-this.level)*(energy>this.level?.20:.055);
@@ -12271,14 +12377,10 @@ const ambientSense={
    if(t-this.lastOnset>.32&&t-this.lastOnset<1.8)
     this.period=this.period?this.period*.75+(t-this.lastOnset)*.25:t-this.lastOnset;
    this.lastOnset=t;this.onsetAt=t;this.onsetSerial++;this.pulse=1;
-   // Wait for the vowel/transient AFTER the detected onset. Taking 85 ms
-   // before the onset collected silence and never contained enough pitch data.
    this.captureAt=t+.12;
   }
   if(this.captureAt>=0&&t>=this.captureAt){
    this.captureAt=-1;
-   // A full 170 ms sample contains >=4096 frames at 44.1/48 kHz,
-   // supporting proper pitch detection AND recognisable timbral fragments.
    const count=Math.min(this.wave.length,Math.floor(ctx.sampleRate*.17));
    if(count>=4096){
     const clip=new Float32Array(count);
@@ -12286,18 +12388,24 @@ const ambientSense={
     const normal=ambientClipNormalizer(clip);
     if(normal){
      const pitch=ambientEstimatePitch(clip,ctx.sampleRate);
-     this.clips.push({wave:clip,pitch,rms:normal.rms});
-     if(this.clips.length>12)this.clips.shift();
-     this.lastPitch=pitch;
-     if(selected>=0&&spec)this.imitate(spec);
+     const features=ambientMotifFeatures(clip,pitch);
+     if(features){
+      const candidate={wave:clip,pitch,features,rms:normal.rms};
+      this.clips.push(candidate);
+      if(this.clips.length>12)this.clips.shift();
+      this.lastPitch=pitch;
+      if(selected>=0&&spec)this.adopt(candidate,spec,ctx,t);
+     }
     }
    }
   }
+  if(selected>=0&&spec)this.playMotifs(spec,t);
   if(t-this.lastStatus>.55){
    this.lastStatus=t;
    const notes=this.lastPitch?Math.round(this.lastPitch)+'Hz':'音高未検出';
-   $('viewerMicStatus').textContent='聴覚作動中：反応 '+Math.round(this.level*100)+'% ／ 音片 '+this.clips.length+
-    '個（再発声 '+this.playedCount+'回）／ '+notes+' ／ '+(this.period?Math.round(60/this.period)+' BPM':'リズム待機中');
+   const activeCount=this.motifs.filter(m=>m.retireAt<0).length;
+   $('viewerMicStatus').textContent='聴覚作動中：記憶 '+activeCount+'系統／音片 '+this.clips.length+
+    '個／反復 '+this.playedCount+'回／入替 '+this.replacedCount+'回／'+notes;
   }
  }
 };
@@ -12329,7 +12437,7 @@ async function startAmbientSense(){
   Object.assign(ambientSense,{stream,source,analyser,mute,active:true,starting:false,
    wave:new Float32Array(analyser.fftSize),spectrum:new Float32Array(analyser.frequencyBinCount),
    level:0,brightness:.3,pulse:0,previous:0,noise:.005,lastOnset:-100,onsetAt:-100,
-   period:0,clips:[],lastStatus:-100,biomeSerial:ambientSense.onsetSerial,captureAt:-1,lastPitch:null,playedCount:0});
+   period:0,clips:[],lastStatus:-100,biomeSerial:ambientSense.onsetSerial,captureAt:-1,lastPitch:null,playedCount:0,motifs:[],replacedCount:0,activeSpecSeed:null,feedbackUntil:0});
   // Keep the session in automatic capture mode; forcing a second native
   // AudioSession switch here caused another speaker-volume discontinuity.
   $('viewerMicStatus').textContent='聴覚作動中：音色、断片、リズムを取り込みます。';
@@ -12350,7 +12458,7 @@ function stopAmbientSense(message='オフ：マイクを停止しました。'){
  for(const node of [ambientSense.source,ambientSense.analyser,ambientSense.mute])try{node?.disconnect()}catch(e){}
  if(ambientSense.stream)ambientSense.stream.getTracks().forEach(track=>track.stop());
  Object.assign(ambientSense,{stream:null,source:null,analyser:null,mute:null,wave:null,
-  spectrum:null,level:0,pulse:0,previous:0,clips:[],period:0,captureAt:-1,lastPitch:null,playedCount:0});
+  spectrum:null,level:0,pulse:0,previous:0,clips:[],period:0,captureAt:-1,lastPitch:null,playedCount:0,motifs:[],replacedCount:0,activeSpecSeed:null,feedbackUntil:0});
  $('viewerMic').checked=false;$('viewerMicStatus').textContent=message;
  if(navigator.audioSession)try{navigator.audioSession.type='playback';}catch(e){}
 }
@@ -13702,7 +13810,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.69.0 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.70.0 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;scheduleViewerFrame();void bootMorphospace().catch(fail)
  }catch(e){fail(e);void bootMorphospace().catch(fail)}
