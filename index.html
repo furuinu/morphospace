@@ -6134,38 +6134,26 @@ void main(){
  float ancestralTime=uTime+copyPhase;
  vec3 motion=vec3(0.0);
  vec3 anchorCanonical=uCopyCount>0?copyToSource(aAnchor.xyz,copyIndex):aAnchor.xyz;
- vec3 shifted;
- if(role>12.0&&role<13.7){
-  // Ocular anatomy stays rigid: sample motion at the socket once, not at every eye vertex.
-  vec3 attachNormal=normalize(anchorCanonical+vec3(.17,.11,.07));
-  vec3 rootMotion=developmentalMotion(anchorCanonical,attachNormal,0.,phase,0.,ancestralTime,uMotion*1.75);
-  vec3 rootBio=biomechanics(anchorCanonical,attachNormal,0.);
-  vec3 rootSkin=surfaceMotion(anchorCanonical,attachNormal,ancestralTime,uMotion*1.48);
-  vec3 attached=wholeBodyWarp(anchorCanonical+rootMotion+rootBio+rootSkin,ancestralTime,uMotion*1.82);
-  attached=localBodyMotion(anchorCanonical,attached,ancestralTime,uMotion);
-  shifted=canonical+(attached-anchorCanonical);
- }else{
-  float tissuePressure=1.+.25*clamp(dot(uBioPressure,vec4(.25)),-1.,1.);
-  motion=developmentalMotion(canonical,canonicalNormal,role,phase,u,ancestralTime,uMotion*tissueGain*1.75);
-  vec3 bio=biomechanics(canonical,canonicalNormal,role)*tissueGain;
-  vec3 peristalsis=surfaceMotion(canonical,canonicalNormal,ancestralTime,uMotion*1.48)*tissueGain*tissuePressure;
-  shifted=wholeBodyWarp(canonical+motion+bio+peristalsis,ancestralTime,uMotion*1.82);
-  shifted=branchJointWarp(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion*uBranchEnabled*1.72);
-  shifted+=delicateWave(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion);
-  shifted=localBodyMotion(canonical,shifted,ancestralTime,uMotion);
- }
+ float tissuePressure=1.+.25*clamp(dot(uBioPressure,vec4(.25)),-1.,1.);
+ motion=developmentalMotion(canonical,canonicalNormal,role,phase,u,ancestralTime,uMotion*tissueGain*1.75);
+ vec3 bio=biomechanics(canonical,canonicalNormal,role)*tissueGain;
+ vec3 peristalsis=surfaceMotion(canonical,canonicalNormal,ancestralTime,uMotion*1.48)*tissueGain*tissuePressure;
+ vec3 shifted=wholeBodyWarp(canonical+motion+bio+peristalsis,ancestralTime,uMotion*1.82);
+ shifted=branchJointWarp(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion*uBranchEnabled*1.72);
+ shifted+=delicateWave(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion);
+ shifted=localBodyMotion(canonical,shifted,ancestralTime,uMotion);
  vec3 delta=shifted-canonical;
  vec3 p=aPos+(uCopyCount>0?copyVectorToWorld(delta,copyIndex):delta);
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
  // Genuine Y-axis torsion on the organism mesh. Bottom releases first.
- vPhaseHeight=clamp(.5+.5*(role>12.0&&role<13.7?anchorCanonical.y:p.y)/max(uPhaseScale,.01),0.,1.);
+ vPhaseHeight=clamp(.5+.5*p.y/max(uPhaseScale,.01),0.,1.);
  float torsionAngle=uPhaseTwist*(.32+.68*vPhaseHeight)*6.2831853;
  float ca=cos(torsionAngle),sa=sin(torsionAngle);
  p.xz=mat2(ca,-sa,sa,ca)*p.xz;
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n + (uCopyCount>0?copyVectorToWorld(motion,copyIndex):motion)*.17,0.0)).xyz);
  vView=normalize(uCameraPos-eye.xyz);
- vColor=aColor;vRole=role;vObj=(role>13.28&&role<13.48)?normalize(aNormal):canonical;vAlong=u;
+ vColor=aColor;vRole=role;vObj=canonical;vAlong=u;
  vGlow=vec2(aParams.z,.5+.5*sin(ancestralTime*1.15+aParams.w+phase));
  gl_Position=captureClip(uMvp*vec4(p,1.0));
 }`;
@@ -6667,51 +6655,6 @@ vec4 emissionSurfaceColor(vec3 color,vec3 p){
 // on a 60-degree triangular lattice. The circles interfere, so their
 // valleys trace a hexagonal Voronoi network without polygon outline masks.
 // Frequency is doubled from 8.2 to 16.4 on both projected axes.
-const hexCorneaGLSL=`
-vec3 circularCorneaLobe(vec2 fromCentre){
- float r2=dot(fromCentre,fromCentre);
- float height=exp(-2.7*r2);
- return vec3(fromCentre*height,height);
-}
-vec3 hexCorneaCell(vec2 uv){
- // Choose a nearby triangular-lattice centre using axial coordinates.
- vec3 cube=vec3(uv.x*.577350269-uv.y*.333333333,uv.y*.666666667,0.0);
- cube.z=-cube.x-cube.y;
- vec3 nearest=floor(cube+0.5),difference=abs(nearest-cube);
- if(difference.x>difference.y&&difference.x>difference.z)nearest.x=-nearest.y-nearest.z;
- else if(difference.y>difference.z)nearest.y=-nearest.x-nearest.z;
- else nearest.z=-nearest.x-nearest.y;
- vec2 centre=vec2(1.732050808*(nearest.x+.5*nearest.y),1.5*nearest.y);
- vec2 local=uv-centre;
- // Seven overlapping radial gradients, not seven tessellated hexagons.
- // Six equal neighbours are at multiples of 60 degrees, spacing sqrt(3).
- vec3 waves=circularCorneaLobe(local);
- waves+=circularCorneaLobe(local-vec2(1.732050808,0.0));
- waves+=circularCorneaLobe(local-vec2(-1.732050808,0.0));
- waves+=circularCorneaLobe(local-vec2(.866025404,1.5));
- waves+=circularCorneaLobe(local-vec2(-.866025404,1.5));
- waves+=circularCorneaLobe(local-vec2(.866025404,-1.5));
- waves+=circularCorneaLobe(local-vec2(-.866025404,-1.5));
- // Analytic height gradient: real round lens centre, depressed interference lines.
- vec2 slope=-5.4*waves.xy*.011*16.4;
- float groove=1.0-smoothstep(.22,.47,waves.z);
- return vec3(slope,groove);
-}
-vec4 hexCorneaSample(vec3 direction){
- vec3 dir=normalize(direction);
- vec3 weight=pow(abs(dir),vec3(5.0));
- weight/=max(.0001,weight.x+weight.y+weight.z);
- float density=16.4;
- vec3 yz=hexCorneaCell(dir.yz*density+vec2(.17,.39));
- vec3 zx=hexCorneaCell(dir.zx*density+vec2(.41,.13));
- vec3 xy=hexCorneaCell(dir.xy*density+vec2(.63,.31));
- vec3 bump=vec3(0.0,yz.x,yz.y)*weight.x+
-   vec3(zx.y,0.0,zx.x)*weight.y+
-   vec3(xy.x,xy.y,0.0)*weight.z;
- float rim=dot(weight,vec3(yz.z,zx.z,xy.z));
- return vec4(bump,rim);
-}`;
-
 const frag=`precision mediump float;
 uniform highp float uTime;
 varying vec3 vNormal; varying vec3 vColor; varying vec3 vView; varying float vRole; varying vec2 vGlow; varying vec3 vObj; varying float vAlong;
@@ -6819,7 +6762,7 @@ float tissueThickness(vec3 p,float role,float along){
  return mix(.91,clamp(anatomical,.12,.88),shell);
 }
 
-${hexCorneaGLSL}
+
 void main(){
  if(uPhaseCut>0.001 && vPhaseHeight<uPhaseCut)discard;
  vec3 base=saturateColor(pow(clamp(vColor,0.,1.),vec3(.92)),1.18);
@@ -6831,37 +6774,10 @@ void main(){
    float lambert=max(dot(n,lightDir),0.0);
    float tissue=tissueThickness(vObj,vRole,vAlong);
    float shade=1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert)*mix(.67,1.18,tissue);
-   bool optical=vRole>12.9&&vRole<13.6;
-   vec3 color=optical?base*shade:textureSurfaceColor(base,vObj,shade,1.04,.12);
-   vec4 shaded=optical?vec4(color,1.0):emissionSurfaceColor(color,vObj);
-   if(optical){
-     // Lens and compound facets have their own pigment and wet specular response.
-     vec3 view=normalize(vView),light=normalize(lightDir);
-   bool compound=vRole>13.28&&vRole<13.48;
-   if(compound){
-     // Lens centres are slightly domed, joined by dark hexagonal grooves.
-     // Fresnel and interference-like colour follow the perturbed normals.
-     vec4 hex=hexCorneaSample(normalize(vObj));
-     vec3 raised=normalize(vObj+hex.xyz*.75);
-     vec3 reliefN=normalize(mix(n,normalize((uModel*vec4(raised,0.0)).xyz),.84));
-     float microLight=max(dot(reliefN,light),0.0);
-     float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
-     float fresnel=pow(grazing,2.1);
-     float sparkle=pow(max(dot(reflect(-light,reliefN),view),0.0),27.0);
-     vec3 film=.5+.5*cos(vec3(0.0,2.0944,4.1888)+grazing*7.2+hex.w*.18);
-     float colourShift=clamp(.10+.64*fresnel+.12*sparkle,0.0,.78);
-     vec3 pigment=shaded.rgb*(.63+.40*microLight)*(1.0-.63*hex.w);
-     shaded.rgb=clamp(mix(pigment,pigment*.62+film*.75,colourShift)+film*(.10*fresnel+.24*sparkle),0.0,1.0);
-   }else{
-     float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
-     float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
-     shaded.rgb=clamp(shaded.rgb*(.70+.40*lambert)+vec3(.90,.97,1.0)*(glint*.52+fresnel*.10),0.0,1.0);
-   }
-   }else{
-     vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
-     shaded.rgb+=skinLight.rgb;
-     shaded.a=max(shaded.a,skinLight.a);
-   }
+   vec3 color=textureSurfaceColor(base,vObj,shade,1.04,.12);
+   vec4 shaded=emissionSurfaceColor(color,vObj);
+   vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
+   shaded.rgb+=skinLight.rgb;shaded.a=max(shaded.a,skinLight.a);
   float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
   vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
   float tipRegion=smoothstep(.68,.90,vAlong)*((vRole>5.5&&vRole<7.5)||(vRole>9.5&&vRole<10.5)?1.0:0.0);
@@ -6928,28 +6844,19 @@ void main(){
  vec3 n=normalize(aNormal);
  float role=aAnchor.w,phase=aParams.x;
  float tissueGain=(role<.5||(role>7.5&&role<8.5))?1.0:.74;
- vec3 movement=vec3(0.);
- vec3 p;
- if(role>12.0&&role<13.7){
-  vec3 anchor=aAnchor.xyz,normal=normalize(anchor+vec3(.17,.11,.07));
-  vec3 attached=wholeBodyWarp(anchor+developmentalMotion(anchor,normal,0.,phase,0.,uTime,uMotion)+biomechanics(anchor,normal,0.)+surfaceMotion(anchor,normal,uTime,uMotion),uTime,uMotion);
-  attached=localBodyMotion(anchor,attached,uTime,uMotion);
-  p=aPos+(attached-anchor);
- }else{
-  movement=developmentalMotion(aPos,n,role,phase,clamp(aParams.y,0.0,1.0),uTime,uMotion*tissueGain);
-  float tissuePressure=1.+.25*clamp(dot(uBioPressure,vec4(.25)),-1.,1.);
-  p=wholeBodyWarp(aPos+movement+biomechanics(aPos,n,role)*tissueGain+surfaceMotion(aPos,n,uTime,uMotion)*tissueGain*tissuePressure,uTime,uMotion);
-  p=branchJointWarp(p,aAnchor.xyz,clamp(aParams.y,0.0,1.0),phase,role,uTime,uMotion*uBranchEnabled*1.72);
-  p=localBodyMotion(aPos,p,uTime,uMotion);
- }
+ vec3 movement=developmentalMotion(aPos,n,role,phase,clamp(aParams.y,0.0,1.0),uTime,uMotion*tissueGain);
+ float tissuePressure=1.+.25*clamp(dot(uBioPressure,vec4(.25)),-1.,1.);
+ vec3 p=wholeBodyWarp(aPos+movement+biomechanics(aPos,n,role)*tissueGain+surfaceMotion(aPos,n,uTime,uMotion)*tissueGain*tissuePressure,uTime,uMotion);
+ p=branchJointWarp(p,aAnchor.xyz,clamp(aParams.y,0.0,1.0),phase,role,uTime,uMotion*uBranchEnabled*1.72);
+ p=localBodyMotion(aPos,p,uTime,uMotion);
  p+=n*uGlowPass*(.010+max(0.0,aParams.z)*.036);
- vPhaseHeight=clamp(.5+.5*(role>12.0&&role<13.7?aAnchor.y:p.y)/max(uPhaseScale,.01),0.,1.);
+ vPhaseHeight=clamp(.5+.5*p.y/max(uPhaseScale,.01),0.,1.);
  float torsionAngle=uPhaseTwist*(.32+.68*vPhaseHeight)*6.2831853;
  float ca=cos(torsionAngle),sa=sin(torsionAngle);
  p.xz=mat2(ca,-sa,sa,ca)*p.xz;
  vec4 eye=uModel*vec4(p,1.0);
  vNormal=normalize((uModel*vec4(n+movement*.16,0.0)).xyz);
- vColor=aColor;vRole=role;vObj=(role>13.28&&role<13.48)?normalize(aNormal):aPos;vAlong=clamp(aParams.y,0.0,1.0);
+ vColor=aColor;vRole=role;vObj=aPos;vAlong=clamp(aParams.y,0.0,1.0);
  vGlow=vec2(aParams.z,.5+.5*sin(uTime*1.15+aParams.w+phase));
  vView=normalize(uCameraPos-eye.xyz);
  gl_Position=captureClip(uMvp*vec4(p,1.0));
@@ -7082,7 +6989,7 @@ float tissueThickness(vec3 p,float role,float along){
  return mix(.91,clamp(anatomical,.12,.88),shell);
 }
 
-${hexCorneaGLSL}
+
 void main(){
  if(uPhaseCut>0.001 && vPhaseHeight<uPhaseCut)discard;
  vec3 base=pow(clamp(vColor,0.0,1.0),vec3(0.92));
@@ -7092,36 +6999,10 @@ void main(){
  else {
   vec3 n=normalize(vNormal);vec3 lightDir=normalize(uLampDir);float lambert=max(dot(n,lightDir),0.0);float tissue=tissueThickness(vObj,vRole,vAlong);
    float shade=1.0-clamp(uShadeStrength,0.0,0.30)*(1.0-lambert)*mix(.67,1.18,tissue);
- bool optical=vRole>12.9&&vRole<13.6;
- color=optical?color*shade:textureSurfaceColor(color,vObj,shade,1.02,.1);
- vec4 shaded=optical?vec4(color,1.0):emissionSurfaceColor(color,vObj);
- if(optical){
-   vec3 view=normalize(vView),light=normalize(lightDir);
-   bool compound=vRole>13.28&&vRole<13.48;
-   if(compound){
-     // Lens centres are slightly domed, joined by dark hexagonal grooves.
-     // Fresnel and interference-like colour follow the perturbed normals.
-     vec4 hex=hexCorneaSample(normalize(vObj));
-     vec3 raised=normalize(vObj+hex.xyz*.75);
-     vec3 reliefN=normalize(mix(n,normalize((uModel*vec4(raised,0.0)).xyz),.84));
-     float microLight=max(dot(reliefN,light),0.0);
-     float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
-     float fresnel=pow(grazing,2.1);
-     float sparkle=pow(max(dot(reflect(-light,reliefN),view),0.0),27.0);
-     vec3 film=.5+.5*cos(vec3(0.0,2.0944,4.1888)+grazing*7.2+hex.w*.18);
-     float colourShift=clamp(.10+.64*fresnel+.12*sparkle,0.0,.78);
-     vec3 pigment=shaded.rgb*(.63+.40*microLight)*(1.0-.63*hex.w);
-     shaded.rgb=clamp(mix(pigment,pigment*.62+film*.75,colourShift)+film*(.10*fresnel+.24*sparkle),0.0,1.0);
-   }else{
-     float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
-     float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
-     shaded.rgb=clamp(shaded.rgb*(.70+.40*lambert)+vec3(.90,.97,1.0)*(glint*.52+fresnel*.10),0.0,1.0);
-   }
- }else{
-   vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
-   shaded.rgb+=skinLight.rgb;
-   shaded.a=max(shaded.a,skinLight.a);
- }
+ color=textureSurfaceColor(color,vObj,shade,1.02,.1);
+ vec4 shaded=emissionSurfaceColor(color,vObj);
+ vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
+ shaded.rgb+=skinLight.rgb;shaded.a=max(shaded.a,skinLight.a);
   float lure=tipBioGlow(vRole,vAlong,uTime,vGlow.y+vObj.x*.09);
   vec3 lureTint=mix(uPal4,uPal5,.35+.35*sin(vGlow.y*3.0));
   float tipRegion=smoothstep(.68,.90,vAlong)*((vRole>5.5&&vRole<7.5)||(vRole>9.5&&vRole<10.5)?1.0:0.0);
