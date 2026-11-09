@@ -37,7 +37,7 @@ const context={TAU,seedRng,clamp,V,Math,Float32Array,Uint16Array,
  anchorOnGrowthSurface:(src,pos,dir,r)=>V.add(pos,V.scale(dir,r*.82))
 };
 vm.createContext(context);
-vm.runInContext(html.slice(start,end)+'\nthis.eyes={eyeFounderDNA,normalizedEyeDNA,eyeCrossoverDNA,makeEyeOrgans,animateEyeUploaded};',context,{timeout:2000});
+vm.runInContext(html.slice(start,end)+'\nthis.eyes={eyeFounderDNA,normalizedEyeDNA,eyeCrossoverDNA,makeEyeOrgans,animateEyeUploaded,planFinishedEyes};',context,{timeout:2000});
 const eyes=context.eyes;
 const source={blobs:[{p:[0,0,0],axes:[.95,1.3,.85]},{p:[.3,.7,.1],axes:[.5,.65,.45]}]};
 const palette={};
@@ -45,6 +45,21 @@ function specimen(type,support,count=2){
  const dna=eyes.normalizedEyeDNA({count,type,support,size:.32,length:.7,blinkInterval:4,independence:.72},1871);
  return eyes.makeEyeOrgans({seed:1871,eyeDNA:dna},source,palette);
 }
+test('the completed organism controls total eye count across body copies',()=>{
+ const copies=Array.from({length:4},(_,i)=>({
+  p:[Math.cos(i*Math.PI/2),Math.sin(i*Math.PI/2),0],
+  scale:1,angle:i*Math.PI/2,axis:'z',mirror:false,mirrorY:false
+ }));
+ for(const count of [0,1,2,3,4]){
+  const g={seed:1871,eyeDNA:eyes.normalizedEyeDNA({count,type:2,size:.22},1871)};
+  const parts=eyes.planFinishedEyes(g,source,palette,copies,[0,0,1]);
+  assert.equal(parts.length,count,'Total eyes must describe the finished organism');
+  assert.ok(parts.every(x=>Number.isInteger(x.copyIndex)&&x.copyIndex>=0&&x.copyIndex<copies.length));
+  assert.equal(new Set(parts.map(x=>x.copyIndex)).size,count,'With sufficient copies, distribute eyes across distinct parts');
+ }
+ assert.match(html,/pt\.copyIndex===undefined\|\|pt\.copyIndex===copyIndex/,'Only the selected body copy may render its eyes');
+ assert.match(html,/anatomy:\{\.\.\.stats,eyes:ocularParts\.length\}/,'Displayed anatomy must count actual organs only');
+});
 test('ocular founder and legacy normalization are deterministic and bounded',()=>{
  const a=eyes.eyeFounderDNA(891),b=eyes.eyeFounderDNA(891);
  assert.equal(JSON.stringify(a),JSON.stringify(b));
