@@ -134,7 +134,7 @@ test('organic eyestalk has a flared buried root and independent optical pigments
 test('WebGL renders eye as rigid organ with separate optical material',()=>{
  assert.match(html,/role>12\.0&&role<13\.7/);
  assert.match(html,/bool optical=vRole>12\.9&&vRole<13\.6/);
- assert.match(html,/pt\\.eyeRig\\.kind===2\\?13\\.35:13\\.2/,'Compound eyes use a dedicated optical material');
+ assert.ok(html.includes('pt.eyeRig.kind===2?13.35:13.2'),'Compound eyes use a dedicated optical material');
  assert.match(html,/shifted=canonical\+\(attached-anchorCanonical\)/);
  assert.match(html,/const blinkWindow=\.17/);
 });
