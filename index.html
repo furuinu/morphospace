@@ -5121,8 +5121,9 @@ function ocularMembraneProfile(radius,cz,across,row,blink){
  const depth=Math.sqrt(Math.max(0,radius*radius-Math.min(radius*radius*.98,x*x+y*y)));
  return [x,y,cz+depth*1.10+radius*.025];
 }
-function makeEyeOrgans(g,source,palette){
- const dna=normalizedEyeDNA(g.eyeDNA,g.seed),rng=seedRng(g.seed+726341),result=[];
+function makeEyeOrgans(g,source,palette,placement=null){
+ const dna=normalizedEyeDNA(g.eyeDNA,g.seed),rng=seedRng(g.seed+726341+(placement?.seedOffset||0)),result=[];
+ if(placement?.count!==undefined)dna.count=clamp(Math.round(placement.count),0,4);
  if(!dna.count||!source?.blobs?.length)return result;
  const blobs=source.blobs.slice().sort((a,b)=>(b.axes[0]*b.axes[1]*b.axes[2])-(a.axes[0]*a.axes[1]*a.axes[2]));
  const blend=(a,b,t)=>a.map((v,i)=>v*(1-t)+b[i]*t);
@@ -5149,7 +5150,8 @@ function makeEyeOrgans(g,source,palette){
  for(let i=0;i<dna.count;i++){
   const blob=blobs[i%Math.min(3,blobs.length)];
   const angle=(i*2.399963+dna.spread*1.5)+rng()*.40;
-  const dir=V.norm([Math.cos(angle),(.26+rng()*.64)*(i%2?-1:1),Math.sin(angle)]);
+  const proceduralDir=V.norm([Math.cos(angle),(.26+rng()*.64)*(i%2?-1:1),Math.sin(angle)]);
+  const dir=placement?.forward?V.norm(V.add(V.scale(placement.forward,.82),V.scale(proceduralDir,.42))):proceduralDir;
   const side=V.norm(V.cross(Math.abs(dir[1])>.90?[1,0,0]:[0,1,0],dir)),up=V.norm(V.cross(dir,side));
   const origin=blob.p,expected=Math.hypot(...blob.axes.map((v,k)=>v*dir[k]));
   const root=anchorOnGrowthSurface(source,origin,dir,Math.max(.15,expected));
@@ -5425,6 +5427,41 @@ function animateEyeUploaded(gl,uploaded,rig,time,enabled){
  gl.bindBuffer(gl.ARRAY_BUFFER,uploaded.buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,out);
 }
 
+/* Eye plan belongs to the FINISHED organism, not to the canonical source.
+ * Each eye is assigned to exactly one articulated body copy. Eye-bearing
+ * copies may have different local positions; no copy multiplies the eye count.
+ */
+function eyeCopyForward(t,forward){
+ let [x,y,z]=forward,a=-(t.angle||0),c=Math.cos(a),sn=Math.sin(a);
+ if(t.axis==='z'){const xx=x*c-y*sn;y=x*sn+y*c;x=xx;}
+ else if(t.axis==='x'){const yy=y*c-z*sn;z=y*sn+z*c;y=yy;}
+ else{const xx=x*c-z*sn;z=x*sn+z*c;x=xx;}
+ if(t.mirror)x=-x;if(t.mirrorY)y=-y;
+ return V.norm([x,y,z]);
+}
+function planFinishedEyes(g,source,palette,copies,forward){
+ const target=normalizedEyeDNA(g.eyeDNA,g.seed).count;
+ if(!target||!copies?.length)return [];
+ const seed=seedRng(g.seed+190173),n=copies.length;
+ // Distribute over the finished shape's copies, rotating the start with DNA.
+ // E.g. two eyes on four copies selects two distinct parts, not eight eyes.
+ const start=Math.floor(seed()*n),quota=Array(n).fill(0);
+ for(let i=0;i<target;i++){
+  const slot=(start+Math.floor(i*n/target))%n;
+  quota[slot]++;
+ }
+ const result=[];
+ for(let c=0;c<n;c++){
+  if(!quota[c])continue;
+  const look=eyeCopyForward(copies[c],forward||[0,0,1]);
+  const parts=makeEyeOrgans(g,source,palette,{
+   count:quota[c],seedOffset:(c+1)*7919,forward:look
+  });
+  for(const pt of parts){pt.copyIndex=c;result.push(pt);}
+ }
+ return result;
+}
+
 function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGenome){
  forcedGenome.soundDNA=normalizedSoundDNA(forcedGenome.soundDNA,seed);forcedGenome.eyeDNA=normalizedEyeDNA(forcedGenome.eyeDNA,seed);
  forcedGenome.surfaceDNA=normalizedSurfaceDNA(forcedGenome.surfaceDNA,seed);palette.surfaceDNA=copyJSON(forcedGenome.surfaceDNA);
@@ -5455,7 +5492,7 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  const delicateParts=safeAppendages.parts;
  // Plan ocular supports before surface tessellation so their bases can grow
  // continuously out of the same implicit skin, not pierce it as loose rods.
- const ocularParts=low?[]:makeEyeOrgans(g,source,palette);
+ const ocularParts=low?[]:planFinishedEyes(g,source,palette,em.copyTransforms,safeAppendages.forward);
  if(!low)source.appendageBases=delicateParts.map(p=>p.delicate).filter(Boolean).map(d=>({
   root:d.root,dir:d.dir,length:Math.max(.025,d.collarLength),
   radius:d.collarRadius,blend:Math.max(.055,d.collarRadius*1.7)
@@ -5489,7 +5526,7 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  if(localShell)localParts.push(...delicateParts,...ocularParts);
  const localGroup=localShell?{shell:localShell,parts:localParts,source,copyTransforms:em.copyTransforms}:null;
  const shellTriangles=localShell?localShell.tri.length/3*copyCount:shell.tri.length/3;
- return rorschachizeSpecimen({shell,parts,localGroup,frontAxis:safeAppendages.forward,ciliaDefs:[],rigs:[],growthModel:em,anatomy:{...stats,eyes:localParts.filter(pt=>pt.eyeRig).length*copyCount},genome:g,palette,glowTints:glowTintsForPalette(palette,seed),triangles:shellTriangles+(localGroup?localParts.reduce((n,x)=>n+x.mesh.tri.length/3*copyCount,0):parts.reduce((n,x)=>n+x.mesh.tri.length/3,0)),shellTriangles,seed,style:g.style,motionGPU:motionGPUSpec(g,localGroup?source:em),kineticNetwork:createKineticNetwork(em),biome:low?null:buildBiomeSystem(g,source),morphology:{name:morphName(g),description:morphDescription(g),centres:em.blobs.length,cavities:em.cuts.length,mesh:'local-instanced-growth'}});
+ return rorschachizeSpecimen({shell,parts,localGroup,frontAxis:safeAppendages.forward,ciliaDefs:[],rigs:[],growthModel:em,anatomy:{...stats,eyes:ocularParts.length},genome:g,palette,glowTints:glowTintsForPalette(palette,seed),triangles:shellTriangles+(localGroup?localParts.reduce((n,x)=>n+x.mesh.tri.length/3*copyCount,0):parts.reduce((n,x)=>n+x.mesh.tri.length/3,0)),shellTriangles,seed,style:g.style,motionGPU:motionGPUSpec(g,localGroup?source:em),kineticNetwork:createKineticNetwork(em),biome:low?null:buildBiomeSystem(g,source),morphology:{name:morphName(g),description:morphDescription(g),centres:em.blobs.length,cavities:em.cuts.length,mesh:'local-instanced-growth'}});
 
 }
 
@@ -8423,7 +8460,7 @@ function dynamicBatches(sp){
     // Skin-coloured lids/stalk and independently pigmented optics use separate shader roles.
     for(let vertex=0;vertex<pt.eyeRig.meta.length;vertex++)
       eyeMesh.data[vertex*17+12]=pt.eyeRig.meta[vertex].node===1?(pt.eyeRig.kind===2?13.35:13.2):12.4;
-    groups.push({mesh:eyeMesh,kind:'eye',eyeRig:pt.eyeRig});continue;
+    groups.push({mesh:eyeMesh,kind:'eye',eyeRig:pt.eyeRig,copyIndex:pt.copyIndex});continue;
    }
    if(pt.delicate){const d=pt.delicate,progress=k=>d.type==='fin'?(k%d.sides)/(d.sides-1):Math.min(1,Math.floor(k/d.sides)/(d.rows-1));const mesh=dynamicMesh(pt.mesh,d.type==='fin'?11:10,d.phase,d.root,progress,glowInfo);if(d.type==='strand'){mesh.verlet=makeVerletStrand(mesh,d,sp.genome);groups.push({mesh,kind:pt.kind});}else (pt.kind==='translucent'?translucent:opaque).push(mesh);continue;}
   if(pt.chain){const chain=pt.chain;const progress=k=>{const limit=chain.steps*chain.segments;return k>=limit?(k===limit?0:1):Math.floor(k/chain.segments)/(chain.steps-1)};branches.push(dynamicMesh(pt.mesh,6,chain.phase,chain.root,progress,glowInfo));}
@@ -11263,7 +11300,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      gl.disable(gl.CULL_FACE);
      if(viewer.morph?.mode==='layered'){for(const batch of viewer.morph.batches)drawUploaded(batch,1,true,0);drawLayeredAppendages(mvp,model,true);return mvp;}
      if(!$('branchSolo').checked||spec.growthModel)drawUploaded(useLocal?meshes.localShell:meshes.shell,1,true,0);
-     for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);if(pt.eyeRig)animateEyeUploaded(gl,mesh,pt.eyeRig,bodyTime,strandMotion);drawUploaded(mesh,1,true,0);}
+     for(const pt of (useLocal?meshes.localParts:meshes.parts))if((!useLocal||pt.copyIndex===undefined||pt.copyIndex===copyIndex)&&(!$('branchSolo').checked||pt.kind==='branch')){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);if(pt.eyeRig)animateEyeUploaded(gl,mesh,pt.eyeRig,bodyTime,strandMotion);drawUploaded(mesh,1,true,0);}
      drawGPUMotileCilia(mvp,model,true);
    }else{
      if(viewer.morph?.mode==='layered'){
@@ -11303,7 +11340,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
      }else{
        gl.disable(gl.BLEND);
        if(!debugOrgans&&(!$('branchSolo').checked||spec.growthModel))drawUploaded(useLocal?meshes.localShell:meshes.shell,1,false,0,0,glassAmount);
-       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if(!$('branchSolo').checked||pt.kind==='branch'){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);if(pt.eyeRig)animateEyeUploaded(gl,mesh,pt.eyeRig,bodyTime,strandMotion);drawUploaded(mesh,1,false,0,0);}
+       if(!debugShell&&!debugGlass)for(const pt of (useLocal?meshes.localParts:meshes.parts))if((!useLocal||pt.copyIndex===undefined||pt.copyIndex===copyIndex)&&(!$('branchSolo').checked||pt.kind==='branch')){const mesh=useLocal&&pt.mesh.verlet?strandCopyMesh(pt,copyIndex):pt.mesh;if(useLocal&&pt.mesh.verlet)stepWorldStrand(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided);if(pt.eyeRig)animateEyeUploaded(gl,mesh,pt.eyeRig,bodyTime,strandMotion);drawUploaded(mesh,1,false,0,0);}
        if(!debugShell&&!debugGlass)drawGPUMotileCilia(mvp,model,false);
      }
      gl.frontFace(gl.CCW);
