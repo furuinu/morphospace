@@ -50,7 +50,7 @@ test('ocular founder and legacy normalization are deterministic and bounded',()=
  assert.equal(JSON.stringify(a),JSON.stringify(b));
  assert.equal(JSON.stringify(eyes.normalizedEyeDNA(null,891)),JSON.stringify(a));
  const bad=eyes.normalizedEyeDNA({count:90,type:-2,support:100,size:900,length:-1,blinkInterval:0},891);
- assert.ok(bad.count<=4&&bad.type>=0&&bad.support<=3&&bad.size<=.51&&bad.length>=.04&&bad.blinkInterval>=1.3);
+ assert.ok(bad.count<=4&&bad.type>=0&&bad.support<=3&&bad.size<=.84&&bad.length>=.04&&bad.blinkInterval>=1.3);
 });
 test('an eye-free genotype does not fabricate organs',()=>{
  const d=eyes.normalizedEyeDNA({count:0},7);
@@ -137,4 +137,31 @@ test('WebGL renders eye as rigid organ with separate optical material',()=>{
  assert.match(html,/eyeMesh\.data\[vertex\*17\+12\]=pt\.eyeRig\.meta\[vertex\]\.node===1\?13\.2:12\.4/);
  assert.match(html,/shifted=canonical\+\(attached-anchorCanonical\)/);
  assert.match(html,/const blinkWindow=\.17/);
+});
+
+test('one-lens ocellus, compound facet array and camera iris remain morphologically different',()=>{
+ const camera=specimen(0,1,1)[0],ocellus=specimen(1,1,1)[0],compound=specimen(2,1,1)[0];
+ assert.equal(camera.eyeRig.kind,0);
+ assert.equal(ocellus.eyeRig.kind,1);
+ assert.equal(compound.eyeRig.kind,2);
+ const count=part=>part.eyeRig.meta.filter(x=>x.node===1).length;
+ assert.ok(count(compound)>count(camera)*1.25,'Compound eye must consist of conspicuous geometric facets');
+ assert.notEqual(count(ocellus),count(camera),'Single lens cap must have its own topology');
+});
+test('eye sizes cover a broad DNA range and different eyes vary on one body',()=>{
+ const sizes=[.09,.20,.38,.79].map(size=>{
+  const d=eyes.normalizedEyeDNA({count:2,type:0,support:1,size},1871);
+  return eyes.makeEyeOrgans({seed:1871,eyeDNA:d},source,palette)[0].eyeRig.radius;
+ });
+ assert.ok(sizes[3]/sizes[0]>4,'Eye size should not look fixed across individual DNA');
+ const d=eyes.normalizedEyeDNA({count:4,type:1,support:1,size:.48},1871);
+ const radii=eyes.makeEyeOrgans({seed:1871,eyeDNA:d},source,palette).map(x=>x.eyeRig.radius);
+ assert.ok(Math.max(...radii)/Math.min(...radii)>1.15,'Eyes on one body need individual size variation');
+});
+test('socket and eyelid do not follow independent gaze rotation',()=>{
+ assert.match(html,/else if\(m\.node===2\|\|m\.node===3\)/);
+ assert.match(html,/Lids and socket move with the support/);
+ assert.match(html,/fr=radius\*\(\.955\+fraction\*\.14\)/);
+ assert.match(html,/const clearance=rig\.kind===2\?\.17:\.115/);
+ assert.match(html,/const sclera=kind===1\?blend\(look\.shadow,look\.coat,\.24\)/);
 });
