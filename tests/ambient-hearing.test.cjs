@@ -21,9 +21,16 @@ test('the environmental ear uses bounded pitch and inherited identity',()=>{
  vm.runInNewContext(html.slice(a,b)+'\nthis.quant=ambientConsonantRate;this.traits=ambientTraits;this.pitch=ambientEstimatePitch;',sandbox);
  for(const f of [110,220,330,440,800,1200]){const rate=sandbox.quant(f,{seed:1268});assert.ok(rate===null||(rate>=.74&&rate<=1.34));}
  assert.equal(sandbox.quant(NaN,{seed:1268}),null);
- const rate=48000,wave=new Float32Array(4096),silent=new Float32Array(4096);
- for(let i=0;i<wave.length;i++)wave[i]=.3*Math.sin(2*Math.PI*220*i/rate);
- assert.ok(Math.abs(sandbox.pitch(wave,rate)-220)<6,'detect fundamental, not its lower octave');
- assert.equal(sandbox.pitch(silent,rate),null);
+ const silence=new Float32Array(4096);
+ for(const rate of [44100,48000])for(const hz of [110,130.81,164.81,196,220,261.63,329.63,392,440,523.25,659.25,783.99]){
+  const wave=new Float32Array(4096);
+  for(let i=0;i<wave.length;i++){
+   const p=2*Math.PI*hz*i/rate;
+   wave[i]=.3*Math.sin(p)+.12*Math.sin(2*p+.33)+.07*Math.sin(3*p+.8);
+  }
+  const found=sandbox.pitch(wave,rate);
+  assert.ok(found!==null&&Math.abs(found-hz)/hz<.015,'fundamental at '+hz+' Hz / '+rate+' samples, got '+found);
+ }
+ assert.equal(sandbox.pitch(silence,48000),null);
  assert.equal(sandbox.traits({seed:1268}).reflex,sandbox.traits({seed:1268}).reflex);
 });
