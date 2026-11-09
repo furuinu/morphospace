@@ -5144,6 +5144,8 @@ function makeEyeOrgans(g,source,palette,placement=null){
  const sharedLook=opticalLooks[(Math.abs((g.seed*13+Math.floor(dna.iris*17))|0))%opticalLooks.length];
  const dominant=blobs[0];
  const bodyDiameter=2*Math.max(.16,...dominant.axes.map(v=>Math.abs(v)));
+ const completedRadius=Math.max(.3,Number(placement?.finishedRadius)||bodyDiameter*.5);
+ const owningScale=Math.max(.12,Number(placement?.copyScale)||1);
  const eyeFraction=.035+.105*Math.pow(clamp(dna.size,0,1),1.35);
  const rareLarge=((g.seed>>>0)%19===0);
  const maxFraction=rareLarge?.30:.20;
@@ -5159,7 +5161,11 @@ function makeEyeOrgans(g,source,palette,placement=null){
   const support=(dna.support+(rng()<.18?1:0))%EYE_SUPPORTS.length;
   // Large and tiny eyes can coexist; size is inherited AND modulated by each organ.
   const fraction=clamp(eyeFraction*(rareLarge?1.35+rng()*.6:.78+rng()*.45)*(dna.count>=3?.72:1),.025,maxFraction);
-  const radius=clamp(bodyDiameter*fraction*.5,.012,Math.max(.02,bodyDiameter*maxFraction*.5));
+  // Compensate for copy-scale reduction: apparent eye size belongs to the
+  // FINISHED specimen, while the organ geometry is authored in local space.
+  const targetWorldRadius=completedRadius*clamp(.065+.095*Math.pow(dna.size,1.1),.055,maxFraction)*(dna.count>=3?.82:1)*(.88+rng()*.25);
+  const localMax=Math.max(.09,Math.max(...dominant.axes)*.48);
+  const radius=clamp(Math.max(bodyDiameter*fraction*.5,targetWorldRadius/owningScale),.045,localMax);
   const length=support===0?.12*radius:dna.length*(.65+rng()*.7);
   const cz=length+radius*.53;
   const c0=tint(.21+i*.14,angle,8+i),c1=tint(.58,angle+2,13+i);
@@ -5454,8 +5460,11 @@ function planFinishedEyes(g,source,palette,copies,forward){
  for(let c=0;c<n;c++){
   if(!quota[c])continue;
   const look=eyeCopyForward(copies[c],forward||[0,0,1]);
+  const radius=Math.max(.8,Number(g?.completedBodyRadius)||0);
+
   const parts=makeEyeOrgans(g,source,palette,{
-   count:quota[c],seedOffset:(c+1)*7919,forward:look
+   count:quota[c],seedOffset:(c+1)*7919,forward:look,
+   finishedRadius:radius,copyScale:copies[c].scale
   });
   for(const pt of parts){pt.copyIndex=c;result.push(pt);}
  }
@@ -5492,7 +5501,9 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  const delicateParts=safeAppendages.parts;
  // Plan ocular supports before surface tessellation so their bases can grow
  // continuously out of the same implicit skin, not pierce it as loose rods.
- const ocularParts=low?[]:planFinishedEyes(g,source,palette,em.copyTransforms,safeAppendages.forward);
+ // Use the completed organism's spatial envelope for visibility-scale optics.
+ const finishedEyeGenome={...g,completedBodyRadius:Math.max(1.1,em.bound*.82)};
+ const ocularParts=low?[]:planFinishedEyes(finishedEyeGenome,source,palette,em.copyTransforms,safeAppendages.forward);
  if(!low)source.appendageBases=delicateParts.map(p=>p.delicate).filter(Boolean).map(d=>({
   root:d.root,dir:d.dir,length:Math.max(.025,d.collarLength),
   radius:d.collarRadius,blend:Math.max(.055,d.collarRadius*1.7)
@@ -8714,9 +8725,24 @@ function interpolateMorphBatch(batch,t,factors){
  return batch;
 }
 function specimenViewDistance(sp){
- let radius=1;for(const mesh of [sp.shell,...sp.parts.map(p=>p.mesh),...sp.rigs.map(r=>r.mesh)])for(let i=0;i<mesh.data.length;i+=9)radius=Math.max(radius,Math.hypot(mesh.data[i],mesh.data[i+1],mesh.data[i+2]));
- if(sp.growthModel?.bound)radius=Math.max(radius,sp.growthModel.bound);
- return clamp(radius/Math.tan(Math.PI*43/360)*1.18,9,65);
+ // Frame the completed shell, not the canonical organ or its generous SDF bound.
+ // The 96th-percentile radius avoids one long arm making the whole specimen tiny.
+ const mesh=sp?.shell,distances=[],stride=9;
+ if(mesh?.data?.length){
+  const count=Math.floor(mesh.data.length/stride),step=Math.max(1,Math.floor(count/5000));
+  for(let i=0;i<count;i+=step){
+   const k=i*stride,x=mesh.data[k],y=mesh.data[k+1],z=mesh.data[k+2];
+   const d=Math.hypot(x,y,z);
+   if(Number.isFinite(d))distances.push(d);
+  }
+ }
+ distances.sort((a,b)=>a-b);
+ const percentile=distances.length?distances[Math.floor((distances.length-1)*.96)]:0;
+ const maximum=distances.length?distances[distances.length-1]:0;
+ const radius=Math.max(.75,percentile,maximum*.78);
+ // A fixed minimum distance of nine units previously shrank small organisms.
+ // Aim for a consistent screen occupancy while leaving limb/head room.
+ return clamp(radius/Math.tan(Math.PI*43/360)*1.17,3.6,65);
 }
 
 const CAMERA_HANDOFF_SECONDS=4;
