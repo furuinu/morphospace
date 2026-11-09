@@ -62,7 +62,7 @@ test('iPhone microphone capture resets playback-only AudioSession before getUser
  assert.equal(session.type,'auto');
  assert.equal(ambientSense.active,true);
  assert.equal(stops,0);
- assert.match(elements.viewerMicStatus.textContent,/聴覚作動中/);
+ assert.match(elements.viewerMicStatus.textContent,/音源を収集中/);
  const outputStart=html.slice(html.indexOf('async function startBioticAudio(){'),html.indexOf('function maybeStartBioticAudio(',html.indexOf('async function startBioticAudio(){')));
  assert.match(outputStart,/const microphoneRequested=/);
  assert.match(outputStart,/microphoneRequested\?'auto':'playback'/);
