@@ -20,9 +20,10 @@ test('skin flow uses discrete comb particles in both shader paths',()=>{
 });
 test('legacy emission layer and new particle flow remain separate',()=>{
  assert.match(html,/vec4 emissionSurfaceColor\(/);
- assert.match(html,/vec4 shaded=optical\?vec4\(color,1\.0\):emissionSurfaceColor\(color,vObj\)/);
- assert.match(html,/if\(optical\)\{/);
- assert.match(html,/bool optical=vRole>12\.9&&vRole<13\.6/);
+ assert.equal((html.match(/vec4 shaded=emissionSurfaceColor\(color,vObj\);/g)||[]).length,2,
+  'Both shader paths retain the luminous emission layer after ocular removal');
+ assert.doesNotMatch(html,/if\(optical\)\{|bool optical=vRole/,
+  'Retired eye-only optics must not remain as an orphan material branch');
  assert.match(html,/vec4 skinLight=chromaticSkinFlow\(vObj,vNormal,vView\)/);
  assert.match(html,/uBlinkMode/);
 });
