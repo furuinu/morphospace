@@ -173,7 +173,7 @@ test('compound cornea uses a smooth ellipsoid and shader-driven hexagonal bump',
  const farthest=Math.max(...optical.map(m=>Math.hypot(m.p[0],m.p[1],m.p[2]-cz)))/r;
  assert.ok(farthest<1.08,'Corneal relief must be shallow rather than cone-like');
  assert.ok(html.includes('hexCorneaSample'),'The dense hexagonal lenses must be a procedural bump map');
- assert.equal((html.match(/hexCorneaSample\\(normalize\\(vObj\\)\\)/g)||[]).length,2,
+ assert.equal(html.split('vec4 hex=hexCorneaSample(normalize(vObj));').length-1,2,
   'Both high-quality and compatibility shaders must use the hexagonal corneal bump');
  assert.ok(!html.includes('const corners=triangles.map('),'Individual polygon spikes must remain disabled');
 });
