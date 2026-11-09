@@ -20,7 +20,9 @@ test('skin flow uses discrete comb particles in both shader paths',()=>{
 });
 test('legacy emission layer and new particle flow remain separate',()=>{
  assert.match(html,/vec4 emissionSurfaceColor\(/);
- assert.match(html,/vec4 shaded=emissionSurfaceColor\(color,vObj\)/);
+ assert.match(html,/vec4 shaded=optical\?vec4\(color,1\.0\):emissionSurfaceColor\(color,vObj\)/);
+ assert.match(html,/if\(optical\)\{/);
+ assert.match(html,/bool optical=vRole>12\.9&&vRole<13\.6/);
  assert.match(html,/vec4 skinLight=chromaticSkinFlow\(vObj,vNormal,vView\)/);
  assert.match(html,/uBlinkMode/);
 });
