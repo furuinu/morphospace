@@ -5048,6 +5048,7 @@ function eyeFounderDNA(seed){
   size:.13+r()*.53,length:.12+r()*.82,spread:r(),independence:r(),
   blinkInterval:2.8+r()*4.2,gazeSpeed:.35+r()*1.55,
   bodyCoupling:r(),phase:r()*TAU,iris:r(),pupil:Math.floor(r()*6),
+  lidStyle:Math.floor(r()*3),compoundShape:Math.floor(r()*5),
   synchrony:Math.floor(r()*4)};
 }
 function normalizedEyeDNA(source,seed){
@@ -5055,11 +5056,12 @@ function normalizedEyeDNA(source,seed){
  if(!source||typeof source!=='object')return d;
  for(const key of ['size','length','spread','independence','blinkInterval','gazeSpeed','bodyCoupling','phase','iris'])
   if(Number.isFinite(source[key]))d[key]=source[key];
- for(const key of ['count','type','support','pupil','synchrony'])
+ for(const key of ['count','type','support','pupil','synchrony','lidStyle','compoundShape'])
   if(Number.isFinite(source[key]))d[key]=Math.round(source[key]);
  d.count=clamp(d.count,0,4);d.type=clamp(d.type,0,EYE_TYPES.length-1);
  d.support=clamp(d.support,0,EYE_SUPPORTS.length-1);d.pupil=clamp(d.pupil,0,5);
- d.synchrony=clamp(d.synchrony,0,3);d.size=clamp(d.size,.075,.84);
+ d.synchrony=clamp(d.synchrony,0,3);d.lidStyle=clamp(d.lidStyle,0,2);
+ d.compoundShape=clamp(d.compoundShape,0,4);d.size=clamp(d.size,.075,.84);
  d.length=clamp(d.length,.04,1.10);d.spread=clamp(d.spread,0,1);
  d.independence=clamp(d.independence,0,1);d.blinkInterval=clamp(d.blinkInterval,1.3,10);
  d.gazeSpeed=clamp(d.gazeSpeed,.16,2.6);d.bodyCoupling=clamp(d.bodyCoupling,0,1);
@@ -5070,7 +5072,7 @@ function eyeCrossoverDNA(a,b,seed,strength,log,inherited){
  const A=normalizedEyeDNA(a,seed),B=normalizedEyeDNA(b,seed+7),r=seedRng(seed+183179);
  const d={version:1};
  const chromosomes={
-  anatomy:['count','type','support','size','length','spread','iris','pupil'],
+  anatomy:['count','type','support','size','length','spread','iris','pupil','lidStyle','compoundShape'],
   movement:['independence','blinkInterval','gazeSpeed','bodyCoupling','phase','synchrony']
  };
  for(const [block,fields] of Object.entries(chromosomes)){
@@ -5080,7 +5082,7 @@ function eyeCrossoverDNA(a,b,seed,strength,log,inherited){
    if(r()<.19&&['size','length','spread','independence','blinkInterval','gazeSpeed','bodyCoupling','iris'].includes(key))
     value=A[key]*(.3+.4*r())+B[key]*(.7-.4*r());
    if(r()<.08+.20*strength){
-    if(['count','type','support','pupil','synchrony'].includes(key)) value=old+(r()<.5?-1:1);
+    if(['count','type','support','pupil','synchrony','lidStyle','compoundShape'].includes(key)) value=old+(r()<.5?-1:1);
     else value=old+(r()+r()-1)*(.1+.22*strength)*(key==='blinkInterval'?9:1);
     log.push({field:'eyeDNA.'+key,from:old,to:value});
    }
@@ -5112,6 +5114,13 @@ function ocularLidProfile(radius,cz,kind,across,sign,row,blink,lipAngle=null){
  return p;
 }
 
+function ocularMembraneProfile(radius,cz,across,row,blink){
+ const arch=Math.sqrt(Math.max(0,1-across*across));
+ const y=radius*(.18+.52*across);
+ const x=-radius*.80+radius*1.60*clamp(blink,0,1)*row;
+ const depth=Math.sqrt(Math.max(0,radius*radius-Math.min(radius*radius*.98,x*x+y*y)));
+ return [x,y,cz+depth*1.10+radius*.025];
+}
 function makeEyeOrgans(g,source,palette){
  const dna=normalizedEyeDNA(g.eyeDNA,g.seed),rng=seedRng(g.seed+726341),result=[];
  if(!dna.count||!source?.blobs?.length)return result;
@@ -5130,6 +5139,13 @@ function makeEyeOrgans(g,source,palette){
   {coat:[.38,.20,.14],iris:[.94,.88,.27],shadow:[.025,.015,.012],flash:[1,.97,.74]}
  ];
  const deep=[.013,.025,.036];
+ // One coherent optical colour phenotype per specimen, inherited via iris DNA.
+ const sharedLook=opticalLooks[(Math.abs((g.seed*13+Math.floor(dna.iris*17))|0))%opticalLooks.length];
+ const dominant=blobs[0];
+ const bodyDiameter=2*Math.max(.16,...dominant.axes.map(v=>Math.abs(v)));
+ const eyeFraction=.035+.105*Math.pow(clamp(dna.size,0,1),1.35);
+ const rareLarge=((g.seed>>>0)%19===0);
+ const maxFraction=rareLarge?.30:.20;
  for(let i=0;i<dna.count;i++){
   const blob=blobs[i%Math.min(3,blobs.length)];
   const angle=(i*2.399963+dna.spread*1.5)+rng()*.40;
@@ -5140,19 +5156,31 @@ function makeEyeOrgans(g,source,palette){
   const kind=(dna.type+(i>0&&rng()<.16?1+Math.floor(rng()*4):0))%EYE_TYPES.length;
   const support=(dna.support+(rng()<.18?1:0))%EYE_SUPPORTS.length;
   // Large and tiny eyes can coexist; size is inherited AND modulated by each organ.
-  const radius=clamp(dna.size*Math.pow(.45+rng()*1.65,1.20)*(dna.count>=3?.84:1),.075,.88);
+  const fraction=clamp(eyeFraction*(rareLarge?1.35+rng()*.6:.78+rng()*.45)*(dna.count>=3?.72:1),.025,maxFraction);
+  const radius=clamp(bodyDiameter*fraction*.5,.012,Math.max(.02,bodyDiameter*maxFraction*.5));
   const length=support===0?.12*radius:dna.length*(.65+rng()*.7);
   const cz=length+radius*.53;
   const c0=tint(.21+i*.14,angle,8+i),c1=tint(.58,angle+2,13+i);
   const skin=blend(c0,c1,.25);
-  const look=opticalLooks[(Math.abs((g.seed*13+Math.floor(dna.iris*17)+i*19)|0))%opticalLooks.length];
+  const look=sharedLook;
   // No obligatory white sclera. Lens pigment is a separate optical chromosome.
   const sclera=kind===1?blend(look.shadow,look.coat,.24):kind===2?look.shadow:look.coat;
   const iris=look.iris,shadow=look.shadow,highlight=look.flash;
+  const lidStyle=kind===2?0:dna.lidStyle;
+  const compoundShape=kind===2?dna.compoundShape:0;
   const vertices=[],colors=[],faces=[],meta=[];
   const world=p=>V.add(root,V.add(V.scale(side,p[0]),V.add(V.scale(up,p[1]),V.scale(dir,p[2]))));
   function vertex(p,col,node=0,u=0,lidSide=0,across=0,row=0){
-   const id=vertices.length;vertices.push(world(p));colors.push(col);meta.push({p:p.slice(),node,u,lidSide,across,row});return id;
+   const id=vertices.length;
+   // Distort every facet and underlying compound cornea together; support stalk remains intact.
+   const shapeP=p.slice();
+   if(kind===2&&(node===1||node===3)){
+    const sx=[1,1.42,.82,1.28,.72][compoundShape],sy=[1,.76,1.50,.64,1.22][compoundShape];
+    const skew=compoundShape===3?.18*(p[1]/Math.max(radius,.001)):0;
+    shapeP[0]=p[0]*sx+radius*skew;shapeP[1]=p[1]*sy;
+    if(compoundShape===4)shapeP[2]=cz+(p[2]-cz)*.62;
+   }
+   vertices.push(world(shapeP));colors.push(col);meta.push({p:shapeP.slice(),node,u,lidSide,across,row});return id;
   }
   function quad(a,b,c,d){faces.push([a,c,b],[b,c,d]);}
   // A collar starts below the implicit skin. Hard joints keep their length;
@@ -5263,7 +5291,7 @@ function makeEyeOrgans(g,source,palette){
    }
    // Moving upper/lower fleshy eyelids cover the aperture from both sides,
    // with a continuous lower socket and distinct rolled free margins.
-   if(kind===0||kind===1||kind===2||kind===4){
+   if(lidStyle===1){
     const lidColumns=20,lidRows=9,lipSides=8;
     for(const sign of [-1,1]){
      const lid=[];
@@ -5296,8 +5324,22 @@ function makeEyeOrgans(g,source,palette){
      }
     }
    }
+  // A single protective third eyelid sweeps laterally across the visible cornea.
+  // No palpebral surface is generated for compound eyes.
+  if(lidStyle===2){
+   const n=18,m=9,mem=[];
+   for(let j=0;j<=m;j++){
+    mem[j]=[];
+    for(let k=0;k<=n;k++){
+     const across=2*k/n-1,row=j/m;
+     const p=ocularMembraneProfile(radius,cz,across,row,0);
+     mem[j].push(vertex(p,blend(look.flash,skin,.52),5,1,0,across,row));
+    }
+    if(j)for(let k=0;k<n;k++)quad(mem[j-1][k],mem[j-1][k+1],mem[j][k],mem[j][k+1]);
+   }
+  }
   const mesh=buildMesh(vertices,colors,faces);
-  const rig={root,side,up,dir,meta,cz,radius,length,support,kind,phase:dna.phase+i*1.914,
+  const rig={root,side,up,dir,meta,cz,radius,length,support,kind,lidStyle,phase:dna.phase+i*1.914,
    interval:dna.blinkInterval*(.84+.32*rng()),speed:dna.gazeSpeed*(.8+.35*rng()),
    independence:dna.independence,bodyCoupling:dna.bodyCoupling,synchrony:dna.synchrony,index:i};
   result.push({mesh,kind:'opaque',role:'eye',eyeRig:rig});
@@ -5348,6 +5390,10 @@ function animateEyeUploaded(gl,uploaded,rig,time,enabled){
    original[k+3]*rig.up[0]+original[k+4]*rig.up[1]+original[k+5]*rig.up[2],
    original[k+3]*rig.dir[0]+original[k+4]*rig.dir[1]+original[k+5]*rig.dir[2]
   ];
+  if(m.node===5){
+   p=ocularMembraneProfile(rig.radius,rig.cz,m.across,m.row,blink);
+   normal=V.norm([p[0],p[1],p[2]-rig.cz]);
+  }
   if(m.node===2||m.node===4){
    // The entire skin sheet and the rolled free edge move as one lid.
    // Their organic socket remains fixed relative to independent gaze.
