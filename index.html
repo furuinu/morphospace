@@ -5943,6 +5943,28 @@ function sphere(center,radii,palette,col,segments=12,rings=8){let p=[],colors=[]
 function makeVeil(points,radius,fs,palette,style,phase,sign){let p=[],colors=[],faces=[],rows=35;for(let i=0;i<=rows;i++){let t=.12+.76*i/rows,k=Math.round(t*(points.length-1)),c=points[k],f=fs[k],w=radius[k];for(let j=0;j<5;j++){let v=j/4,fin=w*(.72+v*(.92+.15*Math.sin(t*20+phase)))*sign,up=w*.12*Math.sin(t*13+j*1.5+phase),z=.15*v*Math.sin(t*18+phase+sign);p.push(V.add(c,V.add(V.scale(f.n,fin),V.add(V.scale(f.b,z),V.scale(f.t,up)))));colors.push(colorFor(palette,t,v*TAU,6+style,'membrane'));}}for(let i=0;i<rows;i++)for(let j=0;j<4;j++){let a=i*5+j,b=a+1,c=(i+1)*5+j,d=c+1;faces.push([a,b,c],[b,d,c])}return buildMesh(p,colors,faces,true);}
 // Column-major matrix helpers.
 function mul4(a,b){let o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o}
+// Manual trackball rotates the organism, never the camera.
+function specimenQuatMultiply(a,b){
+ return [
+  a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],
+  a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],
+  a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],
+  a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]
+ ];
+}
+function specimenQuatAxis(axis,angle){
+ const half=angle*.5,s=Math.sin(half),length=Math.hypot(...axis)||1;
+ return [axis[0]/length*s,axis[1]/length*s,axis[2]/length*s,Math.cos(half)];
+}
+function specimenQuatMatrix(q){
+ const [x,y,z,w]=q,xx=x*x,yy=y*y,zz=z*z,xy=x*y,xz=x*z,yz=y*z,wx=w*x,wy=w*y,wz=w*z;
+ return new Float32Array([
+  1-2*(yy+zz),2*(xy+wz),2*(xz-wy),0,
+  2*(xy-wz),1-2*(xx+zz),2*(yz+wx),0,
+  2*(xz+wy),2*(yz-wx),1-2*(xx+yy),0,
+  0,0,0,1
+ ]);
+}
 function persp(fov,aspect,near,far){let f=1/Math.tan(fov/2),o=new Float32Array(16);o[0]=f/aspect;o[5]=f;o[10]=(far+near)/(near-far);o[11]=-1;o[14]=2*far*near/(near-far);return o}
 function rotY(a){return new Float32Array([Math.cos(a),0,-Math.sin(a),0, 0,1,0,0, Math.sin(a),0,Math.cos(a),0, 0,0,0,1])}
 function rotX(a){return new Float32Array([1,0,0,0, 0,Math.cos(a),Math.sin(a),0, 0,-Math.sin(a),Math.cos(a),0, 0,0,0,1])}
@@ -8908,6 +8930,16 @@ function syncStreamUI(){const q=$('viewerModeQuick');if(q)q.value=streamMode;}
 
 let isolatedSpecimenFrame=false;
 let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,patternTime=0,rigPrevious=0,ciliaPrevious=0,rigFps=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,cameraOrbitPhase=0,cameraOrbitYawOffset=0,cameraOrbitPitchOffset=0,cameraRoll=0,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
+let specimenDragQuat=[0,0,0,1],specimenDragManual=false;
+function rotateSpecimenByPointer(dx,dy){
+ const frame=worldCameraFrame(modelYaw,modelPitch,cameraRoll,1);
+ // Camera-space axes preserve the visual direction of touch at every attitude.
+ const qYaw=specimenQuatAxis(frame.up,dx*.012);
+ const qPitch=specimenQuatAxis(frame.right,dy*.012);
+ const q=specimenQuatMultiply(qPitch,specimenQuatMultiply(qYaw,specimenDragQuat));
+ const length=Math.hypot(...q)||1;
+ specimenDragQuat=q.map(v=>v/length);
+}
 const EMIT_COUNT=4;
 const EMIT_COLORS=[[.28,.90,1.0],[.10,1,.70],[.65,.34,1],[1,.68,.12],[1,.28,.66],[.62,1,.20],[.92,.97,1]];
 function emissionFounderDNA(seed){
@@ -9129,7 +9161,7 @@ function refreshAnimatedSpecimen(forceStatic=false){if(selected<0||!gl||!rendere
 // All visible cilia are animated by the GPU every rendered frame.
 // The parent body can be regenerated at lower frequency without interrupting them.
 let viewerReturnFocus=null;
-function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;scheduleViewerFrame();rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();setViewerZoomValue(VIEWER_DEFAULT_ZOOM);updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
+function loadSpecimen(i,stored=null,{fullscreen=true}={}){if(nanoOperationBusy||nanoAction)return;if(!$('overlay').classList.contains('open'))viewerReturnFocus=document.activeElement;stopViewer();if($('sceneAlert'))$('sceneAlert').hidden=true;if(!gl||!renderer){$('gpuDiag').hidden=false;$('gpuDiag').textContent='3D描画の初期化に失敗しました。上部のGPU診断を確認してください。';return;}activeStoredIndividual=stored;selected=i;specimenDragQuat=[0,0,0,1];specimenDragManual=false;scheduleViewerFrame();rigTime=0;bodyTime=0;rigPrevious=performance.now();ciliaPrevious=rigPrevious;lastFrame=rigPrevious;applyUploadedSpecimen(createSpecimenForIndex(i,null),false,true);$('overlay').classList.add('open');document.body.style.overflow='hidden';modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;activePointers.clear();pinchState=null;auto=true;$('auto').checked=true;viewerMetadata();if(fullscreen)setViewerFullscreen(true);else render();setViewerZoomValue(VIEWER_DEFAULT_ZOOM);updateViewerCountdown();if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio();}
 const rigCanvas=$('rigCanvas');
 let lastSceneViewProj=null;
 function drawRigOverlay(mvp,w,h){
@@ -11375,7 +11407,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
  }
  const pose=wholeBodyPose(bodyTime,spec.seed,spec.genome.motionDNA?.primary??0,$('motion').checked);
  if(viewer.morph&&viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source){const m=viewer.morph,next=wholeBodyPose(bodyTime,m.target.seed,m.target.genome.motionDNA?.primary??0,$('motion').checked);for(const key of Object.keys(pose))pose[key]+=(next[key]-pose[key])*m.t;}
- base=mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll))));
+ base=mul4(specimenQuatMatrix(specimenDragQuat),mul4(translate3(pose.x,pose.y,pose.z),mul4(rotY(pose.yaw),mul4(rotX(pose.pitch),rotZ(pose.roll)))));
  if(!isolatedSpecimenFrame&&!nanoAction&&pulseTravelActive()&&pulseTravel.specimen===spec&&(!thumbSize||videoRecording)){
   // Skin-pulse phase travels toward -motionGPU.axis; point that anatomical
   // wave-forward vector in the actual direction of swimming (especially axial).
@@ -13389,7 +13421,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
    modelPitch=-25*Math.PI/180+cameraOrbitPitchOffset+cameraOrbitPitchPhase;
    cameraRoll=cameraOrbitRollPhase;
-  }else cameraRoll=0;
+  }else if(!specimenDragManual)cameraRoll=0;
   // Wide yaw/pitch/roll manoeuvres also move the infinite-distance sky.
   // The gaze envelope vanishes at target acquisition without a camera snap.
   if(viewer.morph?.warpChase){
@@ -14406,12 +14438,12 @@ canvas.addEventListener('pointermove',e=>{
  if(activePointers.has(e.pointerId))activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(activePointers.size>=2){updatePinchGesture();return;}
  if(!drag||!previous)return;
- const deltaYaw=(e.clientX-previous[0])*.015;
- const deltaPitch=(e.clientY-previous[1])*.011;
- if(auto){cameraOrbitYawOffset+=deltaYaw;cameraOrbitPitchOffset=clamp(cameraOrbitPitchOffset+deltaPitch,-Math.PI*.48+25*Math.PI/180,Math.PI*.48+25*Math.PI/180);}
- if(specimenInspection.specimen===spec)specimenInspection.manual-=deltaYaw;
- modelYaw+=deltaYaw;
- modelPitch=clamp(modelPitch+deltaPitch,-Math.PI*.48,Math.PI*.48);
+ const dx=e.clientX-previous[0],dy=e.clientY-previous[1];
+ if(dx||dy){
+  // Stop the automatic camera orbit at its present attitude, without a snap.
+  if(auto){auto=false;$('auto').checked=false;specimenDragManual=true;}
+  rotateSpecimenByPointer(dx,dy);
+ }
  previous=[e.clientX,e.clientY];
  render();
 });
@@ -14426,7 +14458,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEve
 // Bubble after the canvas records whether this tap only dismisses the settings.
 document.addEventListener('pointerdown',event=>{const settings=$('viewerSettings');if(settings.open&&!settings.contains(event.target))settings.open=false});
 canvas.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&!event.repeat&&!nanoOperationBusy&&!nanoAction&&!captureShareIsOpen){event.preventDefault();if($('viewerSettings').open)$('viewerSettings').open=false;else setViewerNavigationVisible($('overlay').classList.contains('viewer-nav-hidden'))}});
-$('reset').onclick=()=>{resetSpecimenInspection();cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;if(spec&&spec.baseViewDistance){const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,VIEWER_DEFAULT_ZOOM/100));}activePointers.clear();pinchState=null;render()};
+$('reset').onclick=()=>{resetSpecimenInspection();cameraOrbitYawOffset=0;cameraOrbitPitchOffset=0;specimenDragQuat=[0,0,0,1];specimenDragManual=false;modelYaw=.54;modelPitch=-0.703599;panX=0;panY=0;if(spec&&spec.baseViewDistance){const {min,max}=viewerZoomBounds();setViewerDistance(max*Math.pow(min/max,VIEWER_DEFAULT_ZOOM/100));}activePointers.clear();pinchState=null;render()};
 $('density').oninput=()=>{$('densityNum').textContent=$('density').value+'%'};$('density').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual,{fullscreen:viewer.full})}catch(e){fail(e)}}};$('micro').oninput=()=>{$('microNum').textContent=$('micro').value+'%'};$('micro').onchange=()=>{if(selected>=0){detailSpecimens[selected]=null;detailCacheOrder=detailCacheOrder.filter(k=>k!==selected);try{loadSpecimen(selected,activeStoredIndividual,{fullscreen:viewer.full})}catch(e){fail(e)}}};$('motion').onchange=()=>{rigPrevious=performance.now();render()};$('patternMotion').onchange=()=>render();$('triplanarTrial').onchange=()=>render();for(const id of ['patternStrength','patternSpeed','patternRest'])$(id).oninput=()=>{$(id+'Num').textContent=$(id).value+'%';render()};$('transparency').oninput=()=>{$('transNum').textContent=$('transparency').value+'%';render()};$('glow').oninput=()=>{$('glowNum').textContent=$('glow').value+'%';render()};$('layerLight').oninput=()=>{$('layerLightNum').textContent=$('layerLight').value+'%';render()};$('wire').onchange=render;$('rigviz').onchange=render;$('emissionStrength').oninput=()=>{$('emissionNum').textContent=$('emissionStrength').value+'%';render()};$('emitColor').onchange=render;$('emitBlink').onchange=render;$('blinkSpeed').oninput=()=>{$('blinkSpeedOut').textContent=$('blinkSpeed').value+'%';render()};$('bloomRadius').oninput=()=>{$('bloomNum').textContent=$('bloomRadius').value+'%';render()};$('shadeStrength').oninput=()=>{$('shadeNum').textContent=$('shadeStrength').value+'%';render()};
 for(const [id,out] of [['snowFarDim','snowFarDimNum'],['snowEdgeDim','snowEdgeDimNum'],['fresnelStrength','fresnelStrengthNum'],['iridescenceStrength','iridescenceStrengthNum']]){
  $(id).oninput=()=>{$(out).textContent=$(id).value+'%';render()};
