@@ -185,6 +185,30 @@ test('compound cornea uses a smooth ellipsoid and shader-driven hexagonal bump',
   'Both high-quality and compatibility shaders must use the hexagonal corneal bump');
  assert.ok(!html.includes('const corners=triangles.map('),'Individual polygon spikes must remain disabled');
 });
+test('compound cornea is a two-times-finer interference of circular gradients',()=>{
+ const glsl=html.match(/const hexCorneaGLSL=`([\\s\\S]*?)`;/)?.[1];
+ assert.ok(glsl,'Procedural compound cornea shader must exist');
+ assert.match(glsl,/float density=16\\.4;/,
+  'Double the previous grid frequency (8.2) on each sphere projection');
+ assert.match(glsl,/float height=exp\\(-2\\.7\\*r2\\);/,
+  'Each ommatidium begins as a round radial gradient');
+ assert.equal((glsl.match(/waves\\+=circularCorneaLobe/g)||[]).length,6,
+  'Six overlapping neighbours surround each centre at 60-degree intervals');
+ assert.match(glsl,/vec2 slope=-5\\.4\\*waves\\.xy/,
+  'The bump normal derives from the radial-gradient field');
+ assert.doesNotMatch(glsl,/float boundary=max\\(/,
+  'Never draw an explicit hexagon mask instead of circular interference');
+ const offsets=[[0,0],[Math.sqrt(3),0],[-Math.sqrt(3),0],
+  [Math.sqrt(3)/2,1.5],[-Math.sqrt(3)/2,1.5],
+  [Math.sqrt(3)/2,-1.5],[-Math.sqrt(3)/2,-1.5]];
+ const height=(x,y)=>offsets.reduce((sum,[u,v])=>
+  sum+Math.exp(-2.7*((x-u)**2+(y-v)**2)),0);
+ const centre=height(0,0),boundary=height(Math.sqrt(3)/2,0);
+ assert.ok(centre>boundary*2,
+  'Round lens centres must rise above the interference valleys');
+ assert.ok(Math.abs(height(Math.sqrt(3)/2,.1)-height(Math.sqrt(3)/2,-.1))<1e-8,
+  'Opposing circular gradients must meet symmetrically at the shared edge');
+});
 test('eye sizes cover a broad DNA range and different eyes vary on one body',()=>{
  const sizes=[.09,.20,.38,.79].map(size=>{
   const d=eyes.normalizedEyeDNA({count:2,type:0,support:1,size},1871);
