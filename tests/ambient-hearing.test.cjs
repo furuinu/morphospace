@@ -190,3 +190,53 @@ test('motifs are filtered before the shared limiter; basic choir never receives 
  assert.doesNotMatch(hearing,/state\.master\.gain/);
  assert.doesNotMatch(hearing,/engine\.output\.gain/);
 });
+
+test('100 Hz bass detection and quieter capture thresholds',()=>{
+ const a=html.indexOf('function ambientEstimatePitch('),b=html.indexOf('function ambientConsonantRate(',a);
+ const sandbox={clamp:(x,lo,hi)=>Math.max(lo,Math.min(hi,x))};
+ vm.createContext(sandbox);
+ vm.runInContext(html.slice(a,b)+'this.pitch=ambientEstimatePitch;',sandbox);
+ for(const rate of [44100,48000])for(const hz of [90,95,100,110,220,440]){
+  const wave=new Float32Array(Math.floor(rate*.17));
+  for(let i=0;i<wave.length;i++)wave[i]=.3*Math.sin(i*2*Math.PI*hz/rate);
+  const detected=sandbox.pitch(wave,rate);
+  assert.ok(detected&&Math.abs(detected-hz)/hz<.025,rate+' rate '+hz+'Hz source: '+detected);
+ }
+ assert.match(html,/const floor=Math\.max\(\.008,this\.noise\*2\.0\)/);
+ assert.match(html,/rms>this\.previous\*1\.13&&rms-this\.previous>\.003/);
+ assert.match(html,/if\(rms<\.004\|\|peak<\.012\)return null/);
+});
+test('environmental motifs use the original choir phrase clock',()=>{
+ const a=html.indexOf('function ambientPhraseClock('),b=html.indexOf('const ambientSense={',a);
+ assert.ok(a>=0&&b>a);
+ const sandbox={vocalCharacterDNA:()=>({phraseLength:5,silence:.5}),clamp:(x,lo,hi)=>Math.max(lo,Math.min(hi,x))};
+ vm.createContext(sandbox);
+ vm.runInContext(html.slice(a,b)+'this.phrase=ambientPhraseClock;',sandbox);
+ const first=sandbox.phrase({seed:0},0);
+ assert.equal(first.cycle,6.05);
+ assert.ok(Math.abs(first.cues[0]-1.15)<1e-7);
+ assert.ok(Math.abs(first.cues[1]-3.15)<1e-7);
+ assert.ok(first.length>=.85&&first.length<=1.75);
+ const next=sandbox.phrase({seed:0},first.cycle+first.cues[0]);
+ assert.equal(next.index,1);
+ assert.ok(Math.abs(next.phase-first.cues[0])<1e-7);
+ const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(hearing,/ambientPhraseClock\(sp,clockTime\)/);
+ assert.match(hearing,/motif\.slot===1&&phrase\.index%2!==0/);
+ assert.match(hearing,/motif\.lastPhraseIndex===phrase\.index/);
+ assert.doesNotMatch(hearing,/const heard=this\.period>/);
+});
+test('slow highpass and lowpass sweeps align to extended syllables',()=>{
+ const hearing=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(hearing,/voice\.loop=true/);
+ assert.match(hearing,/const length=phrase\.length\*\(motif\.slot===0\?1:\.86\)/);
+ assert.match(hearing,/const middle=at\+attack,release=endAt-tail/);
+ assert.match(hearing,/hp\.frequency\.linearRampToValueAtTime\(hpOpen,middle\)/);
+ assert.match(hearing,/hp\.frequency\.linearRampToValueAtTime\(hpClosed,endAt\)/);
+ assert.match(hearing,/lp\.frequency\.exponentialRampToValueAtTime\(lpOpen,middle\)/);
+ assert.match(hearing,/lp\.frequency\.exponentialRampToValueAtTime\(lpClosed,endAt\)/);
+ assert.match(hearing,/amp\.gain\.linearRampToValueAtTime\(gain,middle\)/);
+ assert.match(hearing,/amp\.gain\.linearRampToValueAtTime\(0,endAt\)/);
+ assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
+ assert.doesNotMatch(hearing,/state\.master\.gain/);
+});
