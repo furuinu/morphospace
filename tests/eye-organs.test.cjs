@@ -162,6 +162,6 @@ test('socket and eyelid do not follow independent gaze rotation',()=>{
  assert.match(html,/else if\(m\.node===2\|\|m\.node===3\)/);
  assert.match(html,/Lids and socket move with the support/);
  assert.match(html,/fr=radius\*\(\.955\+fraction\*\.14\)/);
- assert.match(html,/const clearance=rig\.kind===2\?\.17:\.115/);
+ assert.match(html,/const clearance=rig\.kind===1\?\.23:rig\.kind===2\?\.17:\.115/);
  assert.match(html,/const sclera=kind===1\?blend\(look\.shadow,look\.coat,\.24\)/);
 });
