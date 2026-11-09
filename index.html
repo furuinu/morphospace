@@ -7092,8 +7092,18 @@ vec4 emissionSurfaceColor(vec3 color,vec3 p){
 `;
 // Object-locked procedural hexagonal cornea: spherical triplanar mapping
 // without UV seams or pole pinching. Bump is purely normal shading.
+// Spherical triplanar map: equally spaced circular Gaussian lens domes
+// on a 60-degree triangular lattice. The circles interfere, so their
+// valleys trace a hexagonal Voronoi network without polygon outline masks.
+// Frequency is doubled from 8.2 to 16.4 on both projected axes.
 const hexCorneaGLSL=`
+vec3 circularCorneaLobe(vec2 fromCentre){
+ float r2=dot(fromCentre,fromCentre);
+ float height=exp(-2.7*r2);
+ return vec3(fromCentre*height,height);
+}
 vec3 hexCorneaCell(vec2 uv){
+ // Choose a nearby triangular-lattice centre using axial coordinates.
  vec3 cube=vec3(uv.x*.577350269-uv.y*.333333333,uv.y*.666666667,0.0);
  cube.z=-cube.x-cube.y;
  vec3 nearest=floor(cube+0.5),difference=abs(nearest-cube);
@@ -7102,22 +7112,25 @@ vec3 hexCorneaCell(vec2 uv){
  else nearest.z=-nearest.x-nearest.y;
  vec2 centre=vec2(1.732050808*(nearest.x+.5*nearest.y),1.5*nearest.y);
  vec2 local=uv-centre;
- float across=abs(local.x)*1.154700538;
- float diagonal=abs(local.x)*.577350269+abs(local.y);
- float boundary=max(across,diagonal);
- vec2 edgeNormal=across>diagonal?
-   vec2(sign(local.x)*1.154700538,0.0):
-   vec2(sign(local.x)*.577350269,sign(local.y));
- float t=clamp((boundary-.80)/.18,0.0,1.0);
- float groove=t*t*(3.0-2.0*t);
- vec2 slope=.10*local+.020*(6.0*t*(1.0-t)/.18)*edgeNormal;
+ // Seven overlapping radial gradients, not seven tessellated hexagons.
+ // Six equal neighbours are at multiples of 60 degrees, spacing sqrt(3).
+ vec3 waves=circularCorneaLobe(local);
+ waves+=circularCorneaLobe(local-vec2(1.732050808,0.0));
+ waves+=circularCorneaLobe(local-vec2(-1.732050808,0.0));
+ waves+=circularCorneaLobe(local-vec2(.866025404,1.5));
+ waves+=circularCorneaLobe(local-vec2(-.866025404,1.5));
+ waves+=circularCorneaLobe(local-vec2(.866025404,-1.5));
+ waves+=circularCorneaLobe(local-vec2(-.866025404,-1.5));
+ // Analytic height gradient: real round lens centre, depressed interference lines.
+ vec2 slope=-5.4*waves.xy*.011*16.4;
+ float groove=1.0-smoothstep(.22,.47,waves.z);
  return vec3(slope,groove);
 }
 vec4 hexCorneaSample(vec3 direction){
  vec3 dir=normalize(direction);
  vec3 weight=pow(abs(dir),vec3(5.0));
  weight/=max(.0001,weight.x+weight.y+weight.z);
- float density=8.2;
+ float density=16.4;
  vec3 yz=hexCorneaCell(dir.yz*density+vec2(.17,.39));
  vec3 zx=hexCorneaCell(dir.zx*density+vec2(.41,.13));
  vec3 xy=hexCorneaCell(dir.xy*density+vec2(.63,.31));
