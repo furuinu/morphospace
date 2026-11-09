@@ -12164,9 +12164,9 @@ function renderPureChoir(quiet,state,sp,fade=1){
 }
 // Synchronous, equal-power fade follows the 2.8-second eased visual morph.
 function updatePureChoir(quiet=false){
- // In capture mode, the microphone is the ONLY musical source. Existing
- // heartbeat and stellar chimes bypass the choir's master bus entirely.
- if(ambientSense.active)quiet=true;
+ // Original organism vocals stay audible while processed microphone motifs play.
+ // Heartbeat and stellar chimes keep their independent, unchanged signal paths.
+ // No direct microphone passthrough is introduced.
  if(!bioticAudio.engine||!bioticAudioRunning()){stopPureChoir();return;}
  const m=viewer.morph;
  if(m?.source&&m?.target){
