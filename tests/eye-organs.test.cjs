@@ -63,7 +63,7 @@ test('every ocular type and support produces finite, bounded, manifold-like tria
   for(const part of out){
    assert.ok(part.eyeRig&&part.mesh.data.length>50&&part.mesh.tri.length>30);
    assert.equal(part.mesh.data.length/9,part.eyeRig.meta.length);
-   assert.ok(part.mesh.data.length/9<1500,'No unbounded tessellation');
+   assert.ok(part.mesh.data.length/9<2600,'No unbounded tessellation');
    assert.ok(Array.from(part.mesh.data).every(Number.isFinite),'No broken vertices/normals');
    const max=Math.max(...part.mesh.tri);
    assert.ok(max<part.eyeRig.meta.length,'Triangle indices within the eye mesh');
@@ -111,9 +111,9 @@ test('eyelid mesh closes visibly instead of barely flashing',()=>{
   eyes.animateEyeUploaded(gl,mesh,rig,i*rig.interval/200,true);
   const gap=distance();near=Math.min(near,gap);far=Math.max(far,gap);
  }
- assert.ok(far>rig.radius*1.4,'Eye must open clearly');
+ assert.ok(far>rig.radius*.80,'The smaller anatomical lid aperture must open clearly');
  assert.ok(near<rig.radius*.23,'Eye must reach a near-closed state');
- assert.ok(far-near>rig.radius*1.2,'Blink must have visible travel');
+ assert.ok(far-near>rig.radius*.75,'Blink must have visible travel');
 });
 test('organic eyestalk has a flared buried root and independent optical pigments',()=>{
  const part=specimen(2,1,1)[0],d=part.eyeRig;
@@ -159,9 +159,45 @@ test('eye sizes cover a broad DNA range and different eyes vary on one body',()=
  assert.ok(Math.max(...radii)/Math.min(...radii)>1.15,'Eyes on one body need individual size variation');
 });
 test('socket and eyelid do not follow independent gaze rotation',()=>{
- assert.match(html,/else if\(m\.node===2\|\|m\.node===3\)/);
+ assert.match(html,/else if\(m\.node===2\|\|m\.node===3\|\|m\.node===4\)/);
  assert.match(html,/Lids and socket move with the support/);
  assert.match(html,/fr=radius\*\(\.955\+fraction\*\.14\)/);
- assert.match(html,/const clearance=rig\.kind===1\?\.23:rig\.kind===2\?\.17:\.115/);
+ assert.match(html,/function ocularLidProfile\(/);
  assert.match(html,/const sclera=kind===1\?blend\(look\.shadow,look\.coat,\.24\)/);
+});
+
+test('an anatomical lower orbital hemisphere encloses the back of the globe',()=>{
+ const part=specimen(0,1,1)[0],{meta,radius,cz}=part.eyeRig;
+ const cup=meta.filter(m=>m.node===3);
+ assert.ok(cup.length>=250,'A dense continuous eye-cup surface replaces the ring');
+ assert.ok(cup.some(m=>m.p[1]<-radius*.75),'Inferior tissue must cover the lower hemisphere');
+ assert.ok(cup.some(m=>m.p[2]<cz-radius*.85),'Posterior cup must merge into the eye stalk');
+ assert.ok(cup.some(m=>m.p[1]>radius*.70),'Upper socket must frame the open eye');
+ const frontRim=cup.filter(m=>Math.abs(m.p[2]-cz)<radius*.99);
+ assert.ok(frontRim.length>15,'A curved aperture margin must exist');
+});
+test('eyelids are full moving sheets with rounded margins that stay attached to the cup',()=>{
+ const part=specimen(0,1,1)[0],{meta,radius,cz}=part.eyeRig;
+ const upper=meta.filter(m=>m.node===2&&m.lidSide===1);
+ const lower=meta.filter(m=>m.node===2&&m.lidSide===-1);
+ const rounded=meta.filter(m=>m.node===4);
+ assert.ok(upper.length>=200&&lower.length>=200,'Both lids must have broad, volumetric surfaces');
+ assert.ok(rounded.length>=300,'Moving free edges must have round 3D cross sections');
+ assert.ok(lower.some(m=>m.p[1]<-radius*.25),'Lower eyelid must begin below the globe equator');
+ const data=new Float32Array(part.mesh.data.length/9*17);
+ for(let i=0;i<part.mesh.data.length/9;i++)data.set(part.mesh.data.subarray(i*9,i*9+9),i*17);
+ const mesh={data,buffer:{}},gl={ARRAY_BUFFER:34962,bindBuffer(){},bufferSubData(){}};
+ const rig=part.eyeRig,base=rig.phase/(2*Math.PI);
+ const sample=index=>[0,1,2].map(k=>mesh.data[index*17+k]);
+ const middle=meta.map((m,i)=>({m,i})).filter(x=>x.m.node===2&&x.m.row===1&&Math.abs(x.m.across)<.00001);
+ assert.equal(middle.length,2,'Top and bottom lid edges must both reach the centre');
+ let best=Infinity,upperY=0,lowerY=0;
+ for(let i=0;i<=240;i++){
+  eyes.animateEyeUploaded(gl,mesh,rig,i*rig.interval/240,true);
+  const p=sample(middle[0].i),q=sample(middle[1].i);
+  const gap=Math.hypot(...p.map((v,j)=>v-q[j]));
+  if(gap<best){best=gap;upperY=p[1];lowerY=q[1];}
+ }
+ assert.ok(best<radius*.20,'Both thick lids must meet when blinking');
+ assert.ok(Number.isFinite(upperY)&&Number.isFinite(lowerY));
 });
