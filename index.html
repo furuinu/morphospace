@@ -5502,7 +5502,9 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
  // Plan ocular supports before surface tessellation so their bases can grow
  // continuously out of the same implicit skin, not pierce it as loose rods.
  // Use the completed organism's spatial envelope for visibility-scale optics.
- const finishedEyeGenome={...g,completedBodyRadius:Math.max(1.1,em.bound*.82)};
+ // Body-only reference: exclude appendage rigs and the separate spiral tip.
+ const bodyCoreRadius=completedBodyRadius(em);
+ const finishedEyeGenome={...g,completedBodyRadius:bodyCoreRadius};
  const ocularParts=low?[]:planFinishedEyes(finishedEyeGenome,source,palette,em.copyTransforms,safeAppendages.forward);
  if(!low)source.appendageBases=delicateParts.map(p=>p.delicate).filter(Boolean).map(d=>({
   root:d.root,dir:d.dir,length:Math.max(.025,d.collarLength),
@@ -8724,24 +8726,24 @@ function interpolateMorphBatch(batch,t,factors){
  }
  return batch;
 }
+// The eye scale and standard camera framing both refer to the central
+// completed body. Explicit tentacles, fins, eyestalks, appendages and spiral
+// tips are deliberately excluded from this anatomical scale reference.
+function completedBodyRadius(em){
+ const blobs=em?.blobs||[];
+ if(!blobs.length)return Math.max(.75,Number(em?.bound)||1);
+ const radii=blobs.map(b=>{
+  const center=Math.hypot(...b.p);
+  const extent=Math.max(...b.axes.map(x=>Math.abs(x)));
+  return center+extent;
+ }).filter(Number.isFinite).sort((a,b)=>a-b);
+ if(!radii.length)return 1;
+ return Math.max(.75,radii[Math.floor((radii.length-1)*.92)]);
+}
 function specimenViewDistance(sp){
- // Frame the completed shell, not the canonical organ or its generous SDF bound.
- // The 96th-percentile radius avoids one long arm making the whole specimen tiny.
- const mesh=sp?.shell,distances=[],stride=9;
- if(mesh?.data?.length){
-  const count=Math.floor(mesh.data.length/stride),step=Math.max(1,Math.floor(count/5000));
-  for(let i=0;i<count;i+=step){
-   const k=i*stride,x=mesh.data[k],y=mesh.data[k+1],z=mesh.data[k+2];
-   const d=Math.hypot(x,y,z);
-   if(Number.isFinite(d))distances.push(d);
-  }
- }
- distances.sort((a,b)=>a-b);
- const percentile=distances.length?distances[Math.floor((distances.length-1)*.96)]:0;
- const maximum=distances.length?distances[distances.length-1]:0;
- const radius=Math.max(.75,percentile,maximum*.78);
- // A fixed minimum distance of nine units previously shrank small organisms.
- // Aim for a consistent screen occupancy while leaving limb/head room.
+ const radius=completedBodyRadius(sp?.growthModel);
+ // Do not use sp.parts, sp.rigs, sp.shell extrema or spiralTip:
+ // those include long tentacles that must not shrink the organism on screen.
  return clamp(radius/Math.tan(Math.PI*43/360)*1.17,3.6,65);
 }
 
