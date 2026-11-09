@@ -161,7 +161,7 @@ test('eye sizes cover a broad DNA range and different eyes vary on one body',()=
 test('socket and eyelid do not follow independent gaze rotation',()=>{
  assert.match(html,/else if\(m\.node===2\|\|m\.node===3\|\|m\.node===4\)/);
  assert.match(html,/Lids and socket move with the support/);
- assert.match(html,/fr=radius\*\(\.955\+fraction\*\.14\)/);
+ assert.match(html,/const bx=radius\*\.80\*Math\.cos\(a\),by=radius\*\(\.18\+\.56\*Math\.sin\(a\)\)/);
  assert.match(html,/function ocularLidProfile\(/);
  assert.match(html,/const sclera=kind===1\?blend\(look\.shadow,look\.coat,\.24\)/);
 });
