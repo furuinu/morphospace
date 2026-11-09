@@ -10826,7 +10826,7 @@ function warpChaseState(m,dt){
  m.cameraTravel=m.warpPosition.reduce((sum,v,i)=>sum+v*m.travelAxis[i],0);
  m.warpAmount=Math.max(0,Math.min(1,Math.sin(Math.PI*p)*1.4));
  if(!m.switched){
-  m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];specimenDragQuat=[0,0,0,1];
+  m.switched=true;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];if(typeof specimenDragQuat!=='undefined')specimenDragQuat=[0,0,0,1];
    // Capture the incoming body's camera-relative orientation once. Any
    // additional camera rotation is compensated during the point-to-body reveal,
    // then eased back to the specimen's native coordinates by acquisition.
@@ -11238,7 +11238,7 @@ function tickViewer(elapsed){
   // Do not select a new orbit axis on B's arrival frame.
   if(shot.switched&&!m.switched){
    // The entire A silhouette, including appendages, has departed the frame.
-   m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];specimenDragQuat=[0,0,0,1];
+   m.switched=true;m.switchedAt=m.elapsed;spec=m.target;meshes=m.targetMeshes;rigMeshes=m.target.rigs||[];if(typeof specimenDragQuat!=='undefined')specimenDragQuat=[0,0,0,1];
    // Start B at its own anchor immediately, including the swap frame.
    // Keep the camera's prior offset to avoid a one-frame visual jump.
    if(pulseTravel.specimen!==spec){resetPulseTravel(spec,true);pulseTravel.position.fill(0);}
