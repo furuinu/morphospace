@@ -5163,7 +5163,7 @@ function makeEyeOrgans(g,source,palette,placement=null){
   const fraction=clamp(eyeFraction*(rareLarge?1.35+rng()*.6:.78+rng()*.45)*(dna.count>=3?.72:1),.025,maxFraction);
   // Compensate for copy-scale reduction: apparent eye size belongs to the
   // FINISHED specimen, while the organ geometry is authored in local space.
-  const targetWorldRadius=completedRadius*clamp(.065+.095*Math.pow(dna.size,1.1),.055,maxFraction)*(dna.count>=3?.82:1)*(.88+rng()*.25);
+  const targetWorldRadius=completedRadius*clamp(.060+.140*Math.pow(dna.size,1.5),.055,maxFraction)*(dna.count>=3?.82:1)*(.88+rng()*.25);
   const localMax=Math.max(.09,Math.max(...dominant.axes)*.48);
   const radius=clamp(Math.max(bodyDiameter*fraction*.5,targetWorldRadius/owningScale),.045,localMax);
   const length=support===0?.12*radius:dna.length*(.65+rng()*.7);
