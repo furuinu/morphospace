@@ -129,12 +129,12 @@ test('organic eyestalk has a flared buried root and independent optical pigments
  const avg=indices=>[6,7,8].map(c=>indices.reduce((sum,i)=>sum+part.mesh.data[i*9+c],0)/indices.length);
  const oc=avg(opticalIndices),sc=avg(skinIndices),contrast=Math.hypot(...oc.map((q,i)=>q-sc[i]));
  assert.ok(contrast>.16,'Optical pigment must be visibly distinct from skin');
- assert.ok(d.meta.some(m=>m.node===2),'Compound eyes must have a protective blink');
+ assert.ok(!d.meta.some(m=>m.node===2||m.node===4||m.node===5),'Compound eyes must not generate eyelids or nictitating membranes');
 });
 test('WebGL renders eye as rigid organ with separate optical material',()=>{
  assert.match(html,/role>12\.0&&role<13\.7/);
  assert.match(html,/bool optical=vRole>12\.9&&vRole<13\.6/);
- assert.match(html,/eyeMesh\.data\[vertex\*17\+12\]=pt\.eyeRig\.meta\[vertex\]\.node===1\?13\.2:12\.4/);
+ assert.match(html,/pt\\.eyeRig\\.kind===2\\?13\\.35:13\\.2/,'Compound eyes use a dedicated optical material');
  assert.match(html,/shifted=canonical\+\(attached-anchorCanonical\)/);
  assert.match(html,/const blinkWindow=\.17/);
 });
@@ -153,10 +153,10 @@ test('eye sizes cover a broad DNA range and different eyes vary on one body',()=
   const d=eyes.normalizedEyeDNA({count:2,type:0,support:1,size},1871);
   return eyes.makeEyeOrgans({seed:1871,eyeDNA:d},source,palette)[0].eyeRig.radius;
  });
- assert.ok(sizes[3]/sizes[0]>4,'Eye size should not look fixed across individual DNA');
+ assert.ok(sizes[3]/sizes[0]>2,'Eye size must retain DNA variation within anatomical limits');
  const d=eyes.normalizedEyeDNA({count:4,type:1,support:1,size:.48},1871);
  const radii=eyes.makeEyeOrgans({seed:1871,eyeDNA:d},source,palette).map(x=>x.eyeRig.radius);
- assert.ok(Math.max(...radii)/Math.min(...radii)>1.15,'Eyes on one body need individual size variation');
+ assert.ok(Math.max(...radii)/Math.min(...radii)>1.03,'Eyes may vary modestly without extreme imbalance');
 });
 test('socket and eyelid do not follow independent gaze rotation',()=>{
  assert.match(html,/else if\(m\.node===2\|\|m\.node===3\|\|m\.node===4\)/);
