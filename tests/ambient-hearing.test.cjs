@@ -249,14 +249,28 @@ test('original vocal layers expose MIDI and sampled voice triggers',()=>{
  assert.match(ear,/const frequency=440\*Math\.pow\(2,\(layer\.noteMidi-69\)\/12\)/);
  assert.doesNotMatch(ear,/const heard=this\.period>/);
 });
-test('microphone is exclusive music source while heartbeat and star sounds are unchanged',()=>{
+test('processed microphone motifs layer with original vocals, heartbeat and star sounds',()=>{
  const ear=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
  assert.match(ear,/voice\.loop=true/);
  assert.match(ear,/amp\.gain\.linearRampToValueAtTime\(gain,middle\)/);
  assert.match(ear,/amp\.gain\.linearRampToValueAtTime\(0,endAt\)/);
  assert.match(ear,/amp\.connect\(engine\.sampleInput\)/);
- assert.match(html,/function updatePureChoir\(quiet=false\)\{[\s\S]*?if\(ambientSense\.active\)quiet=true;/);
+ assert.doesNotMatch(html,/if\(ambientSense\.active\)quiet=true;/);
+ assert.match(html,/renderPureChoir\(quiet,pureChoir,m\.source,Math\.cos\(angle\)\)/);
+ assert.match(html,/renderPureChoir\(quiet,incomingPureChoir,m\.target,Math\.sin\(angle\)\)/);
+ assert.match(html,/renderPureChoir\(quiet,pureChoir,spec,1\)/);
  assert.match(html,/try\{engine\.update\(individuals,0\);updatePureChoir\(quiet\)/);
  assert.doesNotMatch(ear,/state\.master\.gain/);
 });
 
+
+test('ambient microphone acquisition retains DNA-cycle recording and legacy lowpass envelopes while mixing',()=>{
+ const sense=html.slice(html.indexOf('const ambientSense={'),html.indexOf('async function startAmbientSense(){'));
+ assert.match(sense,/cyclePhase-this\.sampleCycleOrigin>=4/);
+ assert.match(sense,/if\(normal\)\{/);
+ assert.match(sense,/lp\.frequency\.setValueAtTime\(950,at\)/);
+ assert.match(sense,/lp\.frequency\.exponentialRampToValueAtTime\(2600\+role\*150,middle\)/);
+ assert.match(sense,/lp\.frequency\.exponentialRampToValueAtTime\(950,endAt\)/);
+ assert.match(html,/amp\.connect\(engine\.sampleInput\)/);
+ assert.doesNotMatch(html,/if\(ambientSense\.active\)quiet=true;/);
+});
