@@ -163,6 +163,14 @@ test('one-lens ocellus, compound facet array and camera iris remain morphologica
  assert.ok(count(compound)>count(camera)*1.25,'Compound eye must consist of conspicuous geometric facets');
  assert.notEqual(count(ocellus),count(camera),'Single lens cap must have its own topology');
 });
+test('compound eye fragment shaders do not redeclare the shared model uniform',()=>{
+ assert.ok(html.includes('uniform highp mat4 uModel;'),
+  'Shared chromatic shader owns the model matrix uniform');
+ assert.ok(!html.includes('const frag=`precision mediump float;\nuniform mat4 uModel;'),
+  'High quality fragment must not redeclare uModel from chromaticGrammarGLSL');
+ assert.ok(!html.includes('const compatibleFrag=`precision mediump float;\nuniform mat4 uModel;'),
+  'Compatibility fragment must not redeclare uModel from chromaticGrammarGLSL');
+});
 test('compound cornea uses a smooth ellipsoid and shader-driven hexagonal bump',()=>{
  const dna=eyes.normalizedEyeDNA({count:1,type:2,support:0,size:.42,compoundShape:0},1871);
  const part=eyes.makeEyeOrgans({seed:1871,eyeDNA:dna},source,palette)[0];
