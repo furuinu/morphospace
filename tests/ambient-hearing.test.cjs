@@ -104,7 +104,10 @@ test('sample-only gain normalization has a bounded peak and leaves the base volu
  vm.runInContext(source+'this.normalize=ambientClipNormalizer;',ctx);
  const silence=new Float32Array(8192);
  assert.equal(ctx.normalize(silence),null);
- for(const amplitude of [.01,.04,.12,.4,.8]){
+ const noiseOnly=new Float32Array(8192);
+ for(let i=0;i<noiseOnly.length;i++)noiseOnly[i]=.01*Math.sin(i*Math.PI*2*220/48000);
+ assert.equal(ctx.normalize(noiseOnly),null,'very quiet mic noise should not be amplified');
+ for(const amplitude of [.025,.04,.12,.4,.8]){
   const sample=new Float32Array(8192);
   for(let i=0;i<sample.length;i++)sample[i]=amplitude*Math.sin(i*Math.PI*2*220/48000);
   const n=ctx.normalize(sample);
