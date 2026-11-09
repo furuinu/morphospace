@@ -15,11 +15,15 @@ test('hearing adapts existing voice, chorus pulse, and movement',()=>{
  assert.match(html,/out\.connect\(engine\.sampleInput\);out\.connect\(engine\.reverbInput\)/);
 });
 test('the environmental ear uses bounded pitch and inherited identity',()=>{
- const a=html.indexOf('function ambientConsonantRate'),b=html.indexOf('const ambientSense={');
+ const a=html.indexOf('function ambientEstimatePitch'),b=html.indexOf('const ambientSense={');
  assert.ok(a>0&&b>a);
  const sandbox={clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v)),soundMusicalProfile:()=>({root:57,scale:[0,2,4,5,7,9,11]})};
- vm.runInNewContext(html.slice(a,b)+'\nthis.quant=ambientConsonantRate;this.traits=ambientTraits;',sandbox);
+ vm.runInNewContext(html.slice(a,b)+'\nthis.quant=ambientConsonantRate;this.traits=ambientTraits;this.pitch=ambientEstimatePitch;',sandbox);
  for(const f of [110,220,330,440,800,1200]){const rate=sandbox.quant(f,{seed:1268});assert.ok(rate===null||(rate>=.74&&rate<=1.34));}
  assert.equal(sandbox.quant(NaN,{seed:1268}),null);
+ const rate=48000,wave=new Float32Array(4096),silent=new Float32Array(4096);
+ for(let i=0;i<wave.length;i++)wave[i]=.3*Math.sin(2*Math.PI*220*i/rate);
+ assert.ok(Math.abs(sandbox.pitch(wave,rate)-220)<6,'detect fundamental, not its lower octave');
+ assert.equal(sandbox.pitch(silent,rate),null);
  assert.equal(sandbox.traits({seed:1268}).reflex,sandbox.traits({seed:1268}).reflex);
 });

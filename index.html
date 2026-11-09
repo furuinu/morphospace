@@ -12131,14 +12131,23 @@ function updatePureChoir(quiet=false){
 function ambientEstimatePitch(wave,rate){
  if(!wave||wave.length<1024||!Number.isFinite(rate))return null;
  const stride=3,n=Math.floor(wave.length/stride),min=Math.max(2,Math.floor(rate/850/stride)),max=Math.min(n>>1,Math.ceil(rate/110/stride));
- let score=0,lagBest=0;
- for(let lag=min;lag<=max;lag+=2){
+ let mean=0;for(let i=0;i<n;i++)mean+=wave[i*stride];mean/=n;
+ let best=0;const candidates=[];
+ for(let lag=min;lag<=max;lag++){
   let cross=0,e1=0,e2=0;
-  for(let i=0;i<n-lag;i+=2){const x=wave[i*stride],y=wave[(i+lag)*stride];cross+=x*y;e1+=x*x;e2+=y*y;}
+  for(let i=0;i<n-lag;i+=2){
+   const x=wave[i*stride]-mean,y=wave[(i+lag)*stride]-mean;
+   cross+=x*y;e1+=x*x;e2+=y*y;
+  }
   const corr=cross/Math.max(1e-8,Math.sqrt(e1*e2));
-  if(corr>score){score=corr;lagBest=lag;}
+  candidates.push([lag,corr]);
+  if(corr>best)best=corr;
  }
- return score>.69&&lagBest?rate/(lagBest*stride):null;
+ // A voiced harmonic has strong maxima at 2x/3x the true period too.
+ // Prefer the shortest lag close to the global maximum (the fundamental).
+ if(best<.72)return null;
+ const found=candidates.find(item=>item[1]>=Math.max(.72,best-.024));
+ return found?rate/(found[0]*stride):null;
 }
 function ambientConsonantRate(hz,sp){
  if(!Number.isFinite(hz)||hz<100||hz>1300||!sp)return null;
