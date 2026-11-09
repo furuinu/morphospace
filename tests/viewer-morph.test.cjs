@@ -410,7 +410,7 @@ test('growth collars are fused into the source SDF before detailed skin tessella
  assert.match(html,/const safeAppendages=safeSpecimenAppendages\(em,producedAppendages,seed\)/);
  assert.match(html,/const delicateParts=safeAppendages\.parts/);
  assert.match(html,/source\.appendageBases=delicateParts\.map/);
- assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts\)/);
+ assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts(?:,|\))/);
  assert.ok(html.indexOf('const safeAppendages=safeSpecimenAppendages(em,producedAppendages,seed)')<html.indexOf('source.appendageBases=delicateParts.map'));
  assert.ok(html.indexOf('source.appendageBases=delicateParts.map')<html.indexOf('localShell=morphImplicitMesh(source,palette,g,false,n)'));
 });
