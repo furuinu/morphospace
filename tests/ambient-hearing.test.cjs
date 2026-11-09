@@ -10,7 +10,7 @@ test('ambient hearing defaults off and always releases permission tracks',()=>{
 test('hearing adapts existing voice, chorus pulse, and movement',()=>{
  assert.match(html,/const ambient=ambientSense\.active\?ambientSense\.response\(sp\):null/);
  assert.match(html,/state\.grooveNote=\(seed\+ambientSense\.onsetSerial\)%4/);
- assert.match(html,/const response=ambientSense\.motionFactor\(spec\)/);
+ assert.match(html,/const response=typeof ambientSense!=='undefined'\?ambientSense\.motionFactor\(spec\):1/);
  assert.match(html,/node\.velocity=clamp\(node\.velocity\+ambientSense\.response/);
  assert.match(html,/out\.connect\(engine\.sampleInput\);out\.connect\(engine\.reverbInput\)/);
 });
