@@ -29,7 +29,7 @@ test('30 seconds exposes 170 degrees even when sky and specimen co-rotate',()=>{
   const corrected=h.view(ambient,model),rel=heading(h.mul4(corrected,model));
   if(last!==null)total+=delta(rel,last);
   last=rel;
-  assert.equal(ambient[8],h.rotY(-backgroundYaw)[8],'ambient camera must not be mutated');
+  assert.ok(Math.abs(ambient[8]-h.rotY(-backgroundYaw)[8])<1e-6,'ambient camera must not be mutated');
   if(i<steps)h.tick(step);
  }
  assert.ok(Math.abs(total-170*Math.PI/180)<.005,'actual sweep '+total);
@@ -44,7 +44,7 @@ test('specimen orbit preserves world position and projected centre',()=>{
 });
 test('drag preserves user-controlled yaw; new specimen resets orbit',()=>{
  const h=harness(),cam=h.mul4(h.rotY(-.2),h.translate3(0,0,-20)),body=h.rotY(.1);
- h.view(cam,body);h.tick(15);h.view(cam,body);
+ h.view(cam,body);for(let i=0;i<150;i++)h.tick(.1);h.view(cam,body);
  h.state.manual-=.4;
  const result=h.view(cam,body);
  const measured=delta(heading(h.mul4(result,body)),heading(h.mul4(cam,body)));

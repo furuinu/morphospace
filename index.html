@@ -10418,7 +10418,7 @@ function cancelViewerMorph(commit=false){
 function pauseViewerTransition(){viewer.orbitHeadingPending=false;viewer.orbitHeadingDelay=0;viewer.revision++;viewer.preparing=false;discardViewerPreparation();cancelViewerMorph(false);viewer.phaseFade=null;setViewerPhaseOpacity(0);viewer.elapsed=0;$('viewerTransition').textContent='';updateViewerCountdown()}
 function stopViewer(){
  viewer.worldOffset=[0,0,0];viewer.arrivalPoseTime=1.4;viewer.orbitHeadingPending=false;viewer.orbitHeadingDelay=0;
- resetSpecimenInspection();
+ if(typeof resetSpecimenInspection==='function')resetSpecimenInspection();
  cameraOrbitSpeed=cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;
  cameraOrbitPitchSpeed=cameraOrbitTargetPitchSpeed=0;
  cameraOrbitRollSpeed=cameraOrbitTargetRollSpeed=0;
@@ -10881,7 +10881,7 @@ function render(thumbSize=0,postEffects=true,recordHeight=0){syncViewerZoom();if
   const shrink=1-.985*handoffEase((u-.24)/.76);
   base=mul4(base,scale3(shrink,shrink,shrink));
  }
- cam=specimenInspectionCamera(cam,base);
+ if(typeof specimenInspectionCamera==='function')cam=specimenInspectionCamera(cam,base);
  const mLeft=base;
  const mirrorM=mul4(base,scale3(-1,1,1));
  const hidden=!!capturePose?.frame.hideBody||entryHidden;
@@ -12447,7 +12447,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
    modelYaw+=flight[0];modelPitch+=flight[1];cameraRoll+=flight[2];
   }
   if(typeof stepPulseCameraFollow==='function')stepPulseCameraFollow(Math.min(elapsed,.18));
-  tickSpecimenInspection(Math.min(elapsed,.15));
+  if(typeof tickSpecimenInspection==='function')tickSpecimenInspection(Math.min(elapsed,.15));
   // Animate the entire existing body by low-frequency torsion in the vertex shaders.
   // No new appendage geometry, CPU remeshing, or per-frame buffer transfers.
   try{if(videoRecording){render(videoRecording.width,true,videoRecording.height);captureVideoFrame(now)}else render()}catch(error){if(videoRecording)finishVideoRecording("描画エラーで録画を終了しました");fail(error);animating=false}
