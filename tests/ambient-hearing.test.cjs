@@ -233,7 +233,7 @@ test('sampling every four biological pulse cycles retains memory during silence'
  tick(3.99,3.99);assert.equal(ear.captureAt,-1,'do not sample early');
  tick(4.01,4.01);assert.equal(ear.captureAt,4.13);
  tick(4.15,4.15);assert.equal(ear.clips.length,2);
- amplitude=0;tick(8.02,8.02);assert.equal(ear.captureAt,8.14);
+ amplitude=0;tick(8.02,8.02);assert.ok(Math.abs(ear.captureAt-8.14)<1e-9);
  tick(8.16,8.16);
  assert.equal(ear.clips.length,2,'silence does not erase memory');
  assert.equal(adoptions,2,'silence cannot replace a playing motif');
