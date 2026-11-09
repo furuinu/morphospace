@@ -34,3 +34,51 @@ test('the environmental ear uses bounded pitch and inherited identity',()=>{
  assert.equal(sandbox.pitch(silence,48000),null);
  assert.equal(sandbox.traits({seed:1268}).reflex,sandbox.traits({seed:1268}).reflex);
 });
+
+
+test('iPhone microphone capture resets playback-only AudioSession before getUserMedia',async()=>{
+ const start=html.indexOf('async function startAmbientSense(){'),end=html.indexOf('function stopAmbientSense(',start);
+ assert.ok(start>=0&&end>start);
+ const elements={viewerMic:{checked:true},viewerMicStatus:{textContent:''}};
+ let observedType='',stops=0;
+ const session={type:'playback'};
+ const stream={getTracks(){return[{stop(){stops++;}}]}};
+ const source={connect(){},disconnect(){}};
+ const analyser={fftSize:4096,frequencyBinCount:2048,connect(){},disconnect(){}};
+ const ctx={sampleRate:48000,destination:{},createMediaStreamSource(){return source;},createAnalyser(){return analyser;},createGain(){return{gain:{value:0},connect(){},disconnect(){}};}};
+ const navigator={audioSession:session,mediaDevices:{
+  async getUserMedia(){observedType=session.type;
+   if(observedType==='playback')throw Object.assign(Error('AudioSession category is not compatible with audio capture'),{name:'InvalidStateError'});
+   return stream;
+  }
+ }};
+ const ambientSense={active:false,starting:false,revision:0,onsetSerial:0};
+ const f={navigator,ambientSense,bioticAudio:{engine:{context:ctx}},bioticAudioRunning:()=>true,
+  $:id=>elements[id],Float32Array,Object,console};
+ vm.createContext(f);vm.runInContext(html.slice(start,end)+'this.startAmbientSense=startAmbientSense;',f);
+ await f.startAmbientSense();
+ assert.equal(observedType,'auto');
+ assert.equal(session.type,'play-and-record');
+ assert.equal(ambientSense.active,true);
+ assert.equal(stops,0);
+ assert.match(elements.viewerMicStatus.textContent,/聴覚作動中/);
+ const outputStart=html.slice(html.indexOf('async function startBioticAudio(){'),html.indexOf('function maybeStartBioticAudio(',html.indexOf('async function startBioticAudio(){')));
+ assert.match(outputStart,/const microphoneRequested=/);
+ assert.match(outputStart,/microphoneRequested\?'auto':'playback'/);
+});
+test('microphone capture failure returns audio session to playback',async()=>{
+ const start=html.indexOf('async function startAmbientSense(){'),end=html.indexOf('function stopAmbientSense(',start);
+ const elements={viewerMic:{checked:true},viewerMicStatus:{textContent:''}};
+ const audioSession={type:'playback'};
+ const navigator={audioSession,mediaDevices:{
+  getUserMedia(){throw Object.assign(Error('No input device'),{name:'NotReadableError'});}
+ }};
+ const ambientSense={active:false,starting:false,revision:0,onsetSerial:0};
+ const f={navigator,ambientSense,bioticAudioRunning:()=>true,$:id=>elements[id],console};
+ vm.createContext(f);vm.runInContext(html.slice(start,end)+'this.startAmbientSense=startAmbientSense;',f);
+ await f.startAmbientSense();
+ assert.equal(audioSession.type,'playback');
+ assert.equal(elements.viewerMic.checked,false);
+ assert.equal(ambientSense.starting,false);
+ assert.match(elements.viewerMicStatus.textContent,/No input device/);
+});
