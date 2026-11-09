@@ -5497,11 +5497,9 @@ function makeMorphSpecimen(seed,style,palette,low,density,detailDensity,forcedGe
   root:d.root,dir:d.dir,length:Math.max(.025,d.collarLength),
   radius:d.collarRadius,blend:Math.max(.055,d.collarRadius*1.7)
  }));
- if(!low)source.appendageBases.push(...ocularParts.map(pt=>{
-  const e=pt.eyeRig;
-  return {root:e.root,dir:e.dir,length:Math.max(.07,Math.min(.22,e.radius*.65)),
-   radius:e.radius*.62,blend:Math.max(.09,e.radius*.45)};
- }));
+ // Eye roots are copy-specific: never bake their collars into the shared
+ // canonical skin, which would duplicate empty sockets on every body copy.
+
  let localShell=null;
  if(!low){
   // Highly folded genomes may exceed the 16-bit index budget. Reduce tessellation
