@@ -68,7 +68,7 @@ function captureFixture(fail=false){
   nanoBusy:value=>{fixture.nanoOperationBusy=value},sharedPayload:()=>({version:1,record,view:{yaw:.5}}),currentIndividual:()=>record,copyJSON:plain,MorphospaceEcology:{ensure:r=>r.ecology},
   stockStore:{save:async()=>{saves++;events.push(saves===1?'save':'preview-save');if(fail)throw Error('quota');if(saves===1)await new Promise(resolve=>{commit=resolve});return {created:saves===1}}},refreshStock:async()=>{},
   CaptureShare:{postText:()=>'',card:()=>events.push('card')},localPublicBase:()=>'',setCaptureShareMessage:()=>{},cleanFilePart:x=>x,
-  specimenImage:()=>{events.push('image');return {}},playNanoCapture:()=>{events.push('animation');return new Promise(resolve=>{animate=resolve})},
+  snapshotVisibleSpecimen:()=>{events.push('shutter');return {width:320,height:180}},specimenImage:frame=>{assert.equal(frame.width,320);events.push('image');return frame},playNanoCapture:()=>{events.push('animation');return new Promise(resolve=>{animate=resolve})},
   document:{createElement:()=>({getContext:()=>({drawImage(){}}),toDataURL:()=>''})},canvasBlob:async()=>({}),makePNGFile:()=>null,nativeFileSupported:()=>false,URL:{createObjectURL:()=> 'blob:card'},console};
  vm.createContext(fixture);vm.runInContext(section('async function saveCaptureToStock(','async function exportStock(')+section('async function openCaptureShare(','async function saveCardToPhotos('),fixture);
  return {fixture,events,commit:()=>commit(),skip:()=>animate({skipped:true})};
@@ -76,9 +76,9 @@ function captureFixture(fail=false){
 
 test('capture commits once before animation, ignores rapid repeat clicks and keeps the sample when skipped',async()=>{
  const {fixture:f,events,commit,skip}=captureFixture();
- const capture=f.openCaptureShare('capture');await tick();assert.deepEqual(events,['save']);assert.equal(f.nanoOperationBusy,true);
+ const capture=f.openCaptureShare('capture');await tick();assert.deepEqual(events,['shutter','save']);assert.equal(f.nanoOperationBusy,true);
  await f.openCaptureShare('capture');assert.equal(events.filter(x=>x==='save').length,1);
- commit();await tick();assert.deepEqual(events,['save','image','animation']);assert.equal(f.captureShareDialog.open,false);
+ commit();await tick();assert.deepEqual(events,['shutter','save','image','animation']);assert.equal(f.captureShareDialog.open,false);
  // Skip only shortens the visual; it cannot undo or repeat the committed save.
  skip();await capture;assert.equal(f.captureShareState.stockSaved,true);assert.equal(f.nanoOperationBusy,false);assert.equal(f.captureShareDialog.open,true);assert.ok(events.indexOf('dialog')>events.indexOf('animation'));
 });

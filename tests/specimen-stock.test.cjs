@@ -72,7 +72,8 @@ test('capture persists DNA before image rendering and completes only after the I
  fixture.stockStore.save=async()=>{throw Error('quota exceeded')};
  assert.equal(await fixture.saveCaptureToStock({stockPayload:entry().payload},5),false);assert.equal($('retryStock').hidden,false);assert.match($('captureStockStatus').textContent,/保存できません/);
  const openCapture=source.slice(source.indexOf('async function openCaptureShare('),source.indexOf('async function saveCardToPhotos('));
- assert.ok(openCapture.indexOf('await saveCaptureToStock')<openCapture.indexOf('specimenImage()'));
+ assert.ok(openCapture.indexOf('snapshotVisibleSpecimen()')<openCapture.indexOf('await saveCaptureToStock'));
+ assert.ok(openCapture.indexOf('await saveCaptureToStock')<openCapture.indexOf('specimenImage(frozenFrame)'));
 });
 
 test('unavailable browser storage reports an error without pretending to save',async()=>{
@@ -81,9 +82,9 @@ test('unavailable browser storage reports an error without pretending to save',a
  await assert.rejects(store.list(),/保存できません/);
 });
 
-test('capture card enlarges the specimen to cover its framed image with symmetric crop',()=>{
+test('capture card keeps the complete photographed composition',()=>{
  const text=html;
- assert.match(text,/Math\.max\(w\/image\.width,h\/image\.height\)\*1\.02/);
+ assert.match(text,/Math\.min\(w\/image\.width,h\/image\.height\)/);
  assert.match(text,/c\.drawImage\(image,x\+\(w-iw\)\/2,y\+\(h-ih\)\/2,iw,ih\)/);
  assert.match(text,/roundRect\(c,x,y,w,h,12\);c\.clip\(\)/);
 });
