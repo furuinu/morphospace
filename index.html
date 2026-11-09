@@ -5220,24 +5220,55 @@ function makeEyeOrgans(g,source,palette,placement=null){
    }
    if(j)for(let k=0;k<segments;k++)quad(globe[j-1][k],globe[j-1][(k+1)%segments],globe[j][k],globe[j][(k+1)%segments]);
   }
-  // A true 3-D compound surface has discrete domed facets, not a hexagon texture.
+  // Continuous corneal mosaic: a dual-icosphere of mostly hexagonal
+  // ommatidia with twelve pentagons. No separated cones or exposed gaps.
+  // Subdivision 2 yields 162 contiguous facets, under the mobile mesh budget.
   if(kind===2){
-   for(let j=1;j<=6;j++){
-    const th=j*Math.PI/7,n=Math.max(7,Math.round(12*Math.sin(th)));
-    for(let k=0;k<n;k++){
-     const a=(k+(j%2)*.5)*TAU/n;
-     const normal=[Math.sin(th)*Math.cos(a),Math.sin(th)*Math.sin(a),Math.cos(th)];
-     const tangent=V.norm(V.cross(Math.abs(normal[2])>.95?[0,1,0]:[0,0,1],normal));
-     const bitangent=V.norm(V.cross(normal,tangent)),cr=radius*Math.min(.235,.55*TAU*Math.sin(th)/n);
-     const centre=[normal[0]*radius,normal[1]*radius,cz+normal[2]*radius];
-     const raised=V.add(centre,V.scale(normal,radius*.120)),tone=blend(iris,highlight,.10+rng()*.32);
-     const tip=vertex(raised,tone,1,1),border=[];
-     for(let q=0;q<7;q++){
-      const a=q*TAU/6;
-      border.push(vertex(V.add(V.add(centre,V.scale(normal,radius*.028)),V.add(V.scale(tangent,cr*Math.cos(a)),V.scale(bitangent,cr*Math.sin(a)))),blend(tone,shadow,.89),1,1));
-     }
-     for(let q=0;q<6;q++)faces.push([tip,border[q],border[q+1]]);
+   const phi=(1+Math.sqrt(5))*.5;
+   let unit=[
+    [-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],
+    [0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],
+    [phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1]
+   ].map(v=>V.norm(v));
+   let triangles=[
+    [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+    [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+    [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]
+   ];
+   for(let depth=0;depth<2;depth++){
+    const cache=new Map(),split=[];
+    const middle=(a,b)=>{
+     const key=a<b?a+':'+b:b+':'+a;
+     if(cache.has(key))return cache.get(key);
+     const id=unit.length;
+     unit.push(V.norm(V.add(unit[a],unit[b])));
+     cache.set(key,id);return id;
+    };
+    for(const [a,b,c] of triangles){
+     const ab=middle(a,b),bc=middle(b,c),ca=middle(c,a);
+     split.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]);
     }
+    triangles=split;
+   }
+   const corners=triangles.map(face=>V.norm(face.reduce((sum,id)=>V.add(sum,unit[id]),[0,0,0])));
+   const connected=unit.map(()=>[]);
+   triangles.forEach((face,index)=>face.forEach(id=>connected[id].push(index)));
+   const lensTop=blend(iris,highlight,.25),lensRim=blend(iris,shadow,.79);
+   for(let id=0;id<unit.length;id++){
+    const normal=unit[id],sideAxis=V.norm(V.cross(Math.abs(normal[2])>.95?[0,1,0]:[0,0,1],normal));
+    const upAxis=V.norm(V.cross(normal,sideAxis));
+    const sorted=connected[id].slice().sort((a,b)=>{
+     const angle=k=>Math.atan2(V.dot(corners[k],upAxis),V.dot(corners[k],sideAxis));
+     return angle(a)-angle(b);
+    });
+    // A shallow convex corneal lens; adjoining polygon borders touch exactly.
+    const top=vertex([normal[0]*radius*1.032,normal[1]*radius*1.032,cz+normal[2]*radius*1.032],lensTop,1,1);
+    const border=sorted.map(face=>{
+     const point=corners[face],depth=radius*1.009;
+     return vertex([point[0]*depth,point[1]*depth,cz+point[2]*depth],lensRim,1,1);
+    });
+    for(let q=0;q<border.length;q++)faces.push([top,border[q],border[(q+1)%border.length]]);
    }
   }else if(kind===1){
    // An ocellus is a single protruding lens, not a camera eyeball with iris/pupil.
@@ -7238,7 +7269,7 @@ void main(){
      vec3 wave=sin(p*1.13)+.48*sin(p.yzx*1.83+1.4);
      vec3 slope=cos(p*1.13)+.48*cos(p.yzx*1.83+1.4);
      float ridge=(wave.x+wave.y+wave.z)/4.44;
-     vec3 reliefN=normalize(n+.32*(slope-n*dot(slope,n)));
+     vec3 reliefN=normalize(n+.14*(slope-n*dot(slope,n)));
      float microLight=max(dot(reliefN,light),0.0);
      float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
      float fresnel=pow(grazing,2.1);
@@ -7247,7 +7278,7 @@ void main(){
                      .72+.28*sin(ridge*4.5+grazing*5.2+2.1),
                      .74+.26*sin(ridge*4.5+grazing*5.2+4.2));
      vec3 pigment=shaded.rgb*(.78+.36*microLight+.19*ridge);
-     shaded.rgb=clamp(pigment*(.84+.16*film)+film*(.22*fresnel+.24*sparkle),0.0,1.0);
+     shaded.rgb=clamp(pigment*(.91+.09*film)+film*(.18*fresnel+.14*sparkle),0.0,1.0);
    }else{
      float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
      float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
@@ -7499,7 +7530,7 @@ void main(){
      vec3 wave=sin(p*1.13)+.48*sin(p.yzx*1.83+1.4);
      vec3 slope=cos(p*1.13)+.48*cos(p.yzx*1.83+1.4);
      float ridge=(wave.x+wave.y+wave.z)/4.44;
-     vec3 reliefN=normalize(n+.32*(slope-n*dot(slope,n)));
+     vec3 reliefN=normalize(n+.14*(slope-n*dot(slope,n)));
      float microLight=max(dot(reliefN,light),0.0);
      float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
      float fresnel=pow(grazing,2.1);
@@ -7508,7 +7539,7 @@ void main(){
                      .72+.28*sin(ridge*4.5+grazing*5.2+2.1),
                      .74+.26*sin(ridge*4.5+grazing*5.2+4.2));
      vec3 pigment=shaded.rgb*(.78+.36*microLight+.19*ridge);
-     shaded.rgb=clamp(pigment*(.84+.16*film)+film*(.22*fresnel+.24*sparkle),0.0,1.0);
+     shaded.rgb=clamp(pigment*(.91+.09*film)+film*(.18*fresnel+.14*sparkle),0.0,1.0);
    }else{
      float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
      float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
