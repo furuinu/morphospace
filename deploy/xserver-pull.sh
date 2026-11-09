@@ -44,25 +44,30 @@ CURRENT="$TARGET/.morphospace-deployed-sha"
 if [ "$(cat "$CURRENT" 2>/dev/null || true)" = "$SHA" ] \
    && [ -s "$TARGET/index.html" ] && [ -r "$TARGET/index.html" ] \
    && [ -s "$TARGET/about-i18n.js" ] && [ -r "$TARGET/about-i18n.js" ] \
+   && [ -s "$TARGET/share/index.php" ] && [ -r "$TARGET/share/index.php" ] \
    && grep -q "MorphospaceAboutI18n" "$TARGET/about-i18n.js"; then
   echo "$LOG_PREFIX up to date: $SHA (both files present)"
   exit 0
 fi
 
 # Fetch both files from the SAME successful commit, not from moving main.
-for file in about-i18n.js index.html; do
+mkdir -p "$TMP/share"
+for file in about-i18n.js index.html share/index.php; do
   curl -fsSL --connect-timeout 10 --max-time 60 \
     -H 'User-Agent: morphospace-xserver-pull-deploy' \
     "https://raw.githubusercontent.com/$REPO/$SHA/$file" > "$TMP/$file"
 done
 
 # Validate the complete release before writing anything into public_html.
-python3 - "$TMP/index.html" "$TMP/about-i18n.js" <<'PY'
+python3 - "$TMP/index.html" "$TMP/about-i18n.js" "$TMP/share/index.php" <<'PY'
 from html.parser import HTMLParser
 from pathlib import Path
 import sys
 html = Path(sys.argv[1]).read_bytes()
 js = Path(sys.argv[2]).read_bytes()
+php = Path(sys.argv[3]).read_bytes()
+if len(php) < 5000 or not php.startswith(b'<?php') or b'MORPHOSPACE SHARE API' not in php:
+    raise SystemExit('Shared-image PHP API missing or invalid')
 if len(html) < 100000 or b'MORPHOSPACE' not in html or b'<html' not in html.lower():
     raise SystemExit('Downloaded HTML failed validation')
 if b'data-bundled="surface-reaction.js"' not in html:
@@ -86,18 +91,24 @@ if parser.sources != ['about-i18n.js']:
     raise SystemExit(f'Unexpected external JavaScript: {parser.sources!r}')
 PY
 
-# Stage BOTH files first. A failed download/validation never changes the site.
+# Stage validated files first. A failed download/validation never changes the site.
+if command -v php >/dev/null 2>&1; then php -l "$TMP/share/index.php" >/dev/null; fi
 # Write the JS before the HTML so a newly published HTML never lacks its dependency.
 cp "$TMP/about-i18n.js" "$TARGET/.morphospace-i18n-next.js"
 cp "$TMP/index.html" "$TARGET/.morphospace-index-next.html"
 chmod 644 "$TARGET/.morphospace-i18n-next.js" "$TARGET/.morphospace-index-next.html"
+mkdir -p "$TARGET/share"
+cp "$TMP/share/index.php" "$TARGET/share/.morphospace-share-next.php"
+chmod 644 "$TARGET/share/.morphospace-share-next.php"
 # Retain one backup of each previous version (if present).
 [ ! -f "$TARGET/index.html" ] || cp -p "$TARGET/index.html" "$TARGET/.morphospace-index-backup.html"
 [ ! -f "$TARGET/about-i18n.js" ] || cp -p "$TARGET/about-i18n.js" "$TARGET/.morphospace-i18n-backup.js"
 mv -f "$TARGET/.morphospace-i18n-next.js" "$TARGET/about-i18n.js"
 mv -f "$TARGET/.morphospace-index-next.html" "$TARGET/index.html"
+mv -f "$TARGET/share/.morphospace-share-next.php" "$TARGET/share/index.php"
+# Images/DNA stay under /home/hakatamasala/morphospace-share-data and are never deleted.
 # Mark success only after both files have been placed and are web-server readable.
 printf '%s\n' "$SHA" > "$TMP/deployed-sha"
 cp "$TMP/deployed-sha" "$CURRENT"
 chmod 644 "$CURRENT"
-echo "$LOG_PREFIX deployed $SHA (index.html + about-i18n.js; permissions 644)"
+echo "$LOG_PREFIX deployed $SHA (index.html + about-i18n.js + share/index.php; permissions 644)"
