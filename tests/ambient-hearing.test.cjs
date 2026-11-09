@@ -188,7 +188,9 @@ test('processed sample instruments preserve the original heartbeat and star bus'
  assert.match(hearing,/this\.motifs\.filter\(m=>now<m\.until\)/);
  assert.match(hearing,/amp\.connect\(engine\.sampleInput\)/);
  assert.doesNotMatch(hearing,/state\.master\.gain/);
- assert.match(html,/if\(ambientSense\.active\)quiet=true;/);
+ // In layered mode microphone motifs must not mute the original choir.
+ assert.doesNotMatch(html,/if\(ambientSense\.active\)quiet=true;/);
+ assert.match(html,/renderPureChoir\(quiet,pureChoir,spec,1\)/);
  assert.match(html,/updateHeartbeat\(individuals,quiet,Number\(\$\('viewerSoundVolume'\)\.value\)\/100\)/);
  assert.match(html,/amp\.connect\(ctx\.destination\);amp\.connect\(engine\.snowRecordingTap\)/);
 });
