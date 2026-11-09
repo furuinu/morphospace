@@ -7129,7 +7129,6 @@ vec4 hexCorneaSample(vec3 direction){
 }`;
 
 const frag=`precision mediump float;
-uniform mat4 uModel;
 uniform highp float uTime;
 varying vec3 vNormal; varying vec3 vColor; varying vec3 vView; varying float vRole; varying vec2 vGlow; varying vec3 vObj; varying float vAlong;
 uniform float uPhaseCut;varying float vPhaseHeight;
@@ -7395,7 +7394,6 @@ void main(){
  gl_Position=captureClip(uMvp*vec4(p,1.0));
 }`;
 const compatibleFrag=`precision mediump float;
-uniform mat4 uModel;
 uniform highp float uTime;
 varying mediump vec3 vNormal;varying mediump vec3 vColor;varying mediump vec3 vView;
 varying mediump float vRole;varying mediump vec2 vGlow;varying mediump vec3 vObj;varying mediump float vAlong;
