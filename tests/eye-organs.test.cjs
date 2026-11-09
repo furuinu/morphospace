@@ -94,3 +94,47 @@ test('eye DNA recombination records parental contribution and limits mutation',(
  assert.ok(['A','B'].includes(inherited.eye_movement));
  assert.ok(log.every(x=>x.field.startsWith('eyeDNA.')));
 });
+
+test('eyelid mesh closes visibly instead of barely flashing',()=>{
+ const part=specimen(0,1,1)[0],raw=part.mesh,rig=part.eyeRig;
+ const lidVertices=rig.meta.map((m,i)=>({...m,i})).filter(m=>m.node===2&&m.row===1&&Math.abs(m.across)<.00001);
+ assert.equal(lidVertices.length,2,'Upper and lower eyelids should both cover the optical center');
+ const data=new Float32Array(raw.data.length/9*17);
+ for(let i=0;i<raw.data.length/9;i++)data.set(raw.data.subarray(i*9,i*9+9),i*17);
+ const mesh={data,buffer:{}},gl={ARRAY_BUFFER:34962,bindBuffer(){},bufferSubData(){}};
+ let near=Infinity,far=0;
+ const distance=()=>{
+  const a=lidVertices[0].i*17,b=lidVertices[1].i*17;
+  return Math.hypot(...[0,1,2].map(k=>mesh.data[a+k]-mesh.data[b+k]));
+ };
+ for(let i=0;i<=200;i++){
+  eyes.animateEyeUploaded(gl,mesh,rig,i*rig.interval/200,true);
+  const gap=distance();near=Math.min(near,gap);far=Math.max(far,gap);
+ }
+ assert.ok(far>rig.radius*1.4,'Eye must open clearly');
+ assert.ok(near<rig.radius*.23,'Eye must reach a near-closed state');
+ assert.ok(far-near>rig.radius*1.2,'Blink must have visible travel');
+});
+test('organic eyestalk has a flared buried root and independent optical pigments',()=>{
+ const part=specimen(2,1,1)[0],d=part.eyeRig;
+ const stalk=d.meta.filter(m=>m.node===0);
+ const radiusAt=u=>{
+  const ring=stalk.filter(m=>Math.abs(m.u-u)<.00001);
+  return Math.max(...ring.map(m=>Math.hypot(m.p[0],m.p[1])));
+ };
+ assert.ok(radiusAt(0)>radiusAt(.5)*2,'Root flare must be broader than the stalk');
+ assert.ok(radiusAt(1)>radiusAt(.5)*1.3,'Eye cup must broaden again at the tip');
+ const opticalIndices=d.meta.map((m,i)=>m.node===1?i:-1).filter(i=>i>=0);
+ const skinIndices=d.meta.map((m,i)=>m.node===0?i:-1).filter(i=>i>=0);
+ const avg=indices=>[6,7,8].map(c=>indices.reduce((sum,i)=>sum+part.mesh.data[i*9+c],0)/indices.length);
+ const oc=avg(opticalIndices),sc=avg(skinIndices),contrast=Math.hypot(...oc.map((q,i)=>q-sc[i]));
+ assert.ok(contrast>.16,'Optical pigment must be visibly distinct from skin');
+ assert.ok(d.meta.some(m=>m.node===2),'Compound eyes must have a protective blink');
+});
+test('WebGL renders eye as rigid organ with separate optical material',()=>{
+ assert.match(html,/role>12\.0&&role<13\.7/);
+ assert.match(html,/bool optical=vRole>12\.9&&vRole<13\.6/);
+ assert.match(html,/eyeMesh\.data\[vertex\*17\+12\]=pt\.eyeRig\.meta\[vertex\]\.node===1\?13\.2:12\.4/);
+ assert.match(html,/shifted=canonical\+\(attached-anchorCanonical\)/);
+ assert.match(html,/const blinkWindow=\.17/);
+});
