@@ -9067,7 +9067,7 @@ function applyUploadedSpecimen(nextSpec,preserveView=true,updateMeta=false,prepa
   const groups=dynamicBatches(nextSpec),ciliaGroups=createGpuCiliaMeshes(nextSpec);
   destroyMeshes();const shellProfile=nextSpec.glowProfile||(nextSpec.glowProfile=createGlowProfile(nextSpec.seed)); const shellGlow=shellProfile.shellGlow?[shellProfile.shellGlow.strength,shellProfile.shellGlow.phase]:[0,0];
   meshes={shell:upload(gl,nextSpec.growthModel?skinGrowthRig(nextSpec.shell,nextSpec.growthModel):dynamicMesh(nextSpec.shell,0,(nextSpec.seed*.00013)%TAU,[0,0,0],null,shellGlow)),parts:groups.map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind})),cilia:ciliaGroups.map(mesh=>upload(gl,mesh))};
-   if(nextSpec.localGroup){meshes.localShell=upload(gl,skinGrowthRig(nextSpec.localGroup.shell,nextSpec.localGroup.source));meshes.localParts=dynamicBatches({...nextSpec,parts:nextSpec.localGroup.parts,rigs:[]}).map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind,eyeRig:pt.eyeRig}));}
+   if(nextSpec.localGroup){meshes.localShell=upload(gl,skinGrowthRig(nextSpec.localGroup.shell,nextSpec.localGroup.source));meshes.localParts=dynamicBatches({...nextSpec,parts:nextSpec.localGroup.parts,rigs:[]}).map(pt=>({mesh:upload(gl,pt.mesh),kind:pt.kind,eyeRig:pt.eyeRig,copyIndex:pt.copyIndex}));}
  }
  rigMeshes=nextSpec.rigs;spec=nextSpec;
  if(updateMeta)syncSpecimenGlassTransparency(nextSpec);
