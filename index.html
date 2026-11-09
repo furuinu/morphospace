@@ -13421,7 +13421,7 @@ function frame(now){viewerFrameHandle=0;if(animating){
    modelYaw=-cameraOrbitPhase+cameraOrbitYawOffset;
    modelPitch=-25*Math.PI/180+cameraOrbitPitchOffset+cameraOrbitPitchPhase;
    cameraRoll=cameraOrbitRollPhase;
-  }else if(!specimenDragManual)cameraRoll=0;
+  }else if(typeof specimenDragManual==='undefined'||!specimenDragManual)cameraRoll=0;
   // Wide yaw/pitch/roll manoeuvres also move the infinite-distance sky.
   // The gaze envelope vanishes at target acquisition without a camera snap.
   if(viewer.morph?.warpChase){
