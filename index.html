@@ -7161,9 +7161,28 @@ void main(){
    if(optical){
      // Lens and compound facets have their own pigment and wet specular response.
      vec3 view=normalize(vView),light=normalize(lightDir);
+   bool compound=vRole>13.28&&vRole<13.48;
+   if(compound){
+     // Fine repeating corneal relief with stronger grazing reflectance.
+     vec3 p=vObj*63.0+vec3(1.9,3.7,5.1);
+     vec3 wave=sin(p*1.13)+.48*sin(p.yzx*1.83+1.4);
+     vec3 slope=cos(p*1.13)+.48*cos(p.yzx*1.83+1.4);
+     float ridge=(wave.x+wave.y+wave.z)/4.44;
+     vec3 reliefN=normalize(n+.32*(slope-n*dot(slope,n)));
+     float microLight=max(dot(reliefN,light),0.0);
+     float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
+     float fresnel=pow(grazing,2.1);
+     float sparkle=pow(max(dot(reflect(-light,reliefN),view),0.0),22.0);
+     vec3 film=vec3(.70+.30*sin(ridge*4.5+grazing*5.2),
+                     .72+.28*sin(ridge*4.5+grazing*5.2+2.1),
+                     .74+.26*sin(ridge*4.5+grazing*5.2+4.2));
+     vec3 pigment=shaded.rgb*(.78+.36*microLight+.19*ridge);
+     shaded.rgb=clamp(pigment*(.84+.16*film)+film*(.22*fresnel+.24*sparkle),0.0,1.0);
+   }else{
      float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
      float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
      shaded.rgb=clamp(shaded.rgb*(.70+.40*lambert)+vec3(.90,.97,1.0)*(glint*.52+fresnel*.10),0.0,1.0);
+   }
    }else{
      vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
      shaded.rgb+=skinLight.rgb;
@@ -7403,9 +7422,28 @@ void main(){
  vec4 shaded=optical?vec4(color,1.0):emissionSurfaceColor(color,vObj);
  if(optical){
    vec3 view=normalize(vView),light=normalize(lightDir);
-   float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
-   float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
-   shaded.rgb=clamp(shaded.rgb*(.70+.40*lambert)+vec3(.90,.97,1.0)*(glint*.52+fresnel*.10),0.0,1.0);
+   bool compound=vRole>13.28&&vRole<13.48;
+   if(compound){
+     // Fine repeating corneal relief with stronger grazing reflectance.
+     vec3 p=vObj*63.0+vec3(1.9,3.7,5.1);
+     vec3 wave=sin(p*1.13)+.48*sin(p.yzx*1.83+1.4);
+     vec3 slope=cos(p*1.13)+.48*cos(p.yzx*1.83+1.4);
+     float ridge=(wave.x+wave.y+wave.z)/4.44;
+     vec3 reliefN=normalize(n+.32*(slope-n*dot(slope,n)));
+     float microLight=max(dot(reliefN,light),0.0);
+     float grazing=1.0-clamp(dot(reliefN,view),0.0,1.0);
+     float fresnel=pow(grazing,2.1);
+     float sparkle=pow(max(dot(reflect(-light,reliefN),view),0.0),22.0);
+     vec3 film=vec3(.70+.30*sin(ridge*4.5+grazing*5.2),
+                     .72+.28*sin(ridge*4.5+grazing*5.2+2.1),
+                     .74+.26*sin(ridge*4.5+grazing*5.2+4.2));
+     vec3 pigment=shaded.rgb*(.78+.36*microLight+.19*ridge);
+     shaded.rgb=clamp(pigment*(.84+.16*film)+film*(.22*fresnel+.24*sparkle),0.0,1.0);
+   }else{
+     float glint=pow(max(dot(reflect(-light,n),view),0.0),34.0);
+     float fresnel=pow(1.0-max(dot(n,view),0.0),4.0);
+     shaded.rgb=clamp(shaded.rgb*(.70+.40*lambert)+vec3(.90,.97,1.0)*(glint*.52+fresnel*.10),0.0,1.0);
+   }
  }else{
    vec4 skinLight=chromaticSkinFlow(vObj,vNormal,vView);
    shaded.rgb+=skinLight.rgb;
@@ -8384,7 +8422,7 @@ function dynamicBatches(sp){
     const eyeMesh=dynamicMesh(pt.mesh,13.2,pt.eyeRig.phase,pt.eyeRig.root,vertex=>pt.eyeRig.meta[vertex].node);
     // Skin-coloured lids/stalk and independently pigmented optics use separate shader roles.
     for(let vertex=0;vertex<pt.eyeRig.meta.length;vertex++)
-      eyeMesh.data[vertex*17+12]=pt.eyeRig.meta[vertex].node===1?13.2:12.4;
+      eyeMesh.data[vertex*17+12]=pt.eyeRig.meta[vertex].node===1?(pt.eyeRig.kind===2?13.35:13.2):12.4;
     groups.push({mesh:eyeMesh,kind:'eye',eyeRig:pt.eyeRig});continue;
    }
    if(pt.delicate){const d=pt.delicate,progress=k=>d.type==='fin'?(k%d.sides)/(d.sides-1):Math.min(1,Math.floor(k/d.sides)/(d.rows-1));const mesh=dynamicMesh(pt.mesh,d.type==='fin'?11:10,d.phase,d.root,progress,glowInfo);if(d.type==='strand'){mesh.verlet=makeVerletStrand(mesh,d,sp.genome);groups.push({mesh,kind:pt.kind});}else (pt.kind==='translucent'?translucent:opaque).push(mesh);continue;}
