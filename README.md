@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.21.4. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.73.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Edge antialiasing and dithering (v15.73.0)
+
+The final composite now antialiases the scene with FXAA before flare, stellar point and VHS treatment, so film grain and scanlines stay crisp. Flat regions exit after five luma taps; only contrast edges take four more samples. No render target, pass or extension was added, and WebGL1 uses the same code. The DOF debug views bypass it.
+
+The scene targets remain 8-bit. A fixed screen-space triangular dither of one 8-bit step is applied to the nebula/marine background before it is written to the scene target, and again at final output for bloom and flare gradients. Atlas thumbnails keep their noise-free backdrop. The pattern does not change over time, so stills and video frames are stable.
+
+Validation: Node checks cover shader wiring, the debug bypass and a CPU port of the dither (bounded, zero-mean, disperses a three-level ramp). Both shader variants compile and render in headless Chromium (SwiftShader, WebGL2). Physical iPhone Safari appearance and frame rate remain unverified.
 
 ## Kinetic network and mirrored serial bodies (v15.67.0)
 
