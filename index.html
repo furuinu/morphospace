@@ -7166,12 +7166,9 @@ vec3 proceduralNebula(vec2 uv){
  vec3 ray=normalize(vec3(screen.x,screen.y,-1.0));
  // Exact current camera basis, including pitch and roll. Translation is ignored.
  ray=normalize(uSkyBasis*ray);
- // The cloud evolves in its own world-space volume, rather than rotating
- // with the camera. Slight, depth-dependent flow supplies natural 3D motion.
- float t=uTime*.014;
- vec3 slowFlow=vec3(sin(uTime*.010),cos(uTime*.007),sin(uTime*.006))*.12;
- // Direction-space coordinates remain continuous through a full 360-degree orbit.
- vec3 p=ray*3.4+vec3(7.2,1.3,-2.7)+slowFlow;
+ float t=uTime*.02625;
+ // 3D spherical sampling avoids a seam in a 360-degree background.
+ vec3 p=ray*3.4+vec3(7.2,1.3,-2.7);
  vec3 flow=vec3(nebNoise(p*.72+vec3(t,0.,0.)),
                 nebNoise(p*.72+vec3(13.1,-t*.65,4.5)),
                 nebNoise(p*.72+vec3(5.3,9.7,t*.78)))-.5;
@@ -7180,38 +7177,19 @@ vec3 proceduralNebula(vec2 uv){
  float softCloud=nebFbm(q*.66+vec3(9.1,2.8,5.2));
  float density=smoothstep(.34,.73,mainCloud*.78+softCloud*.30);
  float filament=nebNoise(q*5.7+flow*.4);
- // High-frequency warped strands retain structure during orbital camera motion.
+ // Detail layers follow the same 3D domain warp as the large gas masses.
  float filigree=nebNoise(q*13.7+flow*.9);
  float wisps=nebNoise(q*25.3+vec3(11.3,4.7,8.1));
- float threads=1.0-abs(nebNoise(q*9.7+flow*1.4)*2.0-1.0);
- threads=pow(threads,5.0);
- density=clamp(density*(.52+.38*filament+.25*filigree+.14*wisps)+
-               threads*density*.13,0.,1.);
- // Three separately drifting gas depths. Their apparent transverse positions
- // differ, providing depth and occlusion, not a flat animated UV texture.
- vec3 farP=ray*2.12+vec3(9.7,3.6,-4.2)+slowFlow*.37;
- vec3 nearP=ray*5.30+vec3(4.1,-2.8,8.3)-slowFlow*.72;
- float farGas=smoothstep(.43,.74,nebNoise(farP*1.65))*
-              (.56+.44*nebNoise(farP*5.2));
- float nearGas=smoothstep(.51,.78,nebNoise(nearP*1.45))*
-               (.45+.55*nebNoise(nearP*7.1));
- float nearStrands=pow(1.0-abs(nebNoise(nearP*13.4)*2.0-1.0),5.0);
- nearGas=clamp(nearGas+nearStrands*nearGas*.34,0.,1.);
+ // Extra fine grain only: retain the original cloud silhouettes, colour
+ // distribution, animation speed and nebula depth model.
+ float microDetail=nebNoise(q*47.0+flow*.85+vec3(6.1,14.3,2.7));
+ float originalDetail=.58+.44*filament+.27*filigree+.17*wisps;
+ density=clamp(density*originalDetail*(.95+.10*microDetail),0.,1.);
  // Combine large chromatic islands with finer drifting filaments.
  float colorRegion=nebNoise(q*.54+vec3(4.,8.,2.)+vec3(uTime*.009,-uTime*.006,uTime*.004));
  float chromaDetail=nebNoise(q*1.35+vec3(-5.,12.,7.)+vec3(-uTime*.004,uTime*.008,0.));
  colorRegion=clamp(colorRegion*.68+chromaDetail*.32,0.,1.);
- vec3 colour=nebGradient(density,colorRegion)*density*.79;
- // Fine cyan / rose ionisation fronts outline turbulent gas boundaries.
- float luminousEdge=threads*smoothstep(.14,.55,density);
- vec3 rimTint=nebSpectrum(fract(colorRegion*1.43+.47));
- colour+=rimTint*luminousEdge*.19;
- // Far nebular light scatters through middle gas while the front sheet
- // catches light more strongly, making distinct layers readable in motion.
- vec3 farTint=nebSpectrum(fract(colorRegion*.91+.61));
- vec3 frontTint=nebSpectrum(fract(colorRegion*1.13+.25));
- colour=screenColours(farTint*farGas*.13,colour);
- colour=screenColours(colour,frontTint*nearGas*.12);
+ vec3 colour=nebGradient(density,colorRegion)*density*.90;
  // Thin spectral filaments are independently tinted, not just lighter gas.
  float spectralFilament=smoothstep(.57,.85,filament)*smoothstep(.19,.70,density);
  vec3 filamentTint=nebSpectrum(fract(colorRegion*2.05+.48+uTime*.012));
@@ -7228,23 +7206,13 @@ vec3 proceduralNebula(vec2 uv){
                          vec3(uTime*.019,-uTime*.014,uTime*.006));
  float darkMass=smoothstep(.43,.70,darkLarge)*.71;
  float darkFilament=smoothstep(.59,.83,darkMedium)*smoothstep(.15,.70,density)*.48;
- // Sharply eroded, layered dust rims echo high-resolution infrared nebulae.
- float nearDust=nebNoise(nearP*.83+vec3(3.4,7.1,-5.2));
- float tornEdge=nebNoise(nearP*8.6+flow*.6);
- float darkPillar=smoothstep(.51,.64,nearDust*.80+tornEdge*.20);
- float foregroundVeil=smoothstep(.64,.87,darkVeil)*.20+
-                      darkPillar*nearGas*.34;
+ float foregroundVeil=smoothstep(.64,.87,darkVeil)*.27;
  float dustOpacity=clamp(darkMass+darkFilament+foregroundVeil,0.,.90);
  float warmDust=nebNoise(q*.52+vec3(17.,-9.,2.));
  // Transmission, rather than black additive paint, preserves shadow detail.
  float transmission=exp(-1.65*dustOpacity);
  colour=colour*transmission+
         darkNebulaTint(warmDust)*dustOpacity*.33;
- // Thin illuminated rims where radiation meets the foreground dust wall.
- float dustRim=(smoothstep(.46,.55,nearDust)-
-                smoothstep(.60,.70,nearDust))*nearGas;
- colour+=mix(vec3(.20,.55,.76),vec3(.90,.27,.44),colorRegion)*
-         dustRim*.23*(1.0-.55*dustOpacity);
  // The stars forming inside the thick gas are also partially obscured;
  // foreground stellar points remain visible on top in their separate pass.
  nursery*=transmission;
