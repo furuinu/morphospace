@@ -7185,11 +7185,17 @@ vec3 proceduralNebula(vec2 uv){
  float baseCloudGrayscale=smoothstep(.18,.73,broadDensity);
  float shadowKeep=smoothstep(.20,.73,baseCloudGrayscale);
  float cloudEnvelope=baseCloudGrayscale*shadowKeep;
- float colourRegion=nebNoise(q*.54+vec3(4.,8.,2.)+
-                             vec3(uTime*.009,-uTime*.006,uTime*.004));
+ // Soften hue transitions with an additional broad correlated field.
+ // The original pigments and monochrome density silhouette remain intact.
+ float colourRegionBase=nebNoise(q*.54+vec3(4.,8.,2.)+
+                                 vec3(uTime*.009,-uTime*.006,uTime*.004));
+ float colourRegionSoft=nebNoise(q*.26+vec3(-6.,5.,1.)+
+                                 vec3(-uTime*.003,uTime*.002,-uTime*.001));
  float chromaDetail=nebNoise(q*1.35+vec3(-5.,12.,7.)+
                              vec3(-uTime*.004,uTime*.008,0.));
- colourRegion=clamp(colourRegion*.68+chromaDetail*.32,0.,1.);
+ float colourRegion=clamp(colourRegionBase*.44+
+                          colourRegionSoft*.36+
+                          chromaDetail*.20,0.,1.);
  // Restore the pre-blending spectral palette; do not modify hue topology.
  vec3 gasTint=nebGradient(.60,colourRegion);
  vec3 warmTint=nebSpectrum(fract(colourRegion*1.53+.17+uTime*.003));
@@ -7220,8 +7226,11 @@ vec3 proceduralNebula(vec2 uv){
                       .62*(fibrous-.5)+.45*(fineFibres-.5);
   float edge=smoothstep(.48,.76,fibrous)*
              (1.0-smoothstep(.82,.98,fibrous));
-  // Restore original per-depth pigment mapping without artificial mixing.
-  vec3 localTint=mix(gasTint,mix(warmTint,coolTint,gasNoise),.20);
+  // Lightly blend depth-specific hues across different gas structures,
+  // avoiding stripes driven by one noise field without replacing the palette.
+  vec3 localTintBase=mix(gasTint,mix(warmTint,coolTint,gasNoise),.14);
+  vec3 localTintSoft=mix(gasTint,mix(warmTint,coolTint,fibrous),.08);
+  vec3 localTint=mix(localTintBase,localTintSoft,.28);
   // Brighter *emission*, not higher opacity: avoid reintroducing flat faces.
   vec3 radiance=localTint*gas*localContrast*3.35;
   radiance+=localTint*gas*edge*.52;
@@ -7287,10 +7296,13 @@ vec3 proceduralNebula(vec2 uv){
  float rnd=nebHash(cell);
  float star=step(.9982,rnd)*pow(max(0.,dot(normalize(cell+vec3(.5)),ray)),260000.);
  star*=.7+.3*sin(uTime*.55+rnd*67.);
- // Soft-knee compression only above a bright threshold, protecting local
- // highlights while leaving deep shadows and middle values unaltered.
+ // Soft-knee compression before background-only colour grading.
  vec3 excess=max(colour-vec3(.72),vec3(0.0));
  colour-=excess*(1.0-1.0/(1.0+excess*.72));
+ // Saturation -10%, brightness -20%. Keep stars and the 3D organism unchanged.
+ float nebulaLuma=dot(colour,vec3(.2126,.7152,.0722));
+ colour=mix(vec3(nebulaLuma),colour,.90);
+ colour*=.80;
  return vec3(.003,.002,.012)+colour+vec3(.70,.79,1.0)*star;
 }
 void main(){
