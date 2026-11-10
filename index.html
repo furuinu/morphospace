@@ -7179,9 +7179,12 @@ vec3 proceduralNebula(vec2 uv){
  float mainCloud=nebFbm(q);
  float softCloud=nebFbm(q*.66+vec3(9.1,2.8,5.2));
  float broadDensity=mainCloud*.78+softCloud*.30;
- // Keep the volumetric silhouette, but bring back the old cloud's
- // luminous midtones rather than suppressing the whole volume.
- float cloudEnvelope=smoothstep(.18,.73,broadDensity);
+ // Treat the ORIGINAL gas field as grayscale before applying any pigment.
+ // A shadow-only tone curve increases genuine black gaps in the underlying
+ // clouds: mid/high-density details survive, and bright areas stay intact.
+ float baseCloudGrayscale=smoothstep(.18,.73,broadDensity);
+ float shadowKeep=smoothstep(.20,.73,baseCloudGrayscale);
+ float cloudEnvelope=baseCloudGrayscale*shadowKeep;
  float colourRegion=nebNoise(q*.54+vec3(4.,8.,2.)+
                              vec3(uTime*.009,-uTime*.006,uTime*.004));
  float chromaDetail=nebNoise(q*1.35+vec3(-5.,12.,7.)+
@@ -7238,33 +7241,8 @@ vec3 proceduralNebula(vec2 uv){
  float shadeNoise=nebNoise(q*6.1+flow*.28);
  colour+=vec3(.009,.014,.028)*(1.0-transmission)*
          (.65+.35*shadeNoise);
- // Grayscale-style shadow curve: lower dark values sharply while preserving
- // the existing bright-cloud gain, the RGB ratios, and all fine structures.
- // Analogue of pulling down the lower-left Photoshop tone-curve segment.
- float gasLuminance=dot(colour,vec3(.2126,.7152,.0722));
- float shadowCurve=smoothstep(.045,.34,gasLuminance);
- float gasExposure=mix(.055,.68,shadowCurve);
- colour*=gasExposure;
- // Multiply-only dark gas overlay (Photoshop Clouds + Difference Clouds).
- // Preserve the original eight-slice cloud silhouette, pigments and emission.
- // Existing low-frequency shadeNoise and flow gently warp elongated strands
- // without adding another expensive octave on mobile WebGL1.
- vec3 darkWarp=q+flow*.28+
-               vec3((shadeNoise-.5)*.25,(shadeNoise-.5)*.10,0.0);
- float darkCloud1=nebNoise(q*.93+vec3(16.3,-7.2,11.4));
- float darkCloud2A=nebNoise(darkWarp*vec3(3.0,12.0,2.5)+
-                           vec3(3.2,7.1,-2.1));
- float darkCloud2B=nebNoise(darkWarp*vec3(4.8,19.0,3.7)+
-                           vec3(-6.5,4.3,8.1));
- // Difference-cloud contours form irregular fine veins, not straight lines.
- float darkVeins=1.0-smoothstep(.07,.26,abs(darkCloud2A-darkCloud2B));
- float darkMass=smoothstep(.36,.72,darkCloud1);
- float darkStructure=mix(.30,1.0,darkVeins);
- float darkMask=cloudEnvelope*darkMass*darkStructure;
- // White means unchanged; darker values multiply the nebular light only.
- // Keep a clear view of the original colour and luminous cloud peaks.
- const float darkMultiplyStrength=.65;
- colour*=1.0-darkMultiplyStrength*darkMask;
+ // No separate dark-nebula overlay or post-colour grayscale grading.
+ // Dark space comes solely from the underlying grayscale gas-density curve.
  // Existing star passes remain independent of this volumetric cloud.
  // The stars forming inside the thick gas are also partially obscured;
  // foreground stellar points remain visible on top in their separate pass.
