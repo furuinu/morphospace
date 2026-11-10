@@ -7206,6 +7206,14 @@ vec3 proceduralNebula(vec2 uv){
  vec3 baseColour=nebGradient(density,colorRegion);
  vec3 colour=baseColour*density*(.82*shading+.08);
  colour+=baseColour*emission*.075;
+ // High-opacity clouds emit rather than becoming flat, uniformly bright paint.
+ // Use the displayed density: the raw fBm rarely reaches the .92 threshold.
+ float overBright=smoothstep(.72,.92,density);
+ float glowMask=overBright*(.55+.45*filament)*(.80+.20*filigree);
+ vec3 glowTint=mix(baseColour,vec3(1.0,.96,.98),.35);
+ colour+=glowTint*glowMask*.16;
+ float glowCore=smoothstep(.84,.97,density)*(.65+.35*filament);
+ colour+=mix(glowTint,vec3(1.0),.45)*glowCore*.08;
  // Thin spectral filaments are independently tinted, not just lighter gas.
  float spectralFilament=smoothstep(.57,.85,filament)*smoothstep(.19,.70,density);
  vec3 filamentTint=nebSpectrum(fract(colorRegion*2.05+.48+uTime*.012));
@@ -7272,6 +7280,11 @@ vec3 proceduralNebula(vec2 uv){
  float rnd=nebHash(cell);
  float star=step(.9982,rnd)*pow(max(0.,dot(normalize(cell+vec3(.5)),ray)),260000.);
  star*=.7+.3*sin(uTime*.55+rnd*67.);
+ // Compress only excess high-density emission; leave shadow and midtone
+ // values untouched so the original nebula's depth and palette remain intact.
+ float glowCompress=smoothstep(.68,.90,density);
+ vec3 compressed=colour/(1.0+colour*.55);
+ colour=mix(colour,compressed,glowCompress*.65);
  return vec3(.003,.002,.012)+colour+vec3(.70,.79,1.0)*star;
 }
 void main(){
