@@ -3,8 +3,20 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.73.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.74.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Contact shading and field-gradient normals (v15.74.0)
+
+**Contact shading.** A screen-space ambient occlusion pass darkens folds, organ roots and overlapping lobes. It uses only the existing scene depth texture: each pixel rebuilds its view-space position and normal from depth, then ten spiral samples measure how much nearby geometry rises above its tangent plane. The estimate is computed at half resolution with four interleaved sample rotations, then filtered while it is multiplied into the scene colour. Alpha (the emission mask for bloom) and the empty background are left untouched. The reach is 7.5% of the framing distance, so it follows specimen size rather than zoom.
+
+The existing **陰影の強さ** slider scales it together with surface shading; zero skips the pass. It runs on WebGL2 only (24-bit depth); WebGL1, wireframe and the capture/laboratory sequences render as before. Failure to create the pass leaves the scene unchanged.
+
+**Normals.** Body-shell normals were averaged from the marching-tetrahedra triangles, whose irregular shapes show up in lighting and reflections. They now come from the growth field's gradient, interpolated from the lattice samples already taken for the surface, so no additional field evaluations are made and build time is unchanged. Where the gradient disagrees with the triangle normal (features thinner than the lattice) it fades back to the triangle normal. Positions, topology, colours and morph correspondence are unchanged.
+
+Measured over 12 seeded bodies at the detailed resolution, mean normal error against the cell-scale field gradient fell from 30.6° to 25.1°, and mean normal variation across mesh edges from 30.2° to 28.2°. The improvement is modest: these bodies have many features near the lattice size, so resolution, not normal estimation, is the main limit on smoothness.
+
+Validation: Node checks cover gradient adoption and fallback, unchanged positions/topology, pass wiring, state restoration and the WebGL2-only gate. Shaders compile and render in headless Chromium (SwiftShader, WebGL2). Physical iPhone Safari appearance and frame rate remain unverified.
 
 ## Edge antialiasing and dithering (v15.73.0)
 
