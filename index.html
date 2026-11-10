@@ -7175,7 +7175,9 @@ vec3 proceduralNebula(vec2 uv){
  vec3 q=p+flow*.72;
  float mainCloud=nebFbm(q);
  float softCloud=nebFbm(q*.66+vec3(9.1,2.8,5.2));
- float density=smoothstep(.34,.73,mainCloud*.78+softCloud*.30);
+ // Wider density transition preserves sculpted midtones in dark and bright gas.
+ float densityRaw=mainCloud*.78+softCloud*.30;
+ float density=smoothstep(.29,.77,densityRaw);
  float filament=nebNoise(q*5.7+flow*.4);
  // Detail layers follow the same 3D domain warp as the large gas masses.
  float filigree=nebNoise(q*13.7+flow*.9);
@@ -7184,12 +7186,26 @@ vec3 proceduralNebula(vec2 uv){
  // distribution, animation speed and nebula depth model.
  float microDetail=nebNoise(q*47.0+flow*.85+vec3(6.1,14.3,2.7));
  float originalDetail=.58+.44*filament+.27*filigree+.17*wisps;
- density=clamp(density*originalDetail*(.95+.10*microDetail),0.,1.);
+ // Preserve the original silhouette while avoiding early highlight clipping.
+ density=min(.985,max(0.,density*originalDetail*(.95+.10*microDetail)));
  // Combine large chromatic islands with finer drifting filaments.
  float colorRegion=nebNoise(q*.54+vec3(4.,8.,2.)+vec3(uTime*.009,-uTime*.006,uTime*.004));
  float chromaDetail=nebNoise(q*1.35+vec3(-5.,12.,7.)+vec3(-uTime*.004,uTime*.008,0.));
  colorRegion=clamp(colorRegion*.68+chromaDetail*.32,0.,1.);
- vec3 colour=nebGradient(density,colorRegion)*density*.90;
+ // Two directional density samples give gentle relief without an expensive
+ // six-sample fBm normal. This is local shading, not a new cloud layer.
+ vec3 reliefAxis=vec3(-.44,.68,.58);
+ float reliefA=nebNoise(q*2.35+reliefAxis*.29);
+ float reliefB=nebNoise(q*2.35-reliefAxis*.29);
+ float relief=clamp((reliefA-reliefB)*1.45,-1.,1.);
+ float shading=1.0+relief*.21;
+ // Separate gas luminosity from density: brighten textured crests without
+ // filling dark folds or changing the established spectral palette.
+ float emission=smoothstep(.38,.84,densityRaw)*
+                (.52+.48*filament)*(.84+.16*filigree);
+ vec3 baseColour=nebGradient(density,colorRegion);
+ vec3 colour=baseColour*density*(.82*shading+.08);
+ colour+=baseColour*emission*.075;
  // Thin spectral filaments are independently tinted, not just lighter gas.
  float spectralFilament=smoothstep(.57,.85,filament)*smoothstep(.19,.70,density);
  vec3 filamentTint=nebSpectrum(fract(colorRegion*2.05+.48+uTime*.012));
