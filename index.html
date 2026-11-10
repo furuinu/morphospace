@@ -7187,12 +7187,10 @@ vec3 proceduralNebula(vec2 uv){
  float chromaDetail=nebNoise(q*1.35+vec3(-5.,12.,7.)+
                              vec3(-uTime*.004,uTime*.008,0.));
  colourRegion=clamp(colourRegion*.68+chromaDetail*.32,0.,1.);
- // Independent spectral pigments are mixed in RGB, not selected by a
- // single hue ramp: prevent rainbow contour bands at wide zoom.
- vec3 primaryTint=nebGradient(.60,colourRegion);
+ // Restore the pre-blending spectral palette; do not modify hue topology.
+ vec3 gasTint=nebGradient(.60,colourRegion);
  vec3 warmTint=nebSpectrum(fract(colourRegion*1.53+.17+uTime*.003));
  vec3 coolTint=nebSpectrum(fract(colourRegion*1.37+.62-uTime*.002));
- vec3 gasTint=primaryTint*.54+warmTint*.24+coolTint*.22;
  vec3 colour=vec3(0.0);
  float transmission=1.0;
  float nursery=0.0;
@@ -7219,11 +7217,8 @@ vec3 proceduralNebula(vec2 uv){
                       .62*(fibrous-.5)+.45*(fineFibres-.5);
   float edge=smoothstep(.48,.76,fibrous)*
              (1.0-smoothstep(.82,.98,fibrous));
-  // Depth-dependent cross-pigment mixing breaks up hard boundaries
-  // while retaining vivid colours and the original density field.
-  float spectralBlend=.16+.16*gasNoise+.10*(fibrous-.5);
-  vec3 secondaryTint=mix(warmTint,coolTint,.25+.50*fibrous);
-  vec3 localTint=mix(gasTint,secondaryTint,spectralBlend);
+  // Restore original per-depth pigment mapping without artificial mixing.
+  vec3 localTint=mix(gasTint,mix(warmTint,coolTint,gasNoise),.20);
   // Brighter *emission*, not higher opacity: avoid reintroducing flat faces.
   vec3 radiance=localTint*gas*localContrast*3.35;
   radiance+=localTint*gas*edge*.52;
@@ -7237,17 +7232,18 @@ vec3 proceduralNebula(vec2 uv){
  float microWisp=nebNoise(q*23.0+flow*.55+vec3(12.7,4.1,-3.6));
  float detailContrast=(microFilament-.5)*.45+(microWisp-.5)*.30;
  float detailMask=smoothstep(.17,.72,cloudEnvelope)*(1.0-transmission);
- vec3 detailTint=mix(gasTint,mix(warmTint,coolTint,microWisp),.12);
+ vec3 detailTint=mix(gasTint,warmTint,.12);
  colour+=detailTint*detailContrast*detailMask*.48;
  // Sparse cold scattering preserves dark-cloud texture without gray fill.
  float shadeNoise=nebNoise(q*6.1+flow*.28);
  colour+=vec3(.009,.014,.028)*(1.0-transmission)*
          (.65+.35*shadeNoise);
- // Tonal grading only: restore the original silhouette/noise/volume.
- // Subdue bright mids and keep the luminous peaks, opening visual breathing
- // room without cutting holes in the cloud or randomizing its shape.
+ // Grayscale-style shadow curve: lower dark values sharply while preserving
+ // the existing bright-cloud gain, the RGB ratios, and all fine structures.
+ // Analogue of pulling down the lower-left Photoshop tone-curve segment.
  float gasLuminance=dot(colour,vec3(.2126,.7152,.0722));
- float gasExposure=mix(.32,.68,smoothstep(.045,.44,gasLuminance));
+ float shadowCurve=smoothstep(.045,.34,gasLuminance);
+ float gasExposure=mix(.055,.68,shadowCurve);
  colour*=gasExposure;
  // Multiply-only dark gas overlay (Photoshop Clouds + Difference Clouds).
  // Preserve the original eight-slice cloud silhouette, pigments and emission.
