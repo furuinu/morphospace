@@ -3,8 +3,31 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.80.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.81.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Taxonomy, scientific names and ecology prose v2 (v15.81.0)
+
+Classification used to read the whole ecology sentence with a list of keywords and stop at the first match, so 40% of specimens were classified by an incidental word in the behaviour or effect clause (a millet-sweet habitat could become 冷香科 because of 冷 elsewhere). Scientific names repeated heavily: 1,721 distinct names among 20,000 specimens, the most common shared by 316. Several stems did not mean what their family meant (冷香 = *Acid*, 痺縁 = *Bulla*, "bubble", 焦香 = *Amaro*, Italian "bitter"). Children were classified independently of their parents. Saved names and classifications change with this release.
+
+**Ranks.** Each rank now reads one thing:
+
+| rank | source | example |
+|---|---|---|
+| class (綱, 7) | body plan (architecture grammar) | 三巴綱 |
+| order (目, 10) | primary motion | 拍動目 |
+| family (科, 13) | the taste it lives in: the quality named at the end of the phrase first, then its source | 甘露科 |
+| genus (属, 13 x 17) | what it feeds on | 甘露気泡食属 |
+| species (種, 30) | its behaviour group (the behaviour vocabulary comes in thirty themed groups of ten) | 休眠種 |
+| subspecies | hue of the shell pigment (eight hues, or *pallida*) | *cyanea* |
+
+The line reads `綱・目／科／属／種`. Without a genome (never the case in the app) the upper ranks and subspecies are omitted.
+
+**Scientific names** are Genus species subspecies. Family stems are Greek or Latin for the taste: *Psychro* (cold), *Narco* (numbing), *Drimy* (acrid), *Glyco*, *Picro*, *Oxy*, *Halo*, *Nostimo* (savoury), *Lipo*, *Capno* (smoke), *Zymo* (ferment), *Osmo* (aroma), *Lepto* (subtle). The genus adds a diet element (*-mnema* memory, *-therma* temperature, *-physa* bubble, *-skia* shadow, and so on), and a vowel-initial element absorbs the stem's final vowel (*Psychr-ozia*). Each species group has two Latin epithets. Over 20,000 founders there are 15,059 distinct names; 77% of names belong to a single specimen and the most common is shared by 9. Counting the two-word name alone, comparable with the old figure, there are 7,782 distinct names and the most common is shared by 18.
+
+**Inheritance.** A child keeps its first parent's taste 85% of the time (so its family), takes a parent's food 80% of the time (mostly the first parent's, so often its genus) and a parent's behaviour 45% of the time (its species). Place, cue, effect and sentence are its own. Measured over 3,000 simulated pairs: same family as the first parent 88% (unrelated specimens 14%), same genus as a parent 57% (2%), same species as a parent 48% (7%).
+
+**Prose.** The habitat joins its taste and place with a verb (`…の甘さが残る折り目`) instead of a third の; habitats with three or more の fell from 76% to 37%. Ten sentence patterns were added (observation records, folklore, season, collecting, taste traces, defence, growth, pairs), for 40 in all. Prose from the previous dictionary version is regenerated. Shared links now carry the taste, food and behaviour fields, so a recipient classifies identically.
 
 ## Bass articulations (v15.80.0)
 
