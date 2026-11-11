@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.78.2. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.78.3. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Macro depth of field off by default (v15.78.3)
+
+The effect only becomes visible well past the default zoom, so the **マクロ被写界深度** switch now starts off. A choice already saved on a device is kept. With the switch off the status line reads `被写界深度：オフ`.
 
 ## Visible status, sharpening and a quality control (v15.78.2)
 

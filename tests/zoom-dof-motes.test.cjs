@@ -57,8 +57,9 @@ test('motes carry random pale rainbow hues',()=>{
  assert.ok(minChannel>.43,'never a saturated colour: '+minChannel);
  assert.ok(maxSaturation<.56,'saturation '+maxSaturation);
 });
-test('the macro depth-of-field switch is usable, on by default and kept as a local preference',()=>{
- assert.ok(html.includes('<input id="macroDof" type="checkbox" checked/> マクロ被写界深度'));
+test('the macro depth-of-field switch is usable, off by default and kept as a local preference',()=>{
+ assert.ok(html.includes('<input id="macroDof" type="checkbox"/> マクロ被写界深度'));
+ assert.ok(!/id="macroDof"[^>]*checked/.test(html),'off until the viewer switches it on');
  assert.ok(!/id="macroDof"[^>]*disabled/.test(html));
  assert.ok(html.includes("$('macroDof').onchange=()=>{try{localStorage.setItem('morphospace-macro-dof',$('macroDof').checked?'1':'0')}catch(error){}render()};"));
  assert.ok(html.includes("for(const id of ['motion','patternMotion','triplanarTrial','wire','auto','branchMotion','branchSolo'])if(typeof view[id]==='boolean')$(id).checked=view[id];"),'a shared view does not switch it off');
