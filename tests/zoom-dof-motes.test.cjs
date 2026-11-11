@@ -3,7 +3,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const between=(a,b)=>{const i=html.indexOf(a),j=html.indexOf(b,i);assert.ok(i>=0&&j>i,a);return html.slice(i,j)};
 
 function runtime(){
- const controls={wire:{checked:false},dofStrength:{value:'45'}};
+ const controls={wire:{checked:false},macroDof:{checked:true},dofStrength:{value:'45'}};
  const context={Math,Number,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),VIEWER_DEFAULT_ZOOM:55,spec:{viewDistance:10},nanoRenderPose:null,nanoAction:null,
   $:id=>controls[id],tier:{contact:true},qualityTier:()=>context.tier,viewerZoomBounds:()=>({min:3.2,max:24})};
  vm.createContext(context);vm.runInContext(between('const ZOOM_DOF_MAX=','function paintLensFlare('),context);
@@ -22,10 +22,10 @@ test('depth of field is absent at the default framing and rises smoothly to the 
 });
 test('captures, wireframe and reduced quality tiers skip it; the strength control scales it',()=>{
  const {context,controls,at}=runtime();
- for(const off of [()=>context.nanoRenderPose={},()=>context.nanoAction={},()=>controls.wire.checked=true,()=>context.tier={contact:false},()=>controls.dofStrength.value='0']){
+ for(const off of [()=>controls.macroDof.checked=false,()=>context.nanoRenderPose={},()=>context.nanoAction={},()=>controls.wire.checked=true,()=>context.tier={contact:false},()=>controls.dofStrength.value='0']){
   off();
   assert.equal(at(100),0);
-  context.nanoRenderPose=null;context.nanoAction=null;controls.wire.checked=false;context.tier={contact:true};controls.dofStrength.value='45';
+  context.nanoRenderPose=null;context.nanoAction=null;controls.wire.checked=false;controls.macroDof.checked=true;context.tier={contact:true};controls.dofStrength.value='45';
  }
  controls.dofStrength.value='90';assert.ok(Math.abs(at(100)-2)<1e-9);
 });
@@ -54,4 +54,12 @@ test('motes carry random pale rainbow hues',()=>{
  assert.equal(dominant.size,6,'all six hue sectors appear');
  assert.ok(minChannel>.43,'never a saturated colour: '+minChannel);
  assert.ok(maxSaturation<.56,'saturation '+maxSaturation);
+});
+test('the macro depth-of-field switch is usable, on by default and kept as a local preference',()=>{
+ assert.ok(html.includes('<input id="macroDof" type="checkbox" checked/> マクロ被写界深度'));
+ assert.ok(!/id="macroDof"[^>]*disabled/.test(html));
+ assert.ok(html.includes("$('macroDof').onchange=()=>{try{localStorage.setItem('morphospace-macro-dof',$('macroDof').checked?'1':'0')}catch(error){}render()};"));
+ assert.ok(html.includes("for(const id of ['motion','patternMotion','triplanarTrial','wire','auto','branchMotion','branchSolo'])if(typeof view[id]==='boolean')$(id).checked=view[id];"),'a shared view does not switch it off');
+ assert.ok(html.includes("$('dofStrength').oninput=()=>{$('dofStrengthNum').textContent=$('dofStrength').value+'%';render()};"));
+ assert.ok(html.includes("$('dofFocus').oninput=()=>{$('dofFocusNum').textContent=$('dofFocus').value;render()};"));
 });
