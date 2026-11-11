@@ -23,7 +23,7 @@ function runtime(){
   generateGenomeCandidate:(mode,ancestors,seed,i)=>({genome:{seed,style:Math.floor(i/8),archetype:i%8},mutationLog:[],inherited:{mode,parents:ancestors.length}}),
   pickPalette:()=>({rows:[1,2],cols:[[0,1,2],[0,1,2]]}),ensureEmissionDNA:g=>g.emissionDNA={},
   hashLineageId:(seed,index,mode)=>mode+seed+index,makeSpecimenName:(g,seed)=>'N'+seed,copyJSON:x=>JSON.parse(JSON.stringify(x)),
-  MorphospaceEcology:{ensure:()=>({})},snapshotIndividual:r=>JSON.parse(JSON.stringify(r)),
+  MorphospaceEcology:{ensure:()=>({}),generate:(seed,parents)=>({seed,parents:parents.length})},snapshotIndividual:r=>JSON.parse(JSON.stringify(r)),
   recordDisplayName:r=>r.name
  };
  vm.createContext(data);vm.runInContext(src,data);return data;
