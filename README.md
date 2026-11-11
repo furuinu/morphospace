@@ -3,8 +3,29 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.78.3. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.79.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Stereo placement and bass foundation (v15.79.0)
+
+The audible voice system (the choir: one body voice, one pulse voice and four luminous voices) was entirely mono, and its lowest notes sat around 290 Hz.
+
+**Stereo.**
+- The body voice and each luminous voice pass through their own stereo placement. Position comes from the last rendered frame: each luminous site's model position is carried through the body transform and camera, and its horizontal screen position becomes the pan (widened by two, limited to 0.85). As the camera orbits or the body tilts, the voices move with what is seen. The pulse stays central. Outside the viewer everything is central.
+- The choir room impulse has two independent channels, so its tail differs at each ear.
+- The engine's three diffuse decay lines sit left, centre and right.
+- Without `StereoPannerNode` the graph is connected exactly as before.
+
+**Bass.** A low voice plays the chord root two octaves below the body voice, folded into 55 to 110 Hz, with second and third partials so it still reaches small speakers. Its level follows the same wave that lifts the body on screen: it rises as the body rises and is silent in the troughs, so it never becomes a constant drone. It passes through the choir master, so it follows volume, fades and handoffs.
+
+Measured from the real Web Audio output in headless Chromium, 14 snapshots of 0.74 s:
+
+| | left-right correlation | RMS level | power below 160 Hz |
+|---|---|---|---|
+| v15.78.3 | 1.00 (mono) | 0.048 | 3% |
+| v15.79.0 | 0.64 mean, 0.05 minimum | 0.054 | 42% |
+
+The low-frequency share is high as a power figure because the voices rest between phrases; hearing is far less sensitive at 73 Hz than in the voice range. How it sounds was not judged by ear: the balance against the voices on headphones and on a phone speaker remains to be confirmed.
 
 ## Macro depth of field off by default (v15.78.3)
 
