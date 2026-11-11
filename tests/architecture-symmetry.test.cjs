@@ -249,7 +249,7 @@ test('local symmetry draw is shared by Safari compatibility and full shaders',()
 });
 
 test('high-fidelity instance tessellation follows copy budget and safely falls back',()=>{
- assert.match(html,/const resolution=copyCount<=2\?47:copyCount===3\?43:copyCount===4\?41:37/);
+ assert.match(html,/const resolution=copyCount<=2\?71:copyCount===3\?67:copyCount===4\?63:59/);
  assert.match(html,/for\(let n=resolution;n>=19;n=Math\.max\(19,n-4\)\)/);
  assert.match(html,/localShell=morphImplicitMesh\(source,palette,g,false,n\)/);
  assert.match(html,/成長メッシュが頂点上限/);
