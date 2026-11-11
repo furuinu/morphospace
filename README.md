@@ -3,8 +3,29 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.74.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.75.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Exact field acceleration and higher observation meshes (v15.75.0)
+
+Building a body shell samples the growth field (`morphSDF`) on a lattice, and every sample used to evaluate every primitive. Two exact shortcuts now remove most of that work without changing any value that reaches the mesh.
+
+- **Block plans.** The field unions primitives with `min(value,f)-blend`, and the blend is exactly zero once `f>=value+k`. For a lattice block each primitive gets a conservative lower and upper bound; a primitive whose lower bound clears the running upper bound by `k` cannot affect any sample in the block and is left out of that block's list. `morphSDF` takes the list as an optional argument and otherwise runs the same arithmetic in the same order.
+- **Outside regions.** The lattice is split as an octree. A range whose lower bound is positive lies wholly outside the body and is not sampled; a node there is evaluated only if the surface or a normal later needs it. Child ranges test only the primitives their parent could not exclude.
+
+Inputs the bounds do not cover (non-positive fuse or copy scale, degenerate axes, non-finite values) fall back to full evaluation.
+
+Measured in Node over 24 seeded specimens (3 seeds x 8 styles), all meshes of the real build path:
+
+| | build time per specimen | observation shell vertices |
+|---|---|---|
+| v15.74.0, lattice 47/43/41/37 | 3356 ms | 3666 mean, 10456 max |
+| accelerated, same lattice | 679 ms, bit-identical meshes | unchanged |
+| v15.75.0, lattice 71/67/63/59 | 1130 ms | 9508 mean, 24692 max |
+
+The observation shell lattice rises from 47/43/41/37 to 71/67/63/59 by copy count. Thin lobes and ruffles that broke into detached shards at the old spacing now resolve as connected surfaces. Gallery (19) and transition (29 to 19) meshes keep their resolution and are bit-identical to v15.74.0; they are only built faster. The 60000-vertex budget and its step-down fallback are unchanged.
+
+Validation: a property test compares planned and full field values at more than 15000 points for fused and source fields (bit-identical, and no block reported outside contains a non-positive sample); accelerated meshes equal a reference that samples every node; fallbacks are covered. Device build time and frame rate at the higher vertex count on a physical iPhone remain unverified.
 
 ## Contact shading and field-gradient normals (v15.74.0)
 

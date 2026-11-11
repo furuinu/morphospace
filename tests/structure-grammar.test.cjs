@@ -48,5 +48,5 @@ test('photo and mating share the inherited numeric grammar',()=>{
  assert.match(html,/g\.structureDNA=structureCrossoverDNA\(/);
  assert.match(html,/g\.structureDNA=photoStructureDNA\(/);
  assert.match(html,/structureGrowth\(g,photoAnatomy\)/);
- assert.match(html,/if\(em\.structures\)acc=structureSDF\(x,y,z,em,acc\)/);
+ assert.match(html,/if\(em\.structures\)acc=structureSDF\(x,y,z,em,acc,plan\)/);
 });

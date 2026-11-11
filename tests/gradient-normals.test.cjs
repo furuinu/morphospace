@@ -6,7 +6,8 @@ const run=s=>vm.runInContext(s,ctx),plain=x=>JSON.parse(JSON.stringify(x));
 const mesher=html.slice(html.indexOf('function morphImplicitMesh('),html.indexOf('function fieldGradientNormals('));
 
 test('growth-field gradient replaces triangle normals without extra field evaluations',()=>{
- assert.equal(mesher.split('morphSDF(').length-1,1,'the lattice samples are reused');
+ const gradient=mesher.slice(mesher.indexOf('const fieldGradient='),mesher.indexOf('const tet='));
+ assert.ok(!gradient.includes('morphSDF(')&&gradient.split('sample(').length-1===6,'gradients read lattice samples only');
  assert.ok(mesher.includes('fieldGradientNormals(buildMesh(xyz,colors,tri),grads)'));
  assert.ok(mesher.includes('const ga=fieldGradient(ai,aj,ak),gb=fieldGradient(bi,bj,bk);'));
 });

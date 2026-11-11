@@ -55,7 +55,7 @@ test('new genome loci inherit and missing loci in archived DNA use deterministic
 test('the actual anatomy is modified before existing whole-body copy transformations',()=>{
  assert.match(html,/if\(g\.structureDNA\?\.version===1\)hierarchicalOrganGrowth\(g,base,developmental\)/);
  assert.match(html,/fusedSource:\{\.\.\.base,copyLayout:0\}/);
- assert.match(html,/if\(em\.structures\)acc=structureSDF\(x,y,z,em,acc\)/);
+ assert.match(html,/if\(em\.structures\)acc=structureSDF\(x,y,z,em,acc,plan\)/);
 });
 
 test('new hierarchic DNA passes capture validation and persists through JSON records',()=>{
