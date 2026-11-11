@@ -20,18 +20,20 @@ test('depth of field is absent at the default framing and rises smoothly to the 
  assert.ok(Math.abs(at(100)-1)<1e-9,'full strength at the closest zoom');
  assert.ok(at(78)>.4&&at(78)<.6);
 });
-test('captures, wireframe and reduced quality tiers skip it; the strength control scales it',()=>{
+test('captures, wireframe and the switch skip it; a reduced quality tier keeps it with fewer samples',()=>{
  const {context,controls,at}=runtime();
- for(const off of [()=>controls.macroDof.checked=false,()=>context.nanoRenderPose={},()=>context.nanoAction={},()=>controls.wire.checked=true,()=>context.tier={contact:false},()=>controls.dofStrength.value='0']){
+ for(const off of [()=>controls.macroDof.checked=false,()=>context.nanoRenderPose={},()=>context.nanoAction={},()=>controls.wire.checked=true,()=>controls.dofStrength.value='0']){
   off();
   assert.equal(at(100),0);
   context.nanoRenderPose=null;context.nanoAction=null;controls.wire.checked=false;controls.macroDof.checked=true;context.tier={contact:true};controls.dofStrength.value='45';
  }
  controls.dofStrength.value='90';assert.ok(Math.abs(at(100)-2)<1e-9);
+ controls.dofStrength.value='45';context.tier={contact:false};assert.ok(Math.abs(at(100)-1)<1e-9,'the user\'s switch is honoured at every tier');
+ assert.ok(html.includes('gl.uniform1f(p.u.uDofSamples,viewer.morph||!qualityTier().contact?12:24);'));
 });
 test('the pass runs from the zoom strength, focuses on the body and is independent of render scale',()=>{
  const pass=between('function paintLensFlare(','function worldCameraFrame(');
- assert.ok(pass.includes('const dofStrength=f.dofProgram&&f.depthTexture?zoomDepthOfField():0;\n if(dofStrength>.02){'));
+ assert.ok(pass.includes('const dofStrength=f.dofProgram&&f.depthTexture?zoomDepthOfField():0;')&&pass.includes('\n if(dofStrength>.02){'));
  assert.ok(!pass.includes('if(false&&'),'the pass is no longer compiled out');
  assert.ok(pass.includes("gl.uniform1f(p.u.uFocus,Math.max(.3,spec.viewDistance+Number($('dofFocus').value)*.035));"));
  assert.ok(pass.includes('gl.uniform2f(p.u.uPixel,h/800/w,1/800);'));
@@ -62,4 +64,19 @@ test('the macro depth-of-field switch is usable, on by default and kept as a loc
  assert.ok(html.includes("for(const id of ['motion','patternMotion','triplanarTrial','wire','auto','branchMotion','branchSolo'])if(typeof view[id]==='boolean')$(id).checked=view[id];"),'a shared view does not switch it off');
  assert.ok(html.includes("$('dofStrength').oninput=()=>{$('dofStrengthNum').textContent=$('dofStrength').value+'%';render()};"));
  assert.ok(html.includes("$('dofFocus').oninput=()=>{$('dofFocusNum').textContent=$('dofFocus').value;render()};"));
+});
+test('the settings panel says whether depth of field is running, and why not',()=>{
+ assert.ok(html.includes('<output id="dofState" class="minor"></output>'),'the readout is visible');
+ const controls={macroDof:{checked:true},wire:{checked:false}};
+ const context={Math,ZOOM_DOF_MAX:1,nanoRenderPose:null,nanoAction:null,$:id=>controls[id]};
+ vm.createContext(context);vm.runInContext(between('function depthOfFieldStatus(','function paintLensFlare('),context);
+ const status=(f,strength)=>{context.f=f;return vm.runInContext('depthOfFieldStatus(f,'+strength+')',context)};
+ const ready={dofProgram:{},depthTexture:{}};
+ assert.equal(status(ready,.58),'被写界深度：動作中　強さ 58%');
+ assert.equal(status(ready,0),'被写界深度：待機中（ズームで寄ると効きます）');
+ controls.macroDof.checked=false;assert.equal(status(ready,0),'被写界深度：オフ');controls.macroDof.checked=true;
+ controls.wire.checked=true;assert.equal(status(ready,0),'被写界深度：一時停止中');controls.wire.checked=false;
+ assert.ok(status({dofProgram:null,depthTexture:null,dofError:'no depth'},0).startsWith('被写界深度：この端末では利用できません（no depth'));
+ const pass=between('function paintLensFlare(','function worldCameraFrame(');
+ assert.ok(pass.includes("const text=depthOfFieldStatus(f,dofStrength);if($('dofState').textContent!==text)$('dofState').textContent=text;"));
 });

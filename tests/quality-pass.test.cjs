@@ -4,7 +4,7 @@ const between=(a,b)=>{const i=html.indexOf(a),j=html.indexOf(b,i);assert.ok(i>=0
 
 // ---- adaptive quality ---------------------------------------------------------------------------
 function controller(){
- const context={Math};vm.createContext(context);vm.runInContext(between('const QUALITY_TIERS=','function frame(now){'),context);
+ const context={Math,Number,clamp:(x,a,b)=>Math.max(a,Math.min(b,x))};vm.createContext(context);vm.runInContext(between('const QUALITY_TIERS=','function frame(now){'),context);
  const run=code=>vm.runInContext(code,context);
  // Feed `seconds` of frames at the given interval; jitter makes intervals irregular.
  const feed=(interval,seconds,{ratio=3,eligible=true,jitter=0}={})=>{let t=0,k=0;while(t<seconds){const dt=interval*(1+jitter*Math.sin(k++*2.4));run(`stepAdaptiveQuality(${dt},${eligible},${ratio})`);t+=dt;}return run('quality.tier');};
@@ -18,7 +18,7 @@ test('a device with headroom climbs to the higher render scale only where the di
   assert.equal(feed(1/60,12,{ratio}),expected,'pixel ratio '+ratio);
  }
  const {run}=controller();
- assert.deepEqual(JSON.parse(run('JSON.stringify(QUALITY_TIERS)')),[{scale:1,contact:false},{scale:1.35,contact:false},{scale:1.35,contact:true},{scale:2,contact:true}]);
+ assert.deepEqual(JSON.parse(run('JSON.stringify(QUALITY_TIERS)')),[{scale:1.2,contact:false},{scale:1.35,contact:false},{scale:1.35,contact:true},{scale:2,contact:true}]);
 });
 test('dropped frames shed load step by step, and a failed tier is not retried at once',()=>{
  const {feed,run}=controller();
@@ -32,7 +32,7 @@ test('dropped frames shed load step by step, and a failed tier is not retried at
  // A heavy, irregular load keeps shedding: contact shading first, then resolution.
  const heavy=controller();
  assert.equal(heavy.feed(.045,5,{jitter:.3}),1);assert.equal(heavy.run('qualityTier().contact'),false);assert.equal(heavy.run('qualityTier().scale'),1.35);
- assert.equal(heavy.feed(.045,30,{jitter:.3}),0);assert.equal(heavy.run('qualityTier().scale'),1);
+ assert.equal(heavy.feed(.045,30,{jitter:.3}),0);assert.equal(heavy.run('qualityTier().scale'),1.2,'the lowest tier is only mildly softer');
 });
 test('a display capped at 30 Hz is recognised and does not cost quality',()=>{
  const {feed,run}=controller();
@@ -73,7 +73,7 @@ test('the body takes its medium colour from a small render of the sky behind it'
  const frag=between('const frag=`','const frag300=');
  assert.ok(frag.includes('if(uAirView.z>.5)air=texture2D(uSkyProbe,gl_FragCoord.xy*uAirView.xy).rgb;'));
  assert.ok(frag.includes('float away=(1.0/gl_FragCoord.w-uAirDepth.x)/max(uAirDepth.y,.001);'),'depth relative to the body centre');
- assert.ok(frag.includes('float haze=smoothstep(-.15,1.05,away)*.24*airStrength;'),'at most a quarter of the far side is replaced');
+ assert.ok(frag.includes('float haze=smoothstep(-.15,1.05,away)*.14*airStrength;'),'at most a seventh of the far side is replaced');
  assert.ok(frag.indexOf('if(airStrength>.001){')>frag.indexOf('shaded.rgb=clamp(shaded.rgb+scatteredLight,0.0,1.0);'));
  const probe=between('const SKY_PROBE_SIZE=','function drawStudioGL(');
  assert.ok(probe.includes('skyProbePass=true;')&&probe.includes('try{drawStudioGL(undefined,projection,view,false);}finally{skyProbePass=false;}'));
@@ -159,4 +159,19 @@ test('the swap waits for handoffs and captures, and a failed build falls back to
  assert.ok(html.includes('applyUploadedSpecimen(openSpecimenProgressively(i),false,true);'));
  assert.ok(html.includes('function close(){if(videoRecording||nanoAction)return;cancelDetailUpgrade();'));
  assert.ok(html.includes(' if(selected>=0)adoptDetailUpgrade();'));
+});
+test('a fixed quality overrides the automatic choice and 自動 hands control back',()=>{
+ const {feed,run}=controller();
+ run("setQualityPreference('3')");
+ assert.equal(run('quality.tier'),3);assert.equal(run('qualityStatusText()'),'固定：高精細（描画倍率 2倍まで）');
+ assert.equal(feed(.06,40,{jitter:.3}),3,'a fixed tier is never shed, however slow the frames');
+ run("setQualityPreference('0')");assert.equal(feed(1/60,40),0,'nor raised');
+ assert.equal(run('qualityStatusText()'),'固定：軽量（描画倍率 1.2倍まで）');
+ run("setQualityPreference('auto')");
+ assert.equal(run('quality.manual'),null);assert.equal(run('quality.tier'),2);assert.equal(run('qualityStatusText()'),'自動：標準（描画倍率 1.35倍まで）');
+ assert.equal(feed(1/60,12),3,'automatic adjustment resumes, with past penalties cleared');
+ for(const bad of ['x','','NaN'])assert.doesNotThrow(()=>run("setQualityPreference('"+bad+"')"));
+ assert.ok(html.includes('<select id="renderQuality" aria-label="描画品質"><option value="auto" selected>自動（端末に合わせる）</option><option value="3">高精細</option><option value="2">標準</option><option value="1">陰影なし</option><option value="0">軽量</option></select>'));
+ assert.ok(html.includes("if(['auto','0','1','2','3'].includes(value)){$('renderQuality').value=value;setQualityPreference(value)}"));
+ assert.ok(html.includes("if($('qualityState'))$('qualityState').textContent=qualityStatusText();"));
 });

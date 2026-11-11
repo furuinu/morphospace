@@ -3,8 +3,19 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.78.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.78.2. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Visible status, sharpening and a quality control (v15.78.2)
+
+A report from a physical device said depth of field made no visible difference and the picture looked soft overall. Both are consistent with the automatic quality control having stepped down: tiers 0 and 1 skipped depth of field, and tier 0 drew at 1.0x. This could not be reproduced without the device, so the release makes the state visible and removes the two penalties.
+
+- **Status.** The settings panel now states whether depth of field is running (`動作中　強さ N%`), waiting for a closer zoom, switched off, paused, or unavailable on the device with the reason. A second line states the render quality in use and whether it was chosen automatically.
+- **Quality control.** A 品質 selector offers 自動, 高精細, 標準, 陰影なし and 軽量. A fixed choice overrides automatic adjustment and is remembered on the device.
+- **Depth of field at every tier.** The user's switch now decides. Reduced tiers use 12 samples instead of 24.
+- **Lowest tier.** Its render scale cap rises from 1.0 to 1.2.
+- **Sharpening.** FXAA treated fine texture as edges and softened it. The edge threshold is higher, and pixels below it receive a luma-only unsharp step from the four taps already taken, limited to 0.07 so it cannot ring. Flat areas are unchanged. On a simulated 3x display at tier 2, mean luminance gradient over the body rose from 7.76 to 8.57.
+- **Haze.** The far-side haze limit falls from 24% to 14%.
 
 ## Macro depth-of-field switch (v15.78.1)
 
