@@ -3,8 +3,22 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.75.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.76.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Centre lock and suspension (v15.76.0)
+
+**Centre lock.** Outside a handoff the camera no longer lets the travelling organism wander inside a free-drift zone (10% of the view on each axis), and no longer uses look-ahead or a speed cap. The organism's travel position is held at the exact screen centre every frame. Whatever offset exists when the lock engages, for example the remainder of a handoff, decays over about 0.6 s, so engaging it never jumps the picture. Depth keeps its 3.5% tolerance so the breathing dolly is not fought. The handoff's own guided follow is unchanged.
+
+**Suspension.** Three independent cues make the body read as hanging in a medium:
+
+- *Buoyancy.* The body heaves (1.4% of the framing distance), sways (0.6%) and tilts (up to about 2 degrees per axis) about its own centre. Each specimen has its own phase.
+- *Camera drift.* The camera shifts by about 1% of the framing distance and turns by less than half a degree on a slower rhythm than the body, so body, motes and sky move against each other.
+- *Near-field motes.* 420 motes fill a world-periodic box around the body. They stay fixed in the world while the organism travels, so travel streams them past. Point size follows a thin-lens blur circle around the focal plane at the body: motes near the lens become large faint discs, those near the body stay small specks. They add light only, behind nearer tissue, and do not write depth or the emission mask.
+
+All three share one gain that eases in and out over about a second. It is zero during handoffs, capture and laboratory sequences, isolated frames and when the system requests reduced motion. Thumbnails are never affected. Motion uses sums of three incommensurate sines, so it is smooth, bounded and has no visible loop.
+
+Validation: Node checks cover the lock (exact centring under varying travel, no jump on engage or after a handoff), gain easing and its off conditions, rigid bounded buoyancy, bounded camera drift that is not correlated with the body, the mote wrap and GL state restoration. The cues render in headless Chromium (SwiftShader, WebGL2) without shader or WebGL errors. Physical iPhone appearance, comfort and frame rate remain unverified.
 
 ## Exact field acceleration and higher observation meshes (v15.75.0)
 
