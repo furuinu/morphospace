@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.81.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.81.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Even 30 fps video export (v15.81.1)
+
+Video export rendered the export-size frame on every display refresh but only kept one of every two (or four) frames, and the old throttle on a 60 Hz display alternated between 33 ms and 50 ms gaps, which showed as stutter. Captures now follow a fixed 30 fps grid: the export canvas is rendered only when a capture slot is due, with half-refresh tolerance so 60/90/120 Hz displays hold an even 33.3 ms cadence and no cumulative drift. A late frame skips the missed slot instead of producing a burst of catch-up frames, and the skipped count is reported when recording finishes. Before recording starts, the export-size render cost is timed with a forced 1 px GPU readback (Chrome's `gl.finish()` does not block). If a frame exceeds 22 ms, export-only contact shading and then half the DOF samples are dropped, and the same step-down happens during recording when drops persist. The caption overlay is drawn once into a cached layer and only redrawn when its text changes.
 
 ## Taxonomy, scientific names and ecology prose v2 (v15.81.0)
 
