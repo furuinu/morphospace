@@ -42,7 +42,16 @@ jobs:
               sudo mv "$source" "$source.disabled"
             fi
           done
-          npx playwright install --with-deps chromium
+          # The runner image already ships Chromium's core libraries. The extra
+          # packages (mostly fonts) come from the Ubuntu mirror, whose DNS can
+          # fail for minutes. Download the browser first, then try the OS deps
+          # with retries and a time limit; the smoke test below proves the
+          # browser actually launches, so a mirror outage alone must not block deploys.
+          npx playwright install chromium
+          echo 'Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/80-retries >/dev/null
+          if ! timeout 300 npx playwright install-deps chromium; then
+            echo "::warning::Ubuntu mirror unavailable; continuing with the runner's preinstalled Chromium libraries."
+          fi
       - name: Verify WebGL and observation mode
         run: node tests/webgl-observation-smoke.cjs
   deploy:
