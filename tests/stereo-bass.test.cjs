@@ -62,10 +62,60 @@ test('the choir graph is stereo where supported and unchanged where it is not',(
  assert.ok(graph.includes('impulse=ctx.createBuffer(2,Math.floor(ctx.sampleRate*duration),ctx.sampleRate);')&&graph.includes('for(let channel=0;channel<2;channel++){'),'the room answers differently at each ear');
  assert.ok(graph.includes("for(const [h,level] of [[1,1],[2,.34],[3,.11]]){"),'upper partials carry the bass on small speakers');
  assert.ok(graph.includes('tone.connect(out);out.connect(state.master);'),'the bass follows the choir volume and fades');
- assert.ok(graph.includes('state.bass.out.gain.setTargetAtTime(CHOIR_BASS_LEVEL*choirBassSwell(sp,ctx.currentTime),ctx.currentTime,.25);'));
+ assert.ok(graph.includes('if(stepChoirArpeggio(arp,t,Math.max(state.grooveTime,...state.lightTimes),interval)){'),'the arpeggio watches the pulse and every luminous voice');
+ assert.ok(graph.includes('const hz=choirBassFrequency(sharedBodyPitch)*Math.pow(2,chordIntervals[pattern[arp.step%pattern.length]]/12);'),'notes come from the shared chord');
+ assert.ok(graph.includes('const level=CHOIR_BASS_LEVEL*choirArpEnvelope(t-arp.last,interval)*(.3+.7*choirBassSwell(sp,ctx.currentTime));'));
  assert.ok(html.includes('for(const voice of [state.body,state.pulse,...state.lights,state.bass].filter(Boolean)){'),'the bass oscillators are stopped with the rest');
  const engine=between('function createBioticAudioEngine(','const voices=new Map()');
  assert.ok(engine.includes("if(place){place.pan.value=delayTime<.25?-.6:delayTime>.4?.6:0;damping.connect(place);place.connect(reverbWet);}"));
  assert.ok(engine.includes('else damping.connect(reverbWet);'));
  assert.ok(html.includes(' lastSceneViewProj=mul4(pr,cam);\n if(suspension.live)lastBodyBase=base;'),'thumbnails do not move the voices');
+});
+
+test('the bass walks every chord tone in a per-organism order',()=>{
+ const {run}=runtime();
+ const patterns=JSON.parse(run('JSON.stringify(CHOIR_ARP_PATTERNS)'));
+ assert.ok(patterns.length>=4);
+ for(const pattern of patterns){assert.deepEqual([...new Set(pattern)].sort(),[0,1,2,3],'root, third, fifth and octave all appear');assert.equal(pattern[0],0,'each cycle starts on the root');}
+ for(let seed=0;seed<4000;seed+=97){const i=run(`choirArpInterval(${seed},.5)`);assert.ok(i>=.55&&i<=1.02,'interval '+i);}
+ assert.ok(run('choirArpInterval(0,1)')<run('choirArpInterval(0,0)'),'active organisms walk faster');
+ const env=a=>run(`choirArpEnvelope(${a},.7)`);
+ assert.equal(env(-1),0);assert.equal(env(0),0);assert.ok(Math.abs(env(.035)-1)<1e-9);assert.ok(env(.7)<.05,'nearly faded by the next note');
+});
+test('bass notes land in the gaps between the high voices and are never silenced by them',()=>{
+ const {run}=runtime();
+ const simulate=(highEvery,seconds=120)=>{
+  run('arp={step:-1,last:-100,next:0}');
+  let rand=12345;const rnd=()=>(rand=(rand*1103515245+12345)%2147483648)/2147483648;
+  const highs=[];let nextHigh=.3,lastHigh=-100;const bass=[];
+  for(let k=0;k<seconds*60;k++){
+   const t=k/60;
+   if(t>=nextHigh){lastHigh=t;highs.push(t);nextHigh=t+highEvery*(.5+rnd());}
+   if(run(`stepChoirArpeggio(arp,${t},${lastHigh},.7)`))bass.push(t);
+  }
+  const gaps=bass.map(b=>Math.min(...highs.filter(h=>h<=b).map(h=>b-h).concat([99]))).filter(g=>g<99);
+  // Where each note sits between the onsets around it: 0.5 is exactly midway, random timing averages 0.25.
+  const centred=bass.map(b=>{const before=highs.filter(h=>h<=b),after=highs.filter(h=>h>b);if(!before.length||!after.length)return null;const p=b-before[before.length-1],n=after[0]-b;return Math.min(p,n)/(p+n)}).filter(v=>v!==null);
+  return {notes:bass.length,gaps,minGap:Math.min(...gaps),meanGap:gaps.reduce((a,b)=>a+b,0)/gaps.length,meanStep:(bass[bass.length-1]-bass[0])/(bass.length-1),centred:centred.reduce((a,b)=>a+b,0)/centred.length};
+ };
+ const sparse=simulate(1.4);
+ assert.ok(sparse.minGap>=.16-1/60,'with room to spare every note keeps the full guard: '+sparse.minGap.toFixed(3));
+ assert.ok(sparse.meanGap>.3,'and sits mid-gap: '+sparse.meanGap.toFixed(3));
+ assert.ok(sparse.meanStep<1.1,'the walk keeps its pace: '+sparse.meanStep.toFixed(2));
+ for(const every of [.35,.14,.08]){
+  const busy=simulate(every);
+  assert.ok(busy.notes>60,'high onsets every ~'+every+' s do not silence the bass: '+busy.notes+' notes');
+  assert.ok(busy.minGap>=.02-1e-9,'never closer than the minimum gap: '+busy.minGap.toFixed(3));
+  assert.ok(busy.centred>.32,'notes sit well between the high onsets ('+every+'): '+busy.centred.toFixed(3));
+  assert.ok(busy.meanStep<1.8,'pace '+busy.meanStep.toFixed(2));
+ }
+ assert.equal(run('choirArpClearance(1.2,.7)'),0,'a badly overdue note plays even if a high voice starts in the same frame');
+ // One sound update per second of body time with a light onset on every update: the walk still goes on.
+ run('arp={step:-1,last:-100,next:0}');let slow=0;for(let t=0;t<30;t+=1.08)if(run(`stepChoirArpeggio(arp,${t},${t},.7)`))slow++;
+ assert.ok(slow>=12,'low frame rate: '+slow+' notes');
+ const levels=[0,.3,.5,.9,1.2,2].map(o=>run(`choirArpClearance(${o},.7)`));
+ for(let i=1;i<levels.length;i++)assert.ok(levels[i]<=levels[i-1],'the accepted gap only shrinks while waiting');
+ // A reset of the body clock does not leave the bass stuck in the future.
+ run('arp={step:3,last:50,next:50.7}');
+ assert.equal(run('stepChoirArpeggio(arp,51,49,.7)'),true);
 });

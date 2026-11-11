@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.79.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.79.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Bass arpeggio, offset from the high voices (v15.79.1)
+
+The bass no longer holds the chord root. It walks the shared chord (root, third, fifth, octave) as an arpeggio, in one of four orders chosen per organism, every 0.55 to 1.02 s of body time (calmer organisms walk more slowly). Each note is plucked: a 35 ms rise, then a decay that has nearly faded by the next note. The body's heave still swells and softens it, now between 30% and 100% instead of silencing it.
+
+**Timing against the high voices.** In the running engine the pulse and luminous voices together start a note about every 0.06 s of body time, so there is almost never a free gap. The bass therefore tracks their typical spacing and waits half of it after the latest onset, landing it midway to the next. When the high voices leave real room it waits for the middle of that gap instead. The longer a note is overdue the less it insists (mid-gap, then 0.16 s, then 0.02 s, then nothing), so busy high voices or a very low frame rate cannot silence it.
+
+Measured by driving the real voice renderer for 30 s of body time at 60 fps: 483 high onsets and 46 bass notes at a 0.66 s pace (the specimen's interval is 0.63 s). On a scale where 0.5 is exactly midway between the surrounding high onsets and random timing averages 0.25, bass notes averaged 0.34. Notes within 20 ms of a high onset fell from about half to 8 of 46 compared with an earlier gap rule. How it sounds was not judged by ear.
 
 ## Stereo placement and bass foundation (v15.79.0)
 
