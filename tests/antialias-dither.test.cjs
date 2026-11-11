@@ -17,7 +17,7 @@ test('final composite antialiases the scene before flare and VHS treatment',()=>
  assert.ok(composite.includes('vec3 sceneAA(vec2 uv)'));
  assert.ok(composite.includes('vec3 base=sceneAA(tape);'));
  assert.ok(composite.indexOf('vec3 base=sceneAA(tape);')<composite.indexOf('float grain=videoHash('),'film grain must stay unfiltered');
- assert.ok(composite.includes('if(lMax-lMin<max(.0312,lMax*.125))return m;'),'flat regions leave early');
+ assert.ok(composite.includes('if(lMax-lMin<max(.055,lMax*.166))return m+clamp((lM-(lNW+lNE+lSW+lSE)*.25)*uSharpen,-.07,.07);'),'non-edge pixels leave early, sharpened');
  assert.ok(!/for\s*\(/.test(composite.slice(composite.indexOf('vec3 sceneAA'),composite.indexOf('float videoHash'))),'no loops: WebGL1 compatible');
 });
 test('antialiasing receives the scene texel size and is bypassed for DOF debug views',()=>{
@@ -44,4 +44,13 @@ test('dither is bounded to one 8-bit step, zero-mean and breaks up a slow gradie
  // Averaged over many rows the dithered ramp reproduces the true gradient far below one level.
  let worst=0;for(let x=0;x<W;x+=16){let m=0;for(let y=0;y<H;y++)m+=row(y+.5)[x];m/=H;worst=Math.max(worst,Math.abs(m-(.05+x/W*3/255)*255));}
  assert.ok(worst<.2,'mean error '+worst);
+});
+test('non-edge pixels gain bounded local contrast and flat areas are untouched',()=>{
+ assert.ok(html.includes('const ZOOM_DOF_MAX=1.0,SCENE_SHARPEN=.55;'));
+ assert.ok(post.includes('if(p.u.uSharpen)gl.uniform1f(p.u.uSharpen,SCENE_SHARPEN);'));
+ // CPU port of the luma step: centre against the mean of its four diagonal neighbours.
+ const step=(centre,neighbours)=>Math.max(-.07,Math.min(.07,(centre-neighbours.reduce((a,b)=>a+b,0)/4)*.55));
+ assert.equal(step(.5,[.5,.5,.5,.5]),0,'a flat area is unchanged');
+ assert.ok(step(.52,[.5,.5,.5,.5])>0&&step(.48,[.5,.5,.5,.5])<0,'detail is pushed away from its surroundings');
+ assert.equal(step(.9,[.1,.1,.1,.1]),.07);assert.equal(step(.1,[.9,.9,.9,.9]),-.07);
 });
