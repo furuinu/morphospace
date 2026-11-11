@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.77.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.78.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Rainbow motes and zoom depth of field (v15.78.0)
+
+**Motes.** Each suspended mote now keeps one random hue from the full colour wheel, washed 44% to 66% of the way towards white, so the field reads as pale rainbow dust rather than a single blue-white tone. Position, size, blur and brightness are unchanged.
+
+**Depth of field.** The depth-of-field pass, which had been compiled out, now runs from the zoom. It is absent at the default framing (zoom 55) and anything wider, and eases in to full strength at the closest zoom. Focus stays on the body centre, so tissue nearer and farther than the centre softens while the middle of the body stays sharp. The blur radius is defined for an 800-pixel-high picture, so it looks the same at every render scale. It follows contact shading and precedes bloom. The existing strength control scales it and zero turns it off. It is skipped for captures, wireframe and quality tiers 0 and 1. The sky is not blurred; it is already soft.
+
+Validation: Node checks cover the zoom curve (zero at and below the default, monotonic and smooth above it), the skip conditions, the pass wiring and a CPU port of the mote tint (all six hue sectors occur; every tint stays bright and weakly saturated). Rendered at zoom 55, 80 and 100 in headless Chromium without WebGL errors. Frame rate with the pass active on a physical iPhone remains unverified.
 
 ## Adaptive quality, pattern filtering, surrounding medium and progressive open (v15.77.0)
 
