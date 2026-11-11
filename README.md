@@ -3,8 +3,26 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.79.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.80.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Bass articulations (v15.80.0)
+
+The bass now has four voices, one per chord tone, so its notes can ring together. Each phrase (two arpeggio cycles) picks one of seven articulations:
+
+| articulation | how the notes ring |
+|---|---|
+| pluck (単音) | one note at a time, each nearly gone before the next |
+| legato (重なり) | each note is held 1.6 steps, overlapping the next |
+| stack (積み上げ) | every note is held to the end of the cycle, building the full chord, which releases together |
+| block (同時和音) | the whole chord struck at once, with a single note as a pickup at the end of the cycle |
+| strum (かき鳴らし) | the chord rolled quickly, 45 ms of body time between notes |
+| pedal (持続音) | the root held for the whole cycle under the other tones plucked |
+| dyad (2音) | each step plays its tone with the tone two steps later |
+
+Each organism has its own weighting, so organisms differ in which articulations they favour, and the choice changes from phrase to phrase. The note order also varies: about three phrases in ten borrow another of six orders, two of which fall. Held notes sag gently and release over about a quarter of a step. Timing against the high voices is unchanged; strummed notes after the first follow their own small delays.
+
+Because held and stacked notes carry more energy, the bass level was lowered from 0.085 to 0.045. Measured from the real output, its low-frequency share is 26 to 30% (v15.79.1: about 20%) and overall level is unchanged. Driving the real voice renderer for 100 s of body time, one specimen played six of the seven articulations, with up to four bass voices ringing together in stacked, block, strummed and transition passages and one at a time when plucked. How it sounds was not judged by ear.
 
 ## Bass arpeggio, offset from the high voices (v15.79.1)
 

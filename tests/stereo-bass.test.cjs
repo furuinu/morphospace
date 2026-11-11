@@ -63,8 +63,9 @@ test('the choir graph is stereo where supported and unchanged where it is not',(
  assert.ok(graph.includes("for(const [h,level] of [[1,1],[2,.34],[3,.11]]){"),'upper partials carry the bass on small speakers');
  assert.ok(graph.includes('tone.connect(out);out.connect(state.master);'),'the bass follows the choir volume and fades');
  assert.ok(graph.includes('if(stepChoirArpeggio(arp,t,Math.max(state.grooveTime,...state.lightTimes),interval)){'),'the arpeggio watches the pulse and every luminous voice');
- assert.ok(graph.includes('const hz=choirBassFrequency(sharedBodyPitch)*Math.pow(2,chordIntervals[pattern[arp.step%pattern.length]]/12);'),'notes come from the shared chord');
- assert.ok(graph.includes('const level=CHOIR_BASS_LEVEL*choirArpEnvelope(t-arp.last,interval)*(.3+.7*choirBassSwell(sp,ctx.currentTime));'));
+ assert.ok(graph.includes('const hz=root*Math.pow(2,chordIntervals[tone]/12);'),'each voice holds one tone of the shared chord');
+ assert.ok(graph.includes('v.gain.gain.setTargetAtTime(CHOIR_BASS_LEVEL*v.level*choirBassVoiceEnvelope(t-v.start,v.hold,interval)*swell,ctx.currentTime,.02);'));
+ assert.ok(graph.includes('for(let v=0;v<4;v++){'),'four voices, so notes can ring together');
  assert.ok(html.includes('for(const voice of [state.body,state.pulse,...state.lights,state.bass].filter(Boolean)){'),'the bass oscillators are stopped with the rest');
  const engine=between('function createBioticAudioEngine(','const voices=new Map()');
  assert.ok(engine.includes("if(place){place.pan.value=delayTime<.25?-.6:delayTime>.4?.6:0;damping.connect(place);place.connect(reverbWet);}"));
@@ -72,15 +73,85 @@ test('the choir graph is stereo where supported and unchanged where it is not',(
  assert.ok(html.includes(' lastSceneViewProj=mul4(pr,cam);\n if(suspension.live)lastBodyBase=base;'),'thumbnails do not move the voices');
 });
 
-test('the bass walks every chord tone in a per-organism order',()=>{
+test('the bass walks every chord tone, rising or falling',()=>{
  const {run}=runtime();
  const patterns=JSON.parse(run('JSON.stringify(CHOIR_ARP_PATTERNS)'));
- assert.ok(patterns.length>=4);
- for(const pattern of patterns){assert.deepEqual([...new Set(pattern)].sort(),[0,1,2,3],'root, third, fifth and octave all appear');assert.equal(pattern[0],0,'each cycle starts on the root');}
+ assert.ok(patterns.length>=6);
+ for(const pattern of patterns){assert.deepEqual([...new Set(pattern)].sort(),[0,1,2,3],'root, third, fifth and octave all appear');assert.ok(pattern[0]===0||pattern[0]===3,'a cycle starts on the root or the octave');}
+ assert.ok(patterns.some(p=>p[0]===3),'some orders fall');
  for(let seed=0;seed<4000;seed+=97){const i=run(`choirArpInterval(${seed},.5)`);assert.ok(i>=.55&&i<=1.02,'interval '+i);}
  assert.ok(run('choirArpInterval(0,1)')<run('choirArpInterval(0,0)'),'active organisms walk faster');
- const env=a=>run(`choirArpEnvelope(${a},.7)`);
- assert.equal(env(-1),0);assert.equal(env(0),0);assert.ok(Math.abs(env(.035)-1)<1e-9);assert.ok(env(.7)<.05,'nearly faded by the next note');
+ // Each organism mostly keeps its own order but sometimes borrows another.
+ for(const seed of [5,777,123456]){
+  const used=new Map();for(let phrase=0;phrase<60;phrase++){const k=run(`JSON.stringify(choirBassPattern(${seed},${phrase}))`);used.set(k,(used.get(k)||0)+1);}
+  const counts=[...used.values()].sort((a,b)=>b-a);
+  assert.ok(counts[0]>=27&&counts[0]>2*counts[1]&&used.size>=3,'seed '+seed+': '+counts);
+ }
+});
+test('articulations vary from phrase to phrase, with a different taste per organism',()=>{
+ const {run}=runtime();
+ const kinds=JSON.parse(run('JSON.stringify(CHOIR_BASS_ARTICULATIONS)'));
+ assert.deepEqual(kinds,['pluck','legato','stack','block','strum','pedal','dyad']);
+ const everywhere=new Set(),favourites=new Set();
+ for(let seed=0;seed<200;seed++){
+  const seen=new Map();let changes=0,previous=null;
+  for(let phrase=0;phrase<40;phrase++){const a=run(`choirBassArticulation(${seed*7919},${phrase})`);everywhere.add(a);seen.set(a,(seen.get(a)||0)+1);if(previous&&a!==previous)changes++;previous=a;}
+  assert.ok(seen.size>=4,'seed '+seed+' uses '+seen.size+' articulations');
+  assert.ok(changes>=15,'and keeps changing: '+changes);
+  favourites.add([...seen.entries()].sort((a,b)=>b[1]-a[1])[0][0]);
+ }
+ assert.equal(everywhere.size,7);
+ assert.ok(favourites.size>=5,'organisms differ in which articulation they favour: '+favourites.size);
+ assert.equal(run('choirBassArticulation(42,7)'),run('choirBassArticulation(42,7)'),'deterministic');
+});
+test('each articulation rings the way its name says',()=>{
+ const {run}=runtime();
+ const interval=.7;
+ // Play two cycles at exact step times and count voices that are clearly sounding at each moment.
+ const play=(articulation,pattern)=>{
+  const L=pattern.length,starts=[];
+  for(let step=0;step<L*2;step++){
+   const events=JSON.parse(run(`JSON.stringify(choirBassStepEvents('${articulation}',${JSON.stringify(pattern)},${step%L},${interval}))`));
+   for(const e of events)starts.push({at:step*interval+e.delay,tone:e.tone,hold:e.hold,level:e.level});
+  }
+  starts.sort((a,b)=>a.at-b.at);
+  const sounding=[];
+  for(let t=0;t<L*2*interval;t+=.01){
+   let count=0;
+   for(let tone=0;tone<4;tone++){
+    const mine=starts.filter(s=>s.tone===tone&&s.at<=t+1e-9);if(!mine.length)continue;
+    const last=mine[mine.length-1];
+    if(last.level*run(`choirBassVoiceEnvelope(${t-last.at},${last.hold},${interval})`)>.15)count++;
+   }
+   sounding.push(count);
+  }
+  return {max:Math.max(...sounding),starts,silentShare:sounding.filter(c=>c===0).length/sounding.length};
+ };
+ const up=[0,1,2,3];
+ assert.ok(play('pluck',up).max<=1,'pluck: one note at a time');
+ const legato=play('legato',up).max;assert.ok(legato>=2&&legato<=3,'legato: each note overlaps the next: '+legato);
+ assert.ok(play('stack',up).max>=4,'stack: the cycle builds into the full chord');
+ const block=play('block',up);assert.ok(block.max>=4,'block: the chord is struck at once');
+ assert.equal(block.starts.filter(s=>s.at===0).length,4);
+ const strum=play('strum',up).starts.filter(s=>s.at<interval).map(s=>s.at);
+ assert.equal(strum.length,4);for(let i=1;i<strum.length;i++)assert.ok(strum[i]>strum[i-1],'strum: the chord is rolled');
+ assert.ok(strum[3]<interval*.3,'and rolled quickly');
+ const pedal=play('pedal',up);assert.ok(pedal.max>=2,'pedal: a held root under the moving tones');
+ const rootHold=JSON.parse(run(`JSON.stringify(choirBassStepEvents('pedal',[0,1,2,3],0,${interval}))`)).find(e=>e.tone===0);
+ assert.ok(rootHold.hold>=4*interval-1e-9,'the root is held for the whole cycle');
+ assert.ok(play('dyad',up).max>=2,'dyad: two tones together');
+ // Rests are part of the variety, but no articulation leaves most of the cycle empty.
+ for(const a of ['pluck','legato','stack','block','strum','pedal','dyad'])assert.ok(play(a,[0,2,1,3,1,2]).silentShare<.75,a);
+});
+test('a bass voice envelope rises, holds and releases smoothly',()=>{
+ const {run}=runtime();
+ const env=(a,h)=>run(`choirBassVoiceEnvelope(${a},${h},.7)`);
+ assert.equal(env(-1,0),0);assert.equal(env(0,0),0);assert.ok(Math.abs(env(.035,0)-1)<1e-9);
+ assert.ok(env(.7,0)<.05,'a plucked note has nearly faded by the next step');
+ assert.ok(env(1.4,1.4)>.25,'a held note is still sounding at the end of its hold');
+ assert.ok(Math.abs(env(1.4,1.4)-env(1.4+1e-6,1.4))<1e-4,'no jump when the release starts');
+ assert.ok(env(1.4+.7,1.4)<.02,'and it is gone a step later');
+ let previous=1;for(let a=.035;a<3;a+=.01){const v=env(a,1.4);assert.ok(v<=previous+1e-12);previous=v;}
 });
 test('bass notes land in the gaps between the high voices and are never silenced by them',()=>{
  const {run}=runtime();
