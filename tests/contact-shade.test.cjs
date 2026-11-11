@@ -28,7 +28,7 @@ test('the pass multiplies colour only, before bloom extraction, and restores GL 
   assert.ok(tail.includes(restore),restore);
 });
 test('zero shading strength, wireframe, laboratory sequences and missing resources skip the pass',()=>{
- assert.ok(pass.includes("!(strength>0)||$('wire').checked||nanoRenderPose)return;"));
+ assert.ok(pass.includes("!(strength>0)||$('wire').checked||nanoRenderPose||!qualityTier().contact)return;"));
  assert.ok(pass.includes('!f.contactProgram||!f.contactApply||!f.contactTarget||!f.contactFramebuffer||!f.depthTexture'));
  assert.ok(html.includes("function contactShadeStrength(){return clamp(Number($('shadeStrength')?.value||0)/15,0,2)*"));
 });

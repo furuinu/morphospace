@@ -3,8 +3,31 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.76.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.77.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Adaptive quality, pattern filtering, surrounding medium and progressive open (v15.77.0)
+
+**Adaptive quality.** Frame intervals now decide how much the device is asked to draw. There are four tiers:
+
+| tier | render scale cap | contact shading |
+|---|---|---|
+| 3 | 2.0 | on |
+| 2 (default, the previous behaviour) | 1.35 | on |
+| 1 | 1.35 | off |
+| 0 | 1.0 | off |
+
+Windows of at least one second are averaged. Two consecutive windows slower than 22.5 ms step down; four faster than 18.5 ms step up. A tier that failed stays off limits for 20 s, doubling on each failure up to 10 minutes. Tier 3 is only tried where the display's pixel ratio exceeds 1.35. A steady 30 Hz that persists at the lowest tier is treated as a display cap (for example low-power mode) and returns to the default. Handoffs, captures, recordings, hidden tabs, the first 1.5 s after a change and single stalls over 250 ms are not measured. Recordings and captures keep the fixed 1.35 scale.
+
+**Pattern filtering.** The comb-bead skin pattern has a period of two to three pixels at normal framing, so sampling it point-wise produced crawling dot noise. As a row or bead period approaches one pixel (from screen-space derivatives) its shape eases to its own mean coverage, and per-bead sparkle fades with it. WebGL2 always has derivatives; WebGL1 uses `OES_standard_derivatives` when present and is otherwise unchanged. The compatibility shader is not modified. Other pigment layers are not filtered.
+
+**Surrounding medium.** The sky is rendered a second time into a 24 x 24 texture (without point stars). The body shader samples it at each pixel's screen position, which gives the soft local colour of the sky behind the body. That colour lights surfaces the lamps leave dark (faces turned from the key light and grazing rims) and replaces up to 24% of the colour on the far side of the body, by view depth relative to the body centre. Thumbnails keep the plain look. If the probe cannot be created a flat colour from the background profile is used.
+
+**Progressive open.** Opening a specimen built its full-resolution body on the main thread. It now shows the low-lattice body at once and builds the full body in the Worker that already prepares transitions, swapping it in when it arrives while keeping framing, zoom and travel. A cached body opens directly. The swap waits for handoffs, captures and recordings, is dropped if the viewer has moved to another specimen, and falls back to a main-thread build if the Worker fails or is unavailable. Until the swap the body is visibly coarser and has no fine appendages.
+
+Measured in headless Chromium (SwiftShader), two runs each: time to the ready gate fell from about 1.39 s to 0.61 s, and the longest main-thread task during boot from about 1.0 s to 0.28 s. The full body arrived about 2.4 s after navigation.
+
+Validation: Node checks simulate the quality controller (climb, step down, penalty, 30 Hz cap, unmeasured frames), verify the pattern means numerically, bound the fallback medium colour, and drive the progressive open through success, cancellation, deferral and failure with a fake Worker. Shaders compile and render in headless Chromium without WebGL errors. Frame intervals under SwiftShader say nothing about real devices: the controller's behaviour on a physical iPhone, and the look of all four changes there, remain unverified.
 
 ## Centre lock and suspension (v15.76.0)
 
