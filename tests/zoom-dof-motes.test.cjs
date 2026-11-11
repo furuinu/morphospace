@@ -29,7 +29,7 @@ test('captures, wireframe and the switch skip it; a reduced quality tier keeps i
  }
  controls.dofStrength.value='90';assert.ok(Math.abs(at(100)-2)<1e-9);
  controls.dofStrength.value='45';context.tier={contact:false};assert.ok(Math.abs(at(100)-1)<1e-9,'the user\'s switch is honoured at every tier');
- assert.ok(html.includes('gl.uniform1f(p.u.uDofSamples,viewer.morph||!qualityTier().contact?12:24);'));
+ assert.ok(html.includes('gl.uniform1f(p.u.uDofSamples,viewer.morph||!qualityTier().contact||videoRecording?.lite>=2?12:24);'));
 });
 test('the pass runs from the zoom strength, focuses on the body and is independent of render scale',()=>{
  const pass=between('function paintLensFlare(','function worldCameraFrame(');

@@ -50,7 +50,7 @@ test('transitions, captures and one-off stalls are not measured',()=>{
  assert.equal(run('quality.tier'),2,'a stall resets the window before it completes');
  assert.ok(html.includes("stepAdaptiveQuality(elapsed,selected>=0&&!viewer.morph&&!nanoAction&&!videoRecording&&!captureShareIsOpen&&!stockDialog.open&&!(typeof document!=='undefined'&&document.hidden)"));
  assert.ok(html.includes('const renderScale=Math.min(devicePixelRatio||1,recordHeight||videoRecording||nanoAction?1.35:qualityTier().scale);'),'recordings and captures keep a fixed scale');
- assert.ok(html.includes("nanoRenderPose||!qualityTier().contact)return;"));
+ assert.ok(html.includes("nanoRenderPose||!qualityTier().contact||videoRecording?.lite>=1)return;"));
 });
 
 // ---- pattern filtering --------------------------------------------------------------------------
