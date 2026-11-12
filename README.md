@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.83.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.83.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Pearl lustre halved (v15.83.1)
+
+The pearl-specific clear coat (wet sheen +0.16 → +0.08), its film tint (0.30 → 0.15) and the extra subsurface glow (+0.025 → +0.0125) are halved.
 
 ## Touch viewing and pearl lustre (v15.83.0)
 
