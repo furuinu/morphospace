@@ -3,8 +3,22 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.81.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.82.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## One pattern, regional colour (v15.82.0)
+
+The body skin used to be covered at 87–97% strength by a separate "territory" layer: 3–6 regions, each with its own motif chosen by hash (rings, ribbons, islands, maze, veins, cell clusters) and painted with three foreign patch colours. The specimen's inherited pattern grammar, the one named on its record, was only visible at territory seams and on organs. That layer is removed. The inherited grammar now covers the whole skin, and colour complexity comes from a separate, low-frequency field:
+
+- **Form by luminance.** Every pigment keeps its own luminance, so the pattern's light/dark structure reads the same everywhere.
+- **Colour by region.** Locally there are two hue families, ground (slots 0, 2) and marks (slots 1, 3, 4). Their hues drift softly between three regional pairs: the specimen's own surface pair, and two pairs picked from its palette and patch row for the largest hue separation. The regions come from the same developmental nuclei that place the tissue seams. The accent slot keeps its own colour.
+- Up close a specimen shows two or three colours; across the body it shows six to eight.
+
+Also fixed:
+- Grammar 7 (群体多色型, about 14% of founders) was routed into the 色素斑点型 branch. It now reaches its colony-nucleus branch.
+- Tissue relief ridges for the living grammars 8–13 followed the colony vein formula and did not match the pigment. These grammars move over time, so they now raise no fixed ridge.
+- Crossover averaged the categorical pattern family number in a third of children, landing on unrelated families. Blend weights also did not sum to 1, pushing about 18% of children's continuous genes out of range. The family is now inherited whole, blends use t / 1−t, and blended genes are clamped.
+- The unused CPU helpers `patternFields` and `territoryWeights` are removed.
 
 ## Even 30 fps video export (v15.81.1)
 
