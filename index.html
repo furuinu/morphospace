@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.81.1 — Image driven morphogenesis</title>
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#071721"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="MORPHOSPACE"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=15.58.6"><link rel="icon" type="image/svg+xml" href="./icons/favicon.svg"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest?v=15.58.6"><title>MORPHOSPACE v15.82.0 — Image driven morphogenesis</title>
 <style>
 :root{--ink:#25362c;--muted:#6b776e;--line:#d9ddcf;--paper:#f4f0e7;--ivory:#fffcf6;--green:#356951}*{box-sizing:border-box}body{margin:0;background:#f1f2ef;color:#163227;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{display:flex;justify-content:space-between;gap:10px;align-items:center}.wrap{max-width:1050px;margin:0 auto;padding:16px 12px 35px}.eyebrow{color:#537663;font-size:10px;letter-spacing:.19em;font-weight:850}h1{margin:4px 0 5px;font-size:clamp(27px,6vw,41px);letter-spacing:-.045em}.sub{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.status{background:#e2f2e7;color:#1d6546;border:1px solid #a4cfb2;border-radius:50px;padding:8px 10px;font-size:10px;font-weight:800;white-space:nowrap}.panel{border:1px solid #d2d9dc;background:#ffffff;padding:12px;border-radius:12px;margin-top:13px;box-shadow:0 10px 30px rgba(0,0,0,.22)}.bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}.field label{font-weight:750;font-size:11px}.field input{min-width:100px;max-width:100%;padding:9px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12px}.buttons{display:flex;gap:7px;flex-wrap:wrap}.btn{padding:10px 12px;border:1px solid #cdd6cb;border-radius:8px;background:#ecf0e8;font-size:12px;font-weight:750;color:var(--ink)}.btn.primary{color:#fff;background:var(--green);border-color:var(--green)}.minor{font-size:10px;color:var(--muted);margin:10px 0}.progress{height:5px;background:#e5e8df;border-radius:10px;overflow:hidden;margin-top:10px}.progress div{background:#427f64;height:100%;width:0%}.gallery{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.item{background:#09121b;border:1px solid #233548;border-radius:10px;overflow:hidden;padding:4px;cursor:pointer;min-width:0;text-align:left;color:#eef5f2}.item:active{background:#10202d}.thumb{width:100%;aspect-ratio:1;background:radial-gradient(ellipse 88% 82% at 50% 40%, #e6e6e6 0%, #d7d7d7 44%, #aaaaaa 76%, #808080 100%);display:block;border-radius:6px;object-fit:cover}.item strong{display:block;font-size:10px;padding:5px 2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.item small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#a4c2bb;font-size:9px;padding:0 2px 4px}.overlay{display:none;position:fixed;inset:0;background:rgba(238,241,242,.92);z-index:90;align-items:center;justify-content:center;padding:10px}.overlay.open{display:flex}.detail{background:#fbfbf8;width:min(960px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:13px;display:grid;grid-template-columns:1.12fr 1fr}.scene{position:relative;background:radial-gradient(ellipse 70% 60% at 50% 42%, #18354f 0%, #10263c 24%, #081523 54%, #050b12 100%);overflow:hidden;min-height:390px}.scene canvas{width:100%;height:100%;display:block;touch-action:none}.scene #rigCanvas{position:absolute;inset:0;pointer-events:none;touch-action:none;width:100%;height:100%}.angles{position:absolute;left:10px;bottom:10px;pointer-events:none;background:rgba(255,255,255,.82);color:#19332a;border:1px solid rgba(125,138,145,.25);border-radius:6px;padding:6px 8px;font-size:10px;backdrop-filter:blur(4px)}.inspector{padding:15px;display:flex;flex-direction:column;gap:11px}.top{display:flex;justify-content:space-between;align-items:center}.top small{font-size:10px;letter-spacing:.08em;color:#67766a;font-weight:850}.x{padding:5px 12px;font-size:20px}.name{font-size:24px;margin:0;letter-spacing:-.03em}.desc{font-size:11px;color:#66746b;line-height:1.6;margin:0}.pallet{display:flex;height:12px;overflow:hidden;border-radius:5px;gap:1px}.pallet i{flex:1}.control{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750}.control input[type=range]{flex:1;min-width:40px;accent-color:var(--green)}.control output{font-family:ui-monospace,monospace;font-size:11px;min-width:33px;text-align:right}.checks{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.checks label{display:flex;align-items:center;gap:6px}.checks label[hidden],.checks [hidden]{display:none!important}.checks input{accent-color:var(--green)}.buttons2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:auto}.note{font-size:10px;color:#879185;line-height:1.65}.foot{font-size:10px;line-height:1.6;color:#7d877b;margin-top:12px}.fail{color:#a32b35;background:#fce8e8;border-color:#eaafaf}@media(max-width:900px){.gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:600px){.wrap{padding:12px 9px 30px}.gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.item{padding:3px;border-radius:7px}.item strong{font-size:9px}.item small{font-size:8px}.detail{grid-template-columns:1fr;max-width:500px}.scene{height:43dvh;min-height:240px}.inspector{gap:9px;padding:12px}.name{font-size:21px}.status{font-size:9px;padding:7px}.control{font-size:11px}.btn{padding:10px;font-size:11px}.buttons{width:100%}.buttons .btn{flex:1}.overlay{padding:7px}.detail{max-height:calc(100dvh - 14px)}}
 .group-head{grid-column:1 / -1;padding:15px 3px 3px;font-weight:800;font-size:13px;letter-spacing:.12em;color:#325d51;border-bottom:1px solid #c8d3c5} .gallery .group-head:first-child{padding-top:3px}
@@ -488,7 +488,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 .phase-particle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;filter:blur(2.4px)}.phase-particle-canvas[hidden]{display:none}
 
 #viewerModeQuick{width:auto;max-width:95px;min-width:72px;min-height:36px;background:rgba(5,24,34,.9);color:#d4f9f3;border:1px solid #466b70;border-radius:8px;font-size:12px;padding:6px;position:relative;z-index:25}#viewerModeQuick:focus-visible{outline:2px solid #86e2bd}
-</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.81.1</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">読み込み中…</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.81.1</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
+</style></head><body class="boot-loading"><div id="bootSplash" role="status" aria-live="polite" aria-label="MORPHOSPACEの生体を読み込み中"><p class="boot-mark">QUALIA / GENESIS</p><h2 class="boot-title">MORPHOSPACE</h2><div class="boot-caption">味と香りのクオリア</div><div class="boot-version" aria-label="バージョン">v15.82.0</div><canvas id="bootDnaCanvas" class="boot-dna" aria-hidden="true"></canvas><p class="boot-status" id="bootStatus">読み込み中…</p><div class="boot-progress" aria-hidden="true"></div><div class="boot-action-slot"><button type="button" id="bootStartButton" class="boot-start" hidden>タップして観察を開始<small>音声をオンにする</small></button></div></div><div class="wrap"><header><div><h1>MORPHOSPACE <span class="version-label">v15.82.0</span></h1><p class="sub"><span>味と香りのクオリア</span><button type="button" class="about-trigger" id="aboutOpen" aria-label="MORPHOSPACEとは" aria-haspopup="dialog" aria-controls="aboutDialog"><span aria-hidden="true">?</span></button></p></div></header>
 <div id="gallery" class="gallery" aria-label="現在の観察個体"></div>
 <section class="atlas-bottom" aria-label="図鑑の操作と設定">
 <section class="panel"><div class="bar"><div class="field"><label>コレクションシード</label><input id="seed" value="" inputmode="numeric"></div><div class="field"><label>変異の強度 <span id="varnum">75</span>%</label><input id="variance" type="range" min="0" max="100" value="75"></div><div class="buttons"><button id="generate" class="btn primary">新しい野生個体を生成</button><button id="same" class="btn">同じシードで再現</button></div><div class="field photo-origin-panel" style="margin-top:12px"><label for="photoOriginInput">写真から未知の生体を生成（1枚 → 1体）</label><label for="photoCopyGrammar">全体の複製法則</label><select id="photoCopyGrammar"><option value="auto">自動（写真DNAで決定）</option><option value="1">左右鏡像</option><option value="2">三つ巴</option><option value="3">多放射</option><option value="4">上下左右鏡像</option><option value="5">樹状分岐</option><option value="6">螺旋縮小</option><option value="7">鏡像体節連結</option></select><input id="photoOriginInput" type="file" accept="image/*" style="max-width:100%;min-height:42px"><p id="photoOriginStatus" class="minor" role="status" aria-live="polite">「ファイルを選択」を押して「写真ライブラリ」から選択してください。撮影も選べます。</p></div></div><div class="pattern-panel"><h3>模様カテゴリ指向</h3><div class="pattern-grid"><div class="head"></div><div class="head">甲虫</div><div class="head">魚類</div><div class="head">クラゲ</div><div class="head">ウミウシ</div><div class="head">羽毛</div><div class="plabel">比率</div><div><input id="cat0" type="range" min="0" max="100" value="38"><output id="cat0out">38%</output></div><div><input id="cat1" type="range" min="0" max="100" value="44"><output id="cat1out">44%</output></div><div><input id="cat2" type="range" min="0" max="100" value="35"><output id="cat2out">35%</output></div><div><input id="cat3" type="range" min="0" max="100" value="42"><output id="cat3out">42%</output></div><div><input id="cat4" type="range" min="0" max="100" value="30"><output id="cat4out">30%</output></div></div><div class="pattern-actions"><label class="mini-field"><input id="patternLock" type="checkbox"> この比率へ模様DNAを寄せる</label><label class="mini-field">類似回避 <input id="patternScatter" type="range" min="0" max="100" value="72"><output id="patternScatterOut">72%</output></label><button id="patternRandom" class="btn">比率をランダム化</button><div class="mini">同じ6色でも、模様カテゴリの混成比率と分布を散らして別種に見せます。</div></div></div><div id="breedLab" class="breed-lab">
@@ -498,7 +498,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
   <div class="breed-actions"><button id="stockToLab" class="btn" type="button">生体サンプルから親を選ぶ</button></div>
   <div id="lineageSummary" class="lineage-summary">個体を開き「親Aに登録」「親Bに登録」を選ぶと交配できます。</div>
  </div><div class="progress"><div id="progress"></div></div><p id="message" class="minor">野生個体を無限に観察し、保存した2体から進化を始められます。</p></section>
-<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.81.1</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.81.1：分類と学名を刷新。綱・目を体の形から、科・属・種を生態から決め、体色の亜種名を追加。子は親の科や属を受け継ぎ、生態記載の文型を拡充。</div></div>
+<div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / v15.82.0</div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.82.0：分類と学名を刷新。綱・目を体の形から、科・属・種を生態から決め、体色の亜種名を追加。子は親の科や属を受け継ぎ、生態記載の文型を拡充。</div></div>
 </section>
 
 </div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作"><select id="viewerModeQuick" aria-label="生体生成モード" title="生体生成モード"><option value="wild">野生</option><option value="evolution">進化</option></select>
@@ -540,7 +540,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 <div class="viewer-caption"><div class="viewer-name"><h2 id="viewerName"></h2></div><p id="viewerScientific"></p><p id="viewerTaxonomy"></p><p id="viewerEcology"></p></div>
 <div class="viewer-state"><span id="viewerPosition"></span><span id="viewerTransition" role="status"></span></div>
 <div class="viewer-countdown" id="viewerTimer" role="timer" aria-label="次の生体まで30秒" aria-live="off" hidden><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle class="countdown-track" cx="32" cy="32" r="24"/><circle class="countdown-arc" id="viewerTimerArc" cx="32" cy="32" r="24"/></svg><span class="countdown-seconds" id="viewerTimerSeconds" aria-hidden="true">30</span></div>
-<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="inspector-subhead">表面・陰影</div><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div><div class="inspector-subhead">発光・明滅</div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="inspector-subhead">描画品質</div><div class="control"><span>品質</span><select id="renderQuality" aria-label="描画品質"><option value="auto" selected>自動（端末に合わせる）</option><option value="3">高精細</option><option value="2">標準</option><option value="1">陰影なし</option><option value="0">軽量</option></select></div><output id="qualityState" class="minor"></output><div class="inspector-subhead">ピント・背景粒子</div><div class="checks"><label><input id="macroDof" type="checkbox"/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><select id="dofDebug" aria-label="DOF診断"><option value="0" selected>通常表示</option><option value="1">深度表示</option><option value="2">ぼけ量表示</option></select><output id="dofState" class="minor"></output><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="inspector-subhead">運動の調整</div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="control"><span>模様活動の強さ</span><input id="patternStrength" type="range" min="0" max="200" value="125"/><output id="patternStrengthNum">125%</output></div><div class="control"><span>模様活動の速度</span><input id="patternSpeed" type="range" min="25" max="250" value="100"/><output id="patternSpeedNum">100%</output></div><div class="control"><span>模様の休止割合</span><input id="patternRest" type="range" min="0" max="100" value="35"/><output id="patternRestNum">35%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked id="patternMotion" type="checkbox"/> 模様活動を再生</label><label><input checked id="triplanarTrial" type="checkbox"/> 立体投影模様（トライプラナー）</label><label hidden aria-hidden="true"><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label hidden aria-hidden="true"><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite" hidden>枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="inspector-subhead">内部構造</div><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>色ガラス透過（個体別）</span><input id="transparency" max="40" min="0" step="1" type="range" value="0"/><output id="transNum">0%</output></div><p class="mini">個体ごとに0〜40%を自動生成。透過率が高いほどフレネル反射が強まり、模様色と内部構造を保ちます。手動調整も可能です。</p><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><p class="export-help">2親交配：この個体を親A・親Bのどちらかに登録し、もう一方の親も選んでから64体を生成します。</p><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div><p id="breedingReadiness" class="export-help" role="status" aria-live="polite">親A・親Bの選択状態を確認中…</p><p class="export-help">単親変異：現在表示している1体から64体を生成します。親A・親Bの指定は不要です。</p></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><p class="export-help">画像・動画・遺伝子データを保存できます。カードとして残す場合は画面下部の capture を使用してください。</p><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><p class="export-help">PNGは静止画、遺伝子JSONは個体の再現・共有用データです。</p><label class="btn file-label" style="width:100%;margin:3px 0 9px">遺伝子JSONを取り込む<input id="importIndividualDNA" type="file" accept=".json,application/json"></label><p id="importIndividualStatus" class="export-help" role="status" aria-live="polite">この画面から保存した個体のJSONを読み込み、3D表示で復元します。</p><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button><p class="export-help">動画の形式は端末の対応状況によって変わります。</p></div></section><div class="note">MORPHOSPACE v15.81.1 — QUALIA ECOLOGY</div></div></div><div class="capture-dock" role="group" aria-label="撮影と共有"><button type="button" class="btn" id="viewerPicMov" aria-label="画像または動画を保存"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="15" height="14" rx="2"/><circle cx="10" cy="11.5" r="3.5"/><path d="m17.5 9 4-2.5v11l-4-2.5"/></svg><span>pic/mov</span></button><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
+<div class="angles">YAW <b id="yaw">0°</b>　PITCH <b id="pitch">0°</b>　<small id="motionStatus">静止</small></div></div><div class="inspector"><div class="inspector-scroll"><div class="top"><small id="index">SPECIMEN 01</small></div><h2 class="name" id="name">生成個体</h2><p class="scientific-name" id="scientificName"></p><p class="taxonomic-line" id="taxonomicLine"></p><p class="ecology-caption">生態記載</p><p class="desc" id="description">味と香りのクオリアに潜む生物たち。</p><div class="pallet" id="palette"></div><div class="mini" id="paletteDesignInfo" aria-live="off"></div><div class="family-info" id="familyInfo">第0世代</div><section class="fold"><button aria-controls="fold-body-1" aria-expanded="false" class="fold-trigger" type="button">生体情報</button><div class="fold-body meta-stack" hidden="" id="fold-body-1"><div class="motion-dna-info" id="morphologyInfo"></div><div class="motion-dna-info" id="motionDNAInfo">運動DNAを読込中…</div><div class="motion-dna-info" id="biomeInfo">生体連動DNAを読込中…</div><div aria-live="off" class="motion-dna-info" id="bioLive">生体内圧の計算を待機中…</div></div></section><section class="fold"><button aria-controls="fold-body-2" aria-expanded="false" class="fold-trigger" type="button">発光・陰影</button><div class="fold-body" hidden="" id="fold-body-2"><div class="inspector-subhead">表面・陰影</div><div class="control"><span>フレネル反射</span><input id="fresnelStrength" type="range" min="0" max="150" value="100"/><output id="fresnelStrengthNum">100%</output></div><div class="control"><span>構造色</span><input id="iridescenceStrength" type="range" min="0" max="150" value="100"/><output id="iridescenceStrengthNum">100%</output></div><div class="control"><span>陰影の強さ</span><input id="shadeStrength" max="30" min="0" step="1" type="range" value="15"/><output id="shadeNum">15%</output></div><div class="inspector-subhead">発光・明滅</div><div class="control"><span>局所発光</span><input id="emissionStrength" max="180" min="0" type="range" value="110"/><output id="emissionNum">110%</output></div><div class="control"><span>発光色</span><select id="emitColor" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">青白 / シアン</option><option value="1">エメラルド</option><option value="2">紫 / バイオレット</option><option value="3">琥珀 / ゴールド</option><option value="4">桃 / マゼンタ</option><option value="5">ライムグリーン</option><option value="6">氷白</option><option value="7">個体ごとにランダム</option><option value="8">パレットの発光アクセント（自動）</option></select></div><div class="control"><span>明滅</span><select id="emitBlink" style="flex:1;min-width:0;padding:8px;border-radius:7px;background:#243849;color:#eefaff;border:1px solid #486174"><option value="0">一定光</option><option selected="" value="1">ゆっくり呼吸</option><option value="2">心拍</option><option value="3">二連閃光</option><option value="4">波状に順次点灯</option><option value="5">不規則なゆらぎ</option><option value="6">長い休止と発光</option></select></div><div class="control"><span>明滅速度</span><input id="blinkSpeed" max="200" min="20" type="range" value="65"/><output id="blinkSpeedOut">65%</output></div><div class="control"><span>グローの広がり</span><input id="bloomRadius" max="200" min="0" type="range" value="105"/><output id="bloomNum">105%</output></div><div class="inspector-subhead">描画品質</div><div class="control"><span>品質</span><select id="renderQuality" aria-label="描画品質"><option value="auto" selected>自動（端末に合わせる）</option><option value="3">高精細</option><option value="2">標準</option><option value="1">陰影なし</option><option value="0">軽量</option></select></div><output id="qualityState" class="minor"></output><div class="inspector-subhead">ピント・背景粒子</div><div class="checks"><label><input id="macroDof" type="checkbox"/> マクロ被写界深度</label></div><div class="control"><span>被写界深度の強さ</span><input id="dofStrength" type="range" min="0" max="100" value="45"/><output id="dofStrengthNum">45%</output></div><select id="dofDebug" aria-label="DOF診断"><option value="0" selected>通常表示</option><option value="1">深度表示</option><option value="2">ぼけ量表示</option></select><output id="dofState" class="minor"></output><div class="control"><span>ピント距離（中央基準）</span><input id="dofFocus" type="range" min="-100" max="100" value="0"/><output id="dofFocusNum">0</output></div><div class="control"><span>遠方粒子の減光</span><input id="snowFarDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowFarDimNum">70%</output></div><div class="control"><span>画面端の粒子減光</span><input id="snowEdgeDim" type="range" min="0" max="100" step="1" value="70"/><output id="snowEdgeDimNum">70%</output></div></div></section><section class="fold"><button aria-controls="fold-body-3" aria-expanded="false" class="fold-trigger" type="button">運動・形態</button><div class="fold-body" hidden="" id="fold-body-3"><div class="inspector-subhead">運動の調整</div><div class="control"><span>運動の強さ</span><input id="motionAmp" max="200" min="0" type="range" value="125"/><output id="motionAmpNum">125%</output></div><div class="control"><span>器官の連動強度</span><input id="coupling" max="200" min="0" type="range" value="135"/><output id="couplingNum">135%</output></div><div class="control"><span>運動速度</span><input id="motionSpeed" max="200" min="40" type="range" value="100"/><output id="motionSpeedNum">100%</output></div><div class="control"><span>外皮変形の速度</span><input id="bodySpeed" max="300" min="50" type="range" value="100"/><output id="bodySpeedNum">100%</output></div><div class="control"><span>模様活動の強さ</span><input id="patternStrength" type="range" min="0" max="200" value="125"/><output id="patternStrengthNum">125%</output></div><div class="control"><span>模様活動の速度</span><input id="patternSpeed" type="range" min="25" max="250" value="100"/><output id="patternSpeedNum">100%</output></div><div class="control"><span>模様の休止割合</span><input id="patternRest" type="range" min="0" max="100" value="35"/><output id="patternRestNum">35%</output></div><div class="checks"><label><input checked="" id="motion" type="checkbox"/> 運動DNAを再生</label><label><input checked id="patternMotion" type="checkbox"/> 模様活動を再生</label><label><input checked id="triplanarTrial" type="checkbox"/> 立体投影模様（トライプラナー）</label><label hidden aria-hidden="true"><input id="wire" type="checkbox"/> ポリゴン線</label><label><input checked id="branchMotion" type="checkbox"/> 枝の関節運動</label><label hidden aria-hidden="true"><input id="branchSolo" type="checkbox"/> 枝・突起を確認</label><span id="branchInspectInfo" class="mini" aria-live="polite" hidden>枝構造を読み込み中</span><label style="display:none"><input id="rigviz" type="checkbox"/> リグ線を表示</label></div><div class="inspector-subhead">内部構造</div><div class="control"><span>内部液胞の密度</span><input id="density" max="100" min="10" type="range" value="84"/><output id="densityNum">84%</output></div><div class="control"><span>色ガラス透過（個体別）</span><input id="transparency" max="40" min="0" step="1" type="range" value="0"/><output id="transNum">0%</output></div><p class="mini">個体ごとに0〜40%を自動生成。透過率が高いほどフレネル反射が強まり、模様色と内部構造を保ちます。手動調整も可能です。</p><div class="control" style="display:none"><span>微細構造の密度</span><input id="micro" max="100" min="0" type="range" value="75"/><output id="microNum">75%</output></div><div class="control" style="display:none"><span>繊毛の動き</span><input id="ciliaMotion" max="400" min="50" type="range" value="250"/><output id="ciliaMotionNum">250%</output></div><div class="control" style="display:none"><span>色光の発光量</span><input id="glow" max="140" min="0" type="range" value="0"/><output id="glowNum">0%</output></div><div class="control" style="display:none"><span>光の重なり</span><input id="layerLight" max="100" min="0" type="range" value="0"/><output id="layerLightNum">0%</output></div><button class="btn" id="reset">回転をリセット</button></div></section><section class="fold"><button aria-controls="fold-body-5" aria-expanded="false" class="fold-trigger" type="button">交配・子孫</button><div class="fold-body" hidden id="fold-body-5"><p class="export-help">2親交配：この個体を親A・親Bのどちらかに登録し、もう一方の親も選んでから64体を生成します。</p><div aria-label="交配と個体生成" class="breeding-tools" role="group"><div class="parent-tools floating-parent-tools"><button class="btn" id="setParentA">親Aに登録<span class="slot-state">未選択</span></button><button class="btn" id="setParentB">親Bに登録<span class="slot-state">未選択</span></button></div><div class="dock-action-row"><button aria-label="親Aと親BのDNAを交配して64体を生成" class="btn" disabled="" id="breedQuick" type="button">A × B 交配 / 64体</button><button class="btn primary" id="mutate">この個体から64子孫</button></div><p id="breedingReadiness" class="export-help" role="status" aria-live="polite">親A・親Bの選択状態を確認中…</p><p class="export-help">単親変異：現在表示している1体から64体を生成します。親A・親Bの指定は不要です。</p></div></div></section><section class="fold"><button aria-controls="fold-body-4" aria-expanded="false" class="fold-trigger" type="button">保存・出力</button><div class="fold-body" hidden="" id="fold-body-4"><p class="export-help">画像・動画・遺伝子データを保存できます。カードとして残す場合は画面下部の capture を使用してください。</p><div class="buttons2"><button class="btn" id="save">PNG保存</button><button class="btn" id="json">遺伝子JSON</button></div><p class="export-help">PNGは静止画、遺伝子JSONは個体の再現・共有用データです。</p><label class="btn file-label" style="width:100%;margin:3px 0 9px">遺伝子JSONを取り込む<input id="importIndividualDNA" type="file" accept=".json,application/json"></label><p id="importIndividualStatus" class="export-help" role="status" aria-live="polite">この画面から保存した個体のJSONを読み込み、3D表示で復元します。</p><button class="btn primary" type="button" id="recordVideo" style="width:100%;margin-top:10px">動画保存（MP4優先）</button><p class="export-help">動画の形式は端末の対応状況によって変わります。</p></div></section><div class="note">MORPHOSPACE v15.82.0 — QUALIA ECOLOGY</div></div></div><div class="capture-dock" role="group" aria-label="撮影と共有"><button type="button" class="btn" id="viewerPicMov" aria-label="画像または動画を保存"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="15" height="14" rx="2"/><circle cx="10" cy="11.5" r="3.5"/><path d="m17.5 9 4-2.5v11l-4-2.5"/></svg><span>pic/mov</span></button><button type="button" class="btn primary" id="capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-icon="manipulator"><path d="M3 21h10M5 21v-3h6v3M8 18v-3m1.2-3.6 3-3.8m2.3-.2L18 9"/><circle cx="8" cy="13" r="2"/><circle cx="13" cy="6" r="2"/><path d="m18 9 3-3 2 2m-5 1 3 3 2-2"/></svg><span>capture</span></button><button type="button" class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg><span>share</span></button></div></div></div>
 <dialog id="mediaChoiceDialog" aria-labelledby="mediaChoiceTitle"><h2 id="mediaChoiceTitle">画像・動画の保存</h2><p>形式を選択してください。</p><div class="media-choice-actions"><button class="btn" type="button" id="mediaPicture">pic / 静止画 PNG</button><button class="btn" type="button" id="mediaMovie">mov / 動画</button></div><button class="btn media-choice-close" type="button" id="mediaChoiceClose">閉じる</button></dialog>
 <dialog id="aboutDialog" aria-labelledby="aboutTitle" lang="ja">
  <div class="about-heading">
@@ -2976,39 +2976,6 @@ function mixColors(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[
 function addColor(a,b){return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]}
 function mulColor(a,s){return [a[0]*s,a[1]*s,a[2]*s]}
 function thetaDistance(a,b){let d=Math.abs(a-b)%TAU;return d>Math.PI?TAU-d:d}
-function patternFields(t,theta,seed,zone,p){
- const rr=0.58+0.92*(t-.5),x=Math.cos(theta)*rr,y=t*2-1,z=Math.sin(theta)*rr;
- const s=(seed||0)*0.000123 + zone*1.731 + (p.shift||0)*4.27;
- const q1=Math.sin(x*(p.freqA*2.4)+y*(p.freqB*1.2)+z*(p.freqC*.9)+(p.phaseA||0)+s);
- const q2=Math.cos(x*(p.freqB*1.7)-y*(p.freqC*.85)+z*(p.freqA*1.3)+(p.phaseB||0)+s*1.2);
- const q3=Math.sin((x+y-z)*(p.freqC*1.4)+(p.phaseC||0)+s*2.7);
- const mixv=(q1*.52+q2*.31+q3*.17);
- const bands=.5+.5*Math.sin((x*1.1+y*1.7+z*1.3)*(p.freqA*2.2)+(p.phaseA||0)+zone*.4);
- const zebra=.5+.5*Math.sin((x*2.4-z*1.8)*(p.freqB*2.6)+Math.sin(y*4.0+(p.phaseB||0))*1.1);
- const spots=smooth01((p.threshold||.4)-.10,(p.threshold||.4)+.10,.5+.5*Math.sin(q1*2.4+q2*1.3+q3*1.7));
- const cells=smooth01(.42,.82,Math.abs(mixv));
- const speck=smooth01(.72,.97,.5+.5*Math.sin((x*9.7+y*11.3-z*8.6)*(1.3+(p.speckle||0)*1.7)+s*6.2));
- const scallop=tri01((theta/TAU)*(1.6+(p.freqA||2))+t*(2.2+(p.freqB||2)*.5)+(p.shift||0));
- const web=smooth01(.22,.86,.5+.5*Math.cos((x*3.1+y*2.3)*(1.4+(p.freqA||2))+(z*4.8)*(1.2+(p.freqB||2))+s));
- const plume=.5+.5*Math.sin((Math.atan2(z,x)+Math.hypot(x,z)*(1.8+(p.freqB||2)))*3.0+y*(1.0+(p.freqC||3))+(p.phaseB||0));
- const ripples=.5+.5*Math.sin((Math.hypot(x,z)*(4.0+(p.freqA||2))+y*(3.0+(p.freqB||2)))+(p.phaseC||0));
- const marbling=.5+.5*Math.sin((q1+q2*1.4+q3*1.9)*2.1);
- const lattice=.5+.5*Math.cos((x*(5.4+(p.freqB||2))+z*(5.0+(p.freqC||2))));
- const freckles=smooth01(.84,.98,.5+.5*Math.sin((x*17.0+y*13.0+z*19.0)*(1.0+(p.speckle||0)) + s*8.0));
- const blotch=smooth01(.28,.78,.5+.5*Math.cos((x*1.8-y*1.1+z*2.2)*(2.2+(p.freqA||2))+s));
- return {x,y,z,bands,zebra,spots,cells,speck,scallop,web,plume,ripples,marbling,lattice,freckles,blotch,mixv};
-}
-function territoryWeights(palette,t,theta){
- const anchors=(palette.pattern&&palette.pattern.anchors)||[];
- if(!anchors.length)return [{i:0,w:1},{i:1,w:0},{i:2,w:0},{i:3,w:0},{i:4,w:0},{i:5,w:0}];
- const ws=[]; let sum=0;
- for(let i=0;i<anchors.length;i++){
-  const a=anchors[i], dt=(t-a.t)/(a.rt||.22), da=thetaDistance(theta,a.a)/(a.ra||1.0), d=dt*dt+da*da;
-  const w=Math.exp(-d*1.8); ws.push({i,w}); sum+=w;
- }
- sum=Math.max(1e-6,sum); for(const x of ws)x.w/=sum;
- ws.sort((m,n)=>n.w-m.w); return ws;
-}
 function softBlend(base,weights,colors,ids){
  let col=[0,0,0], sum=0;
  for(let k=0;k<ids.length;k++){const id=ids[k], w=Math.max(0,weights.find(x=>x.i===id)?.w||0); if(w<=0)continue; col=addColor(col,mulColor(colors[id],w)); sum+=w;}
@@ -3316,7 +3283,9 @@ function patternCrossoverDNA(a,b,seed,mutationStrength,log,inherited){
    const src=r()<.5?'A':'B'; inherited['pattern_'+block]=src;
    for(const key of keys){
      let v=(src==='A'?A:B)[key];
-     if(r()<.33) v=A[key]*(.2+.6*r()) + B[key]*(.8-.6*r());
+     // Categorical genes (pattern family) are inherited whole: averaging two family
+     // numbers lands on an unrelated family. Continuous genes blend with weights summing to 1.
+     if(key!=='family'&&key!=='secondary'&&r()<.33){const t=.2+.6*r();v=A[key]*t+B[key]*(1-t);}
      if(r()<.10+.24*mutationStrength){
        const old=v; const lim=PATTERN_LIMITS[key];
        if(key==='family'||key==='secondary'){ v=Math.floor(r()*22); }
@@ -3324,13 +3293,13 @@ function patternCrossoverDNA(a,b,seed,mutationStrength,log,inherited){
        else { v=clamp(v+(r()+r()+r()-1.5)*(.08+.22*mutationStrength)*(lim[1]-lim[0]),...lim); }
        log.push({field:'patternDNA.'+key,from:Number((+old).toFixed?old.toFixed(4):old),to:Number((+v).toFixed? v.toFixed(4):v)});
      }
-     d[key]=(key==='family'||key==='secondary')?Math.abs(Math.floor(v))%22:(key==='eyeCount'?Math.max(1,Math.min(8,Math.round(v))):+v.toFixed(5));
+     d[key]=(key==='family'||key==='secondary')?Math.abs(Math.floor(v))%22:(key==='eyeCount'?Math.max(1,Math.min(8,Math.round(v))):+clamp(v,...PATTERN_LIMITS[key]).toFixed(5));
    }
  }
  let weights=[];
  for(let i=0;i<5;i++){
    let val=(r()<.5?A.weights[i]:B.weights[i]);
-   if(r()<.55) val=A.weights[i]*(.2+.6*r()) + B.weights[i]*(.8-.6*r());
+   if(r()<.55){const t=.2+.6*r();val=A.weights[i]*t+B.weights[i]*(1-t);}
    if(r()<.10+.22*mutationStrength){ const old=val; val=Math.max(0.01,val+(r()+r()+r()-1.5)*(.05+.18*mutationStrength)); log.push({field:'patternDNA.weights['+i+']',from:+old.toFixed(4),to:+val.toFixed(4)}); }
    weights.push(val);
  }
@@ -6286,7 +6255,9 @@ float surfaceBoundary(vec3 p){
  if(kind<4.5)return length(pigmentCell(p.xy,uChromaB.y*.56,phase)*vec2(.90,1.12))*(1.+spread)-.265;
  if(kind<5.5)return sin(((y+1.)*2.4-abs(x)*1.85+sin(y*3.2+phase)*.10)*6.2831853)*.18;
  if(kind<6.5)return sin(((y+1.)*uChromaA.z*.58+sin(y*3.2+phase)*.10+phase*.12-.23)*6.2831853)*.18;
- return sin((x+y*.65)*uChromaB.z+sin(p.z*4.+phase))*.18;
+ if(kind<7.5)return sin((x+y*.65)*uChromaB.z+sin(p.z*4.+phase))*.18; // colony veins
+ // Living grammars 8-13 move over time; a fixed ridge would not follow them, so none is raised.
+ return 1.;
 }
 float surfaceRidge(vec3 p){float d=surfaceBoundary(p);return exp(-d*d*100.);}
 float surfaceHeight(vec3 point,float time){
@@ -6465,6 +6436,46 @@ void main(){
 }`;
 const chromaticGrammarGLSL=surfaceRelationGLSL+`
 uniform vec3 uPatchPal0;uniform vec3 uPatchPal1;uniform vec3 uPatchPal2;
+uniform vec3 uAltPal0;uniform vec3 uAltPal1;uniform vec3 uAltPal2;uniform vec3 uAltPal3;
+// Regional colour field. The same developmental nuclei that place the tissue seams
+// decide how far each region's pigments drift toward their luminance-matched
+// alternates. Form (the pattern) stays one grammar; only hue varies by region.
+vec3 regionalTint(vec3 p){
+ float phase=uChromaA.y;
+ float seed=fract(phase*.15915494+uChromaB.y*.061+uChromaA.x*.037);
+ highp float h=fract(sin(dot(vec2(phase+8.23,uChromaA.z+3.71),vec2(127.1,311.7)))*43758.5453);
+ float count=3.+floor(h*4.);
+ vec3 tissue=p+vec3(.14*sin(p.y*3.7+p.z*2.9+phase),
+  .11*sin(p.x*3.1-p.z*2.6+phase*.8),
+  .13*sin(p.x*3.4+p.y*2.8-phase*.7));
+ float sum=0.;vec3 acc=vec3(0.);
+ for(int i=0;i<6;i++){
+  float j=float(i);
+  if(j>=count)continue;
+  vec3 nucleus=vec3((fract((j+1.)*.618034+seed)*2.-1.)*.83,
+   -.83+(j+.5)*1.66/count,
+   (fract((j+1.)*.414214+seed*.71)*2.-1.)*.68);
+  vec3 delta=(tissue-nucleus)*vec3(1.,1.10,1.22);
+  float score=dot(delta,delta)+.09*fract(j*.371+seed);
+  float w=exp(-score*13.);
+  float k=mod(j+floor(seed*3.),3.);
+  sum+=w;acc+=w*vec3(k<.5?1.:0.,k>.5&&k<1.5?1.:0.,k>1.5?1.:0.);
+ }
+ return acc/max(sum,1e-5);
+}
+// Keep a pigment's luminance (the pattern's light/dark structure) and take its hue
+// from the regional colour. Near-neutral pigments (milk, ink) are left as they are.
+vec3 lumaRecolor(vec3 c,vec3 hue){
+ vec3 lw=vec3(.2126,.7152,.0722);
+ float l=dot(c,lw),lh=max(.02,dot(hue,lw));
+ float mx=max(c.r,max(c.g,c.b)),mn=min(c.r,min(c.g,c.b)),sat=(mx-mn)/max(mx,.001);
+ // Hold most of the pigment's luminance, but let the regional hue keep some of its own
+ // brightness so strong colours do not wash out to pastel when lifted.
+ float target=mix(lh,l,.7);
+ vec3 o=hue*(target/lh);float peak=max(o.r,max(o.g,o.b));
+ if(peak>1.){o/=peak;float lo=dot(o,lw);o+=(1.-o)*clamp((target-lo)/max(.001,1.-lo),0.,1.)*.6;}
+ return mix(c,o,.88*smoothstep(.10,.28,sat));
+}
 uniform highp mat4 uModel;
 uniform float uOpticalMood; // shared inherited chromatic character for pigment and coating
 uniform float uSurfaceActivity;
@@ -6529,165 +6540,128 @@ float livingVein(vec2 p,float t,float freq){float x=abs(p.x),y=p.y;float trunk=1
 float livingInk(vec2 p,float t){vec2 q=p+vec2(.012*sin(p.y*4.+t*.28),.011*cos(p.x*4.-t*.23));return livingNoise(q*3.3)+.45*livingNoise(q*7.7+2.1);}
 vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
  vec3 p=chromaticPoint(point);
+ // Local pattern = two hue families (ground, marks) at the pigments' own luminances;
+ // the families change region by region, so the whole body carries many colours.
+ vec3 tint=regionalTint(p);
+ vec3 groundHue=uPal0*tint.x+uAltPal0*tint.y+uAltPal2*tint.z;
+ vec3 markHue=uPal1*tint.x+uAltPal1*tint.y+uAltPal3*tint.z;
+ vec3 P0=lumaRecolor(uPal0,groundHue),P2=lumaRecolor(uPal2,groundHue);
+ vec3 P1=lumaRecolor(uPal1,markHue),P3=lumaRecolor(uPal3,markHue),P4=lumaRecolor(uPal4,markHue);
+ vec3 P5=uPal5;
  float x=p.x,y=p.y,z=p.z,phase=uChromaA.y,kind=uChromaA.x;
  float r=length(p.xy),angle=atan(y,x+.00001),edge=uChromaB.x;
  float spread=uChromaA.w-.32;
  float wave=sin(y*3.2+phase)*.10;
  vec2 cell=pigmentCell(p.xy,uChromaB.y,phase);
  float spot=length(cell*vec2(1.08,.84));
- vec3 color=uPal0;
+ vec3 color=P0;
  if(kind<.5){
   // Mantle: a quiet milk-coloured field, contrasting spots, two physical marginal bands.
   float rim=length(p.xy*vec2(1.08,.88))-spread*.55;
-  color=mix(uPal0,vec3(.98,.965,.92),uOpticalMood>1.5&&uOpticalMood<2.5?.18:.79);
+  color=mix(P0,vec3(.98,.965,.92),uOpticalMood>1.5&&uOpticalMood<2.5?.18:.79);
   float activity=uSurfaceActivity*uPatternControl.x*livingActivation(p.xy,(uPatternTime*uPatternControl.y),phase);
    float marks=(1.-smoothstep(.14+activity*.09,.19+activity*.09,spot))*(1.-smoothstep(.62,.77,rim));
-  color=mix(color,uPal1,marks);
+  color=mix(color,P1,marks);
   float small=(1.-smoothstep(.045,.075,length(cell-vec2(.17,.06))))*(1.-smoothstep(.61,.74,rim));
-  color=mix(color,uPal5,small);
-  color=mix(color,uPal2,smoothstep(.73,.75,rim));
-  color=mix(color,uPal3,smoothstep(.81,.83,rim));
-  color=mix(color,uPal4,smoothstep(.79,.91,abs(y)));
+  color=mix(color,P5,small);
+  color=mix(color,P2,smoothstep(.73,.75,rim));
+  color=mix(color,P3,smoothstep(.81,.83,rim));
+  color=mix(color,P4,smoothstep(.79,.91,abs(y)));
  }else if(kind<1.5){
   // Reef panels: broad colour opposition, narrow boundaries and an independent terminal colour.
   float split=x*.72+y*.46+sin(y*3.1+phase)*.10-spread+uSurfaceActivity*livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase)*.70;
-  color=mix(uPal0,uPal1,smoothstep(-.285,-.255,split));
-  color=mix(color,uPal2,smoothstep(.165,.195,split));
+  color=mix(P0,P1,smoothstep(-.285,-.255,split));
+  color=mix(color,P2,smoothstep(.165,.195,split));
   float seam=max(pigmentLine(split+.27,edge),pigmentLine(split-.18,edge));
-  color=mix(color,uPal3,seam);
-  color=mix(color,uPal4,smoothstep(.63,.66,y));
+  color=mix(color,P3,seam);
+  color=mix(color,P4,smoothstep(.63,.66,y));
   float dots=(1.-smoothstep(.045,.075,spot))*smoothstep(.28,.45,abs(x));
-  color=mix(color,uPal5,dots);
+  color=mix(color,P5,dots);
  }else if(kind<2.5){
   // Corolla: an anatomical centre and radiating veins, not repeating full-body stripes.
   float petals=r+.10*cos(angle*5.+phase)-spread+uSurfaceActivity*livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase)*.6;
-  color=mix(uPal0,uPal1,1.-smoothstep(.38,.41,petals));
-  color=mix(color,uPal3,1.-smoothstep(.23,.25,petals));
-  color=mix(color,uPal4,smoothstep(.76,.79,petals));
+  color=mix(P0,P1,1.-smoothstep(.38,.41,petals));
+  color=mix(color,P3,1.-smoothstep(.23,.25,petals));
+  color=mix(color,P4,smoothstep(.76,.79,petals));
   float vein=pigmentLine(sin(angle*(5.+floor(uChromaA.z))+r*.8+phase),.055)*smoothstep(.30,.44,r);
-  color=mix(color,uPal2,vein);
-  color=mix(color,uPal5,pigmentLine(petals-.40,.018));
+  color=mix(color,P2,vein);
+  color=mix(color,P5,pigmentLine(petals-.40,.018));
  }else if(kind<3.5){
   // Elytra: luminous plates over dark seams; structural colour is applied separately below.
-  color=mix(uPal0,uPal1,smoothstep(.24,.30,abs(x)+sin(y*2.8+phase)*.08));
-  color=mix(color,uPal2,smoothstep(.68,.72,abs(x)));
-  color=mix(color,uPal3*.46,1.-smoothstep(.045,.065,abs(x)));
+  color=mix(P0,P1,smoothstep(.24,.30,abs(x)+sin(y*2.8+phase)*.08));
+  color=mix(color,P2,smoothstep(.68,.72,abs(x)));
+  color=mix(color,P3*.46,1.-smoothstep(.045,.065,abs(x)));
   vec2 ribFlow=mix(p.xy,livingStripeFlow(p.xy,uPatternTime*uPatternControl.y,phase),uSurfaceActivity*.55);
   float ribs=pigmentLine(sin((abs(ribFlow.x)*6.3+ribFlow.y*.4)*3.1+phase),.035+.017*uSurfaceActivity*livingActivation(p.xy,uPatternTime*uPatternControl.y,phase))*smoothstep(.12,.22,abs(x));
-  color=mix(color,uPal4,ribs*.78);
-  color=mix(color,uPal5,(1.-smoothstep(.035,.065,spot))*smoothstep(.42,.65,r));
+  color=mix(color,P4,ribs*.78);
+  color=mix(color,P5,(1.-smoothstep(.035,.065,spot))*smoothstep(.42,.65,r));
  }else if(kind<4.5){
   // Ocelli: large concentric patches separated by genuinely unpatterned skin.
   float eye=length(pigmentCell(p.xy+vec2(uSurfaceActivity*livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase)*.34,0.),uChromaB.y*.56,phase)*vec2(.90,1.12))*(1.+spread+uSurfaceActivity*.028*sin((uPatternTime*uPatternControl.y)*.8+phase));
-  color=mix(color,uPal1,1.-smoothstep(.34,.37,eye));
-  color=mix(color,uPal2,1.-smoothstep(.255,.275,eye));
-  color=mix(color,uPal3*.46,1.-smoothstep(.17,.19,eye));
-  color=mix(color,uPal4,1.-smoothstep(.09,.115,eye));
-  color=mix(color,uPal5,1.-smoothstep(.025,.045,eye));
+  color=mix(color,P1,1.-smoothstep(.34,.37,eye));
+  color=mix(color,P2,1.-smoothstep(.255,.275,eye));
+  color=mix(color,P3*.46,1.-smoothstep(.17,.19,eye));
+  color=mix(color,P4,1.-smoothstep(.09,.115,eye));
+  color=mix(color,P5,1.-smoothstep(.025,.045,eye));
  }else if(kind<5.5){
   // Leaf venation: branching oblique veins meet an axial rib, with open fields between them.
   float branch=fract((y+1.)*2.4-abs(x)*1.85+wave+uSurfaceActivity*livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase)*.7)-.5;
   float leafPulse=uSurfaceActivity*livingVascularPulse(p.xy,uPatternTime*uPatternControl.y,phase,.95);
   float veins=pigmentLine(branch,.023+.021*leafPulse)*smoothstep(.06,.12,abs(x));
-  color=mix(uPal0,uPal1,smoothstep(.18,.52,abs(x)+wave)*.84);
-  color=mix(color,uPal2,smoothstep(.82,.85,r));
-  color=mix(color,uPal3,max(veins,pigmentLine(x,.037+.013*leafPulse)));
-  color=mix(color,uPal4,pigmentLine(branch-.07,.012)*smoothstep(.16,.28,abs(x)));
+  color=mix(P0,P1,smoothstep(.18,.52,abs(x)+wave)*.84);
+  color=mix(color,P2,smoothstep(.82,.85,r));
+  color=mix(color,P3,max(veins,pigmentLine(x,.037+.013*leafPulse)));
+  color=mix(color,P4,pigmentLine(branch-.07,.012)*smoothstep(.16,.28,abs(x)));
   float spores=(1.-smoothstep(.045,.075,spot))*smoothstep(.48,.75,r);
-  color=mix(color,uPal5,spores);
+  color=mix(color,P5,spores);
  }else if(kind<6.5){
   // Segmented belts: four/five colours can occupy substantial areas, rather than three plus dust.
   vec2 beltFlow=mix(p.xy,livingStripeFlow(p.xy,uPatternTime*uPatternControl.y,phase),uSurfaceActivity*.44);
   float belt=fract((beltFlow.y+1.)*uChromaA.z*.58+wave+phase*.12+uSurfaceActivity*livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase)*.55);
-  color=mix(uPal0,uPal1,smoothstep(.22,.24,belt));
-  color=mix(color,uPal2,smoothstep(.46,.48,belt));
-  color=mix(color,uPal4,smoothstep(.69,.71,belt));
-  color=mix(color,uPal3,smoothstep(.86,.88,belt));
-  color=mix(color,uPal5,pigmentLine(belt-.23,.010));
-  color=mix(color,uPal5,smoothstep(.88,.98,abs(y)));
- }else if(kind<13.5){
+  color=mix(P0,P1,smoothstep(.22,.24,belt));
+  color=mix(color,P2,smoothstep(.46,.48,belt));
+  color=mix(color,P4,smoothstep(.69,.71,belt));
+  color=mix(color,P3,smoothstep(.86,.88,belt));
+  color=mix(color,P5,pigmentLine(belt-.23,.010));
+  color=mix(color,P5,smoothstep(.88,.98,abs(y)));
+ }else if(kind>7.5&&kind<13.5){
+  // Living grammars 8-13; grammar 7 (colony) falls through to the nuclei branch below.
   float t=(uPatternTime*uPatternControl.y)*uSurfaceActivity*clamp(uPatternControl.x,0.,2.);vec2 uv=p.xy;
   float displacement=livingDeform(uv,t,phase);
   float ink=livingInk(uv+vec2(displacement,-displacement*.45),t),cellSpot=livingSpot(uv,uChromaB.y*1.4,t);
   float wave=livingActivation(uv,t,phase);
-  if(kind<8.5){float split=livingSplitField(uv,t,phase);color=mix(uPal0,uPal1,max(split,cellSpot*.48));color=mix(color,uPal4,livingSplitField(uv*1.65+2.8,t*.81+1.7,phase+1.2)*.32);}
-  else if(kind<9.5){float field=ink+.23*sin(t*.85-uv.y*4.5+phase)+.14*(wave-.5)+.08*livingSplitField(uv*1.22,t*.86,phase);color=mix(uPal0,uPal1,smoothstep(.54,.72,field));color=mix(color,uPal2,smoothstep(.78,.92,field)*.8);}
-  else if(kind<10.5){vec2 flow=livingStripeFlow(uv,t,phase);float stripe=sin((flow.x*2.8+flow.y*2.1+ink*3.3+displacement*1.8)*5.+phase);color=mix(uPal0,uPal1,smoothstep(-.22,.24,stripe));color=mix(color,uPal2,smoothstep(.72,.93,stripe)*.65);}
+  if(kind<8.5){float split=livingSplitField(uv,t,phase);color=mix(P0,P1,max(split,cellSpot*.48));color=mix(color,P4,livingSplitField(uv*1.65+2.8,t*.81+1.7,phase+1.2)*.32);}
+  else if(kind<9.5){float field=ink+.23*sin(t*.85-uv.y*4.5+phase)+.14*(wave-.5)+.08*livingSplitField(uv*1.22,t*.86,phase);color=mix(P0,P1,smoothstep(.54,.72,field));color=mix(color,P2,smoothstep(.78,.92,field)*.8);}
+  else if(kind<10.5){vec2 flow=livingStripeFlow(uv,t,phase);float stripe=sin((flow.x*2.8+flow.y*2.1+ink*3.3+displacement*1.8)*5.+phase);color=mix(P0,P1,smoothstep(-.22,.24,stripe));color=mix(color,P2,smoothstep(.72,.93,stripe)*.65);}
   else if(kind<11.5){float beat=livingVascularPulse(uv,t,phase,2.5);
    float vessel=livingVein(uv+vec2(displacement*.23,0.),t,3.2+uChromaA.z*.18);
    float vascularHalo=livingVein(uv+vec2(displacement*.23,0.),t,3.0+uChromaA.z*.18);
-   color=mix(uPal0,uPal1,vessel*(.44+.56*beat));
-   color=mix(color,uPal3,vessel*vessel*(.14+.50*beat));
-   color=mix(color,uPal4,vascularHalo*pow(beat,4.)*.25);}
+   color=mix(P0,P1,vessel*(.44+.56*beat));
+   color=mix(color,P3,vessel*vessel*(.14+.50*beat));
+   color=mix(color,P4,vascularHalo*pow(beat,4.)*.25);}
   else if(kind<12.5){float leafBeat=livingVascularPulse(uv,t,phase,.95);
    float vein=livingVein(uv+vec2(displacement*.18,0.),t*.18,4.2+uChromaA.z*.12);
-   color=mix(uPal0,uPal1,smoothstep(.2,.75,abs(uv.x))*.36);
-   color=mix(color,uPal2,vein*(.35+.65*leafBeat));
-   color=mix(color,uPal4,vein*livingVascularPulse(uv,t,phase+1.4,1.37)*.59);}
-  else{vec2 c=pigmentCell(uv+vec2(.12*sin(uv.y*5.+t*.17),.09*cos(uv.x*6.-t*.21)),uChromaB.y*.62,phase);float rad=length((c-vec2(.1*sin(t*.57+phase),.08*cos(t*.43+phase)))*vec2(.85,1.13))*(1.+.16*ink);float breath=.03*sin(t*1.1+phase);color=mix(uPal0,uPal1,1.-smoothstep(.35+breath,.38+breath,rad));color=mix(color,uPal2,1.-smoothstep(.27+breath,.29+breath,rad));color=mix(color,uPal3,1.-smoothstep(.18-breath,.20-breath,rad));color=mix(color,uPal4,1.-smoothstep(.08+breath,.11+breath,rad));}
-  color=mix(color,uPal5,cellSpot*wave*.13);
+   color=mix(P0,P1,smoothstep(.2,.75,abs(uv.x))*.36);
+   color=mix(color,P2,vein*(.35+.65*leafBeat));
+   color=mix(color,P4,vein*livingVascularPulse(uv,t,phase+1.4,1.37)*.59);}
+  else{vec2 c=pigmentCell(uv+vec2(.12*sin(uv.y*5.+t*.17),.09*cos(uv.x*6.-t*.21)),uChromaB.y*.62,phase);float rad=length((c-vec2(.1*sin(t*.57+phase),.08*cos(t*.43+phase)))*vec2(.85,1.13))*(1.+.16*ink);float breath=.03*sin(t*1.1+phase);color=mix(P0,P1,1.-smoothstep(.35+breath,.38+breath,rad));color=mix(color,P2,1.-smoothstep(.27+breath,.29+breath,rad));color=mix(color,P3,1.-smoothstep(.18-breath,.20-breath,rad));color=mix(color,P4,1.-smoothstep(.08+breath,.11+breath,rad));}
+  color=mix(color,P5,cellSpot*wave*.13);
  }else{
   // Colony patches were assigned to actual developmental nuclei in the shared mesh.
   color=undercoat;
   float beads=(1.-smoothstep(.065,.10,spot))*smoothstep(.35,.60,r);
-  color=mix(color,uPal5,beads);
+  color=mix(color,P5,beads);
   float veins=pigmentLine(sin((x+y*.65)*uChromaB.z+sin(z*4.+phase)),.025);
-  color=mix(color,uPal3,veins*smoothstep(.70,.94,r)*.88);
+  color=mix(color,P3,veins*smoothstep(.70,.94,r)*.88);
  }
  if(kind<7.5&&uSurfaceActivity>.5){
    float wave=livingActivation(p.xy,(uPatternTime*uPatternControl.y),phase),shift=livingDeform(p.xy,(uPatternTime*uPatternControl.y),phase);
    vec2 cellUv=p.xy+vec2(shift,-shift*.57);
    float local=max(livingSpot(cellUv,uChromaB.y*1.55,(uPatternTime*uPatternControl.y))*.65,livingSplitField(cellUv,(uPatternTime*uPatternControl.y),phase)*.75);
    float bloom=smoothstep(.32,.80,livingInk(cellUv,(uPatternTime*uPatternControl.y))+.13*(wave-.5));
-   color=mix(color,uPal1,bloom*wave*.38*uPatternControl.x);
-   color=mix(color,uPal5,local*wave*.40*uPatternControl.x);
+   color=mix(color,P1,bloom*wave*.38*uPatternControl.x);
+   color=mix(color,P5,local*wave*.40*uPatternControl.x);
   }
- // Large, non-overlapping anatomical pigment territories (not translucent layers).
- // Territory nuclei are derived from inherited colour/pattern DNA; 3-6 large
- // regions cover the entire external skin, with softly irregular boundaries.
- // All copies use the same undeformed object-space field, avoiding texture swim.
- if(vRole<.5||(vRole>7.5&&vRole<8.5)){
-  float territorySeed=fract(phase*.15915494+uChromaB.y*.061+uChromaA.x*.037);
-  float territory=0.,gap=0.;vec3 seam;
-  territoryInfo(p,territory,gap,seam);
-  float boundary=smoothstep(0.,.10,gap);
-  float grammarSeed=fract(territorySeed*.71+uChromaB.z*.011);
-  float grammar=floor(fract((territory+1.)*.618034+grammarSeed)*6.);
-  vec3 territoryA=uPal0,territoryB=uPal1,territoryC=uPal2;
-  if(territory<.5){territoryA=uPal0;territoryB=uPatchPal0;territoryC=uPal3;}
-  else if(territory<1.5){territoryA=uPal3;territoryB=uPal1;territoryC=uPatchPal1;}
-  else if(territory<2.5){territoryA=uPatchPal2;territoryB=uPal4;territoryC=uPal0;}
-  else if(territory<3.5){territoryA=uPal2;territoryB=uPatchPal1;territoryC=uPal5;}
-  else if(territory<4.5){territoryA=uPal1;territoryB=uPatchPal0;territoryC=uPal4;}
-  else {territoryA=uPal5;territoryB=uPal3;territoryC=uPatchPal2;}
-  vec2 uv=vec2(p.x+p.z*.24,p.y-p.z*.14)*(1.7+uChromaB.y*.075);
-  uv+=vec2(territory*.51+phase*.13,territory*.37-phase*.09);
-  float pigment=0.;
-  if(grammar<.5){
-   // Concentric ocelli, broad enough to identify at normal viewing distance.
-   float rr=length(fract(uv*.67)-.5);
-   pigment=1.-smoothstep(.055,.095,abs(rr-.30));
-  }else if(grammar<1.5){
-   // Asymmetric ribbons following the body, not narrow uniform stripes.
-   pigment=smoothstep(-.22,.23,sin(uv.x*4.7+sin(uv.y*2.4)*1.6+phase));
-  }else if(grammar<2.5){
-   // Large merging irregular islands.
-   pigment=smoothstep(.05,.52,sin(uv.x*3.3+sin(uv.y*2.7))*cos(uv.y*3.8-uv.x*.5));
-  }else if(grammar<3.5){
-   // Broad maze-like bands.
-   pigment=smoothstep(-.18,.24,sin(uv.x*4.1+uv.y*3.4+1.8*sin(uv.y*2.1-uv.x*1.7)));
-  }else if(grammar<4.5){
-   // Branching veins, using the inherited fine-scale vein function.
-   pigment=clamp(livingVein(uv*.70,0.,2.0+uChromaA.z*.08)*1.5,0.,1.);
-  }else{
-   // Pigment cell clusters with clear open fields.
-   pigment=1.-smoothstep(.16,.29,length(fract(uv*.92)-.5));
-  }
-  float tertiary=(1.-smoothstep(.055,.105,length(fract(uv*1.38+vec2(.17,.29))-.5)))*.55;
-  vec3 territoryColor=mix(territoryA,territoryB,pigment);
-  territoryColor=mix(territoryColor,territoryC,tertiary);
-  color=mix(color,territoryColor,boundary*(.87+.10*grammarSeed));
- }
  // Former tiny animated patches remain a faint secondary detail, not the main skin.
  if(uSurfaceActivity>.5){
   vec3 q=p*2.3,cellId=floor(q),f=fract(q);
@@ -6720,10 +6694,10 @@ vec3 chromatophoreLayers(vec3 undercoat,vec3 point){
  // Separate organ meshes retain their assigned pigment; articulated outer skin has role 8.
  if(vRole>.5&&vRole<7.5){
   float tip=smoothstep(.76,.95,vAlong);
-  color=mix(mix(undercoat,color,.68),uPal4,tip*.76);
-  color=mix(color,uPal5,pigmentLine(vAlong-.70,.02));
+  color=mix(mix(undercoat,color,.68),P4,tip*.76);
+  color=mix(color,P5,pigmentLine(vAlong-.70,.02));
  }else if(vRole>7.5&&vRole<8.5){
-  color=mix(color,uPal4,smoothstep(.77,.95,vAlong)*.62);
+  color=mix(color,P4,smoothstep(.77,.95,vAlong)*.62);
  }
  return clamp(color,0.,1.);
 }
@@ -6807,7 +6781,7 @@ vec3 chromaticFinish(vec3 color){
 `;
 // Evaluate both inherited coatings independently. Grammar/coating IDs are
 // categorical: interpolating them visits unrelated patterns and causes pops.
-const TEXTURE_ENDPOINT_UNIFORMS=['uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uPatchPal0','uPatchPal1','uPatchPal2','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uOptics0','uOptics1','uOpticalMood','uPatternD','uSurface0','uSurface1','uSurface2'];
+const TEXTURE_ENDPOINT_UNIFORMS=['uPal0','uPal1','uPal2','uPal3','uPal4','uPal5','uPatchPal0','uPatchPal1','uPatchPal2','uAltPal0','uAltPal1','uAltPal2','uAltPal3','uChromaA','uChromaB','uChromaOrigin','uChromaAxis','uChromaScale','uOptics0','uOptics1','uOpticalMood','uPatternD','uSurface0','uSurface1','uSurface2'];
 const textureMorphGLSL=`// A four-stage real Gray-Scott simulation baked once per inherited individual.
 // Each atlas tile stores pigment concentration (R) and the concentration gradient (GB).
 // The anatomical triplanar frame fixes reaction boundaries to the body, not to the camera.
@@ -6867,7 +6841,7 @@ vec3 reactionCoating(vec3 color,vec3 point,vec3 p,sampler2D atlas,
 uniform highp float uTextureMix;
 uniform vec3 uNextPal0;uniform vec3 uNextPal1;uniform vec3 uNextPal2;uniform vec3 uNextPal3;uniform vec3 uNextPal4;uniform vec3 uNextPal5;
 uniform vec4 uNextPatternD;
-`+nextSurfaceNames(chromaticGrammarGLSL.replace('uniform vec2 uOpticsControl;','').replace('uniform highp mat4 uModel;','').replace('uniform highp float uMirrorSign;','').replace('uniform float uSurfaceActivity;','').replace('uniform float uPatternTime;','').replace('uniform vec3 uPatternControl; // strength, speed, rest fraction','').replace(/\buniform\s+(?:(?:lowp|mediump|highp)\s+)?float\s+uTriBlend\s*;/g,'')).replace(/\b(uPal[0-5]|uPatchPal[0-2]|uOptics[01]|uOpticalMood|chromatophoreLayers|thinFilmColor|chromaticFinish)\b/g,name=>name.startsWith('u')?'uNext'+name.slice(1):'next'+name[0].toUpperCase()+name.slice(1))+`
+`+nextSurfaceNames(chromaticGrammarGLSL.replace('uniform vec2 uOpticsControl;','').replace('uniform highp mat4 uModel;','').replace('uniform highp float uMirrorSign;','').replace('uniform float uSurfaceActivity;','').replace('uniform float uPatternTime;','').replace('uniform vec3 uPatternControl; // strength, speed, rest fraction','').replace(/\buniform\s+(?:(?:lowp|mediump|highp)\s+)?float\s+uTriBlend\s*;/g,'')).replace(/\b(uPal[0-5]|uPatchPal[0-2]|uAltPal[0-3]|uOptics[01]|uOpticalMood|chromatophoreLayers|regionalTint|lumaRecolor|thinFilmColor|chromaticFinish)\b/g,name=>name.startsWith('u')?'uNext'+name.slice(1):'next'+name[0].toUpperCase()+name.slice(1))+`
 vec3 textureSurfaceColor(vec3 undercoat,vec3 point,float shade,float gain,float contrastGain){
  float t=clamp(uTextureMix,0.,1.);
  vec3 color=vec3(0.);
@@ -6887,7 +6861,7 @@ vec3 textureSurfaceColor(vec3 undercoat,vec3 point,float shade,float gain,float 
 `;
 function textureMorphUniforms(vars){return Object.fromEntries(TEXTURE_ENDPOINT_UNIFORMS.map(name=>[name,vars['uNext'+name.slice(1)]]))}
 function initTextureMorphUniforms(gl,program,vars){
- for(const name of ['uSurface0','uSurface1','uSurface2','uSurfaceActivity','uPatternTime','uPatternControl','uMirrorSign','uPatchPal0','uPatchPal1','uPatchPal2','uOpticalMood'])vars[name]=gl.getUniformLocation(program,name);
+ for(const name of ['uSurface0','uSurface1','uSurface2','uSurfaceActivity','uPatternTime','uPatternControl','uMirrorSign','uPatchPal0','uPatchPal1','uPatchPal2','uAltPal0','uAltPal1','uAltPal2','uAltPal3','uOpticalMood'])vars[name]=gl.getUniformLocation(program,name);
  vars.uTextureMix=gl.getUniformLocation(program,'uTextureMix');
  vars.uTriBlend=gl.getUniformLocation(program,'uTriBlend');
  for(const name of ['uReactionAtlas','uNextReactionAtlas','uReactionEnabled'])vars[name]=gl.getUniformLocation(program,name);
@@ -8076,6 +8050,24 @@ function partialPatchPalette(palette){
  else if(mood===2)result=pigments.map((c,i)=>chromaticTissueTone(c,[.68,.39,.56][i],true));
  patchPaletteCache.set(palette,result);return result;
 }
+const altPaletteCache=new WeakMap();
+// Two extra (ground, mark) hue pairs for the regional colour field. Region 0 uses the
+// specimen's own surface pair; the others take the most distinct hues still in its
+// palette (plus its patch row), so the body-wide colour set grows while every region
+// keeps the same two-family structure.
+function regionalAltPalette(palette,slots){
+ if(altPaletteCache.has(palette))return altPaletteCache.get(palette);
+ const pool=[...slots.slice(0,5),...partialPatchPalette(palette)].filter(c=>rgbToHsv(c).s>=.22);
+ const used=[slots[0],slots[1]];
+ const pick=avoid=>{let best=null,v=-Infinity;for(const c of pool){const h=rgbToHsv(c);const d=Math.min(...avoid.map(q=>hueDist(h.h,rgbToHsv(q).h)+(rgbToHsv(q).s<.22?.5:0)));const score=d+h.s*.15;if(score>v){v=score;best=c;}}return best;};
+ const out=[];
+ for(let k=0;k<2;k++){
+  const g=pick(used)||slots[0];used.push(g);
+  const m=pick([g,...used.slice(-1)])||slots[1];used.push(m);
+  out.push(g.slice(),m.slice());
+ }
+ altPaletteCache.set(palette,out);return out;
+}
 function applyPatternUniforms(gl,uniforms,palette){
  if(!palette||!uniforms)return;
  applyReactionUniforms(gl,uniforms,palette);
@@ -8120,6 +8112,7 @@ function applyPatternUniforms(gl,uniforms,palette){
  const set3=(loc,val)=>{ if(loc) gl.uniform3fv(loc,new Float32Array(val)); };
  const patch=partialPatchPalette(palette);
  for(let i=0;i<3;i++)set3(uniforms['uPatchPal'+i],patch[i]);
+ const alts=regionalAltPalette(palette,cols);for(let i=0;i<4;i++)set3(uniforms['uAltPal'+i],alts[i]);
  set3(uniforms.uPal0,cols[0]); set3(uniforms.uPal1,cols[1]); set3(uniforms.uPal2,cols[2]); set3(uniforms.uPal3,cols[3]); set3(uniforms.uPal4,cols[4]); set3(uniforms.uPal5,cols[5]);
  if(uniforms.uPatternA) gl.uniform4fv(uniforms.uPatternA,new Float32Array([p.family||0,p.secondary||0,p.freqA||3.1,p.freqB||4.4]));
  if(uniforms.uPatternB) gl.uniform4fv(uniforms.uPatternB,new Float32Array([p.freqC||5.3,p.phaseA||0,p.phaseB||0,p.phaseC||0]));
@@ -15038,7 +15031,7 @@ if(!gl){$('status').textContent='WebGL利用不可';$('status').classList.add('f
    try{renderer=initGL(gl,!ios)}catch(second){throw new Error('標準/互換GPU失敗: '+originalError+' / '+String(second&&second.message||second))}
   }
   let is2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
-  $('status').textContent='v15.81.1 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
+  $('status').textContent='v15.82.0 / '+(is2?'WebGL2':'WebGL1')+(renderer.compatibility?' 互換':' 高品質');
   const diag=$('gpuDiag');if(originalError){diag.hidden=false;diag.textContent='GPU自動復旧: '+originalError.slice(0,240)+'\n使用中: '+(renderer.compatibility?'互換描画':'高品質描画')}
   animating=true;scheduleViewerFrame();void bootMorphospace().catch(fail)
  }catch(e){fail(e);void bootMorphospace().catch(fail)}
