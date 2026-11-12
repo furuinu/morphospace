@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.84.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.84.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Thin film at 15% (v15.84.1)
+
+Every thin-film contribution now runs at 15% of its previous strength (`FILM_LEVEL`): the film layer over pigment, the film tint in rim reflections, and the film tint of the clear coat and its halo.
 
 ## Comb-plate fin ripple, softer wet film (v15.84.0)
 
