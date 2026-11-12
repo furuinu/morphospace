@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.83.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.84.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Comb-plate fin ripple, softer wet film (v15.84.0)
+
+- **Fins ripple like ctenophore comb rows.** A tiny, fast metachronal wave now travels along each fin (parallel to its attached edge) instead of the old slow flutter from root to rim. It runs at about 3–4 beats per second, with 6 waves per fin length and an amplitude of 0.0045. The root stays still, the motion is strongest at the free rim, and both faces of a double-sided membrane move together. A matching crest highlight with a faint iridescence (scaled by the 構造色 slider) runs with the wave in the fragment shader.
+- **Fin geometry.** Each fin vertex carries its position along the fin, across it and its membrane face, packed into the progress attribute: `2*(2*S+side)+u`. Ordinary parts are unaffected.
+  - Lateral-frill fins: 40 rows along the length (was 16).
+  - Legacy anatomical fins: 33×8 grid (was 11×4). The 12 original random draws are interpolated, so generation downstream is unchanged.
+  - Veils: 60×8 (was 36×4).
+- **Wet-film coating (湿潤膜).** The clear-coat sheen, its halo and the extra subsurface glow now peak at 30% of their previous maximum, so broad white highlights no longer clip.
 
 ## Pearl lustre halved (v15.83.1)
 

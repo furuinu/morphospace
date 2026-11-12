@@ -10,3 +10,8 @@ test('pearl sheen is a coloured film on highlights, not a white coat over everyt
  assert.match(html,/mix\(vec3\(\.92,\.96,1\.\),film,\.13\+metal\*\.24\+pearl\*\.15\),clearCoat\)/);
  assert.match(html,/float scattering=\(\.045\+\.0125\*pearl\+/);
 });
+test('wet-film coating caps its white sheen at 30% so highlights stop clipping',()=>{
+ assert.match(html,/float clearCoat=clamp\(uOpticsControl\.x\*wet\*\(sharp\*\.40\+soft\*\.13\),0\.,\.46\)\*mix\(1\.,\.30,wetFilm\);/);
+ assert.match(html,/halo\*\.15\*mix\(1\.,\.30,wetFilm\);/);
+ assert.match(html,/float scattering=\(\.045\+\.0125\*pearl\+\.0135\*wetFilm\);/);
+});
