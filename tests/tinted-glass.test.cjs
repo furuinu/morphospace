@@ -58,3 +58,11 @@ test('Fresnel, interference pigment, all lights and selective highlight halo str
 test('all inline JavaScript remains parseable',()=>{
  for(const script of scripts)if(script.trim())assert.doesNotThrow(()=>new Function(script));
 });
+test('reflections take the surrounding sky colour in the main shader only',()=>{
+ const fs=require('node:fs'),path=require('node:path'),html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const assert=require('node:assert/strict');
+ assert.match(html,/#ifdef MORPHO_AIR\n[^#]*vec3 surround=uAirTint;\n if\(uAirView\.z>\.5\)surround=texture2D\(uSkyProbe,gl_FragCoord\.xy\*uAirView\.xy\)\.rgb;\n environment=mix\(surround\*\(\.55\+\.65\*kd\),environment,\.15\);\n#endif/);
+ const frag=html.slice(html.indexOf('const frag=`'));
+ assert.ok(frag.indexOf('uniform sampler2D uSkyProbe;')<frag.indexOf('#define MORPHO_AIR 1\n${chromaticGrammarGLSL}'));
+ assert.equal((html.match(/#define MORPHO_AIR 1/g)||[]).length,1,'compatibility shader keeps the fixed environment');
+});

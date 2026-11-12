@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.85.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.85.2. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Reflections take the surrounding colour (v15.85.2)
+
+Edge and catchlight reflections used a fixed pale blue-white environment. In the main shader they now take the colour of the surrounding medium: the sky probe behind each pixel when it is ready, otherwise the scene's air tint. That colour is blended 85/15 with the old environment, and the key light still shapes its brightness. In a test render with 30% glass, white-clipped body pixels fell from 0.95% to 0.06%. The compatibility shader keeps the fixed environment.
 
 ## Edge reflection kept at the silhouette (v15.85.1)
 
