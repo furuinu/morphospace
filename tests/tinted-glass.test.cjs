@@ -49,7 +49,7 @@ test('glass transparency is deterministic per individual and covers the 0–40% 
 });
 
 test('Fresnel, interference pigment, all lights and selective highlight halo strengthened',()=>{
- assert.ok(source.includes('glassFresnel*.82*pow(grazing,1.45)'));
+ assert.ok(source.includes('glassFresnel*.82*pow(edgeGrazing,3.5)'),'glass rim stays in the silhouette band');assert.ok(source.includes('float edgeGrazing=clamp(1.-abs(dot(baseNormal,view)),0.,1.);'));
  assert.ok(source.includes('float filmAmount=clamp(uOpticsControl.y*uOptics1.y*coverage*(.15+.58*pow(grazing,.7))'));
  assert.ok(source.includes('float illumination=1.10*(globalAmbient+uLightLevels.x*kd+uLightLevels.y*fd+uLightLevels.z*pow(bd,1.35)+uLowerFillPower*lowerFill)'));
  assert.ok(source.includes('float halo=smoothstep(.17,.40,clearCoat)'));

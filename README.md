@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.85.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.85.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Edge reflection kept at the silhouette (v15.85.1)
+
+The whitish veil on camera-facing surfaces came from the edge reflection (the Fresnel and glass rim). Two things let it spread over the front of the body:
+
+- It used the relief-perturbed skin normal, which tilts many front-facing pixels steeply.
+- It fell off only as grazing² (Fresnel) and grazing^1.45 (glass).
+
+It now uses the smooth body normal and falls off as grazing⁴ (Fresnel) and grazing^3.5 (glass). In a test render with 30% glass, the frontal veil disappears while silhouettes keep their reflection.
 
 ## Thin-film and gloss sliders (v15.85.0)
 
