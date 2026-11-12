@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.84.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.85.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Thin-film and gloss sliders (v15.85.0)
+
+Two sliders join フレネル反射 and 構造色 under 表面・陰影; both are saved with the other viewer settings:
+
+- **薄膜** (0–100%, default 15%) sets the thin-film level. It scales the film over the pigment, the film tint in rim reflections, and the film tint of the clear coat and its halo.
+- **つやハイライト** (0–150%, default 100%) scales the camera-facing clear-coat highlight, its halo and the wet catchlight in dark zones.
+
+The フレネル反射 slider used to brighten that camera-facing highlight as well. It now drives only the edge (grazing-angle) reflection. With less thin film, the highlight is tinted less by the film and reads whiter. Lower つやハイライト to reduce the frontal white-out.
 
 ## Thin film at 15% (v15.84.1)
 
