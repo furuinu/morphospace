@@ -127,6 +127,9 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   });
   if(!typography.sameTitle||!typography.sameSubtitle||typography.zoom[0]!=='viewer-zoom-lens'||typography.zoom[1]!=='viewerZoomOut')
    throw Error('Loader typography or zoom icon ordering is wrong: '+JSON.stringify(typography));
+  // The viewer now opens with its controls hidden; show them first to measure the move.
+  if(!await page.locator('#overlay').evaluate(el=>el.classList.contains('viewer-nav-hidden')))throw Error('Viewer should open with controls hidden');
+  await page.evaluate(()=>{document.querySelector('.viewer-brand').style.setProperty('transition','none','important');setViewerNavigationVisible(true);});
   const titleBefore=await page.locator('.viewer-brand').evaluate(el=>parseFloat(getComputedStyle(el).top));
   // Verify the end position with CSS transitions disabled only in the test:
   // software-rendered WebGL can prevent animations advancing under headless CI.
