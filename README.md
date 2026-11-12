@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.82.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.82.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Opaque animated pigment (v15.82.1)
+
+Animated pigment layers used to blend over the pattern at partial strength (13–48%). Moving spots therefore read as a second, semi-transparent sheet that veiled the pattern beneath. Pigment is now opaque, and animation changes how far it spreads:
+
+- **Chromatophore activity (grammars 0–7).** Sacs grow from zero radius with the activation wave, and ink blooms advance their edge instead of fading in.
+- **Living grammars 8–10.** The second pigment is opaque with a defined edge; the 13% spot veil is removed.
+- **Small patches.** Opaque marks open from the patch centre in the regional mark colours (no foreign patch row).
+- **Reaction-diffusion.** It shades the pigment it sits on (same hue) instead of laying two other colours over it.
 
 ## One pattern, regional colour (v15.82.0)
 
