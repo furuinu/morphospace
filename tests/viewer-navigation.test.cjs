@@ -7,7 +7,7 @@ const html = readFileSync(join(__dirname, '..', 'index.html'), 'utf8');
 
 test('atlas and stock specimens default to immersive viewing', () => {
  assert.match(html, /function loadSpecimen\(i,stored=null,\{fullscreen=true\}=\{\}\)/);
- assert.match(html, /viewerMetadata\(\);if\(fullscreen\)setViewerFullscreen\(true\);else render\(\);/);
+ assert.match(html, /viewerMetadata\(\);if\(fullscreen\)\{setViewerFullscreen\(true\);setViewerNavigationVisible\(false\)\}else render\(\);/, 'immersive viewing opens with the controls hidden');
  assert.equal((html.match(/item\.addEventListener\('click',\(\)=>\{try\{loadSpecimen\(i\)/g) || []).length, 2);
  assert.match(html, /loadSpecimen\(0,saved\)/);
 });

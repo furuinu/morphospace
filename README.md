@@ -3,8 +3,18 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.82.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.83.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Touch viewing and pearl lustre (v15.83.0)
+
+- **Controls hidden on open.** The full-screen viewer opens with its controls hidden. A tap in the middle of the screen shows or hides them.
+- **Step zones.** A tap in the left or right step zone goes to the previous or next specimen, whether or not the controls are shown. Each zone is 1/6 of the screen width and 1/3 of its height, centred vertically on that edge.
+- **Long-press capture.** Holding a finger still on the specimen for 0.55 s opens capture. The press is hit-tested against the projected shell and appendage vertices of the drawn copy, so a press on open water does nothing. Moving more than 8 px, lifting the finger or adding a second finger cancels it, and the iOS callout and selection are suppressed on the canvas.
+- **Pearl lustre.** Pearl specimens kept pale, but no longer washed the pattern out.
+  - Palette rows are no longer rewarded mainly for being grey, and the pull toward neutral is 24% instead of 40%. Mean pigment saturation over 687 pearl palettes rose from 0.20 to 0.36.
+  - The luminance ladder is wider, so pattern contrast holds.
+  - In the shader, the pearl clear coat is weaker and tinted by the thin film rather than white, and the pearl-specific subsurface glow is reduced.
 
 ## Opaque animated pigment (v15.82.1)
 
