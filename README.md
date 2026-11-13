@@ -3,8 +3,14 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.95.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.96.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Ribbon tentacles (v15.96.0)
+
+- Tentacles move like a rhythmic-gymnastics ribbon: soft and flowing, with a little body only near the root.
+- No spring feel: segments no longer return to their wavy grown shape (they only tend to continue straight from their neighbour, and only near the root), and each correction moves the previous positions too, so it adds no momentum and nothing bounces.
+- The root stays a firm spring toward its grown direction; a faint outward current along the growth axis keeps ribbons streaming clear of the body.
 
 ## Softer, faster-fading tentacle koshi (v15.95.0)
 
