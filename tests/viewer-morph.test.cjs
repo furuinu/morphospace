@@ -266,9 +266,11 @@ test('timer pauses when hidden and camera handoff adopts prepared meshes once',(
 test('navigation uses worker output, uploads ahead of time, and adopts prepared GPU buffers at completion',()=>{
  const {f,workers,events}=runtime(),original=f.meshes;
  f.createSpecimenForIndex=()=>{throw Error('Generation must not run on the rendering thread')};f.createMorphBatches=()=>{throw Error('Correspondence must not run on the rendering thread')};f.upload=()=>{throw Error('Synchronous upload must not be used')};
+ // This sandbox fits at 0.5; a remembered zoom with ratio 2 (2.4·(0.32/2.4)^(z/100)=2) frames at the worker's 30.
+ f.v.zoomValue=100*Math.log(2/2.4)/Math.log(.32/2.4);
  f.startViewerMorph();assert.equal(f.meshes,original);assert.equal(f.v.morph,null);const target=deliver(f,workers[0]);f.tickViewer(.01);
  assert.ok(f.v.morph);assert.equal(f.v.morph.originalMeshes,original);assert.equal(f.selected,0);const prepared=f.v.morph.targetMeshes;
- for(let i=0,steps=Math.ceil(f.v.morph.duration/.1)+2;i<steps;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.equal(f.spec.viewDistance,30);assert.equal(events.filter(x=>x==='apply').length,1);
+ for(let i=0,steps=Math.ceil(f.v.morph.duration/.1)+2;i<steps;i++)f.tickViewer(.1);assert.equal(f.v.morph,null);assert.equal(f.selected,1);assert.equal(f.spec,target);assert.ok(Math.abs(f.spec.viewDistance-30)<1e-9,String(f.spec.viewDistance)+" "+f.v.zoomValue);assert.equal(events.filter(x=>x==='apply').length,1);
  assert.equal(f.meshes,prepared);
 });
 

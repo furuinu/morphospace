@@ -3,8 +3,15 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.89.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.90.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Soft body, and zoom that no longer ratchets (v15.90.0)
+
+- **Jelly body.** A damped spring (about 2.2 Hz, damping ratio 0.22) is driven by changes in the body's angular velocity and its linear acceleration. Those changes come from drags, release glides, the close-up spin, and the specimen's own swimming turns and lurches.
+  - The outer tissue lags, springs back and settles. The lag is a small rotation (≤ 0.30 rad) plus an offset (≤ 6% of the body radius), growing with distance from the body centre.
+  - It is applied in both the full and the compatible vertex shaders.
+- **Zoom across transitions.** Each handoff used to copy the previous specimen's actual distance as the zoom ratio. A minimum-distance guard could push that distance outward, so the zoom stepped down with every transition and never came back. The zoom is now remembered as the user's slider position (set by the slider, buttons, pinch, reset or opening the viewer), and every transition frames the next specimen from that value.
 
 ## Tentacles feel the turn (v15.89.1)
 
