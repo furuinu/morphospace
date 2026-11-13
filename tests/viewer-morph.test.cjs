@@ -675,7 +675,7 @@ test('warp lens eases into ultra-wide perspective and returns to the original ob
  assert.match(html,/uniform float uBgTanHalfFov;/);
 });
 
-test('tentacle koshi: firm near the root, fading smoothly, from jellyfish-soft to lionfish-stiff',()=>{
+test('tentacle koshi: firm near the root, fading smoothly, from jellyfish-soft to sea-anemone-firm',()=>{
  const vm=require('node:vm'),a=html.indexOf('function strandKoshi');const src=html.slice(a,html.indexOf('// Independent world-space strand particles.',a));
  const f={Math,clamp:(v,lo,hi)=>Math.max(lo,Math.min(hi,v))};vm.createContext(f);vm.runInContext(src+';this.k=strandKoshi;this.s=strandBendStiffness;',f);
  let soft=1,stiff=0;
@@ -685,11 +685,11 @@ test('tentacle koshi: firm near the root, fading smoothly, from jellyfish-soft t
   for(let i=1;i<prof.length;i++)assert.ok(prof[i]<=prof[i-1]+1e-9,'never stiffens toward the tip');
   // Gradual near the root: the first fifth of the strand keeps most of the root stiffness.
   assert.ok(prof[1]>prof[0]*.85,'no cliff right after the root: '+prof.slice(0,3));
-  assert.ok(prof[0]>=.5&&prof[0]<=.97);
+  assert.ok(prof[0]>=.45&&prof[0]<=.75,'never stiffer than an anemone at the root');assert.ok(f.s(p,.7)===0,'the outer part is always free');
  }
  assert.ok(soft<.05&&stiff>.95,'specimens span the whole range');
- const jelly={genome:{seed:1},phase:1,koshi:{firm:0,root:.5,reach:.26}},lion={genome:{seed:1},phase:1,koshi:{firm:1,root:.97,reach:1.1}};
+ const jelly={genome:{seed:1},phase:1,koshi:{firm:0,root:.45,reach:.24}},anemone={genome:{seed:1},phase:1,koshi:{firm:1,root:.75,reach:.62}};
  assert.ok(f.s(jelly,.4)===0,'jellyfish tentacle is free past its base');
- assert.ok(f.s(lion,.8)>.1&&f.s(lion,1)<.05,'lionfish ray holds almost to the tip, flexing only at the end');
+ assert.ok(f.s(anemone,.3)>.3&&f.s(anemone,.65)===0,'anemone tentacle holds its inner part, tip free');
  assert.match(html,/const target=strandBendStiffness\(p,\(j-1\)\/\(rows-1\)\)/);
 });
