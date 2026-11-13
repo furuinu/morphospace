@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.87.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.88.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Flare from emitters only; softer white rim (v15.88.0)
+
+- **Flare follows emission.** The scene's alpha channel was meant to mark emissive pixels for the lens flare, but the full shader overwrote it with 1. So any bright pixel flared, including reflections, and the white silhouette rim was itself marked as emission. Now:
+  - Alpha carries the emission mask; the canvas is created with `alpha:false`.
+  - The backdrop writes alpha 0, so it never feeds the flare.
+  - The extraction keys on the mask: strongly marked (alpha > 0.35) and bright pixels only.
+  - The flare is about 1.8× stronger, with caps raised from 0.22 to 0.40 (optics) and from 0.18 to 0.32 (composite).
+- **White rim.** The camera-relative silhouette rim (dramatic edge) is now tinted 80% by the pigment (was 36%), runs at half strength (0.64 → 0.30), and is no longer marked as emission. This applies to both the full and the compatible (iPhone) shader.
 
 ## Motion strength capped at 65% (v15.87.1)
 
