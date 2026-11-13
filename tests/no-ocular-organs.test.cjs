@@ -19,8 +19,8 @@ test('no ocular geometry, DNA generator or specialised cornea shaders remain in 
  assert.doesNotMatch(html,/bool optical=vRole|if\(role>12\.0&&role<13\.7\)/);
  assert.match(html,/vObj=canonical;vAlong=u;/,
   'Original ancestral skin pigment coordinates must remain unchanged');
- assert.match(html,/vColor=aColor;vRole=role;vObj=aPos;/,
-  'Compatibility shader must retain the body pigment coordinates');
+ assert.match(html,/vColor=aColor;vRole=role;vObj=jPos;/,
+  'Compatibility shader keeps body pigment coordinates (articulated position, so pattern rides with moving arms)');
 });
 
 test('historic eyeDNA remains harmless to new body generation and crossover',()=>{

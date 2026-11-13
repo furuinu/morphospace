@@ -1,0 +1,46 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+function rig(){const a=html.indexOf('const JOINT_LIMIT=');const src=html.slice(a,html.indexOf('const JOINT_QUAT=',a));
+ const V={sub:(a,b)=>a.map((v,i)=>v-b[i]),add:(a,b)=>a.map((v,i)=>v+b[i]),scale:(a,s)=>a.map(v=>v*s),dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm:a=>{const l=Math.hypot(...a)||1;return a.map(v=>v/l)}};
+ const f={Math,Float32Array,V,clamp:(v,a,b)=>Math.max(a,Math.min(b,v))};vm.createContext(f);vm.runInContext(src+';this.build=buildArticulation;this.step=stepJointBehaviour;',f);return f}
+function specimen(){
+ // Body at the origin, one stalk to a knob along +x, one spike along +y.
+ const blobs=[{p:[0,0,0],axes:[.5,.5,.5],kind:'nucleus'},{p:[1.4,0,0],axes:[.3,.3,.3],kind:'bud'}];
+ const links=[{a:[0,0,0],b:[1.4,0,0],radius:.1}],branches=[{a:[0,1.2,0],b:[0,0,0],r0:.04,r1:.08}];
+ const pts=[];for(let x=-.5;x<=1.7;x+=.05)for(const y of [-.08,0,.08])pts.push([x,y,0]);for(let y=0;y<=1.2;y+=.05)pts.push([0,y,0]);
+ const data=new Float32Array(pts.length*17);pts.forEach((p,i)=>data.set(p,i*17));
+ return {sp:{seed:42,localGroup:{source:{blobs,links,structures:{branches}},copyTransforms:[{},{}]}},mesh:{data},pts};
+}
+test('joints sit at the roots of arms and spikes and skin blends smoothly across each root',()=>{
+ const f=rig(),{sp,mesh,pts}=specimen(),r=f.build(sp,mesh);
+ assert.equal(r.joints.length,2);
+ const arm=r.joints.find(j=>j.kind==='arm'),spike=r.joints.find(j=>j.kind==='spike');
+ assert.ok(arm.pivot[0]>.3&&arm.pivot[0]<.5,'arm pivot near the body surface: '+arm.pivot);
+ assert.equal(arm.behaviour,'scan','a long arm ending in a knob scans like an eye stalk');
+ assert.ok(spike.pivot[1]>.3&&spike.pivot[1]<.5);
+ const w=x=>{const i=pts.findIndex(p=>Math.abs(p[0]-x)<1e-6&&p[1]===0&&p[2]===0);return [r.attr[i*3],r.attr[i*3+1]]};
+ assert.equal(w(-.4)[0],-1,'body stays still');assert.equal(w(1.5)[1],1,'knob moves fully');
+ const ramp=[.25,.3,.35,.4,.45,.5,.55,.6].map(x=>w(x)[1]);
+ for(let i=1;i<ramp.length;i++)assert.ok(ramp[i]>=ramp[i-1]-1e-9,'weight rises monotonically across the root');
+ assert.ok(ramp[0]<.2&&ramp.at(-1)>.8);
+});
+test('every behaviour stays within its angle bounds, so the shape never tears',()=>{
+ const f=rig(),limits={scan:.43,twitch:.17,sway:.17,beat:.31,probe:.47,flinch:.40,wave:.13};
+ for(const behaviour of Object.keys(limits)){
+  const st={};let worst=0;
+  for(let t=0;t<40;t+=1/60){const [a,b]=f.step({behaviour},st,t,1);worst=Math.max(worst,Math.hypot(a,b));}
+  assert.ok(worst<=limits[behaviour],behaviour+' '+worst);assert.ok(worst>.02,behaviour+' moves');
+ }
+});
+test('scan is saccadic: quick turns between holds',()=>{
+ const f=rig(),st={};let prev=null,fast=0,still=0;
+ for(let t=0;t<30;t+=1/60){const v=f.step({behaviour:'scan'},st,t,0);if(prev){const d=Math.hypot(v[0]-prev[0],v[1]-prev[1])*60;if(d>1)fast++;else if(d<.6)still++;}prev=v;}
+ assert.ok(fast>20&&still>fast*4,'fast '+fast+' still '+still);
+});
+test('both vertex shaders articulate before every other motion and copies get their own states',()=>{
+ assert.equal((html.match(/void main\(\)\{\n vec3 jPos=aPos,jNormal=aNormal;articulate\(jPos,jNormal\);/g)||[]).length,2);
+ assert.doesNotMatch(html,/uCamerjPos/);
+ assert.match(html,/applyJointUniforms\(rig,copyIndex,environmentTime,/);
+ assert.match(html,/const states=rig\.states\[copyIndex\]\|\|\(rig\.states\[copyIndex\]=/);
+ assert.match(html,/else\{gl\.disableVertexAttribArray\(v\.aJoint\);gl\.vertexAttrib3f\(v\.aJoint,-1,0,-1\);\}/);
+});
