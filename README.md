@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.87.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.87.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Motion strength capped at 65% (v15.87.1)
+
+The 運動の強さ slider now runs 0–65% (default 65%, was 0–200% with a default of 125%). Saved and shared settings are clamped to 65%.
 
 ## Fins removed (v15.87.0)
 
