@@ -406,15 +406,15 @@ test('ecology DNA forms coherent appendage groups with bounded counts and GPU wa
  assert.match(html,/const plan=ecology\.appendagePlan,groupCount=/);
  assert.match(html,/out\.push\(\{mesh:makeSwept/);
  assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',dir:outward,length:strandLength,collarLength,collarRadius:thickness\*1\.6\}/);
- assert.match(html,/shifted\+=delicateWave\(shifted,anchorCanonical,u,phase,role,ancestralTime,uMotion\)/);
- assert.match(html,/\$\{delicateWaveGLSL\}/);
+ // Fins were removed (v15.87.0); drifting species grow no appendages and strands move on the CPU.
+ assert.match(html,/if\(ecology\.appendagePlan==='lateral_frill'\)return out;/);
+ assert.doesNotMatch(html,/delicateWave|mode==='fin'|type:'fin'/);
 });
 
 test('delicate organs attach inside the detailed implicit growth surface',()=>{
  assert.match(html,/function anchorOnGrowthSurface\(source,origin,direction,expectedRadius\)/);
  assert.match(html,/morphSDF\(origin\[0\]\+dir\[0\]\*t,origin\[1\]\+dir\[1\]\*t,origin\[2\]\+dir\[2\]\*t,source\)/);
  assert.match(html,/const root=anchorOnGrowthSurface\(source,origin,outward,radius\)/);
- assert.match(html,/anchor=anchorOnGrowthSurface\(source,finOrigin,outward,radius\)/);
  assert.match(html,/hit-Math\.min\(\.085,expectedRadius\*\.12\)/);
 });
 
@@ -428,18 +428,6 @@ test('growth collars are fused into the source SDF before detailed skin tessella
  assert.match(html,/if\(localShell\)localParts\.push\(\.\.\.delicateParts(?:,|\))/);
  assert.ok(html.indexOf('const safeAppendages=safeSpecimenAppendages(em,producedAppendages,seed)')<html.indexOf('source.appendageBases=delicateParts.map'));
  assert.ok(html.indexOf('source.appendageBases=delicateParts.map')<html.indexOf('localShell=morphImplicitMesh(source,palette,g,false,n)'));
-});
-
-test('flexible appendages follow body DNA with a root-fixed delayed travelling bend',()=>{
- const start=html.indexOf('const delicateWaveGLSL='),end=html.indexOf('const captureWarpGLSL=',start);
- assert.ok(start>=0&&end>start);
- const shader=html.slice(start,end);
- assert.match(shader,/float cycle=max\(\.166667,uMotionCycles\.y\)/);
- assert.match(shader,/float bodyPhase=6\.2831853\*t\*speed\+uMotionGene2\.y/);
- assert.match(shader,/float delayed=bodyPhase-u\*waveNumber\+phase\*\.28/);
- assert.match(shader,/float delayed2=bodyPhase\*\.73-u\*waveNumber\*\.76\+phase\*\.43/);
- assert.match(shader,/float taper=u\*u\*\(3\.-2\.\*u\)/);
- assert.match(shader,/return flex\*taper\*/);
 });
 
 test('delicate strands use real bounded Verlet constraints and body inertia',()=>{
@@ -487,10 +475,7 @@ test('tentacle stiffness decays inversely from the rooted insertion with specime
  assert.match(html,/const force=flow\.map\(\(v,a\)=>clamp\(/);
 });
 
-test('fin membranes render both sides and tentacles start with a curved physical pose',()=>{
- assert.match(html,/function doubleSidedMembrane\(mesh\)/);
- assert.match(html,/tri\[k\+1\]=mesh\.tri\[i\+2\]\+n/);
- assert.match(html,/mesh:doubleSidedMembrane\(buildMesh\(p,colors,faces,true\)\)/);
+test('tentacles start with a curved physical pose',()=>{
  assert.match(html,/Start already immersed in the flow/);
  assert.match(html,/const offset=V\.add\(V\.scale\(lateral,amp\*Math\.sin/);
  assert.match(html,/growthDirection:axis/);

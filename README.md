@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.86.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.87.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Fins removed (v15.87.0)
+
+Fins had little visible effect, so they are removed:
+
+- **Drifting species.** Species with the `lateral_frill` appendage plan no longer grow fin membranes. Each drifter had up to 12 double-sided membranes, about 8,000 vertices.
+- **Legacy generator.** Old saved specimens drop their anatomical fins and veils. The 12 random draws each fin used are still consumed, so the rest of a legacy specimen is unchanged.
+- **Shaders.** The comb-plate ripple, its packed vertex coordinates and its fragment shimmer are gone, along with the delicate-wave shader block, which had become empty (strands move with the CPU Verlet solver).
 
 ## High-quality switch on iPhone/iPad, Fresnel capped at 30% (v15.86.0)
 
