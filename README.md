@@ -3,8 +3,15 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.94.2. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.95.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Softer, faster-fading tentacle koshi (v15.95.0)
+
+- Lower overall bending stiffness (no bamboo-stiff strands); the firmest now sways like a sea anemone in a current.
+- Each specimen has its own fall-off: a short firm stretch just past the root, then a Gaussian fade whose length ranges from jellyfish-quick to anemone-slow.
+- A faint residual stiffness along the whole strand keeps tentacles trailing at a distance from the body instead of tangling around it.
+- The root is no longer locked: it is a firm spring toward its grown direction, so the insertion gives and swings a little.
 
 ## Graded tentacle bending (v15.94.2)
 
