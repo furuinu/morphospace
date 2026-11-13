@@ -52,3 +52,24 @@ test('linked and recursive motions: unison joints share a pose, echo repeats the
  const parent=f.step({behaviour:'echo',depth:0,rootSeed:3},{},5,0),child=f.step({behaviour:'echo',depth:1,rootSeed:3},{},5.35,1);
  assert.ok(Math.abs(child[0]-parent[0]*.82)<1e-9&&Math.abs(child[1]-parent[1]*.82)<1e-9,'echo: child repeats the parent 0.35 s later at 82%');
 });
+test('a tip follows every ancestor: chains are composed root to tip and caps ride along',()=>{
+ const a=html.indexOf('function jointQuatMul');const src=html.slice(a,html.indexOf('function applyJointUniforms',a));
+ const V={sub:(a,b)=>a.map((v,i)=>v-b[i]),add:(a,b)=>a.map((v,i)=>v+b[i]),scale:(a,s)=>a.map(v=>v*s),cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]};
+ const f={V,Array,Float32Array,Math};vm.createContext(f);vm.runInContext(src+';this.compose=composeJointChain;this.apply=jointQuatApply;',f);
+ const qz=ang=>[0,0,Math.sin(ang/2),Math.cos(ang/2)],I=[0,0,0,1];
+ const joints=[{pivot:[0,0,0],parent:-1},{pivot:[1,0,0],parent:0},{pivot:[2,0,0],parent:1}];
+ const Q=new Float32Array(12),T=new Float32Array(12);
+ // Only the root bends 90 degrees; the grandchild's tip at (3,0,0) must swing to (0,3,0).
+ [qz(Math.PI/2),I,I].forEach((q,k)=>f.compose(joints[k],k,q,Q,T));
+ const world=(k,p)=>f.apply(Array.from(Q.subarray(k*4,k*4+4)),p).map((v,i)=>v+T[k*4+i]);
+ const tip=world(2,[3,0,0]);assert.ok(Math.hypot(tip[0],tip[1]-3,tip[2])<1e-5,'tip '+tip);
+ // Each level adds its own bend on top.
+ [qz(Math.PI/2),qz(Math.PI/2),I].forEach((q,k)=>f.compose(joints[k],k,q,Q,T));
+ const tip2=world(2,[3,0,0]);assert.ok(Math.hypot(tip2[0]+2,tip2[1]-1,tip2[2])<1e-5,'tip2 '+tip2);
+ // Shader uses the composed transform directly and no longer stacks only one parent.
+ assert.match(html,/vec3 jointPoint\(int j,vec3 p\)\{return uJointPivot\[j\]\.xyz\+jointQuatRotate\(uJointQuat\[j\],p\);\}/);
+ const r=rig(),{sp,mesh,pts}=specimen(),built=r.build(sp,mesh);
+ const i=pts.length;const data=new Float32Array((i+1)*17);data.set(mesh.data);data.set([0,1.25,0],i*17);
+ const b2=r.build(sp,{data});assert.ok(b2.attr[i*3+1]>.99,'the rounded cap just past the spike end moves with it');
+ assert.ok(built.joints.length>0);
+});
