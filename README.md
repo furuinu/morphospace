@@ -3,8 +3,14 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.92.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.93.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Joint chains reach the tips (v15.93.0)
+
+- Each joint now carries its whole chain, root to tip, composed on the CPU. Before, a vertex only followed its own joint and one parent, so the third and later segments of a branching tree stayed behind.
+- Bone regions are full capsules, including the rounded cap past the end, so the very tip moves with its spike or arm.
+- Spikes and arms beyond the 12-joint budget that sprout from a jointed part ride on it rigidly.
 
 ## Articulation v2: temperaments, chains and slow motion (v15.92.0)
 
