@@ -440,7 +440,7 @@ test('delicate strands use real bounded Verlet constraints and body inertia',()=
  assert.match(html,/const pose=sample\(time\),minus=sample\(time-h\),plus=sample\(time\+h\)/);
  assert.match(html,/gl\.bufferSubData\(gl\.ARRAY_BUFFER,0,mesh\.data\)/);
  assert.match(html,/mesh\.verlet=makeVerletStrand\(mesh,d,sp\.genome\)/);
- assert.match(html,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided\)/);
+ assert.match(html,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided,strandJointRef\(mesh,currentJointRig\)\)/);
  assert.match(html,/const strandMotion=\$\('motion'\)\.checked&&!nanoAction&&!captureShareIsOpen&&!strandGuided/);
  assert.match(html,/function strandLocalPoint\(m,p\)/);
  assert.match(html,/function strandCopyMesh\(pt,index\)/);
@@ -468,10 +468,10 @@ test('strand length is bounded by body size and long flexible roots stay pinned'
  assert.match(html,/p\.points\[i\]=V\.add\(p\.points\[i-1\],V\.scale\(direction,p\.lengths\[i-1\]\)\)/);
 });
 
-test('tentacle stiffness decays inversely from the rooted insertion with specimen-specific coefficient',()=>{
+test('tentacle stiffness fades gradually from the rooted insertion with specimen-specific firmness',()=>{
  assert.match(html,/growthDirection:axis/);
  assert.match(html,/rootDecay:1\.5\+\(\(genome\?\.seed\|\|1\)\%991\)\/991\*7\.0/);
- assert.match(html,/const stiffness=1\/\(1\+p\.rootDecay\*u\*12\)/);
+ assert.match(html,/const stiffness=Math\.max\(strandBendStiffness\(p,u\),1\/\(1\+p\.rootDecay\*u\*12\)\*\.35\)/);
  assert.match(html,/p\.points\[i\]=V\.add\(p\.points\[i-1\],V\.scale\(direction,p\.lengths\[i-1\]\)\)/);
  assert.match(html,/const direction=V\.norm\(V\.add\(V\.scale\(guide,stiffness\),V\.scale\(segment,\(1-stiffness\)\/length\)\)\)/);
  assert.match(html,/const force=flow\.map\(\(v,a\)=>clamp\(/);
@@ -640,8 +640,8 @@ test('B is born at the optical centre and eases into a camera-aligned full-size 
  assert.match(src,/const strandFreedom=enteringB\?handoffEase\(\(entryProgress-\.64\)\/\.36\):1/);
  assert.match(src,/const strandGuided=!!enteringB/);
  assert.match(src,/const strandMotion=\$\('motion'\)\.checked&&!nanoAction&&!captureShareIsOpen&&!strandGuided/);
- assert.match(src,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided\)/);
- assert.match(src,/p\.worldPoints=p\.rest\.map\(q=>strandWorldPoint\(model,q\)\)/);
+ assert.match(src,/stepWorldStrand\(mesh,model,bodyTime,strandMotion,strandFreedom,strandGuided,strandJointRef\(mesh,currentJointRig\)\)/);
+ assert.match(src,/p\.worldPoints=p\.rest\.map\(restWorld\)/);
  assert.match(src,/const toDistance=Math.max\(job.distance\*viewer.fit\*zoom,targetBounds.radius\*1\.15\)/);
 });
 test('B aligns its swimming heading during entrance and eases only its travel translation afterward',()=>{
@@ -673,4 +673,23 @@ test('warp lens eases into ultra-wide perspective and returns to the original ob
  assert.match(html,/persp\(warpCameraFovDegrees\(viewer\.morph\)\*Math\.PI\/180/);
  assert.match(html,/uniform float uResidentTanHalfFov;/);
  assert.match(html,/uniform float uBgTanHalfFov;/);
+});
+
+test('tentacle koshi: firm near the root, fading smoothly, from jellyfish-soft to lionfish-stiff',()=>{
+ const vm=require('node:vm'),a=html.indexOf('function strandKoshi');const src=html.slice(a,html.indexOf('// Independent world-space strand particles.',a));
+ const f={Math,clamp:(v,lo,hi)=>Math.max(lo,Math.min(hi,v))};vm.createContext(f);vm.runInContext(src+';this.k=strandKoshi;this.s=strandBendStiffness;',f);
+ let soft=1,stiff=0;
+ for(let seed=1;seed<400;seed++){
+  const p={genome:{seed},phase:1};const k=f.k(p);soft=Math.min(soft,k.firm);stiff=Math.max(stiff,k.firm);
+  const prof=[0,.05,.1,.15,.2,.3,.5,.8,1].map(u=>f.s(p,u));
+  for(let i=1;i<prof.length;i++)assert.ok(prof[i]<=prof[i-1]+1e-9,'never stiffens toward the tip');
+  // Gradual near the root: the first fifth of the strand keeps most of the root stiffness.
+  assert.ok(prof[1]>prof[0]*.85,'no cliff right after the root: '+prof.slice(0,3));
+  assert.ok(prof[0]>=.5&&prof[0]<=.97);
+ }
+ assert.ok(soft<.05&&stiff>.95,'specimens span the whole range');
+ const jelly={genome:{seed:1},phase:1,koshi:{firm:0,root:.5,reach:.26}},lion={genome:{seed:1},phase:1,koshi:{firm:1,root:.97,reach:1.1}};
+ assert.ok(f.s(jelly,.4)===0,'jellyfish tentacle is free past its base');
+ assert.ok(f.s(lion,.8)>.1&&f.s(lion,1)<.05,'lionfish ray holds almost to the tip, flexing only at the end');
+ assert.match(html,/const target=strandBendStiffness\(p,\(j-1\)\/\(rows-1\)\)/);
 });

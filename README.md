@@ -3,8 +3,14 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.93.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.94.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Tentacle koshi, roots on branches, motion cap 40% (v15.94.0)
+
+- Tentacles have a graduated bend stiffness ("koshi"): firm at the root with a smooth cosine fall-off instead of going limp right after the insertion. Per specimen it ranges from a jellyfish tentacle (firm only at the base) to a lionfish fin ray (holds its shape almost to the tip).
+- A tentacle growing from a jointed branch moves with it: its root, base direction and grown shape are carried by the branch joint, and the rest of the strand trails behind. Collars and other parts sitting on a branch follow it too.
+- 運動の強さ now tops out at 40% (default 40%); saved and shared settings are clamped.
 
 ## Joint chains reach the tips (v15.93.0)
 
