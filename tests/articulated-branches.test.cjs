@@ -25,10 +25,10 @@ test('joints sit at the roots of arms and spikes and skin blends smoothly across
  assert.ok(ramp[0]<.2&&ramp.at(-1)>.8);
 });
 test('every behaviour stays within its angle bounds, so the shape never tears',()=>{
- const f=rig(),limits={scan:.43,twitch:.17,sway:.17,beat:.31,probe:.47,flinch:.40,wave:.13};
+ const f=rig(),limits={scan:.43,twitch:.17,sway:.17,beat:.31,probe:.47,flinch:.40,wave:.13,drift:.23,breathe:.15,undulate:.18,wander:.22,echo:.24,unison:.21,chorus:.18};
  for(const behaviour of Object.keys(limits)){
   const st={};let worst=0;
-  for(let t=0;t<40;t+=1/60){const [a,b]=f.step({behaviour},st,t,1);worst=Math.max(worst,Math.hypot(a,b));}
+  for(let t=0;t<40;t+=1/60){const [a,b]=f.step({behaviour,depth:1,rootSeed:5,groupSeed:9},st,t,1);worst=Math.max(worst,Math.hypot(a,b));}
   assert.ok(worst<=limits[behaviour],behaviour+' '+worst);assert.ok(worst>.02,behaviour+' moves');
  }
 });
@@ -43,4 +43,12 @@ test('both vertex shaders articulate before every other motion and copies get th
  assert.match(html,/applyJointUniforms\(rig,copyIndex,environmentTime,/);
  assert.match(html,/const states=rig\.states\[copyIndex\]\|\|\(rig\.states\[copyIndex\]=/);
  assert.match(html,/else\{gl\.disableVertexAttribArray\(v\.aJoint\);gl\.vertexAttrib3f\(v\.aJoint,-1,0,-1\);\}/);
+});
+
+test('linked and recursive motions: unison joints share a pose, echo repeats the parent later and smaller',()=>{
+ const f=rig();
+ const a=f.step({behaviour:'unison',rootSeed:3},{},7.3,1),b=f.step({behaviour:'unison',rootSeed:3},{},7.3,5);
+ assert.deepEqual(a,b,'unison: same tree, same pose');
+ const parent=f.step({behaviour:'echo',depth:0,rootSeed:3},{},5,0),child=f.step({behaviour:'echo',depth:1,rootSeed:3},{},5.35,1);
+ assert.ok(Math.abs(child[0]-parent[0]*.82)<1e-9&&Math.abs(child[1]-parent[1]*.82)<1e-9,'echo: child repeats the parent 0.35 s later at 82%');
 });

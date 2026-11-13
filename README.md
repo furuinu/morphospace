@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.91.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.92.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Articulation v2: temperaments, chains and slow motion (v15.92.0)
+
+- Joint regions are now a tight shaft capsule plus a knob sphere with a soft blend, and each joint's angle limit shrinks with thickness, so body lumps are no longer swept into an arm (fixes shape breakage).
+- Each specimen draws a temperament (twitchy, languid, smooth or rhythmic) with its own amplitude, tempo and hold time.
+- Tree-connected bones move as a chain: undulate (travelling wave), echo (recursive, each level follows its parent later and smaller) or unison (linked).
+- Linked spikes can move in chorus; new slow behaviours: drift, breathe and wander.
+- Membranes without bones keep the body's own motion.
 
 ## Articulated arms and spikes; default zoom 65% (v15.91.0)
 
