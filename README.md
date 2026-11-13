@@ -3,8 +3,20 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.88.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.89.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## One full turn per specimen, trackball touch, motes leave early (v15.89.0)
+
+- **Close-up camera work.** With automatic viewing on, the specimen turns a full 360° every 30 s, always in the same direction. The turn is about a random axis chosen anew for each specimen; axes close to the line of sight are excluded so it never reads as a flat roll.
+  - The camera's own rotation since the specimen arrived (sky orbit, flights) is cancelled for the specimen, so the turn is exactly that.
+  - Swimming and buoyancy still show.
+  - This replaces the old heading-correction sweep (170° per 30 s about one projected axis).
+- **Touch rotation.** Dragging is now a camera-space trackball.
+  - The facing surface follows the finger in any direction and at any attitude, with no Euler angles involved (no gimbal lock).
+  - The rotation is about the body's own centre; the old drag rotated about the world origin and fought the sweep correction.
+  - Releasing gives a short glide (0.45 s decay).
+- **Motes on transitions.** When a transition pulls away, the near-field motes fade within about 0.3 s (the body's sway settles over 1.1 s) and shrink to a fifth of their size as they go. They return at the normal pace.
 
 ## Flare from emitters only; softer white rim (v15.88.0)
 

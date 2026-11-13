@@ -104,7 +104,7 @@ test('motes form a world-periodic field around the body and blur with distance f
  const vertex=between('const moteVertex=','const moteFragment=');
  assert.ok(vertex.includes('vec3 local=mod(world-uMoteAnchor+.5*uMoteBox,uMoteBox)-.5*uMoteBox;'));
  assert.ok(vertex.includes('abs(1.0/dist-1.0/uMoteFocus)'),'thin-lens blur circle');
- assert.ok(vertex.includes('gl_PointSize=clamp(size,1.5,uMoteMaxSize);'));
+ assert.ok(vertex.includes('gl_PointSize=clamp(size*mix(.2,1.0,uMoteGain),1.0,uMoteMaxSize);'),'motes shrink as they fade');
  assert.ok(vertex.includes('float near=smoothstep(.14,.32,dist/uMoteFocus);'),'nothing fills the lens');
  // CPU port of the wrap: a mote keeps its world position while the anchor travels, until it wraps.
  const wrap=(w,a,box)=>{const m=((w-a+.5*box)%box+box)%box-.5*box;return a+m};
@@ -124,4 +124,10 @@ test('the mote pass adds light only, keeps depth and the emission mask, and rest
  const render=between('function render(thumbSize=0','function drawSuspendedMotes(');
  assert.ok(render.includes('suspension.live=!(thumbSize>0);'));
  assert.ok(render.indexOf('const restingCentre=[base[12],base[13],base[14]];')<render.indexOf('base=bodyBuoyancy(base);'),'motes do not bob with the body');
+});
+test('motes fade out faster than the sway when a transition pulls away, and return at the normal pace',()=>{
+ const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+ const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+ assert.match(html,/const moteTarget=suspensionTarget\(\),moteTau=moteTarget<moteFade\.gain\?\.30:1\.1;/);
+ assert.match(html,/const gain=suspension\.live\?moteFade\.gain:0;/);
 });
