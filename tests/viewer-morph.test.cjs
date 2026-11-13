@@ -675,33 +675,27 @@ test('warp lens eases into ultra-wide perspective and returns to the original ob
  assert.match(html,/uniform float uBgTanHalfFov;/);
 });
 
-test('tentacle koshi: graded bending from jellyfish-soft to sea-anemone-firm, with no stiff/slack edge',()=>{
+test('tentacle koshi: ribbon-soft with a little body near the root, no spring-back',()=>{
  const vm=require('node:vm'),a=html.indexOf('function strandKoshi');const src=html.slice(a,html.indexOf('// Independent world-space strand particles.',a));
  const V={sub:(a,b)=>a.map((v,i)=>v-b[i]),add:(a,b)=>a.map((v,i)=>v+b[i]),scale:(a,s)=>a.map(v=>v*s),dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm:a=>{const l=Math.hypot(...a)||1;return a.map(v=>v/l)}};
  const f={Math,V,clamp:(v,lo,hi)=>Math.max(lo,Math.min(hi,v))};vm.createContext(f);vm.runInContext(src+';this.k=strandKoshi;this.s=strandBendStiffness;this.relax=strandBendRelax;',f);
- let soft=1,stiff=0;
  for(let seed=1;seed<400;seed++){
-  const p={genome:{seed},phase:1},k=f.k(p);soft=Math.min(soft,k.root);stiff=Math.max(stiff,k.root);
+  const p={genome:{seed},phase:1},k=f.k(p);
+  assert.ok(k.root>=.32&&k.root<=.52,'never stiff: '+k.root);
   const prof=[...Array(21)].map((_,i)=>f.s(p,i*.05));
-  for(let i=1;i<prof.length;i++){assert.ok(prof[i]<=prof[i-1]+1e-9);assert.ok(prof[i-1]-prof[i]<k.root*.36,'no step: '+prof);}
-  assert.ok(f.s(p,1)>=.05,'a faint residual keeps strands off the body');assert.ok(prof[1]>k.root*.95,'a little firmness just past the root');
+  for(let i=1;i<prof.length;i++)assert.ok(prof[i]<=prof[i-1]+1e-9);
+  assert.ok(prof[1]>k.root*.6,'a little body just past the root');
+  assert.ok(f.s(p,.5)<.03&&f.s(p,.7)<.002,'soft as a ribbon beyond the root region');
  }
- assert.ok(soft<.33&&stiff>.5&&stiff<=.55,'jellyfish to anemone, never bamboo-stiff: '+soft+' '+stiff);
- const jelly={genome:{seed:1},phase:1,koshi:{firm:0,root:.3,hold:.05,decay:.09,floor:.05}};assert.ok(f.s(jelly,.3)<.08,'jellyfish softens within a short distance');
- // Dynamics: push a straight strand sideways and let it relax; the bend between neighbouring
- // segments must grow smoothly from root to tip (no frozen part next to a slack part).
- for(const firm of [0,.5,1]){
-  const rows=12,p={genome:{seed:1},phase:1,koshi:{firm,root:.30+.25*firm,hold:.05+.07*firm,decay:.09+.3*firm,floor:.05+.03*firm}};
-  const rest=[...Array(rows)].map((_,i)=>[0,i*.1,0]),lengths=Array(rows-1).fill(.1);let pts=rest.map(q=>q.slice());
-  for(let step=0;step<90;step++){for(let i=1;i<rows;i++)pts[i][0]+=.004*(i/(rows-1));
-   for(let i=1;i<rows;i++){const d=f.V?null:null;const diff=V.sub(pts[i],pts[i-1]),l=Math.hypot(...diff);pts[i]=V.add(pts[i-1],V.scale(diff,.1/l));}
-   pts[0]=[0,0,0];f.relax(pts,rest,lengths,p,1/60);}
-  const ang=[];for(let i=1;i<rows;i++){const d=V.norm(V.sub(pts[i],pts[i-1]));ang.push(Math.atan2(d[0],d[1]));}
-  const bends=ang.slice(1).map((v,i)=>v-ang[i]);
-  for(let i=1;i<bends.length;i++)assert.ok(Math.abs(bends[i]-bends[i-1])<.25,'smooth bend profile firm='+firm+': '+bends.map(v=>v.toFixed(3)));
-  assert.ok(Math.abs(ang.at(-1))>Math.abs(ang[0])+.05,'the tip bends more than the root');
-  assert.ok(Math.abs(ang[0])>.004&&Math.abs(ang[0])<.35,'the root gives a little but holds: '+ang[0]);
- }
- assert.match(html,/strandBendRelax\(p\.worldPoints,p\.rest\.map\(restWorld\),p\.lengths,p,dt\)/);
+ // No shape memory: a strand bent sideways and left alone does not spring back toward a coil,
+ // and the correction adds no momentum (previous positions move with it).
+ const rows=12,p={genome:{seed:1},phase:1,koshi:{firm:.5,root:.42,hold:.04,decay:.11}};
+ const rest=[...Array(rows)].map((_,i)=>[0,i*.1,0]),lengths=Array(rows-1).fill(.1);
+ const pts=rest.map((q,i)=>[Math.sin(i*.4)*.03*i,q[1],0]),prev=pts.map(q=>q.slice());
+ const tipBefore=pts.at(-1).slice();f.relax(pts,rest,lengths,p,1/60,prev);
+ for(let i=0;i<rows;i++)assert.ok(Math.hypot(...V.sub(V.sub(pts[i],prev[i]),[0,0,0]))<1e-9,'no velocity injected');
+ assert.ok(Math.hypot(...V.sub(pts.at(-1),tipBefore))<.06,'the tip is not yanked back');
+ assert.match(html,/strandBendRelax\(p\.worldPoints,p\.rest\.map\(restWorld\),p\.lengths,p,dt,p\.worldPrevious\)/);
+ assert.match(html,/axis\[k\]\*STRAND_OUTWARD_DRIFT/);
  assert.doesNotMatch(html,/V\.scale\(axis,\.57\)/,'the root is a spring, not a lock');
 });
