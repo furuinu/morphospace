@@ -31,8 +31,24 @@ test('save/capture/share press freezes before async work and never triggers a se
  assert.doesNotMatch(save,/render\(/);assert.doesNotMatch(save,/drawStudioBackground\(/);
  assert.doesNotMatch(source,/render\(/);
 });
-test('card, sample thumbnail and social preview fit the whole shot without cropping or stretching',()=>{
- assert.match(html,/Math\.min\(w\/image\.width,h\/image\.height\)/);
+test('card and sample thumbnail crop around the specimen to fill the frame; the social preview keeps the whole shot',()=>{
+ assert.match(html,/const crop=subjectCrop\(image\.width,image\.height,image\.subjectBox,w\/h\)/);
+ assert.match(html,/CaptureShare\.subjectCrop\(image\.width,image\.height,image\.subjectBox,1\)/);
  assert.match(html,/Math\.min\(size\/image\.width,size\/image\.height\)/);
- assert.match(html,/const thumbScale=Math\.min\(240\/image\.width,240\/image\.height\)/);
+ assert.match(html,/shot\.subjectBox=specimenScreenBox\(shot\.width,shot\.height\)/);
+ const a=html.indexOf(' function subjectCrop(');const src=html.slice(a,html.indexOf(' function card(',a));
+ const crop=new Function(src+';return subjectCrop;')();
+ // Portrait phone shot, specimen in the middle: the crop fills the landscape card window.
+ const r=crop(1170,2532,{cx:585,cy:1300,w:700,h:600},964/734);
+ assert.ok(Math.abs(r.sw/r.sh-964/734)<1e-6,'same shape as the window, no stretching');
+ assert.ok(r.sw<=1170&&r.sh<=2532&&r.sx>=0&&r.sy>=0&&r.sx+r.sw<=1170+1e-6&&r.sy+r.sh<=2532+1e-6,'inside the shot');
+ assert.ok(r.sw>=700*1.14-1e-6&&r.sh>=600*1.14-1e-6,'the whole specimen with a margin');
+ assert.ok(r.sw<1170*.85,'much tighter than the whole screen: '+r.sw);
+ // A tiny specimen is not blown up past a sensible resolution; without bounds the whole shot is used.
+ assert.ok(crop(1170,2532,{cx:585,cy:1266,w:60,h:60},964/734).sw>=560);
+ assert.deepEqual(crop(800,600,null,1.3),{sx:0,sy:0,sw:800,sh:600});
+ // Tall tentacles above a wide body: the window cannot hold everything, so the body stays in frame.
+ const t=crop(527,1139,{cx:256,cy:392,w:513,h:784,core:{x0:10,x1:520,y0:520,y1:760}},964/734);
+ assert.ok(t.sy<=520&&t.sy+t.sh>=760,'the body is fully inside: '+JSON.stringify(t));
+ assert.ok(t.sy<520-5,'and some of the tentacles above it are shown');
 });
