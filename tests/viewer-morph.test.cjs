@@ -682,15 +682,16 @@ test('tentacle koshi: graded bending from jellyfish-soft to sea-anemone-firm, wi
  let soft=1,stiff=0;
  for(let seed=1;seed<400;seed++){
   const p={genome:{seed},phase:1},k=f.k(p);soft=Math.min(soft,k.root);stiff=Math.max(stiff,k.root);
-  const prof=[0,.1,.2,.3,.4,.5,.6,.7,.8].map(u=>f.s(p,u));
-  for(let i=1;i<prof.length;i++){assert.ok(prof[i]<=prof[i-1]+1e-9);assert.ok(prof[i-1]-prof[i]<k.root*.3,'no step: '+prof);}
-  assert.ok(f.s(p,.8)>0,'stiffness fades across the whole strand, not ending part-way');
+  const prof=[...Array(21)].map((_,i)=>f.s(p,i*.05));
+  for(let i=1;i<prof.length;i++){assert.ok(prof[i]<=prof[i-1]+1e-9);assert.ok(prof[i-1]-prof[i]<k.root*.36,'no step: '+prof);}
+  assert.ok(f.s(p,1)>=.05,'a faint residual keeps strands off the body');assert.ok(prof[1]>k.root*.95,'a little firmness just past the root');
  }
- assert.ok(soft<.25&&stiff>.7&&stiff<=.75,'jellyfish to anemone, never stiffer: '+soft+' '+stiff);
+ assert.ok(soft<.33&&stiff>.5&&stiff<=.55,'jellyfish to anemone, never bamboo-stiff: '+soft+' '+stiff);
+ const jelly={genome:{seed:1},phase:1,koshi:{firm:0,root:.3,hold:.05,decay:.09,floor:.05}};assert.ok(f.s(jelly,.3)<.08,'jellyfish softens within a short distance');
  // Dynamics: push a straight strand sideways and let it relax; the bend between neighbouring
  // segments must grow smoothly from root to tip (no frozen part next to a slack part).
  for(const firm of [0,.5,1]){
-  const rows=12,p={genome:{seed:1},phase:1,koshi:{firm,root:.22+.53*firm,reach:.9+.25*firm}};
+  const rows=12,p={genome:{seed:1},phase:1,koshi:{firm,root:.30+.25*firm,hold:.05+.07*firm,decay:.09+.3*firm,floor:.05+.03*firm}};
   const rest=[...Array(rows)].map((_,i)=>[0,i*.1,0]),lengths=Array(rows-1).fill(.1);let pts=rest.map(q=>q.slice());
   for(let step=0;step<90;step++){for(let i=1;i<rows;i++)pts[i][0]+=.004*(i/(rows-1));
    for(let i=1;i<rows;i++){const d=f.V?null:null;const diff=V.sub(pts[i],pts[i-1]),l=Math.hypot(...diff);pts[i]=V.add(pts[i-1],V.scale(diff,.1/l));}
@@ -699,6 +700,8 @@ test('tentacle koshi: graded bending from jellyfish-soft to sea-anemone-firm, wi
   const bends=ang.slice(1).map((v,i)=>v-ang[i]);
   for(let i=1;i<bends.length;i++)assert.ok(Math.abs(bends[i]-bends[i-1])<.25,'smooth bend profile firm='+firm+': '+bends.map(v=>v.toFixed(3)));
   assert.ok(Math.abs(ang.at(-1))>Math.abs(ang[0])+.05,'the tip bends more than the root');
+  assert.ok(Math.abs(ang[0])>.004&&Math.abs(ang[0])<.35,'the root gives a little but holds: '+ang[0]);
  }
  assert.match(html,/strandBendRelax\(p\.worldPoints,p\.rest\.map\(restWorld\),p\.lengths,p,dt\)/);
+ assert.doesNotMatch(html,/V\.scale\(axis,\.57\)/,'the root is a spring, not a lock');
 });
