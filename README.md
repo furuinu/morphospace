@@ -3,8 +3,27 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.90.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.91.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Articulated arms and spikes; default zoom 65% (v15.91.0)
+
+Arms and spikes that grow out of the fused shell now move on joints at their roots.
+
+- **Rig.** Joints are taken from the growth links (arms, often ending in a knob) and the structural spikes, up to 12 per specimen.
+  - Each shell vertex gets a joint, a weight and the parent joint, so an arm's knob rides on the arm.
+  - The weight rises smoothly across the root, so the skin bends there instead of tearing.
+  - Rotations are applied first in both vertex shaders, so pattern, peristalsis, jelly and every other motion ride on top.
+  - Each symmetric copy runs its own behaviour state, so left and right move independently.
+- **Behaviours** (from marine animals, microbes and insects), each with bounded angles:
+  - `scan`: saccades to a new direction, holds, looks elsewhere, within 24° (stalked eyes of crabs, snails and insects). Long arms ending in a knob.
+  - `twitch`: a short flick and slow return at random moments, about 5–9° (polyp spines, setae). Most spikes.
+  - `sway`: a slow Lissajous sway, about 9° (sea pens, crinoid arms).
+  - `beat`: a fast power stroke and slow recovery, ±17° (barnacle cirri, cilia, copepod limbs). Lamellar arms.
+  - `probe`: a slow sweep with fine tremor and quick taps (insect antennae).
+  - `flinch`: a sudden withdrawal toward the body, then slow re-extension (fan worms, hydroids).
+  - `wave`: neighbouring spikes beat in sequence (comb rows, millipede legs).
+- **Default zoom.** The viewer now opens at 65 on the zoom slider (was 55).
 
 ## Soft body, and zoom that no longer ratchets (v15.90.0)
 

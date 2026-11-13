@@ -160,8 +160,8 @@ test('GPU applies the selected copy transform to canonical motion',()=>{
  assert.match(html,/uniform int uCopyCount;uniform int uCopyLayout;uniform vec4 uCopyPos\[12\]/);
  assert.match(html,/vec3 copyToSource\(vec3 p,int i\)/);
  assert.match(html,/vec3 copyVectorToWorld\(vec3 v,int i\)/);
- assert.match(html,/vec3 canonical=uCopyCount>0\?copyToSource\(aPos,copyIndex\):aPos/);
- assert.match(html,/vec3 p=aPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
+ assert.match(html,/vec3 canonical=uCopyCount>0\?copyToSource\(jPos,copyIndex\):jPos/);
+ assert.match(html,/vec3 p=jPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
  assert.match(html,/setCopyMotionUniforms\(gl,u,spec\.growthModel\)/);
 });
 test('bilateral source cells retain paired inner organ placement',()=>{
@@ -195,12 +195,12 @@ test('copied body shares ancestral texture and peristaltic motion before copy tr
  assert.match(html,/vec3 peristalsis=surfaceMotion\(canonical,canonicalNormal,ancestralTime/);
  assert.match(html,/wholeBodyWarp\(canonical\+motion\+bio\+peristalsis,ancestralTime,uMotion\*1\.82\)/);
  assert.match(html,/shifted=branchJointWarp\(shifted,anchorCanonical/);
- assert.match(html,/vec3 p=aPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
+ assert.match(html,/vec3 p=jPos\+\(uCopyCount>0\?copyVectorToWorld\(delta,copyIndex\):delta\)/);
  assert.match(html,/float copyPhase=0\.0/);
  assert.match(html,/uniform vec3 uCopyCentroid/);
  assert.match(html,/uniform int uCopyLayout/);
  assert.match(html,/uCopyLayout==1 && uCopyCount==2/);
- assert.match(html,/copyIndex=aPos\.x>=0\.0\?1:0/);
+ assert.match(html,/copyIndex=jPos\.x>=0\.0\?1:0/);
  assert.match(html,/uCopyLayout==4 && uCopyCount==4/);
  assert.match(html,/vec3 center=uCopyPos\[ci\]\.xyz\+copyVectorToWorld\(uCopyCentroid,ci\)/);
  assert.match(html,/gl\.uniform3fv\(u\.uCopyCentroid/);
@@ -245,7 +245,7 @@ test('local symmetry draw is shared by Safari compatibility and full shaders',()
  assert.match(html,/data=\(sp\.localGroup\?\.shell\|\|sp\.shell\)\.data/);
  assert.match(html,/const srcVert=compatibility\?compatibleVert:vert/);
  // Both shader variants use the same source-space body coordinates.
- assert.match(html,/vColor=aColor;vRole=role;vObj=aPos;/);
+ assert.match(html,/vColor=aColor;vRole=role;vObj=jPos;/);
 });
 
 test('high-fidelity instance tessellation follows copy budget and safely falls back',()=>{
