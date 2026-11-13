@@ -76,7 +76,7 @@ test('a tip follows every ancestor: chains are composed root to tip and caps rid
 test('tentacle roots and collars ride on the branch they grow from',()=>{
  assert.match(html,/const root=restWorld\(p\.anchor\)/);
  assert.match(html,/const axis=V\.norm\(V\.sub\(restWorld\(V\.add\(p\.anchor,p\.growthDirection\)\),root\)\)/);
- assert.match(html,/const restDir=V\.norm\(V\.sub\(restWorld\(p\.rest\[j\]\),restWorld\(p\.rest\[j-1\]\)\)\)/);
+ assert.match(html,/strandBendRelax\(p\.worldPoints,p\.rest\.map\(restWorld\)/);
  assert.match(html,/currentJointRig=rig;if\(rig\)for\(const pt of meshes\.localParts\|\|\[\]\)partJointConst\(pt\.mesh,rig\)/);
  const r=rig(),{sp,mesh}=specimen(),b=r.build(sp,mesh);
  const knob=b.locate([1.5,0,0]),body=b.locate([-.4,0,0]);

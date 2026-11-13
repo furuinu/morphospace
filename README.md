@@ -3,8 +3,13 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.94.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.94.2. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Graded tentacle bending (v15.94.2)
+
+- Tentacle koshi is now a real bending stiffness: each segment resists bending relative to the one before it, applied once per substep at a time-based rate. Previously each segment was pulled to an absolute direction on every iteration and substep, which froze the firm part and left an abrupt edge where it met the slack part.
+- The stiffness falls off smoothly over the whole length; firmness (jellyfish to sea anemone) sets the level at the root.
 
 ## Softer koshi range (v15.94.1)
 
