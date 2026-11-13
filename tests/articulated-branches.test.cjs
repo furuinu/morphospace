@@ -42,7 +42,7 @@ test('both vertex shaders articulate before every other motion and copies get th
  assert.doesNotMatch(html,/uCamerjPos/);
  assert.match(html,/applyJointUniforms\(rig,copyIndex,environmentTime,/);
  assert.match(html,/const states=rig\.states\[copyIndex\]\|\|\(rig\.states\[copyIndex\]=/);
- assert.match(html,/else\{gl\.disableVertexAttribArray\(v\.aJoint\);gl\.vertexAttrib3f\(v\.aJoint,-1,0,-1\);\}/);
+ assert.match(html,/else\{gl\.disableVertexAttribArray\(v\.aJoint\);const c=mesh\.jointConst&&mesh\.jointRig===currentJointRig\?mesh\.jointConst:null;gl\.vertexAttrib3f\(v\.aJoint,c\?c\.j:-1,c\?c\.w:0,c\?c\.parent:-1\);\}/);
 });
 
 test('linked and recursive motions: unison joints share a pose, echo repeats the parent later and smaller',()=>{
@@ -72,4 +72,13 @@ test('a tip follows every ancestor: chains are composed root to tip and caps rid
  const i=pts.length;const data=new Float32Array((i+1)*17);data.set(mesh.data);data.set([0,1.25,0],i*17);
  const b2=r.build(sp,{data});assert.ok(b2.attr[i*3+1]>.99,'the rounded cap just past the spike end moves with it');
  assert.ok(built.joints.length>0);
+});
+test('tentacle roots and collars ride on the branch they grow from',()=>{
+ assert.match(html,/const root=restWorld\(p\.anchor\)/);
+ assert.match(html,/const axis=V\.norm\(V\.sub\(restWorld\(V\.add\(p\.anchor,p\.growthDirection\)\),root\)\)/);
+ assert.match(html,/const restDir=V\.norm\(V\.sub\(restWorld\(p\.rest\[j\]\),restWorld\(p\.rest\[j-1\]\)\)\)/);
+ assert.match(html,/currentJointRig=rig;if\(rig\)for\(const pt of meshes\.localParts\|\|\[\]\)partJointConst\(pt\.mesh,rig\)/);
+ const r=rig(),{sp,mesh}=specimen(),b=r.build(sp,mesh);
+ const knob=b.locate([1.5,0,0]),body=b.locate([-.4,0,0]);
+ assert.ok(knob&&knob.w===1,'a root on the knob follows its arm fully');assert.equal(body,null,'a root on the body stays put');
 });
