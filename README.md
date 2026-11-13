@@ -3,8 +3,15 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.85.2. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.86.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## High-quality switch on iPhone/iPad, Fresnel capped at 30% (v15.86.0)
+
+- **高品質描画（iPhone・iPad）.** iPhone and iPad still start with the compatible shader. A new option under 描画品質 switches them to the full shader after a reload. That enables sky-coloured reflections, the fin comb ripple, the multi-light rig, subsurface scattering and aerial perspective.
+  - **Crash guard.** A flag is written before a high-quality launch and cleared after 12 s. If the page dies before then, the next launch falls back to the compatible shader, turns the option off and says so.
+  - **Other devices.** Unchanged: they still try the full shader first.
+- **フレネル反射.** The slider now runs 0–30% (default 30%), and saved or shared settings are clamped to that range.
 
 ## Reflections take the surrounding colour (v15.85.2)
 
