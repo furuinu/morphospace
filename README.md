@@ -3,8 +3,13 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.96.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.97.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Card framing fills the window (v15.97.0)
+
+- The capture card (and its stock thumbnail) now crops the shutter frame around the specimen instead of fitting the whole screen, so the specimen fills the card window. On a portrait phone the old fit left a narrow strip with wide empty margins.
+- The specimen's on-screen bounds come from projecting its vertices with each drawn copy's matrix at the shutter. When everything cannot fit, the body stays in frame and as much of the trailing tentacles as possible is shown. Upscaling is limited so small specimens stay sharp. The social preview image is unchanged.
 
 ## Ribbon tentacles (v15.96.0)
 

@@ -82,9 +82,9 @@ test('unavailable browser storage reports an error without pretending to save',a
  await assert.rejects(store.list(),/保存できません/);
 });
 
-test('capture card keeps the complete photographed composition',()=>{
+test('capture card frames the photographed specimen to fill its window',()=>{
  const text=html;
- assert.match(text,/Math\.min\(w\/image\.width,h\/image\.height\)/);
- assert.match(text,/c\.drawImage\(image,x\+\(w-iw\)\/2,y\+\(h-ih\)\/2,iw,ih\)/);
+ assert.match(text,/const scale=Math\.min\(w\/crop\.sw,h\/crop\.sh\)/);
+ assert.match(text,/c\.drawImage\(image,crop\.sx,crop\.sy,crop\.sw,crop\.sh,x\+\(w-iw\)\/2,y\+\(h-ih\)\/2,iw,ih\)/);
  assert.match(text,/roundRect\(c,x,y,w,h,12\);c\.clip\(\)/);
 });
