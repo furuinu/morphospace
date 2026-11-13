@@ -85,8 +85,20 @@ test('isolated previews do not mutate observation and handoff pauses the spin',(
 });
 test('sky is drawn with original camera; world locomotion remains separate',()=>{
  const sky=html.indexOf('drawStudioGL(undefined,pr,cam,thumbSize>0&&!postEffects)');
- const foreground=html.indexOf('cam=specimenInspectionCamera(cam,base)');
+ const foreground=html.indexOf('const corrected=specimenInspectionCamera(cam,base);if(corrected!==cam)base=mul4(rigidInverse(cam),mul4(corrected,base));');
  assert.ok(sky>=0&&foreground>sky);
  assert.match(html,/tickSpecimenInspection\(Math\.min\(elapsed,\.15\)\)/);
  assert.doesNotMatch(source,/pulseTravel\.position\s*=/);
+});
+
+test('the turn is applied to the body in world space so tentacles feel it, with an identical picture',()=>{
+ const a=html.indexOf('function rigidInverse(');const inv=html.slice(a,html.indexOf('\n}\n',a)+3);
+ const h=harness(),c=vm.createContext({});vm.runInContext(inv,c);const rigidInverse=vm.runInContext('rigidInverse',c);
+ const cam=h.mul4(h.rotY(-.7),h.translate3(1,2,-20)),base=h.mul4(h.translate3(3,-1,2),h.rotY(.4));
+ h.view(cam,base);for(let i=0;i<40;i++)h.tick(.1);
+ const corrected=h.view(cam,base),moved=h.mul4(rigidInverse(cam),h.mul4(corrected,base));
+ const viaCamera=h.mul4(corrected,base),viaBody=h.mul4(cam,moved);
+ for(let i=0;i<16;i++)assert.ok(Math.abs(viaCamera[i]-viaBody[i])<1e-4,'same picture at '+i);
+ assert.ok(Math.abs(moved[0]-base[0])>.01,'the body itself turned in world space');
+ const id=h.mul4(rigidInverse(cam),cam);for(let i=0;i<16;i++)assert.ok(Math.abs(id[i]-(i%5===0?1:0))<1e-5);
 });

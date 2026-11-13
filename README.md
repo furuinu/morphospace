@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.89.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.89.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Tentacles feel the turn (v15.89.1)
+
+The close-up spin and the finger drag were applied to the camera, so the world-space tentacle simulation never saw them and tentacles turned rigidly with the body. The same rotation is now applied to the body itself in world space (`cam⁻¹ · correctedCam · base`). The picture is identical, but tentacles trail behind a drag or a flick and settle back. The sky and motes keep using the untouched camera.
 
 ## One full turn per specimen, trackball touch, motes leave early (v15.89.0)
 
