@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const fs=require('node:fs');
 const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-const source=html.slice(html.indexOf('async function bootMorphospace(){'),html.indexOf("\n\n$('recordVideo')"));
+const source=html.slice(html.indexOf('async function bootMorphospace(){'),html.indexOf("\n\nconst mediaChoiceDialog="));
 function harness({payload=null,error=null,gpu=true,selection=-1}={}){
  const fields={seed:{value:''},message:{textContent:''}},calls=[];
  const ctx={stockReady:Promise.resolve(),location:{hash:''},Math:Object.create(Math),gl:gpu,renderer:gpu,population:[],selected:selection,

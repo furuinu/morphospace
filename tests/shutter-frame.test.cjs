@@ -18,7 +18,7 @@ test('shutter uses the exact displayed pixel frame with native aspect ratio',()=
 });
 test('save/capture/share press freezes before async work and never triggers a second render',()=>{
  const capture=html.slice(html.indexOf('async function openCaptureShare('),html.indexOf('async function saveCardToPhotos('));
- const save=html.slice(html.indexOf("$('save').onclick="),html.indexOf('async function importIndividualDNA('));
+ const save=html.slice(html.indexOf('function savePicture(){'),html.indexOf('async function importIndividualDNA('));
  assert.ok(capture.indexOf('const frozenFrame=snapshotVisibleSpecimen()')>=0);
  assert.ok(capture.indexOf('const frozenFrame=snapshotVisibleSpecimen()')<capture.indexOf('await saveCaptureToStock('));
  assert.ok(capture.indexOf('specimenImage(frozenFrame)')>capture.indexOf('await saveCaptureToStock('));

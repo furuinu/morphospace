@@ -735,8 +735,8 @@ test('autoplay is attempted without a gesture and a hidden page retains active a
  a.f.stopBioticAudio();assert.equal(a.f.audio.enabled,false);
 });
 test('viewer settings are grouped by purpose and sound has one visible control',()=>{
- for(const heading of ['鑑賞・切替','表示情報','活動音','保存'])assert.match(html,new RegExp('<legend>'+heading+'</legend>'));
- for(const id of ['viewerSound','viewerSoundVolume','viewerInterval','viewerSource','viewerRecord'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
+ for(const heading of ['鑑賞・切替','表示情報','活動音','描画'])assert.match(html,new RegExp('<legend>'+heading+'</legend>'));
+ for(const id of ['viewerSound','viewerSoundVolume','viewerInterval','viewerSource','renderQuality'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
  assert.match(html,/<input id="viewerSound" type="checkbox" checked>/);
  assert.doesNotMatch(html,/heartbeatEnabled/);
  assert.ok(html.includes("if(typeof maybeStartBioticAudio==='function')maybeStartBioticAudio()"));

@@ -3,8 +3,17 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.97.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.98.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Shallower navigation, one entry per action (v15.98.0)
+
+- **Detail in one tap.** The viewer toolbar has a detail button (sliders icon). It replaces the route settings → fold → "open detail".
+- **Settings without nesting.** The nested fold and the "save" group are gone. Render quality moved from the detail panel into a new "描画" group, because it applies to every specimen.
+- **Detail is about the open specimen.** "保存・出力" became "遺伝子データ" and holds only the gene JSON export and import. Focus and background-particle sliders stay in the detail panel, where the specimen remains visible while adjusting.
+- **One entry for pictures and movies.** PNG and movie saving are reached only from the bottom `pic/mov` button; the duplicate buttons in settings and detail are removed.
+- **Lab icon.** The button back to the lab and the lab heading use an Erlenmeyer flask. Icons come from a 716-byte subset of Font Awesome Free 6.5.1 Solid (SIL OFL 1.1) embedded in `index.html`; nothing is fetched from a CDN.
+- The lab keeps its breed and clear buttons.
 
 ## Unused controls and code removed (v15.97.1)
 

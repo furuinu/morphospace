@@ -13,10 +13,13 @@ test('atlas and stock specimens default to immersive viewing', () => {
 });
 
 test('inspector and list navigation remain available from full-screen', () => {
- assert.match(html, /id="viewerFullscreen"[^>]*>詳細を開く<\/button>/);
- assert.match(html, /textContent=full\?'詳細を開く':'鑑賞に戻る'/);
- assert.match(html, /id="close"[^>]*aria-label="生体一覧へ戻る"[^>]*>[\s\S]*?<\/svg><\/button>/);
- assert.match(html, /id="viewerDetailFold"/);
+ // The detail toggle sits directly on the toolbar, not inside the settings panel.
+ const toolbar=html.slice(html.indexOf('<div class="viewer-toolbar"'),html.indexOf('<details id="viewerSettings">'));
+ assert.match(toolbar, /id="viewerFullscreen"[^>]*aria-label="個体の詳細を開く"[^>]*><i class="ms-icon"/);
+ assert.match(toolbar, /id="close"[^>]*aria-label="実験室・生体一覧へ戻る"[^>]*><i class="ms-icon" aria-hidden="true">&#xf0c3;<\/i><\/button>/);
+ assert.match(html, /setAttribute\('aria-pressed',String\(!full\)\)/);
+ assert.doesNotMatch(html, /viewerDetailFold|viewerRecord|id="recordVideo"|id="save"/);
+ assert.match(html, /@font-face\{font-family:"Morphospace Icons"[^}]*src:url\(data:font\/woff2;base64,/);
  assert.match(html, /id="viewerAboutOpen"/);
  assert.match(html, /id="viewerPicMov"/);
  assert.match(html, /id="mediaChoiceDialog"/);
