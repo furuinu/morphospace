@@ -25,14 +25,13 @@ test('inspector and list navigation remain available from full-screen', () => {
 });
 
 test('appearance controls preserve the current viewer mode', () => {
- assert.equal((html.match(/loadSpecimen\(selected,activeStoredIndividual,\{fullscreen:viewer\.full\}\)/g)||[]).length,2);
+ assert.equal((html.match(/loadSpecimen\(selected,activeStoredIndividual,\{fullscreen:viewer\.full\}\)/g)||[]).length,1);
  assert.match(html, /viewerReturnFocus=document\.activeElement/);
  assert.match(html, /target\.focus\(\{preventScroll:true\}\)/);
 });
 
-test('DNA startup uses a spatial canvas, and hidden navigation moves the title to the top',()=>{
- assert.match(html, /id="bootDnaCanvas" class="boot-dna"/);
- assert.match(html, /window\.morphospaceBootDNAComplete/);
+test('startup shows a progress bar only, and hidden navigation moves the title to the top',()=>{
+ assert.doesNotMatch(html, /bootDnaCanvas|boot-dna|morphospaceBootDNAComplete/);
  assert.match(html, /boot-action-slot/);
  assert.match(html, /\.overlay\.viewer-full\.viewer-nav-hidden \.viewer-brand\{\s*top:calc\(12px/);
  assert.match(html, /<div class="viewer-zoom"><span class="viewer-zoom-lens"/);

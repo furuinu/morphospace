@@ -54,7 +54,7 @@ test('opening a stored specimen uses isolated DNA and leaves gallery records and
  const source=scripts[2],begin=source.indexOf('function createSpecimenForIndex('),end=source.indexOf('function applyUploadedSpecimen(',begin);
  const saved=entry(),gallery=[{seed:567,genome:{id:'gallery'}}],cache=[{id:'cached-detail'}];
  const fixture={activeStoredIndividual:saved,detailSpecimens:cache,detailCacheOrder:[0],seeds:[567],genomes:gallery.map(r=>r.genome),
-  copyJSON:value=>JSON.parse(JSON.stringify(value)),pickPalette:()=>({id:'palette'}),$:()=>({value:'75'}),
+  copyJSON:value=>JSON.parse(JSON.stringify(value)),pickPalette:()=>({id:'palette'}),MICRO_DENSITY:.75,$:()=>({value:'75'}),
   makeSpecimen:(seed,style,palette,low,parent,variance,density,micro,archetype,motion,genome)=>{genome.morphDNA.axial=999;return {seed,style}},ensureEmissionDNA(){}};
  vm.createContext(fixture);vm.runInContext(source.slice(begin,end),fixture);
  const before=structuredClone(saved);assert.equal(fixture.createSpecimenForIndex(0).seed,saved.payload.record.seed);

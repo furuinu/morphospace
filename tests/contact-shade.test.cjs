@@ -27,8 +27,8 @@ test('the pass multiplies colour only, before bloom extraction, and restores GL 
  for(const restore of ['gl.disable(gl.BLEND)','gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)','gl.depthMask(true)','gl.enable(gl.DEPTH_TEST)','gl.viewport(0,0,w,h)','gl.bindFramebuffer(gl.FRAMEBUFFER,f.targets[0].framebuffer)'])
   assert.ok(tail.includes(restore),restore);
 });
-test('zero shading strength, wireframe, laboratory sequences and missing resources skip the pass',()=>{
- assert.ok(pass.includes("!(strength>0)||$('wire').checked||nanoRenderPose||!qualityTier().contact||videoRecording?.lite>=1)return;"));
+test('zero shading strength, laboratory sequences and missing resources skip the pass',()=>{
+ assert.ok(pass.includes("!(strength>0)||nanoRenderPose||!qualityTier().contact||videoRecording?.lite>=1)return;"));
  assert.ok(pass.includes('!f.contactProgram||!f.contactApply||!f.contactTarget||!f.contactFramebuffer||!f.depthTexture'));
  assert.ok(html.includes("function contactShadeStrength(){return clamp(Number($('shadeStrength')?.value||0)/15,0,2)*"));
 });

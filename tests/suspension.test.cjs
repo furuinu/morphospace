@@ -119,7 +119,7 @@ test('the mote pass adds light only, keeps depth and the emission mask, and rest
  const tail=pass.slice(pass.indexOf('gl.drawArrays('));
  for(const restore of ['gl.disable(gl.BLEND)','gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)','gl.colorMask(true,true,true,true)','gl.depthMask(true)','gl.disableVertexAttribArray(p.aMote)'])assert.ok(tail.includes(restore),restore);
  assert.ok(pass.includes('if(!renderer?.moteProgram||!renderer.moteCount||!(gain>.004)||!spec)return;'));
- assert.ok(html.includes("if(postEffects&&!hidden&&!$('wire').checked)drawSuspendedMotes(lastSceneViewProj,restingCentre,h);"));
+ assert.ok(html.includes("if(postEffects&&!hidden)drawSuspendedMotes(lastSceneViewProj,restingCentre,h);"));
  assert.ok(html.includes("console.warn('Suspended motes disabled; biological rendering continues',error);moteProgram=null;"));
  const render=between('function render(thumbSize=0','function drawSuspendedMotes(');
  assert.ok(render.includes('suspension.live=!(thumbSize>0);'));

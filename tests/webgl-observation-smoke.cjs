@@ -30,24 +30,22 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
   page.on('pageerror',err=>errors.push('pageerror: '+err.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
   await page.goto(pathToFileURL(path.resolve(__dirname,'../index.html')).href,{waitUntil:'domcontentloaded'});
-  // A fresh visit starts on a DNA assembly screen, never exposing the atlas.
+  // A fresh visit starts on the loading splash, never exposing the atlas.
   const bootState=await page.evaluate(()=>{
-   const splash=document.querySelector('#bootSplash'),dna=splash.querySelector('#bootDnaCanvas');
+   const splash=document.querySelector('#bootSplash');
    return {
     loading:document.body.classList.contains('boot-loading'),
     galleryVisibility:getComputedStyle(document.querySelector('.wrap')).visibility,
     overlayVisibility:getComputedStyle(document.querySelector('#overlay')).visibility,
     splashVisible:getComputedStyle(splash).visibility,
-    dnaCanvas:dna instanceof HTMLCanvasElement,
-    dnaContext:!!dna?.getContext('2d'),
-    dnaComplete:typeof window.morphospaceBootDNAComplete==='function',
+    progress:!!splash.querySelector('.boot-progress'),
     titleTop:splash.querySelector('.boot-title').getBoundingClientRect().top,
     captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top
    };
   });
   if(bootState.galleryVisibility!=='hidden'||bootState.overlayVisibility!=='hidden'
-    ||bootState.splashVisible!=='visible'||!bootState.dnaCanvas||!bootState.dnaContext||!bootState.dnaComplete)
-   throw Error('The initial frame must show the spatial DNA canvas without revealing the atlas: '+JSON.stringify(bootState));
+    ||bootState.splashVisible!=='visible'||!bootState.progress)
+   throw Error('The initial frame must show the loading splash without revealing the atlas: '+JSON.stringify(bootState));
   // Fail with the actual browser exception instead of hiding a syntax error behind
   // a two-minute locator timeout. Collect startup state for rendering stalls.
   try{
@@ -79,7 +77,7 @@ for(const parameter of backgroundParameters)if(!indexSource.includes(parameter))
    return {
     titleTop:splash.querySelector('.boot-title').getBoundingClientRect().top,
     captionTop:splash.querySelector('.boot-caption').getBoundingClientRect().top,
-    spinnerHidden:getComputedStyle(splash.querySelector('#bootDnaCanvas')).display==='none',
+    spinnerHidden:!splash.querySelector('canvas'),
     barVisible:getComputedStyle(splash.querySelector('.boot-progress')).display!=='none',
     buttonVisible:getComputedStyle(document.querySelector('#bootStartButton')).visibility
    };

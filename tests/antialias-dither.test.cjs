@@ -20,8 +20,8 @@ test('final composite antialiases the scene before flare and VHS treatment',()=>
  assert.ok(composite.includes('if(lMax-lMin<max(.055,lMax*.166))return m+clamp((lM-(lNW+lNE+lSW+lSE)*.25)*uSharpen,-.07,.07);'),'non-edge pixels leave early, sharpened');
  assert.ok(!/for\s*\(/.test(composite.slice(composite.indexOf('vec3 sceneAA'),composite.indexOf('float videoHash'))),'no loops: WebGL1 compatible');
 });
-test('antialiasing receives the scene texel size and is bypassed for DOF debug views',()=>{
- assert.ok(post.includes("const aa=Number($('dofDebug')?.value||0)>0?0:1;gl.uniform2f(p.u.uPixel,aa/w,aa/h)"));
+test('antialiasing receives the scene texel size',()=>{
+ assert.ok(post.includes("if(p.u.uPixel)gl.uniform2f(p.u.uPixel,1/w,1/h);"));
  assert.ok(composite.includes('if(uPixel.x<=0.0)return m;'));
 });
 test('background gradient is dithered before the 8-bit scene target and output is dithered last',()=>{

@@ -17,5 +17,5 @@ test('DOF takes rendered scene and depth before lens flare and final composite',
  assert.ok(post.indexOf('scene=f.targets[3].texture')<post.indexOf('for(let i=flareEnabled?0:2'));
  assert.ok(post.includes('gl.bindTexture(gl.TEXTURE_2D,f.depthTexture)'));
  assert.ok(html.includes('gl.uniform1f(p.u.uFocus,Math.max(.3,spec.viewDistance+Number($(\'dofFocus\').value)*.035))'));
- assert.ok(html.includes('<option value="1">深度表示</option><option value="2">ぼけ量表示</option>'));
+ assert.ok(!html.includes('dofDebug')&&!html.includes('uDebug'),'the diagnostic views are gone');
 });

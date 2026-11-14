@@ -155,7 +155,7 @@ test('experimental upload UI is absent; environmental hearing is opt-in',()=>{
  assert.match(app,/navigator\.mediaDevices\.getUserMedia/);
  assert.match(app,/id="viewerMic" type="checkbox"/);
  assert.match(app,/function stopAmbientSense\(/);
- assert.match(app,/id="heartbeatEnabled"[^>]*hidden/);
+ assert.doesNotMatch(app,/heartbeatEnabled/);
 });
 
 test('choir modes include separate damped echo and diffuse reverb with dry voice retained',()=>{

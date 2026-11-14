@@ -4,14 +4,14 @@ const ctx=vm.createContext({console,document:{querySelectorAll:()=>[]},TextEncod
 function mesh(vertices,tri){const data=new Float32Array(vertices.length*17);vertices.forEach((p,i)=>data.set([...p,0,0,1,1,0,0,0,0,0,0,0,0,0,0],i*17));return{data,tri:new Uint16Array(tri),edges:new Uint16Array(tri.flatMap((v,i)=>[v,tri[i-i%3+(i+1)%3]]))}}
 const a=mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),b=mesh([[0,0,1],[2,0,1],[0,2,1],[-2,0,1]],[0,1,2,0,2,3]);
 function runtime(){
- const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,micro:75,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
+ const elements={},events=[],workers=[],transfers=[],defaults={variance:75,density:84,emitColor:0,emissionStrength:110,emitBlink:1,blinkSpeed:65,bloomRadius:105};let bufferId=0;
  const f={console,clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),TAU:Math.PI*2,performance:{now:()=>100},document:{hidden:false,createElement:()=>({className:'',hidden:false,setAttribute(){},getContext:()=>null})},spec:{seed:1,style:0,baseViewDistance:10,viewDistance:20},selected:0,activeStoredIndividual:null,busy:false,videoRecording:null,nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,population:[{id:'a',seed:1,genome:{}},{id:'b',seed:2,genome:{}}],meshes:{id:'original',shell:{...a,buffer:'old',triBuffer:'old-tri',lineBuffer:'old-lines'},parts:[],cilia:[]},rigMeshes:[],genomes:[{},{}],seeds:[1,2],previewSpecimens:[null,null],detailSpecimens:[null,null],detailCacheOrder:[],
   VIEWER_CORE_SOURCE:core,viewerWorkerSource:ctx.viewerWorkerSource,viewerMorphSurfaces:ctx.viewerMorphSurfaces,textureMorphUniforms:ctx.textureMorphUniforms,renderer:{vars:{}},canvas:{width:1120,height:780,getBoundingClientRect:()=>({width:1120,height:780})},modelYaw:0,modelPitch:0,cameraRoll:0,worldCameraFrame:()=>({right:[1,0,0],up:[0,1,0],back:[0,0,1],position:[0,0,20]}),panX:0,panY:0,pulseTravel:{specimen:null,position:[0,0,0],velocity:[0,0,0],camera:[0,0,0]},resetPulseTravel:(target,preserve)=>{f.pulseTravel.specimen=target;f.pulseTravel.position.fill(0);f.pulseTravel.velocity.fill(0);if(!preserve)f.pulseTravel.camera.fill(0)},transitionSpecimenBounds:ctx.transitionSpecimenBounds,cameraHandoffDistance:ctx.cameraHandoffDistance,cameraHandoffClearances:ctx.cameraHandoffClearances,cameraViewEnvelope:ctx.cameraViewEnvelope,cameraHandoffDirection:ctx.cameraHandoffDirection,cameraSkyFlowDirection:()=>[1,0],cameraHandoffDuration:ctx.cameraHandoffDuration,cameraHandoffEase:ctx.cameraHandoffEase,cameraHandoffFrame:ctx.cameraHandoffFrame,CAMERA_HANDOFF_SECONDS:4,CAMERA_HANDOFF_SWITCH:.5375,CAMERA_ORBIT_BASE_SPEED:.0796875,cameraOrbitSpeed:-.0796875,cameraOrbitPitchSpeed:0,cameraOrbitRollSpeed:0,cameraOrbitTargetSpeed:-.0796875,cameraOrbitTargetPitchSpeed:0,cameraOrbitTargetRollSpeed:0,cameraOrbitYawOffset:0,cameraOrbitPitchOffset:0,cameraOrbitChooseHeading:()=>{},cameraOrbitAngularSpeed:()=>.0796875,buildEmissionSites:()=>Array.from({length:4},()=>[0,0,0,.3]),getSpecEmissionDNA:()=>({colorMode:0,strength:110,blinkMode:1,blinkSpeed:65,bloomRadius:105}),EMIT_COLORS:[[.2,.8,1]],
   streamNextIndividual(){const n=f.population.length;f.population.push({id:'b'+n,seed:2,genome:{}});f.genomes.push({});f.seeds.push(2);f.previewSpecimens.push(null);f.detailSpecimens.push(null);},syncStreamUI(){},streamModeLabel:()=> '野生',
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
-  $:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},add(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
+  MICRO_DENSITY:.75,$:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},add(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.viewerMetadata=()=>events.push('metadata');f.viewerPatternValues=()=>new Map();f.v=vm.runInContext('viewer',f);return{f,events,workers,transfers};
 }
 function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}}){
@@ -213,24 +213,20 @@ test('clockwise bottom-left timer renders the real transition progress at 5, 30 
  assert.match(html, /\.viewer-countdown\{position:absolute;z-index:30;left:calc\(16px \+ env\(safe-area-inset-left,0px\)\)/);
  assert.match(html, /countdown-arc\{[^}]*stroke-width:7/);
  assert.match(html, /transform:rotate\(-90deg\)/);
- const {f}=runtime(),circle=f.$('viewerTimer'),arc=f.$('viewerTimerArc'),digits=f.$('viewerTimerSeconds'),length=2*Math.PI*24;
+ const {f}=runtime(),circle=f.$('viewerTimer'),arc=f.$('viewerTimerArc'),length=2*Math.PI*24;
  f.updateViewerCountdown();
  assert.equal(circle.hidden,false);
- assert.equal(digits.textContent,'30');
  assert.equal(Number(arc.style.strokeDashoffset),0);
  for(const lengthSeconds of [5,20,30,60]){
   f.v.seconds=lengthSeconds;f.v.elapsed=lengthSeconds/4;
   f.updateViewerCountdown();
   assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length*.25)<1e-8);
-  assert.equal(digits.textContent,String(Math.ceil(lengthSeconds*.75)));
   assert.equal(circle['aria-label'],'次の生体への進行状況');
  }
  f.v.seconds=30;f.v.elapsed=29.5;f.updateViewerCountdown();
  assert.ok(Number(arc.style.strokeDashoffset)>length*.9);
- assert.equal(digits.textContent,'1');
  f.v.elapsed=30;f.updateViewerCountdown();
  assert.ok(Math.abs(Number(arc.style.strokeDashoffset)-length)<1e-8);
- assert.equal(digits.textContent,'0');
 });
 test('countdown hides on stopped interval, missing next specimen or hidden tab; holds at zero during morph',()=>{
  const {f}=runtime(),circle=f.$('viewerTimer'),arc=f.$('viewerTimerArc'),length=2*Math.PI*24;
@@ -376,9 +372,7 @@ test('camera handoff adopts native geometry once at end of view transition',()=>
  assert.equal(events.filter(e=>e==='apply').length,1);
 });
 test('boot screen uses progress bar only, without a rotating spinner',()=>{
- const boot=scripts.find(script=>script.includes('Progress-bar-only boot screen'))||'';
- assert.match(boot,/window\.morphospaceBootDNAComplete=/);
- assert.match(html,/#bootSplash \.boot-dna\{display:none!important\}/);
+ assert.doesNotMatch(html,/boot-dna|bootDnaSpin|morphospaceBootDNAComplete/);
  assert.match(html,/id="bootStatus">読み込み中…/);
  assert.match(html,/class="boot-progress"/);
 });

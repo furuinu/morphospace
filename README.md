@@ -3,8 +3,19 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.97.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.97.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Unused controls and code removed (v15.97.1)
+
+No visible change. Removed parts that were hidden or never ran:
+
+- Hidden sliders (fine-structure density, cilia motion, colour-light amount, light layering). Their fixed values are now constants; the last two had no effect.
+- Hidden debug switches (polygon lines, branch isolation, rig lines) with the rig overlay canvas and the wireframe render path.
+- The DOF diagnostic selector and its shader branches, the always-hidden YAW/PITCH readout, countdown digits and the hidden heartbeat switch.
+- The hidden boot DNA canvas, its styles, the no-op boot completion hook, and the icon-font request to a CDN that served it.
+- The uncalled screen-space bloom painter and its occlusion test.
+- Saved captures and share links that still carry the removed values open as before; those values are ignored.
 
 ## Card framing fills the window (v15.97.0)
 

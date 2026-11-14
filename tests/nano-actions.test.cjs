@@ -109,15 +109,15 @@ test('parent selection becomes active only after commit and remains selected whe
 });
 
 test('skip and interruption restore the camera and display controls, and resolve only once',()=>{
- const specimen={viewDistance:200},controls={macroDof:{checked:false},rigviz:{checked:false}},cancelled=[],results=[];
+ const specimen={viewDistance:200},controls={macroDof:{checked:false}},cancelled=[],results=[];
  const f={spec:specimen,selected:0,nanoRenderPose:{sx:.01},modelYaw:8,modelPitch:9,panX:10,panY:11,auto:false,lastFrame:0,
   $:id=>controls[id],performance:{now:()=>777},cancelAnimationFrame:id=>cancelled.push(id),clearTimeout:id=>cancelled.push(id),console,
   nanoDialog:{open:true,close(){this.open=false}},render(){assert.equal(f.nanoRenderPose,null);assert.equal(f.spec.viewDistance,17)}};
- f.nanoAction={live:true,spec:specimen,raf:12,timer:13,saved:{distance:17,yaw:.5,pitch:-.2,panX:2,panY:-1,auto:true,macroDof:true,rigviz:true},resolve:r=>results.push(r)};
+ f.nanoAction={live:true,spec:specimen,raf:12,timer:13,saved:{distance:17,yaw:.5,pitch:-.2,panX:2,panY:-1,auto:true,macroDof:true},resolve:r=>results.push(r)};
  vm.createContext(f);vm.runInContext(section('function finishNanoAction(','function playNanoScene('),f);
  f.finishNanoAction(true);f.finishNanoAction(true);
  assert.equal(f.nanoAction,null);assert.equal(f.nanoDialog.open,false);assert.deepEqual(cancelled,[12,13]);assert.deepEqual(plain(results),[{skipped:true}]);
- assert.deepEqual([f.modelYaw,f.modelPitch,f.panX,f.panY,f.auto,f.lastFrame],[.5,-.2,2,-1,true,777]);assert.equal(controls.macroDof.checked,true);assert.equal(controls.rigviz.checked,true);
+ assert.deepEqual([f.modelYaw,f.modelPitch,f.panX,f.panY,f.auto,f.lastFrame],[.5,-.2,2,-1,true,777]);assert.equal(controls.macroDof.checked,true);
 });
 
 

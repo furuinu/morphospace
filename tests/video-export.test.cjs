@@ -8,13 +8,13 @@ test('full-screen exports preserve portrait and landscape aspect ratios with eve
 });
 function drawing(){const calls=[],elements={};const rect={left:0,top:0,width:390,height:844},ctx={save(){},restore(){},beginPath(){},rect(){},clip(){},measureText:t=>({width:t.length*8}),fillText:t=>calls.push(t),drawImage:()=>calls.push('image')};
  for(const id of ['viewerTitleText','viewerSubtitleText','viewerName','viewerScientific','viewerTaxonomy','viewerEcology'])elements[id]={textContent:id,scrollTop:0,getBoundingClientRect:()=>({left:20,top:60,width:350,height:50}),display:'block'};
- const f=helpers({canvas:{getBoundingClientRect:()=>rect},rigCanvas:{},$:id=>elements[id],getComputedStyle:e=>({display:e.display,visibility:'visible',fontSize:'12px',lineHeight:'20px',fontStyle:'normal',fontWeight:'400',fontFamily:'sans-serif',color:'white'})});return{f,calls,elements,ctx};
+ const f=helpers({canvas:{getBoundingClientRect:()=>rect},$:id=>elements[id],getComputedStyle:e=>({display:e.display,visibility:'visible',fontSize:'12px',lineHeight:'20px',fontStyle:'normal',fontWeight:'400',fontFamily:'sans-serif',color:'white'})});return{f,calls,elements,ctx};
 }
 test('video composites visible names, scientific names and taxonomy live, excluding hidden labels and controls',()=>{
  const {f,calls,elements,ctx}=drawing();elements.viewerName.display='none';const job={mode:'viewer',width:390,height:844,ctx};f.composeVideoFrame(job);
- assert.deepEqual(calls.slice(0,2),['image','image']);assert.ok(calls.includes('viewerScientific'));assert.ok(calls.includes('viewerTaxonomy'));assert.ok(!calls.includes('viewerName'));assert.ok(!calls.some(x=>/viewerZoom|viewerFullscreen/.test(x)));
+ assert.deepEqual(calls.slice(0,1),['image']);assert.ok(calls.includes('viewerScientific'));assert.ok(calls.includes('viewerTaxonomy'));assert.ok(!calls.includes('viewerName'));assert.ok(!calls.some(x=>/viewerZoom|viewerFullscreen/.test(x)));
  calls.length=0;elements.viewerScientific.textContent='New scientific name';f.composeVideoFrame(job);assert.ok(calls.includes('New scientific name'));
- calls.length=0;f.composeVideoFrame({...job,mode:'specimen'});assert.deepEqual(calls,['image','image']);
+ calls.length=0;f.composeVideoFrame({...job,mode:'specimen'});assert.deepEqual(calls,['image']);
 });
 test('full-screen recording allows automatic morphing while the export dialog is open; regular specimen recording pauses it',()=>{
  const f={selected:0,spec:{},busy:false,videoRecording:{mode:'viewer'},nanoAction:null,nanoOperationBusy:false,stockDialog:{open:false},captureShareIsOpen:false,document:{hidden:false},$:()=>({open:true})};vm.createContext(f);vm.runInContext(section('function viewerCanAdvance(){','function startViewerMorph('),f);assert.equal(f.viewerCanAdvance(),true);f.videoRecording.mode='specimen';assert.equal(f.viewerCanAdvance(),false);f.videoRecording.mode='viewer';f.document.hidden=true;assert.equal(f.viewerCanAdvance(),false);

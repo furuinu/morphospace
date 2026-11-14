@@ -99,7 +99,7 @@ function opener({worker=true}={}){
  const log=[],workers=[];
  class FakeWorker{constructor(){this.terminated=false;workers.push(this)}postMessage(message){this.message=message}terminate(){this.terminated=true}}
  const context={console:{warn(){}},Number,Error,URL:{createObjectURL:()=>'blob:worker'},Blob:class{},Worker:worker?FakeWorker:undefined,VIEWER_CORE_SOURCE:'core',viewerWorkerURL:null,viewerWorkerSource:()=>'',
-  $:id=>({value:'70',set textContent(v){log.push(['text',id,v])}}),copyJSON:x=>JSON.parse(JSON.stringify(x)),ensureEmissionDNA(){},pickPalette:()=>({}),
+  MICRO_DENSITY:.75,$:id=>({value:'70',set textContent(v){log.push(['text',id,v])}}),copyJSON:x=>JSON.parse(JSON.stringify(x)),ensureEmissionDNA(){},pickPalette:()=>({}),
   genomes:[{style:1,archetype:0},{style:2,archetype:1}],seeds:[101,202],detailSpecimens:[null,null],detailCacheOrder:[],activeStoredIndividual:null,
   makeSpecimen:(seed,style,palette,low)=>{log.push(['make',seed,low]);return {seed,low,proxy:true}},
   createSpecimenForIndex:i=>{log.push(['full',i]);return {seed:context.seeds[i],full:true}},
@@ -115,7 +115,7 @@ test('opening shows a light proxy at once and swaps in the Worker-built body',()
  const {context,log,workers,run,payload}=opener();
  const proxy=run('openSpecimenProgressively(1)');
  assert.deepEqual(log,[['make',202,true]],'only the low lattice is built on the main thread');
- assert.equal(workers.length,1);assert.deepEqual(JSON.parse(JSON.stringify(workers[0].message)),{record:{seed:202,genome:{style:2,archetype:1}},settings:{variance:.7,density:.7,micro:.7}});
+ assert.equal(workers.length,1);assert.deepEqual(JSON.parse(JSON.stringify(workers[0].message)),{record:{seed:202,genome:{style:2,archetype:1}},settings:{variance:.7,density:.7,micro:.75}});
  context.spec=proxy;
  assert.equal(run('adoptDetailUpgrade()'),false,'nothing to adopt until the Worker answers');
  workers[0].onmessage({data:payload(202)});
