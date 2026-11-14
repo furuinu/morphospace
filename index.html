@@ -267,14 +267,14 @@ body{color:#eaf4f4;background:#090e18}
 /* v15.13.27: open the specimen atlas directly in the immersive viewer. */
 .overlay .floating-close{width:auto;min-width:76px;height:44px;border-radius:24px;font-size:12px;font-weight:800;line-height:1;padding:0 12px}
 .overlay.viewer-full .viewer-toolbar{max-width:calc(100% - 112px);z-index:45}
-.overlay.viewer-full #viewerPrevious,.overlay.viewer-full #viewerNext{position:fixed;top:50%;transform:translateY(-50%);display:flex;justify-content:center;align-items:center;width:44px;height:52px;min-width:44px;padding:0;border-radius:14px;background:rgba(8,23,35,.67);border:1px solid rgba(129,184,190,.45);font-size:29px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:manipulation}
+.overlay.viewer-full #viewerPrevious,.overlay.viewer-full #viewerNext{position:fixed;top:50%;transform:translateY(-50%);display:flex;justify-content:center;align-items:center;width:44px;height:104px;min-width:44px;padding:0;border-radius:14px;background:rgba(8,23,35,.67);border:1px solid rgba(129,184,190,.45);font-size:29px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:manipulation}
 .overlay.viewer-full #viewerPrevious{left:calc(8px + env(safe-area-inset-left,0px))}
 .overlay.viewer-full #viewerNext{right:calc(8px + env(safe-area-inset-right,0px))}
 .overlay.viewer-full .viewer-settings-body{z-index:50}
 @media(max-width:480px){
  .overlay.viewer-full .viewer-toolbar{gap:5px;max-width:calc(100% - 110px)}
  .overlay.viewer-full .viewer-toolbar>.btn,.overlay.viewer-full .viewer-toolbar summary{padding:9px 8px}
- .overlay.viewer-full #viewerPrevious,.overlay.viewer-full #viewerNext{width:40px;height:48px;min-width:40px;opacity:.83}
+ .overlay.viewer-full #viewerPrevious,.overlay.viewer-full #viewerNext{width:40px;height:96px;min-width:40px;opacity:.83}
  .overlay.viewer-full .viewer-brand{top:calc(72px + env(safe-area-inset-top,0px));left:calc(16px + env(safe-area-inset-left,0px))}
  .overlay.viewer-full .viewer-caption{left:calc(16px + env(safe-area-inset-left,0px));width:calc(100% - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))}
  .overlay.viewer-full #viewerEcology{max-height:16dvh;font-size:11px;line-height:1.7}
@@ -430,9 +430,9 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 
 .phase-particle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;filter:blur(2.4px)}.phase-particle-canvas[hidden]{display:none}
 
-#viewerModeQuick{width:auto;max-width:95px;min-width:72px;min-height:36px;background:rgba(5,24,34,.9);color:#d4f9f3;border:1px solid #466b70;border-radius:8px;font-size:12px;padding:6px;position:relative;z-index:25}#viewerModeQuick:focus-visible{outline:2px solid #86e2bd}
-/* Icon font: Font Awesome Free 6.5.1 Solid, subset to flask, sliders and eye (SIL OFL 1.1, fontawesome.com). */
-@font-face{font-family:"Morphospace Icons";font-style:normal;font-weight:900;font-display:block;src:url(data:font/woff2;base64,d09GMgABAAAAAAN8AAoAAAAABzAAAAM1AwUDAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAARMqHDgE2AiQDEMsKBCAFgxgHIBt9BiCuCmwiYw+1Y0KxNHQZsiMz+GrItynuv9F4+P4Y/blvuzAiLYuieGdxgZvqB1EkWAot2E9+f9raJ7twmdwumuwGPHKYvLUcap1Yq1pRew1FeUMLX4rSi5r2N80fjm7+ILlwapt47AEUcEAFDrn5gVomAeMBS+/hya4Fn/c3ccx0GaDR5/OpRrWPohrXQBMtjLYo0gmuH+R1ExHLcOx8x6NpTEcP30Fhct1HRcROhJD1D+G/eHQnZQUo8LX+H4tHe7vuXxe/xc/8kfhpGxIQi/GjDUJCARq5Ao3KjEFKlUr8uvj1bznfqTXVzFe2IcyWLMhn03K8ekwxoSgmABfPsSLEZhbb0e4iiQXAtHHE0Qa8Q2v0W59aEU6tJdxErZIcdycsxwYHC0YIr7zcE8IUBgfHQIAP9SNfGhq0bm/XOhUVfwx7ifraRo/mHddXqrODMUrr6lup4+JStAitjGny/SZjlBYCj4h/vYzijPGkomOMmGx9LXYdmvckudKA1qGOk6ceSmTja2kjJqHojI0muYCLMA6AEwIld3dQCiKTjg5oT1OIDJBGtxtD0iCNgespBBiwMLMPlreXpcoySmklvSjHjDfjrJkznD8vP4bI7TV0vnU04B81B/V5qq/5XtfI4vIDeM33mvqnSc3fu/i8Qmux2FpAqJj8JN4YMGbZ5vGF2UYBEMYxhCKMI5vZ+Pk00J4waZIjBrRB/HNynOtc53o+FKGJsKtpLtQ9OnQHQDtWYUU0tv3mrlvcmIJoWaWlnNXXM04/d0f5CQGt/HYf+EnVj7oh2SVUlZdKfqJcIkG2lFsQ5EPz0ZZqwoqQhEAuFyXZqsplSs7WqkFvaFL3KBQUFLno9bvXI6vG+F+Kg+D5MRvSyblMuo+fKMWwBX8VFunyBaiPEJbCuDXWhXxI4v/oOb6K0/msSS53zCpxiopCipiCSmqYkFCTcufUAnOuKwtp1CJnvlsVG4paNKNSW7QSkVgPdNrDkuZVSvD+pkwCnUohmLKBrNHWCgDJ2hjIJfyi1O2biTL9Uv3ApkCrkwg9VmBZsX6DALBAkZWSOhervrFujVxE2dWay1XS47GLzVMBAA==) format("woff2")}
+#viewerModeQuick{display:inline-flex;flex:none;position:relative;z-index:25;border:1px solid #466b70;border-radius:8px;overflow:hidden;background:rgba(5,24,34,.9)}#viewerModeQuick button{display:grid;place-items:center;width:38px;height:42px;padding:0;border:0;background:transparent;color:#8fb3b3;touch-action:manipulation}#viewerModeQuick button[aria-pressed="true"]{background:#275748;color:#eafff8}#viewerModeQuick button:focus-visible{outline:2px solid #86e2bd;outline-offset:-2px}#viewerModeQuick .ms-icon{font-size:17px}
+/* Icon font: Font Awesome Free 6.5.1 Solid, subset to flask, sliders, eye, leaf and dna (SIL OFL 1.1, fontawesome.com). */
+@font-face{font-family:"Morphospace Icons";font-style:normal;font-weight:900;font-display:block;src:url(data:font/woff2;base64,d09GMgABAAAAAASwAAoAAAAACTwAAARqAwUDAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAVMqKfgE2AiQDGMsOBCAFgxgHIBuJCFGU7E0T4IuDTODqLEpkyvReEocovslWf2/wjJNTPNKucUgE3+/323O/Cd6ZTmLIlvDkll2rZBo10QnN8zu45hfB0UcWSIHUsi2NN4IJ7n91qb9cmw9qydYd25afnbBlUgFwAh55zVycCPbbi2M35C1rprwOW7ek3eKGvXXtvP+/qzW1QRSOjY+MlPn9e6IgjscS0PgaSaxYsRKdClmha9sIeR0Oxoibmvp9FXuCfMrlnhSIiRghhpvnX9u7nlRyWlirK4fmpibdvy79Gb8MtG8xDhEQQ/FFNwQJOXTCBbkJg39TV5bkvy598dX3f2bj+V3Lk5bHLZuaZO2xAK8IsoUkxbsByLVA1ThXtUrk3KN0HGMpT3moqVra41Y1t6ESJa/E5fZoDlgtkpjF/TyVMWium5528vVHGwCN5q42TYKpThuQ5yFUNGdmNsDWqhr64CJVkRudjn8OzkIYiA5AowGK4Q1mZlc3PYS85t50TRQBJMmWzYc3C0XpNpuSvNwLaSuMxDZbHTNOdurZK2FP4qpWCN6ieRYUc8nFht94KapgjqhGLiqXUYOfBP76NI0YpZaiWJSyKE3Xe1W23m68j3EYxvHvCoyt/+U+OE7XMkwk20EwlmBsGK320EAyjILSMGCsZ9s9xoKQUiB5IcksE4yJNiPhEzZ1HQdkZJhWTaitGh6LkGlYUpIsvw3sK83YBLB8WY5yCfVylxNN4zZMTzzgi9aY8LgseUaqsnfMmFa6Zc6Dr6WUMy54VYJ/5cqobsDddeOyCZj0oeoTDOYls+cY/+wmzJ6GGN46MG652d541UbCIKEDWfmq4dzsVT7dhC+KhqtWDSNJUiXLf5MUr0xY75BLL16TRCfl3Mt3XkSLZmIPUgNM8HiPKYxz1M3XExMQEJDx3KZQI9M2TGh5Omky5+8VhagSFbEbbjwpukMyjLowCG63MTH+T4/436cW/JWJQNqst44F+WlkWX5kI03cHaU7Ih7x6eaVeV9XvBownmcsobTRZec5FI94Vpq5oE2FU1J+35100q49J0C2lrx7KqMaP18AYAG25zxOBBcbEZ1Xcs2SAbfQ+UVCrks04FyWWc5axC7HiZy/MpUICD/yUQbP1g4YD6YqdEx6qJrfnas3NWugTNzYH2AMAxeWlgElrKimes2wSd6/CO0tJrTMxqJlWvrXtqo39Ltze/0101E0GI+QbQOgFQpxLUtBCOr17mDA0vS0UdGro/G+zNKVJkRB0pTUhbcpQoJcIeft40t3rcX/L1sJfD5fPNbPzsxIt+IHykLywX+Fku4+KvcQoFaMOwkd0mBWvLVBx+G0Wf8QqZ/eiPj8q67a86D7ShbhIl9BH8QOhl56MKnaDeb0287MxwULtn2+q6gnHJmNrZu9mYmpI0DrMEBpY+1tTlwMDnKwlaEvB8xMZm+Dh6n40NJMb011/sMEJpFBpGgN9g5mlR4OLBaNSKZQWBQ2i/EcE7zb7DPtdMFdRCZ3LJHM8YUKG8cB) format("woff2")}
 .ms-icon{font-family:"Morphospace Icons";font-style:normal;font-weight:900;line-height:1;display:inline-block;-webkit-font-smoothing:antialiased}
 .viewer-toolbar .viewer-icon-btn .ms-icon{font-size:19px}
 .viewer-toolbar #viewerFullscreen[aria-pressed="true"]{background:#275748;border-color:#7ce7ca;color:#eafff8}
@@ -455,7 +455,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 <div class="atlas-info"><div class="eyebrow">QUALIA / CAPTURE & SHARE / <span class="version-label">v15.98.1</span></div><span id="status" class="status">GPU確認中…</span><div id="gpuDiag" class="gpu-diag" role="status" hidden></div><div class="foot">v15.98.1：分類と学名を刷新。綱・目を体の形から、科・属・種を生態から決め、体色の亜種名を追加。子は親の科や属を受け継ぎ、生態記載の文型を拡充。</div></div>
 </section>
 
-</div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作"><select id="viewerModeQuick" aria-label="生体生成モード" title="生体生成モード"><option value="wild">野生</option><option value="evolution">進化</option></select>
+</div><div class="overlay" id="overlay"><div class="detail"><div class="viewer-toolbar" aria-label="3D鑑賞の操作"><div id="viewerModeQuick" role="group" aria-label="生体生成モード"><button type="button" value="wild" aria-pressed="true" aria-label="野生" title="野生"><i class="ms-icon" aria-hidden="true">&#xf06c;</i></button><button type="button" value="evolution" aria-pressed="false" aria-label="進化" title="進化"><i class="ms-icon" aria-hidden="true">&#xf471;</i></button></div>
  
  <button class="btn viewer-icon-btn" type="button" id="close" aria-label="実験室・生体一覧へ戻る" title="実験室"><i class="ms-icon" aria-hidden="true">&#xf0c3;</i></button>
  <button class="btn viewer-icon-btn" type="button" id="viewerFullscreen" aria-pressed="false" aria-label="個体の詳細を開く" title="詳細"><i class="ms-icon" aria-hidden="true">&#xf1de;</i></button>
@@ -8827,7 +8827,7 @@ function streamNextIndividual(){
 function persistEvolutionState(){try{if(evolutionState)localStorage.setItem('morphospace-evolution-v1',JSON.stringify(evolutionState));}catch(error){console.warn('Evolution state storage',error);}}
 function restoreEvolutionState(){try{const saved=JSON.parse(localStorage.getItem('morphospace-evolution-v1')||'null');if(saved&&Array.isArray(saved.parents)&&saved.parents.length===2&&saved.parents.every(p=>p&&p.id&&p.genome)&&Array.isArray(saved.pool)&&saved.pool.length<=10)evolutionState=saved;}catch(error){console.warn('Evolution restore',error);}}
 function streamModeLabel(){return streamMode==='evolution'?'進化':'野生';}
-function syncStreamUI(){const q=$('viewerModeQuick');if(q)q.value=streamMode;}
+function syncStreamUI(){const q=$('viewerModeQuick');if(!q)return;q.value=streamMode;q.querySelectorAll?.('button').forEach(b=>b.setAttribute('aria-pressed',String(b.value===streamMode)));}
 
 let isolatedSpecimenFrame=false;
 let renderer=null,spec=null,meshes=null,rigMeshes=[],rigTime=0,bodyTime=0,patternTime=0,rigPrevious=0,ciliaPrevious=0,selected=-1,collectionSeed='731029',seeds=[],parentGenome=null,modelYaw=.54,modelPitch=-0.703599,cameraOrbitPhase=0,cameraOrbitYawOffset=0,cameraOrbitPitchOffset=0,cameraRoll=0,panX=0,panY=0,lastFrame=performance.now(),auto=true,drag=false,previous=null,animating=false,busy=false;
@@ -11706,8 +11706,9 @@ $('viewerVideoNoise').onchange=()=>{try{localStorage.setItem('morphospace-viewer
 try{const value=localStorage.getItem('morphospace-viewer-video-noise');if(value==='0'||value==='1')$('viewerVideoNoise').checked=value==='1'}catch(error){}
 $('viewerFullscreen').onclick=()=>{$('viewerSettings').open=false;setViewerFullscreen(!viewer.full)};
 $('viewerSource').onchange=()=>{void setViewerSource($('viewerSource').value)};
-$('viewerModeQuick').onchange=()=>{
- const next=$('viewerModeQuick').value;
+for(const button of $('viewerModeQuick').querySelectorAll('button'))button.onclick=()=>{
+ const next=button.value;
+ if(next===streamMode)return;
  if(next==='evolution'&&!evolutionState){syncStreamUI();$('viewerTransition').textContent='進化を始めるには保存個体から親A・親Bを選んで交配してください。';void openStock();return;}
  if(videoRecording||nanoOperationBusy){syncStreamUI();return;}
  pauseViewerTransition();streamMode=next;viewer.source='gallery';$('viewerSource').value='gallery';syncStreamUI();viewer.history=[];

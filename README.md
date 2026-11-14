@@ -10,6 +10,9 @@ Offline-compatible, static WebGL artificial-life specimen gallery with a same-or
 
 The lab page has a round eye-icon button ("鑑賞に戻る") that stays at the top-left while scrolling. The title block and the "?" button are removed from this page; the version stays in the footer and About opens from the viewer. The button reopens the specimen that was on screen when the viewer was closed, including one opened from the sample stock.
 
+- The wild/evolved selector is a pair of icon buttons (leaf and DNA); the active mode is highlighted.
+- The previous/next buttons at the screen edges are twice as tall, for an easier tap.
+
 ## Shallower navigation, one entry per action (v15.98.0)
 
 - **Detail in one tap.** The viewer toolbar has a detail button (sliders icon). It replaces the route settings → fold → "open detail".
