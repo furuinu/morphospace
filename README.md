@@ -10,8 +10,9 @@ Offline-compatible, static WebGL artificial-life specimen gallery with a same-or
 
 The lab page has a round eye-icon button ("鑑賞に戻る") that stays at the top-left while scrolling. The title block and the "?" button are removed from this page; the version stays in the footer and About opens from the viewer. The button reopens the specimen that was on screen when the viewer was closed, including one opened from the sample stock.
 
-- The wild/evolved selector is a pair of icon buttons (leaf and DNA); the active mode is highlighted.
-- The previous/next buttons at the screen edges are twice as tall, for an easier tap.
+- The wild/evolved selector is a pair of icon buttons (seedling and DNA); the active mode is highlighted.
+- The capture button uses an eye-dropper icon.
+- The previous/next buttons at the screen edges are twice as tall, and the invisible left/right tap zones of the controls-hidden view are twice as tall too (2/3 of the screen height).
 
 ## Shallower navigation, one entry per action (v15.98.0)
 

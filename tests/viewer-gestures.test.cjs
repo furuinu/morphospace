@@ -4,8 +4,8 @@ const slice=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
 test('edge taps step specimens with or without controls; centre taps toggle controls',()=>{
  const calls=[];const f={viewer:{full:true},canvas:{getBoundingClientRect:()=>({left:0,top:0,width:1200,height:900})},startViewerMorph:d=>calls.push(['morph',d]),setViewerNavigationVisible:v=>calls.push(['nav',v]),$:()=>({classList:{contains:()=>true}})};
  vm.createContext(f);vm.runInContext(slice('// Step zones:','// Screen-space hit test')+html.slice(html.indexOf('function viewerTapAction('),html.indexOf('\n}\n',html.indexOf('function viewerTapAction('))+3),f);
- // width 1200 → zones x<200 / x>1000; height 900 → y 300..600
- vm.runInContext('viewerTapAction(100,450);viewerTapAction(1100,450);viewerTapAction(100,310);viewerTapAction(1100,590);viewerTapAction(100,250);viewerTapAction(1100,700);viewerTapAction(260,450);viewerTapAction(600,450);viewer.full=false;viewerTapAction(100,450);',f);
+ // width 1200 → zones x<200 / x>1000; height 900 → y 150..750
+ vm.runInContext('viewerTapAction(100,450);viewerTapAction(1100,450);viewerTapAction(100,160);viewerTapAction(1100,740);viewerTapAction(100,140);viewerTapAction(1100,760);viewerTapAction(260,450);viewerTapAction(600,450);viewer.full=false;viewerTapAction(100,450);',f);
  assert.deepEqual(calls,[['morph',-1],['morph',1],['morph',-1],['morph',1],['nav',true],['nav',true],['nav',true],['nav',true],['nav',true]]);
  assert.match(html,/&&!\$\('videoSaveDialog'\)\.open\)viewerTapAction\(e\.clientX,e\.clientY\);/);
 });
