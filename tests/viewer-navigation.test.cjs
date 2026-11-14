@@ -21,6 +21,10 @@ test('inspector and list navigation remain available from full-screen', () => {
  assert.doesNotMatch(html, /viewerDetailFold|viewerRecord|id="recordVideo"|id="save"/);
  assert.match(html, /@font-face\{font-family:"Morphospace Icons"[^}]*src:url\(data:font\/woff2;base64,/);
  assert.match(html, /id="viewerAboutOpen"/);
+ // The lab page offers a way back to the specimen that was on screen.
+ assert.match(html, /<div class="wrap"><div class="viewer-return-bar"><button type="button" class="btn primary" id="viewerReturn">/);
+ assert.match(html, /function close\(\)\{if\(videoRecording\|\|nanoAction\)return;if\(selected>=0\)viewerLast=\{index:selected,stored:activeStoredIndividual\};/);
+ assert.match(html, /\$\('viewerReturn'\)\.onclick=returnToViewer;/);
  assert.match(html, /id="viewerPicMov"/);
  assert.match(html, /id="mediaChoiceDialog"/);
  assert.match(html, /if\(\$\('viewerSettings'\)\.open\)\$\('viewerSettings'\)\.open=false;else close\(\);/);

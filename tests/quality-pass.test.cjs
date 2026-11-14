@@ -157,7 +157,7 @@ test('the swap waits for handoffs and captures, and a failed build falls back to
  assert.equal(failing.run('adoptDetailUpgrade()'),true);
  assert.deepEqual(failing.log.slice(1),[['full',1],['apply',202,true,true,false],['meta']]);
  assert.ok(html.includes('applyUploadedSpecimen(openSpecimenProgressively(i),false,true);'));
- assert.ok(html.includes('function close(){if(videoRecording||nanoAction)return;cancelDetailUpgrade();'));
+ assert.ok(html.includes('function close(){if(videoRecording||nanoAction)return;if(selected>=0)viewerLast={index:selected,stored:activeStoredIndividual};cancelDetailUpgrade();'));
  assert.ok(html.includes(' if(selected>=0)adoptDetailUpgrade();'));
 });
 test('a fixed quality overrides the automatic choice and 自動 hands control back',()=>{
