@@ -252,7 +252,7 @@ test('actual shell probes carry pigment-boundary and relative-position phase fro
 test('the on-screen version, document title and GPU status use one release',()=>{
  const title=html.match(/<title>MORPHOSPACE (v\d+\.\d+\.\d+)/)?.[1];
  const visible=html.match(/class="version-label">(v\d+\.\d+\.\d+)<\/span>/)?.[1];
- const atlas=html.match(/QUALIA \/ CAPTURE & SHARE \/ (v\d+\.\d+\.\d+)/)?.[1];
+ const atlas=html.match(/QUALIA \/ CAPTURE & SHARE \/ <span class=\"version-label\">(v\d+\.\d+\.\d+)/)?.[1];
  const note=html.match(/MORPHOSPACE (v\d+\.\d+\.\d+) — QUALIA ECOLOGY/)?.[1];
  const status=html.match(/textContent='(v\d+\.\d+\.\d+) \/ '/)?.[1];
  assert.ok(title&&visible&&atlas&&note&&status);

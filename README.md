@@ -8,7 +8,7 @@ Offline-compatible, static WebGL artificial-life specimen gallery with a same-or
 
 ## Way back from the lab (v15.98.1)
 
-The lab page has a "鑑賞に戻る" button that stays at the top-left while scrolling. It reopens the specimen that was on screen when the viewer was closed, including one opened from the sample stock.
+The lab page has a round eye-icon button ("鑑賞に戻る") that stays at the top-left while scrolling. The title block and the "?" button are removed from this page; the version stays in the footer and About opens from the viewer. The button reopens the specimen that was on screen when the viewer was closed, including one opened from the sample stock.
 
 ## Shallower navigation, one entry per action (v15.98.0)
 
@@ -16,7 +16,7 @@ The lab page has a "鑑賞に戻る" button that stays at the top-left while scr
 - **Settings without nesting.** The nested fold and the "save" group are gone. Render quality moved from the detail panel into a new "描画" group, because it applies to every specimen.
 - **Detail is about the open specimen.** "保存・出力" became "遺伝子データ" and holds only the gene JSON export and import. Focus and background-particle sliders stay in the detail panel, where the specimen remains visible while adjusting.
 - **One entry for pictures and movies.** PNG and movie saving are reached only from the bottom `pic/mov` button; the duplicate buttons in settings and detail are removed.
-- **Lab icon.** The button back to the lab and the lab heading use an Erlenmeyer flask. Icons come from a 716-byte subset of Font Awesome Free 6.5.1 Solid (SIL OFL 1.1) embedded in `index.html`; nothing is fetched from a CDN.
+- **Lab icon.** The button back to the lab and the lab heading use an Erlenmeyer flask. Icons come from a sub-kilobyte subset of Font Awesome Free 6.5.1 Solid (SIL OFL 1.1) embedded in `index.html`; nothing is fetched from a CDN.
 - The lab keeps its breed and clear buttons.
 
 ## Unused controls and code removed (v15.97.1)

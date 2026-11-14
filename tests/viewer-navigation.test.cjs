@@ -22,7 +22,9 @@ test('inspector and list navigation remain available from full-screen', () => {
  assert.match(html, /@font-face\{font-family:"Morphospace Icons"[^}]*src:url\(data:font\/woff2;base64,/);
  assert.match(html, /id="viewerAboutOpen"/);
  // The lab page offers a way back to the specimen that was on screen.
- assert.match(html, /<div class="wrap"><div class="viewer-return-bar"><button type="button" class="btn primary" id="viewerReturn">/);
+ assert.match(html, /<div class="wrap"><div class="viewer-return-bar"><button type="button" class="btn primary" id="viewerReturn" aria-label="鑑賞に戻る" title="鑑賞に戻る"><i class="ms-icon" aria-hidden="true">&#xf06e;<\/i><\/button><\/div>\n<div id="gallery"/);
+ // The lab page has no title block or help button; About opens from the viewer.
+ assert.doesNotMatch(html, /<header|<h1|aboutOpen"|about-trigger/);
  assert.match(html, /function close\(\)\{if\(videoRecording\|\|nanoAction\)return;if\(selected>=0\)viewerLast=\{index:selected,stored:activeStoredIndividual\};/);
  assert.match(html, /\$\('viewerReturn'\)\.onclick=returnToViewer;/);
  assert.match(html, /id="viewerPicMov"/);
@@ -44,7 +46,7 @@ test('startup shows a progress bar only, and hidden navigation moves the title t
  assert.match(html, /<div class="viewer-zoom"><span class="viewer-zoom-lens"/);
 });
 
-test('DNA startup displays the same build version as the home header',()=>{
+test('DNA startup displays the same build version as the home footer',()=>{
  const splash=html.match(/<div class="boot-version" aria-label="バージョン">(v\d+\.\d+\.\d+(?:\.\d+\.\d+)?)<\/div>/);
  const header=html.match(/<span class="version-label">(v\d+\.\d+\.\d+(?:\.\d+\.\d+)?)<\/span>/);
  assert.ok(splash,'loading splash must display the version without running JavaScript');
