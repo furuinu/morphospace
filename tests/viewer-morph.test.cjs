@@ -405,7 +405,7 @@ test('ecology DNA forms coherent appendage groups with bounded counts and GPU wa
  assert.match(html,/const gaps=Array\.from\(\{length:groupCount\},\(\)=>\.30\+1\.70\*Math\.pow\(vr\(\),1\.7\)\)/);
  assert.doesNotMatch(html,/theta=TAU\*\(i\+\.5\)\/\(groupCount\|\|1\)/,'no equal angular steps');
  assert.match(html,/out\.push\(\{mesh:makeSwept/);
- assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',form,active:thick,dir:outward,length:strandLength,collarLength,collarRadius:thickness\*\(thick\?1\.25:1\.6\)\}/);
+ assert.match(html,/delicate:\{root,phase,rows:segments\+1,sides,type:'strand',form,active:thick,order:i,orderCount:groupCount,dir:outward,length:strandLength,collarLength,collarRadius:thickness\*\(thick\?1\.25:1\.6\)\}/);
  // Fins were removed (v15.87.0); drifting species grow no appendages and strands move on the CPU.
  assert.match(html,/if\(ecology\.appendagePlan==='lateral_frill'\)return out;/);
  assert.doesNotMatch(html,/delicateWave|mode==='fin'|type:'fin'/);
@@ -686,16 +686,16 @@ test('warp lens eases into ultra-wide perspective and returns to the original ob
  assert.match(html,/uniform float uBgTanHalfFov;/);
 });
 
-test('tentacle koshi: ribbon-soft with only a trace of body at the root, no spring-back',()=>{
- const vm=require('node:vm'),a=html.indexOf('function strandKoshi');const src=html.slice(a,html.indexOf('// Cephalopod arms are muscular',a));
+test('tentacle koshi: half way between the firm and the limp root, no spring-back',()=>{
+ const vm=require('node:vm'),a=html.indexOf('function strandKoshi');const src=html.slice(a,html.indexOf('// Tentacles are muscular',a));
  const V={sub:(a,b)=>a.map((v,i)=>v-b[i]),add:(a,b)=>a.map((v,i)=>v+b[i]),scale:(a,s)=>a.map(v=>v*s),dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm:a=>{const l=Math.hypot(...a)||1;return a.map(v=>v/l)}};
  const f={Math,V,clamp:(v,lo,hi)=>Math.max(lo,Math.min(hi,v))};vm.createContext(f);vm.runInContext(src+';this.k=strandKoshi;this.s=strandBendStiffness;this.relax=strandBendRelax;',f);
  for(let seed=1;seed<400;seed++){
   const p={genome:{seed},phase:1},k=f.k(p);
-  assert.ok(k.root>=.10&&k.root<=.20,'a yielding root: '+k.root);
+  assert.ok(k.root>=.21&&k.root<=.36,'half way back: '+k.root);
   const prof=[...Array(21)].map((_,i)=>f.s(p,i*.05));
   for(let i=1;i<prof.length;i++)assert.ok(prof[i]<=prof[i-1]+1e-9);
-  assert.ok(prof[1]>k.root*.4,'a trace of body just past the root');
+  assert.ok(prof[1]>k.root*.5,'some body just past the root');
   assert.ok(f.s(p,.5)<.03&&f.s(p,.7)<.002,'soft as a ribbon beyond the root region');
  }
  // No shape memory: a strand bent sideways and left alone does not spring back toward a coil,
@@ -708,7 +708,7 @@ test('tentacle koshi: ribbon-soft with only a trace of body at the root, no spri
  assert.ok(Math.hypot(...V.sub(pts.at(-1),tipBefore))<.06,'the tip is not yanked back');
  assert.match(html,/strandBendRelax\(p\.worldPoints,p\.rest\.map\(restWorld\),p\.lengths,p,dt,p\.worldPrevious\)/);
  assert.match(html,/const push=p\.active\?\.22:STRAND_CURRENT,drift=p\.active\?0:STRAND_OUTWARD_DRIFT;/);assert.match(html,/\(fluid\[k\]\*push\+axis\[k\]\*drift\)\*dt\*dt/);
- assert.match(html,/STRAND_ROOT_SPRING=1\.0,STRAND_OUTWARD_DRIFT=\.26,STRAND_CURRENT=1\.55;/);
+ assert.match(html,/STRAND_ROOT_SPRING=1\.5,STRAND_OUTWARD_DRIFT=\.26,STRAND_CURRENT=1\.55;/);
  // The current travels down the thread instead of pushing it as one rod.
  assert.match(html,/Math\.sin\(phase\*\.51\+p\.phase-u\*4\.4\)/);
  assert.doesNotMatch(html,/V\.scale\(axis,\.57\)/,'the root is a spring, not a lock');

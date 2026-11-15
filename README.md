@@ -3,8 +3,36 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.100.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.101.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Tentacle movement styles, timing and inheritance (v15.101.0)
+
+How tentacles move is now part of the motion DNA. Each species has a style, a second style it changes into now and then, and a way of keeping time.
+
+| Style | Movement |
+|---|---|
+| pulse | all flex and extend like a jellyfish bell: flare open, snap shut, glide, reopen |
+| undulate | large waves run from root to tip in two planes; the whole arm bends in S-curves |
+| explore | arms unroll toward whatever holds the animal's attention and search with the tip (the v15.100 behaviour) |
+| coil | the tip winds up into a spiral, holds, and slowly lets go |
+| sweep | everything leans one way and slowly comes round, like an anemone in a current |
+| drift | no effort: the water moves them |
+
+| Timing | Meaning |
+|---|---|
+| unison | all on one beat |
+| wave | the beat travels round the ring |
+| alternate | every other tentacle half a beat late; a mirrored copy alternates against its twin |
+| scattered | each its own beat and pace (0.72–1.32×) |
+| groups | sets of three share a beat |
+
+- **Changing style.** If the two style genes differ, the animal spends about a third of its time in the second one. Periods last 16–26 s and the change is a crossfade over the first 14% of a period.
+- **Linked to the body.** The pulse style runs on the body's swimming stroke, so the crown closes as the body starts to move. A stroke shorter than 1.6 s is followed every few beats instead.
+- **Threads too.** Threads and beaded threads have a faint muscle over their inner half (about a quarter of an arm's strength) and trail freely beyond it, so they can pulse, sweep and coil at the root. In the drift style arms work at 30% effort.
+- **Inherited.** `tentacleStyle`, `tentacleSync` and `tentacleAlt` are founder genes with their own seed stream (existing motion genes keep their values). In breeding each comes from either parent and mutates with probability 8–32%. Specimens saved without these genes get the founder values of their seed.
+- **Stiffness half way back.** The root stiffness of threads is now 0.21–0.36 (v15.99: 0.32–0.52, v15.100: 0.10–0.20), with the reach and the root spring restored half way as well.
+- The searching tip and the recoil after a reach are calmer than in v15.100.
 
 ## Tips of moving parts no longer leave polygons behind (v15.100.1)
 
