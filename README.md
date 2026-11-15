@@ -3,8 +3,30 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.99.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.100.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Softer tentacles, new forms, arms that act on their own (v15.100.0)
+
+**Pattern stays visible.** Thin film and edge reflection are shaded by the pigment under them, so dark marks stay dark inside the colour. Together they hide at most 56% of the pattern, also at a glass silhouette (before: up to 96%).
+
+**Softer threads.** The stiffness at the root is about a third of what it was and fades sooner. The water current now travels down each thread as a wave, so threads undulate and fold instead of swinging like rods, and the outward drift that held them straight is reduced to a trace.
+
+**Roots stay on the body.** A root is placed on the outermost skin along its ray and buried as deep as the tissue behind it allows (up to 0.20). A ray that misses the body grows nothing, where it used to place a root in mid-air.
+
+**Uneven spacing.** Gaps around the ring are unequal (some wide, some nearly touching), and height, tilt and length vary per tentacle.
+
+**Five habits, one per species:**
+
+| Habit | Share | Shape |
+|---|---|---|
+| threads | 30% | thin trailing threads, as before |
+| beaded | 14% | threads with 4–9 beads |
+| arms | 22% | 3–7 thick tapering arms with a double row of sucker bumps |
+| squid | 16% | arms plus two long thin tentacles ending in a club |
+| mixed | 18% | threads with an arm at every 3rd to 5th position |
+
+**Arms act on their own.** Arms and clubbed tentacles are not passive. At rest the tip stays loosely curled and a slow wave runs along the arm. Every 7–11 seconds something takes the animal's attention: a point in the water, or the viewer in about a third of the cases. The arms that face it unroll toward it from the base outward, search with the tip, then curl back; other arms stay out of it. Thick arms turn their cross-sections with the curve, so a curled arm keeps its round shape.
 
 ## Fresnel and structural colour as in v15.58 (v15.99.0)
 
