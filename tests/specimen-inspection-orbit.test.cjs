@@ -99,6 +99,7 @@ test('the turn is applied to the body in world space so tentacles feel it, with 
  const corrected=h.view(cam,base),moved=h.mul4(rigidInverse(cam),h.mul4(corrected,base));
  const viaCamera=h.mul4(corrected,base),viaBody=h.mul4(cam,moved);
  for(let i=0;i<16;i++)assert.ok(Math.abs(viaCamera[i]-viaBody[i])<1e-4,'same picture at '+i);
- assert.ok(Math.abs(moved[0]-base[0])>.01,'the body itself turned in world space');
+ // The turn axis is random per specimen: a turn about x leaves element 0 alone, so look at the whole rotation.
+ assert.ok(Math.max(...[0,1,2,4,5,6,8,9,10].map(i=>Math.abs(moved[i]-base[i])))>.01,'the body itself turned in world space');
  const id=h.mul4(rigidInverse(cam),cam);for(let i=0;i<16;i++)assert.ok(Math.abs(id[i]-(i%5===0?1:0))<1e-5);
 });
