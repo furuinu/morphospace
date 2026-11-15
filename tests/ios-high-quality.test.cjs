@@ -12,10 +12,10 @@ test('a launch that never became stable falls back to compatible rendering and s
  const store={'morphospace-ios-high-quality':'1','morphospace-ios-high-quality-pending':'1'};const f=ctx(store);
  const r=f.iosHighQualityStart(true);assert.equal(r.full,false);assert.equal(r.recovered,true);assert.equal(store['morphospace-ios-high-quality'],'0');assert.equal(store['morphospace-ios-high-quality-pending'],undefined);
 });
-test('switch is wired to the renderer choice and reloads on change; Fresnel tops out at 30%',()=>{
+test('switch is wired to the renderer choice and reloads on change; Fresnel runs 0-150% with a 100% default',()=>{
  assert.match(html,/const hq=iosHighQualityStart\(ios\);\n  try\{renderer=initGL\(gl,ios&&!hq\.full\)\}/);
  assert.match(html,/<input id="hqRender" type="checkbox"\/> 高品質描画（iPhone・iPad）/);
  assert.match(html,/setupHighQualitySwitch\(ios,hq\);/);assert.match(html,/setTimeout\(\(\)=>location\.reload\(\),150\)/);
- assert.match(html,/<input id="fresnelStrength" type="range" min="0" max="30" value="30"\/>/);
- assert.match(html,/fresnelStrength:\[0,30\]/);assert.match(html,/Math\.min\(30,Number\(\$\('fresnelStrength'\)\?\.value\?\?30\)\)\/100/);
+ assert.match(html,/<input id="fresnelStrength" type="range" min="0" max="150" value="100"\/>/);
+ assert.match(html,/fresnelStrength:\[0,150\]/);assert.match(html,/gl\.uniform4f\(uniforms\.uOpticsControl,Number\(\$\('fresnelStrength'\)\?\.value\?\?100\)\/100,/);
 });

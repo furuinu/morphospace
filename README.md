@@ -3,8 +3,19 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.98.1. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.99.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Fresnel and structural colour as in v15.58 (v15.99.0)
+
+The surface finish returns to the look of the early-November builds (v15.58): a broad glassy edge reflection and full-strength thin-film colour, without the sky colour mirrored on the skin.
+
+- **薄膜** defaults to 100% (was 15%). The slider still runs 0–100%.
+- **フレネル反射** runs 0–150% again and defaults to 100% (was capped at 30%).
+- **Edge falloff.** The rim uses the v15.58 exponents (grazing² and grazing^1.45) instead of the steep silhouette-only band. It still reads the smooth body normal, so skin relief does not scatter white speckle over the front.
+- **Environment.** Reflections use the fixed cool studio tone; the surrounding sky colour is no longer reflected. The sky probe still tints the air perspective.
+- Kept from later versions: the separate つやハイライト slider, the pearl and wet-film limits against white-out, and the softer pigment-tinted silhouette rim.
+- Captures and shared links store their own slider values, so ones saved with 30% / 15% open with those values.
 
 ## Way back from the lab (v15.98.1)
 

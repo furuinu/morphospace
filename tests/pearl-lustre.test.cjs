@@ -15,9 +15,10 @@ test('wet-film coating caps its white sheen at 30% so highlights stop clipping',
  assert.match(html,/halo\*\.15\*min\(1\.,gloss\)\*mix\(1\.,\.30,wetFilm\);/);
  assert.match(html,/float scattering=\(\.045\+\.0125\*pearl\+\.0135\*wetFilm\);/);
 });
-test('all thin-film contributions run at 15% of their former strength',()=>{
+test('all thin-film contributions follow the 薄膜 slider, which defaults to the full v15.58 level',()=>{
  assert.match(html,/float FILM_LEVEL=clamp\(uOpticsControl\.z,0\.,1\.\);/);
- assert.match(html,/<input id="thinFilmStrength" type="range" min="0" max="100" value="15"\/><output id="thinFilmStrengthNum">15%<\/output>/,'薄膜 slider defaults to the current 15%');
+ assert.match(html,/<input id="thinFilmStrength" type="range" min="0" max="100" value="100"\/><output id="thinFilmStrengthNum">100%<\/output>/,'薄膜 slider defaults to 100%');
+ assert.match(html,/Number\(\$\('thinFilmStrength'\)\?\.value\?\?100\)\/100/);
  assert.match(html,/0\.,\.68\)\*FILM_LEVEL;\n color=mix\(color,film,filmAmount\);/);
  assert.match(html,/clamp\(uOpticsControl\.y\*uOptics1\.y\*\.57,0\.,\.80\)\*FILM_LEVEL\);/);
  assert.match(html,/film,\.46\*FILM_LEVEL\)\*halo/);
