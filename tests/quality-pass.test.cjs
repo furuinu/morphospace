@@ -58,7 +58,7 @@ test('sub-pixel comb beads ease to their average coverage instead of aliasing',(
  const frag=between('const frag=`','const frag300=');
  assert.ok(frag.startsWith('const frag=`#ifdef GL_OES_standard_derivatives\n#extension GL_OES_standard_derivatives : enable\n#endif\nprecision mediump float;'),'the extension directive precedes all code');
  assert.ok(frag.includes('#define PATTERN_FOOTPRINT(x) 0.0'),'no derivatives: unfiltered, never an error');
- assert.ok(frag.includes('rowShape=mix(rowShape,.39,rowBlur);')&&frag.includes('beadShape=mix(beadShape,.44,beadBlur);'));
+ assert.ok(frag.includes('rowShape=mix(rowShape,.195,rowBlur);')&&frag.includes('beadShape=mix(beadShape,.44,beadBlur);'));
  // The constants are the true means of the two shapes over one period.
  const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)},mean=(a,b)=>{let s=0;const n=20000;for(let i=0;i<n;i++)s+=1-smooth(a,b,Math.abs((i+.5)/n-.5));return s/n};
  assert.ok(Math.abs(mean(.10,.29)-.39)<.005,'row '+mean(.10,.29));
