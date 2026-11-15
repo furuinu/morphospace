@@ -82,3 +82,23 @@ test('tentacle roots and collars ride on the branch they grow from',()=>{
  const knob=b.locate([1.5,0,0]),body=b.locate([-.4,0,0]);
  assert.ok(knob&&knob.w===1,'a root on the knob follows its arm fully');assert.equal(body,null,'a root on the body stays put');
 });
+test('skin just outside a joint region follows it: no vertex is left behind beside a moving one',()=>{
+ // A strip of skin that starts inside the knob at [1.4,0,0] and runs outward along +y, past the knob region.
+ const r=rig(),{sp}=specimen(),pts=[],tri=[];
+ for(let k=0;k<=18;k++){const y=.15+k*.05;pts.push([1.4,y,0],[1.4,y,.03]);}
+ for(let k=0;k<18;k++){const a=k*2;tri.push(a,a+1,a+2,a+1,a+3,a+2);}
+ const data=new Float32Array(pts.length*17);pts.forEach((p,i)=>data.set(p,i*17));
+ const plain=r.build(sp,{data}),spread=r.build(sp,{data,tri:new Uint16Array(tri)});
+ const w=(b,i)=>b.attr[i*3+1];
+ assert.ok(w(plain,0)>.99&&w(spread,0)>.99,'inside the knob: fully jointed either way');
+ const firstFree=pts.findIndex((_,i)=>w(plain,i)===0);assert.ok(firstFree>0,'the plain regions end somewhere on the strip');
+ assert.ok(w(spread,firstFree)>.3,'the first vertex past the region now follows: '+w(spread,firstFree));
+ assert.equal(spread.attr[firstFree*3],plain.attr[0],'and belongs to the same joint');
+ for(let t=0;t<tri.length;t+=3)for(const [a,b] of [[tri[t],tri[t+1]],[tri[t+1],tri[t+2]],[tri[t+2],tri[t]]]){
+  assert.ok(!(Math.max(w(spread,a),w(spread,b))>.999&&Math.min(w(spread,a),w(spread,b))===0),'a fully moving vertex never touches a still one');
+  assert.ok(Math.abs(w(spread,a)-w(spread,b))<.62,'weights step down gradually');
+ }
+ for(let i=2;i<pts.length;i++)assert.ok(w(spread,i)<=w(spread,i-2)+1e-6,'weight only falls along the strip');
+ assert.equal(w(spread,pts.length-1),0,'the spread stops: distant skin stays with the body');
+ assert.match(html,/for\(let ring=0;ring<3;ring\+\+\)\{/);
+});

@@ -3,8 +3,16 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.100.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.100.1. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Tips of moving parts no longer leave polygons behind (v15.100.1)
+
+Arms and spikes of the body turn about a joint, and each skin vertex belonged to a joint only if it lay inside a simple shape around the bone (a capsule, plus a sphere for a knob). Real tips are often wider or longer than that shape, so some of their polygons stayed still while the rest moved.
+
+- Membership now also spreads along the mesh: skin connected to a jointed vertex joins the same joint within a narrow margin (0.05–0.14) past the old shape, with the weight fading across it.
+- After that, three more rings of skin take 55%, 30% and 17% of their neighbour's weight, so a moving part always hands over to still skin gradually.
+- In the specimen that showed the fault, 644 vertices had sat still beside a fully moving one; now none do.
 
 ## Softer tentacles, new forms, arms that act on their own (v15.100.0)
 
