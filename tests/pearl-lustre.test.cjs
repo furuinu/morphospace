@@ -38,3 +38,16 @@ test('film and edge reflection never hide the pattern completely',()=>{
  // Whatever the film and rim amounts, at least 44% of the pigment remains.
  for(const film of [0,.3,.68])for(const rim of [0,.5,.96]){const covered=1-(1-film)*(1-rim),s=Math.min(1,.56/Math.max(covered,.0001));assert.ok(1-covered*s>=.44-1e-9);}
 });
+test('comb-row beads carry a relief in the lighting, matching their colour pattern',()=>{
+ assert.match(html,/#define COMB_BUMP \.42\n/);
+ assert.match(html,/ return combBeadNormal\(point,normalize\(n-g\)\);\n\}/);
+ assert.match(html,/ if\(uSurface0\.x<\.001\)return combBeadNormal\(point,normalize\(normal\)\);/);
+ // Same coordinates as the iridescent beads in chromaticSkinFlow.
+ const flow=html.slice(html.indexOf('vec4 chromaticSkinFlow('),html.indexOf('// Stable pseudo-thickness'));
+ for(const part of ['float rowDensity=12.+floor(fract(seed*.67)*6.)*2.','beadDensity=42.+floor(fract(seed*.39)*5.)*6.','smoothstep(.10,.29,abs(across))','smoothstep(.12,.32,abs(along))'])assert.ok(flow.includes(part.replace(',beadDensity','float beadDensity').replace(/^beadDensity/,'float beadDensity'))||flow.includes(part),'flow uses '+part);
+ assert.match(html,/float tA=clamp\(\(abs\(across\)-\.10\)\/\.19,0\.,1\.\),tB=clamp\(\(abs\(along\)-\.12\)\/\.20,0\.,1\.\);/);
+ // Fades below pixel size, absent where the shader has no pixel footprint, and renamed in the second surface copy.
+ assert.match(html,/float fade=1\.-max\(smoothstep\(\.30,\.90,PATTERN_FOOTPRINT\(rowCoordinate\)\),smoothstep\(\.30,\.90,PATTERN_FOOTPRINT\(beadCoordinate\)\)\);/);
+ assert.match(html,/vec3 combBeadNormal\(vec3 point,vec3 n\)\{\n#ifdef PATTERN_FOOTPRINT/);
+ assert.match(html,/surfaceNormal\|combBeadNormal\|territoryInfo/);
+});

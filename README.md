@@ -3,8 +3,12 @@
 Offline-compatible, static WebGL artificial-life specimen gallery with a same-origin About translation script.
 
 - **Live website:** https://furuinu.github.io/morphospace/
-- **App:** [index.html](index.html) — v15.101.0. **About translations:** [about-i18n.js](about-i18n.js).
+- **App:** [index.html](index.html) — v15.102.0. **About translations:** [about-i18n.js](about-i18n.js).
 - No installation, external APIs, CDN, or third-party network assets are needed. Supports touch rotation, camera orbit, inherited DNA and breeding, procedural colour, bioluminescence, captures, sharing and video recording.
+
+## Relief on the iridescent comb rows (v15.102.0)
+
+Each bead of the dotted iridescent rows is now a small dome in the lighting, so the key light and the clear coat catch it. The relief uses the same coordinates as the beads' colour, follows their gentle bend, and fades out where beads shrink below a pixel, as their colour does. Strength is `COMB_BUMP` (0.42). Cilia and strands are left smooth, and the compatibility renderer keeps the smooth skin.
 
 ## Tentacle movement styles, timing and inheritance (v15.101.0)
 
