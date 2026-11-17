@@ -3453,7 +3453,7 @@ function soundPerformanceAt(p,beat,part=0,forceExpression){
 function soundMusicalProfile(sp){
  const g=sp.genome,d=normalizedSoundDNA(g.soundDNA,sp.seed),r=seedRng(d.motif+Math.round(d.phase*10000)),colors=sp.palette?.raw||[[.4,.6,.5]];
  const hues=colors.map(rgb=>{const [R,G,B]=rgb,hi=Math.max(R,G,B),lo=Math.min(R,G,B),delta=hi-lo;let h=0;if(delta>1e-6)h=hi===R?((G-B)/delta)%6:hi===G?(B-R)/delta+2:(R-G)/delta+4;return{h:(h/6+1)%1,s:hi?delta/hi:0}});
- const size=clamp((g.bulge??1)*Math.sqrt(g.elong??1),.3,3),root=43+Math.round(hues[0].h*11)+Math.round((d.pitch-.5)*8)-Math.round(Math.log2(size)*4),mode=(d.mode+Math.floor(hues[0].h*SOUND_SCALES.length))%SOUND_SCALES.length,scale=SOUND_SCALES[mode];
+ const size=clamp((g.bulge??1)*Math.sqrt(g.elong??1),.3,3),root=43+Math.round(hues[0].h*11)+Math.round((d.pitch-.5)*8)-Math.round(Math.log2(size)*4),mode=(d.mode+Math.floor(hues[0].h*18))%SOUND_SCALES.length,scale=SOUND_SCALES[mode];
  const family=d.voiceKind,voice={...SOUND_VOICES[family],name:['正弦','三角','鋸波','矩形'][d.waveA]+'系混成',waves:[SOUND_WAVES[d.waveA],SOUND_WAVES[d.waveB],SOUND_WAVES[d.waveReply]],filter:['lowpass','bandpass','highpass'][d.filterKind],fmRatio:d.fmRatio,fmIndex:d.fmIndex,envelope:d.envelope,answerOffset:[0,3,4,5,7,9,12,-12][d.answerInterval]},rhythm=SOUND_RHYTHMS[d.phraseKind],count=12+Math.round(d.complexity*12),events=[];let degree=0,start=0;
  for(let i=0;i<count;i++){
   if(i%4===0)degree=[0,2,-1,4][Math.floor(i/4)%4];else {const delta=[Math.floor(r()*3)-1,(r()<.5?-1:1)*[2,3,4][Math.floor(r()*3)],i%3===0?(r()<.5?-1:1):0,(i%6<3?1:-1)*(1+(r()<.25?1:0)),i%4===3?(r()<.5?-1:1):0,[2,2,-2,-2,0][i%5]][d.melodyKind];degree+=delta;}
