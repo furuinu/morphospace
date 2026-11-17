@@ -483,7 +483,7 @@ test('musical motifs repeat, transform, rest and stay within a bounded pitch ran
 });
 test('shape and pigment change the musical identity; legacy music genes upgrade deterministically',()=>{
  const r=run(`(()=>{const seed=731029,g=makeFounderGenome(seed,0,1),a={seed,genome:g,palette:{raw:[[1,.1,.1]]}},b={seed,genome:{...g,bulge:1.6,elong:2},palette:{raw:[[.1,.1,1]]}},p=soundMusicalProfile(a),q=soundMusicalProfile(b),old={pitch:.4,recursion:2};return{different:p.key!==q.key,root:p.root!==q.root,mode:p.mode!==q.mode,legacy:JSON.stringify(normalizedSoundDNA(old,seed))===JSON.stringify(normalizedSoundDNA(old,seed)),scaleCount:SOUND_SCALES.length};})()`);
- assert.deepEqual(plain(r),{different:true,root:true,mode:true,legacy:true,scaleCount:18});
+ assert.deepEqual(plain(r),{different:true,root:true,mode:true,legacy:true,scaleCount:21});
 });
 test('body pressure and visible blink alter formant resonances without growing audio graph',()=>{
  const g=graph(),e=ctx.createBioticAudioEngine(g.context),sp=specimen(856123),formants=new Set(),pitches=new Set();
