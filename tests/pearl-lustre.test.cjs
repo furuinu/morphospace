@@ -18,7 +18,7 @@ test('wet-film coating caps its white sheen at 30% so highlights stop clipping',
 test('all thin-film contributions follow the 薄膜 slider, which defaults to the full v15.58 level',()=>{
  assert.match(html,/float FILM_LEVEL=clamp\(uOpticsControl\.z,0\.,1\.\);/);
  assert.match(html,/<input id="thinFilmStrength" type="range" min="0" max="100" value="100"\/><output id="thinFilmStrengthNum">100%<\/output>/,'薄膜 slider defaults to 100%');
- assert.match(html,/Number\(\$\('thinFilmStrength'\)\?\.value\?\?100\)\/100/);
+ assert.match(html,/thinFilm:\[0,100\]/);assert.match(html,/if\(probing\)\{const raw=Number\(\$\(id\)\?\.value\);/);
  assert.match(html,/0\.,\.68\)\*FILM_LEVEL;\n/);assert.match(html,/color=mix\(color,film\*patternShade,filmAmount\);/);
  assert.match(html,/clamp\(uOpticsControl\.y\*uOptics1\.y\*\.57,0\.,\.80\)\*FILM_LEVEL\);/);
  assert.match(html,/film,\.46\*FILM_LEVEL\)\*halo/);
@@ -26,10 +26,10 @@ test('all thin-film contributions follow the 薄膜 slider, which defaults to th
 test('gloss highlight has its own slider and the Fresnel slider only drives edges',()=>{
  assert.match(html,/<input id="glossStrength" type="range" min="0" max="150" value="100"\/>/);
  assert.match(html,/uniform vec4 uOpticsControl;/);
- assert.match(html,/gl\.uniform4f\(uniforms\.uOpticsControl,[^;]*'thinFilmStrength'[^;]*'glossStrength'/);
+ assert.match(html,/gl\.uniform4f\(uniforms\.uOpticsControl,[^;]*'thinFilmStrength'\),value\('gloss','glossStrength'\)\)/);
  assert.match(html,/float gloss=clamp\(uOpticsControl\.w,0\.,1\.5\);/);
  assert.doesNotMatch(html,/uOpticsControl\.x\*wet/);assert.match(html,/\*\.055\*gloss;/);
- assert.match(html,/'thinFilmStrength','glossStrength'/);
+ assert.match(html,/thinFilm:\['thinFilmStrength','thinFilmStrengthNum'\],gloss:\['glossStrength','glossStrengthNum'\]/);
 });
 test('film and edge reflection never hide the pattern completely',()=>{
  assert.match(html,/vec3 pigment=color;\n float patternShade=mix\(\.50,1\.,smoothstep\(\.03,\.40,dot\(pigment,vec3\(\.2126,\.7152,\.0722\)\)\)\);/);

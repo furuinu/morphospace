@@ -17,5 +17,5 @@ test('switch is wired to the renderer choice and reloads on change; Fresnel runs
  assert.match(html,/<input id="hqRender" type="checkbox"\/> 高品質描画（iPhone・iPad）/);
  assert.match(html,/setupHighQualitySwitch\(ios,hq\);/);assert.match(html,/setTimeout\(\(\)=>location\.reload\(\),150\)/);
  assert.match(html,/<input id="fresnelStrength" type="range" min="0" max="150" value="100"\/>/);
- assert.match(html,/fresnelStrength:\[0,150\]/);assert.match(html,/gl\.uniform4f\(uniforms\.uOpticsControl,Number\(\$\('fresnelStrength'\)\?\.value\?\?100\)\/100,/);
+ assert.match(html,/fresnel:\[10,150\]/);assert.match(html,/gl\.uniform4f\(uniforms\.uOpticsControl,value\('fresnel','fresnelStrength'\),/);
 });
