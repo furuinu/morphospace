@@ -102,3 +102,33 @@ test('a legacy parent passes on expressible reaction genes to its offspring',()=
   kidChemistryFromParents:[a.turingDNA.feed,b.turingDNA.feed].some(f=>Math.abs(f-kid.feed)<.02)};})()`);
  assert.deepEqual(plain(r),{parentsStayFaint:true,kidCanExpress:true,kidChemistryFromParents:true});
 });
+
+test('the reaction layer lays down palette colour and legacy specimens stay a pure darkening',()=>{
+ const start=html.indexOf('vec3 reactionCoating('),body=html.slice(start,html.indexOf('vec3 n=normalize(vNormal);',start));
+ assert.match(body,/vec3 ink=mix\(mix\(accent,highlight,tint\.x\),deep,tint\.y\*\.75\);/,'pigment colour must come from the palette');
+ assert.match(body,/color=mix\(color,ink\*/,'the marking must be laid as colour, not only as shade');
+ assert.match(body,/color\*=1\.-lay\*1\.35\*\(1\.-tint\.z\*\.72\);/,'tint.z=0 must reduce to the historical darkening');
+ assert.match(body,/clamp\(edge\*coverage\*tint\.w\*\.85,0\.,\.7\)/,'the rim must stay bounded');
+ assert.match(html,/reactionCoating\(color,point,chromaticPoint\(point\),uReactionAtlas,uPal1,uPal4,uPal2,/);
+ assert.match(html,/uNextReactionAtlas,uNextPal1,uNextPal4,uNextPal2,/,'morphing must carry the target palette too');
+ const r=run(`(()=>{const g=makeFounderGenome(880017,4,2);const legacy=copyJSON(g);delete legacy.turingDNA;
+ return {founderTints:copyJSON(g.turingDNA),legacyTint:ensureTuringDNA(legacy,legacy.seed).tintDepth};})()`);
+ assert.equal(plain(r.legacyTint),0,'legacy specimens must not be recoloured');
+ for(const k of ['inkColor','deepMix','tintDepth','edgeWeight'])assert.ok(Number.isFinite(plain(r.founderTints)[k]),k+' must be generated');
+});
+
+test('colour genes vary across individuals and are inherited as their own block',()=>{
+ const r=run(`(()=>{const tints=new Set(),depths=[];
+ for(let i=0;i<48;i++){const g=makeFounderGenome(330000+i*751,i%8,i%5),t=g.turingDNA;
+  tints.add([t.inkColor,t.deepMix,t.tintDepth,t.edgeWeight].join(','));depths.push(t.tintDepth);}
+ let a=makeFounderGenome(441003,2,1),b=makeFounderGenome(118827,6,3),split=0,mutations=0;
+ for(let gen=0;gen<40;gen++){const kid=crossoverGenome(a,b,61000+gen*419,2,.7);
+  if(kid.inherited.turing_ink!==kid.inherited.turing_chemistry)split++;
+  mutations+=kid.mutationLog.filter(x=>x.field.startsWith('turingDNA.')&&/inkColor|deepMix|tintDepth|edgeWeight/.test(x.field)).length;
+  b=a;a=kid.genome;}
+ return {unique:tints.size,strong:depths.filter(d=>d>.6).length,faint:depths.filter(d=>d<.4).length,split,mutations};})()`);
+ const v=plain(r);
+ assert.ok(v.unique>=46,'colour genes must differ between individuals');
+ assert.ok(v.strong>6&&v.faint>6,`both strongly and faintly tinted individuals must occur: ${v.strong}/${v.faint}`);
+ assert.ok(v.split>5&&v.mutations>5,'the ink block must segregate and mutate independently');
+});

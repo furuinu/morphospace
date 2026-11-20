@@ -13,7 +13,14 @@ test('second pigments in living grammars are opaque, and patches open in the reg
  assert.match(body,/vec3 patchColor=seed<\.5\?P3:P4;/);assert.doesNotMatch(body,/uPatchPal/);
  assert.match(body,/color=mix\(color,patchColor,selected\*step\(\.5,feather\)\*opening\*step\(\.5,mark\)\);/);
 });
-test('reaction-diffusion shades the pigment it sits on instead of laying another colour over it',()=>{
- assert.match(html,/color\*=1\.-pigment\*coverage\*organ\*1\.35;/);
+test('reaction-diffusion colours the pigment it sits on instead of flatly covering it',()=>{
+ // The layer may now lay one of the individual's own palette colours, but it must
+ // stay subordinate to the pigment underneath: the colour is scaled by the
+ // underlying luminance, the shading term survives, and tint.z=0 reduces to the
+ // historical pure darkening so legacy specimens are unchanged.
+ assert.match(html,/color=mix\(color,ink\*\(\.72\+\.46\*dot\(color,vec3\(\.2126,\.7152,\.0722\)\)\),lay\*tint\.z\);/);
+ assert.match(html,/color\*=1\.-lay\*1\.35\*\(1\.-tint\.z\*\.72\);/);
+ assert.match(html,/vec3 ink=mix\(mix\(accent,highlight,tint\.x\),deep,tint\.y\*\.75\);/);
+ // The reverted experiment laid a flat colour over the pigment regardless of it.
  assert.doesNotMatch(html,/mix\(accent,highlight,clamp\(pigment\*\.85/);
 });
