@@ -189,7 +189,9 @@ test('local copies deform once in canonical space under one organism root',()=>{
  assert.ok(begin>0&&end>begin,'local specimen render path must exist');
  const block=ui.slice(begin,end);
  assert.match(block,/setCopyMotionUniforms\(gl,u,null\)/,'GPU must not inverse-map CPU-positioned local copies');
- assert.match(block,/mul4\(baseModel,articulatedCopyMatrix\(placed,pose,spec\.growthModel\.copyLayout\)\)/);
+ assert.match(block,/let copyMatrix=articulatedCopyMatrix\(placed,pose,spec\.growthModel\.copyLayout\);/);
+ assert.match(block,/const model=mul4\(baseModel,copyMatrix\);/);
+ assert.match(block,/if\(copyIndex===0&&copyFuse>\.001\)\{/,'only the fused part of a transition may be re-placed');
  assert.doesNotMatch(block,/setCopyMotionUniforms\(gl,u,spec\.localGroup\.source\)/);
  // Camera rotation changes the projection, not the world-space placement of copies.
  const error=run(`(()=>{

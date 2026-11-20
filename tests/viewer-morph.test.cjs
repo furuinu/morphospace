@@ -958,3 +958,57 @@ test('the blend of two fused sources stays finite and lands on each end',()=>{
  const bare={blobs:[{p:[0,0,0],axes:[1,1,1],s:1}],bound:2};
  for(const v of [blend(bare,b,.5).fuse,blend(bare,b,.5).rough])assert.ok(v===undefined||Number.isFinite(v));
 });
+
+test('the fused part keeps one place and one size from A through every blend into B',()=>{
+ const {f}=runtime();
+ for(const name of ['mul4','translate3','scale3','rotY'])f[name]=ctx[name];
+ const matrix=vm.runInContext('fusedPartMatrix',f),point=vm.runInContext('transformPoint',f),anchor=vm.runInContext('fuseMorphAnchor',f);
+ // A copy placed off to one side, rotated and scaled, carrying a mesh whose own centre is
+ // offset: fully fused, that centre must land exactly on the anchor.
+ const copy=ctx.mul4(ctx.translate3(3,-1,2),ctx.mul4(ctx.rotY(.7),ctx.scale3(1.4,1.4,1.4)));
+ const centre=[.6,.2,-.3],target=[.5,.1,0];
+ const round=p=>Array.from(p,v=>+v.toFixed(5)+0);
+ const at=e=>point(matrix(copy,centre,target,e,1),centre);
+ assert.deepEqual(round(at(1)),target,'the mesh centre must sit on the anchor once fused');
+ assert.deepEqual(round(at(0)),round(point(copy,centre)),'an unfused copy must stay where its DNA puts it');
+ // Scaling happens about that same centre, so a size change never moves the part.
+ assert.deepEqual(round(point(matrix(copy,centre,target,1,.5),centre)),target);
+ // The anchor slides from A's centroid to B's during the hold and never jumps.
+ const m={switched:false,stage:'fuse',t:0,fuseAnchorA:[0,0,0],fuseAnchorB:[2,0,0]};
+ const before=anchor(m);
+ Object.assign(m,{switched:true,stage:'hold',t:0});
+ assert.deepEqual(Array.from(anchor(m)),Array.from(before),'the swap must not move the fused part');
+ Object.assign(m,{t:1});
+ assert.deepEqual(Array.from(anchor(m)),[2,0,0]);
+ Object.assign(m,{stage:'defuse'});
+ assert.deepEqual(Array.from(anchor(m)),[2,0,0],'the regrowth must start from where the hold ended');
+ // The size eases from A's copy scale to B's across the hold, so it does not pop.
+ assert.ok(src.includes("(fuseMorph.fuseScaleA+(fuseMorph.fuseScaleB-fuseMorph.fuseScaleA)*handoffEase(fuseMorph.t))/Math.max(1e-4,fuseMorph.fuseScaleB)"));
+ assert.ok(src.includes("copyMatrix=fusedPartMatrix(copyMatrix,meshFuseCentre(meshes.localShell),fuseCentre,copyFuse,size);"),'the centre must be taken from whichever shape is on screen');
+});
+
+test('the surface pattern crossfades from A to B around the shape morph',()=>{
+ const {f}=runtime();
+ const mix=vm.runInContext('fusePatternMix',f);
+ const m={leadDuration:.5,fuseDuration:.9,holdDuration:.5,defuseDuration:.9,tailDuration:.65,elapsed:0};
+ const at=e=>{m.elapsed=e;return mix(m)};
+ assert.equal(at(.5+.45),0,'the pattern holds until halfway through the fold');
+ assert.equal(at(.5+.9+.5+.45),1,'B owns the pattern by halfway through the regrowth');
+ const hold=at(.5+.9+.25);
+ assert.ok(hold>.2&&hold<.8,'the pattern must be mid-change while the shape morphs: '+hold.toFixed(2));
+ let previous=-1;for(let e=0;e<=3.5;e+=.05){const v=at(e);assert.ok(v>=previous-1e-9,'the fade must not reverse');previous=v;}
+ // Both endpoints' pattern uniforms are captured once, and only B's uNext* values are
+ // kept so the incoming body's settings never overwrite the shared uniforms.
+ assert.ok(src.includes('viewer.morph.fusePatternB=new Map([...b].filter(([loc])=>nextLocations.has(loc)));'));
+ assert.ok(src.includes('applyFusePatternUniforms(u);'),'the fade must run every frame');
+ // It runs after the ordinary pattern upload, or that upload would erase it.
+ assert.ok(src.indexOf('applyFusePatternUniforms(u);')>src.indexOf('applyPatternUniforms(gl,u,spec.palette)')||src.indexOf('applyFusePatternUniforms(u);')>src.indexOf('gl.uniform1f(u.uCamera,spec.viewDistance)'));
+});
+
+test('tentacles are held away while the copies regrow and are out just before the tremor stops',()=>{
+ const tick=src.slice(src.indexOf('function fuseMorphState('),src.indexOf('function warpHandoffGlow('));
+ assert.ok(tick.includes("m.stage='hold';m.fuse=1;m.tentacle=1;"));
+ assert.ok(tick.includes("m.stage='defuse';m.t=1;m.tentacle=1;"),'tentacles must stay away while the copies regrow');
+ assert.ok(tick.includes("m.tentacle=1-handoffEase((m.elapsed-growEnd)/Math.max(.01,m.tailDuration*.75));"),'tentacles must be fully out at 75% of the tail');
+ assert.ok(src.includes("clamp(viewer.morph.tentacle??viewer.morph.fuse??0,0,1)"),'the draw must follow the tentacle schedule, not the copies');
+});
