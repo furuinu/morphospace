@@ -108,7 +108,11 @@ test('the reaction layer lays down palette colour and legacy specimens stay a pu
  assert.match(body,/vec3 ink=mix\(mix\(accent,highlight,tint\.x\),deep,tint\.y\*\.75\);/,'pigment colour must come from the palette');
  assert.match(body,/color=mix\(color,ink\*/,'the marking must be laid as colour, not only as shade');
  assert.match(body,/color\*=1\.-lay\*1\.35\*\(1\.-tint\.z\*\.72\);/,'tint.z=0 must reduce to the historical darkening');
- assert.match(body,/clamp\(edge\*coverage\*tint\.w\*\.85,0\.,\.7\)/,'the rim must stay bounded');
+ // The rim must come from the transition band, not from `edge`, which is its complement
+ // and covers most of the surface: using `edge` tinted the whole body instead.
+ assert.match(body,/float boundary=1\.-smoothstep\(\.04,\.17,abs\(chem\.r-\.47\)\);/,'the rim must use the boundary band');
+ assert.match(body,/clamp\(boundary\*coverage\*tint\.w\*1\.6,0\.,\.55\)/,'the rim must stay bounded');
+ assert.doesNotMatch(body,/mix\(color,highlight,clamp\(edge\*/,'the rim must not be driven by the complement band');
  assert.match(html,/reactionCoating\(color,point,chromaticPoint\(point\),uReactionAtlas,uPal1,uPal4,uPal2,/);
  assert.match(html,/uNextReactionAtlas,uNextPal1,uNextPal4,uNextPal2,/,'morphing must carry the target palette too');
  const r=run(`(()=>{const g=makeFounderGenome(880017,4,2);const legacy=copyJSON(g);delete legacy.turingDNA;
