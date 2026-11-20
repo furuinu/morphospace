@@ -149,18 +149,18 @@ test('camera handoff joins source exit and target entry at one boundary without 
 });
 test('camera pan renders finished body and appendages without layered LOD',()=>{
  assert.ok(src.includes("base=mul4(translate3(...viewer.worldOffset),base)"));
- assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
+ assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'||viewer.morph.mode==='fuse'))"));
  assert.ok(src.includes("if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
  assert.ok(src.includes("m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i]"));
  assert.ok(src.includes("const rawBatches=from.length?createMorphBatches")===false);
 });
 test('native A and B materials are not blended during offscreen handoff',()=>{
- assert.ok(src.includes("m.mode==='camera-pan'||spec!==m.source"));
+ assert.ok(src.includes("!m.patternA||!m.patternB||m.mode==='phase'||m.mode==='camera-pan'||spec!==m.source"));
  assert.ok(src.includes("viewer.morph.mode!=='camera-pan'&&spec===viewer.morph.source"));
  assert.ok(src.includes("viewer.morph.mode==='camera-pan'"));
  assert.ok(src.includes("if(!isolatedSpecimenFrame&&!nanoAction&&viewer.morph?.mode==='camera-pan'&&viewer.morph.switched)"));
  assert.ok(!src.includes("mode:'layered',index:job.index"));
- assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'))"));
+ assert.ok(src.includes("const useLocal=!!(spec.localGroup&&meshes.localShell&&(!viewer.morph||viewer.morph.mode==='camera-pan'||viewer.morph.mode==='fuse'))"));
 });
 test('captured-only playback adopts saved identities without changing the gallery or its mesh cache',()=>{
  const {f,workers}=runtime(),first=stored('saved-a',101),second=stored('saved-b',102);f.stockEntries=[first,second];f.activeStoredIndividual=first;f.v.source='stock';
@@ -712,4 +712,47 @@ test('tentacle koshi: half way between the firm and the limp root, no spring-bac
  // The current travels down the thread instead of pushing it as one rod.
  assert.match(html,/Math\.sin\(phase\*\.51\+p\.phase-u\*4\.4\)/);
  assert.doesNotMatch(html,/V\.scale\(axis,\.57\)/,'the root is a spring, not a lock');
+});
+
+test('the morphing transition fuses the copies into the base part without moving the camera',()=>{
+ // The body is drawn as one base part repeated per copy transform, so the fuse is a
+ // model-matrix interpolation: no mesh is rebuilt and no camera travel is inserted,
+ // which is what lets the background keep scrolling through the transition.
+ assert.ok(src.includes("const MORPH_TRANSITION=true"),'morphing must be the default transition');
+ assert.ok(src.includes("if(MORPH_TRANSITION&&fuseTransitionReady(spec,job.target)){"));
+ assert.ok(src.includes("viewer.morph={mode:'fuse',stage:'fuse',elapsed:0,t:0,"));
+ // Legacy specimens carry a preassembled shell with no copies and must fall back.
+ assert.ok(src.includes("return copies(source)>=2&&copies(target)>=2;"));
+ // No camera fields: the fuse must not borrow the warp's travel or world offset.
+ const setup=src.slice(src.indexOf("viewer.morph={mode:'fuse'"),src.indexOf("const rect=canvas.getBoundingClientRect()"));
+ for(const field of ['warpStart','warpTarget','travelAxis','travelDistance','exitDistance','warpChase'])
+  assert.ok(!setup.includes(field),'the fuse must not carry '+field);
+ assert.ok(src.includes("if(fuseMorphState(m,dt))cancelViewerMorph(true);"));
+ // The camera-pan commit shifts the world offset by its travel; the fuse must not,
+ // or the next specimen would be displaced by a transition that never moved.
+ assert.ok(src.includes("if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)"));
+});
+
+test('copies are absorbed in sequence and come back in sequence',()=>{
+ const state=(fuse,count)=>Array.from({length:count},(_,i)=>{
+  const span=.52,window=1-span;
+  const start=i===0?0:(i-1)/Math.max(1,count-1)*span;
+  const x=Math.max(0,Math.min(1,(fuse-start)/Math.max(.01,window)));
+  return x*x*x*(x*(x*6-15)+10);
+ });
+ const count=6;
+ // Mid-collapse the copies must be at different stages, otherwise the whole body
+ // implodes at once instead of merging part by part.
+ const mid=state(.5,count);
+ assert.ok(mid[1]>mid[count-1]+.2,'earlier copies must merge before later ones: '+mid.map(v=>v.toFixed(2)));
+ assert.ok(state(1,count).every(v=>v>.999),'every copy must be fully merged at the end');
+ assert.ok(state(0,count).every(v=>v<.001),'nothing may be merged at the start');
+ // The timeline runs fuse, hold, then defuse, and the specimen is swapped while the
+ // single fused part is on screen - never while the copies are visible.
+ const tick=src.slice(src.indexOf('function fuseMorphState('),src.indexOf('function warpHandoffGlow('));
+ assert.ok(tick.includes("m.stage='fuse';m.fuse=clamp(m.elapsed/m.fuseDuration,0,1);"));
+ assert.ok(tick.includes("m.stage='hold';m.fuse=1;"));
+ assert.ok(tick.indexOf("m.switched=true;spec=m.target")>tick.indexOf("m.stage='hold'"),'the swap must happen during the hold');
+ assert.ok(tick.includes("m.stage='defuse';m.t=1;"));
+ assert.ok(tick.includes("m.fuse=1-clamp((m.elapsed-m.fuseDuration-m.holdDuration)"),'the defuse must run the fuse backwards');
 });
