@@ -794,3 +794,44 @@ test('the fuse transition keeps the view distance finite from the swap to the co
  // The commit sets the final distance; it must agree with the value the easing reached.
  assert.ok(Math.abs(f.spec.viewDistance-previous)<.5,'the commit must not snap the framing');
 });
+
+test('tentacles retract in a scattered order and are fully gone when the copies merge',()=>{
+ const {f}=runtime();
+ f.seedRng=ctx.seedRng;
+ const retract=vm.runInContext('tentacleRetraction',f);
+ const row=(seed,amount,count=10)=>Array.from({length:count},(_,i)=>retract(seed,i,amount));
+ // Nothing retracted before the fuse starts, everything gone once the copies have
+ // merged: a tentacle left on the single fused part would look like a mistake.
+ assert.ok(row(733117,0).every(v=>v===1),'tentacles must be intact at the start');
+ for(const seed of [1,99,733117,2654435761])
+  assert.ok(row(seed,1,40).every(v=>v<1e-6),'every tentacle must be gone by the end, seed '+seed);
+ // Scattered, not synchronised: mid-fuse the parts must be at clearly different stages.
+ const mid=row(733117,.5,12);
+ assert.ok(Math.max(...mid)-Math.min(...mid)>.4,'retraction must be staggered: '+mid.map(v=>v.toFixed(2)));
+ // Monotone, so the regrowth on the way back out never stutters.
+ for(let i=0;i<6;i++){
+  let previous=1;
+  for(let a=0;a<=1.0001;a+=.05){const v=retract(733117,i,a);assert.ok(v<=previous+1e-9,'retraction must not reverse');previous=v;}
+ }
+ // Different specimens retract in different orders.
+ const a=row(11,.5,12).map(v=>v.toFixed(2)).join(),b=row(12,.5,12).map(v=>v.toFixed(2)).join();
+ assert.notEqual(a,b,'the order must follow the specimen seed');
+});
+
+test('only tentacle-like parts retract, and the strand simulation never feels the shrink',()=>{
+ const tentacle=vm.runInContext('tentaclePart',runtime().f);
+ for(const kind of ['arm','branch','spike'])assert.ok(tentacle({kind,mesh:{}}),kind+' must retract');
+ for(const kind of ['opaque','translucent','lung'])assert.ok(!tentacle({kind,mesh:{}}),kind+' must not retract');
+ assert.ok(tentacle({kind:'opaque',mesh:{verlet:true}}),'simulated strands must retract whatever their kind');
+ // The strand is stepped with the true model matrix and only the draw is retracted;
+ // stepping with the shrunken matrix would feed the shrink back into the simulation.
+ const draw=src.slice(src.indexOf('function drawCopy(model,mirrored'));
+ const step=draw.indexOf('stepWorldStrand(mesh,model,bodyTime'),shrink=draw.indexOf('const retract=fuseAmountForDraw');
+ // Parts are keyed by their own geometry, not by a loop counter, so the same specimen
+ // retracts its tentacles in the same order every time it is viewed.
+ assert.ok(draw.includes('tentacleRetraction(spec.seed,partFuseKey(pt),fuseAmountForDraw)'));
+ assert.ok(src.includes('return (pt.__fuseKey=Math.abs(Math.round((c[0]*7919+c[1]*104729+c[2]*1299709)*997))+1);'));
+ assert.ok(step>=0&&shrink>step,'the strand must be stepped before the retraction is applied');
+ assert.ok(draw.includes('gl.uniformMatrix4fv(u.uModel,false,model);gl.uniformMatrix4fv(u.uMvp,false,mvp);'),'the copy matrices must be restored after a retracted part');
+ assert.ok(draw.includes('if(retract<=.02)continue;'),'a fully retracted part must stop being drawn');
+});
