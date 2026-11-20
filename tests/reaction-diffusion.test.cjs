@@ -10,7 +10,7 @@ test('Gray-Scott atlas is finite, deterministic and has four growth stages',()=>
  assert.deepEqual(first.pixels,again.pixels);
  assert.notDeepEqual(first.pixels,other.pixels);
  assert.deepEqual(first.stages,[48,84,132,192]);
- const n=reaction.size,px=first.pixels,w=first.width,means=[],nonzero=[];
+ const px=first.pixels,w=first.width,n=w/2,means=[],nonzero=[];
  for(let stage=0;stage<4;stage++){
   const x0=(stage%2)*n,y0=Math.floor(stage/2)*n;
   let sum=0,count=0;

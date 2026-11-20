@@ -279,3 +279,19 @@ test('a pending bake defers the draw instead of blocking it, and the thumbnail r
  // holds nothing, and each thumbnail comes back through the preview queue instead.
  assert.match(html,/if\(spec&&meshes&&!animating\)\{try\{render\(\)\}catch\(error\)\{\}\}/);
 });
+
+test('new specimens simulate on the finer grid while legacy bakes keep the old one',()=>{
+ assert.equal(reaction.legacySize,56,'the historical grid must stay available for legacy bakes');
+ assert.equal(reaction.size,112,'new specimens must simulate on the finer grid');
+ const g=plain(run(`(()=>{const g=copyJSON(makeFounderGenome(733117,5,3));const legacy=copyJSON(g);delete legacy.turingDNA;
+ return {seed:g.seed,p:copyJSON(g.patternDNA),t:copyJSON(g.turingDNA),l:copyJSON(ensureTuringDNA(legacy,legacy.seed))};})()`));
+ assert.equal(reaction.createAtlas(g.seed,g.p,g.l).width,112,'a legacy atlas stays 2x56');
+ assert.equal(reaction.createAtlas(g.seed,g.p,g.t).width,224,'a new atlas is 2x112');
+ // The neighbour offset scales with the grid, so diffusion length - and therefore the
+ // pattern's size relative to the body - is unchanged. Without this the finer grid
+ // would simply halve every marking rather than resolve it.
+ assert.match(html,/const n=legacy\?LEGACY_N:N,len=n\*n,step=legacy\?1:Math\.round\(N\/LEGACY_N\);/);
+ assert.match(html,/const s1=step,s2=step;/);
+ assert.match(html,/a\[ix\(x\+s1,y\)\]\+a\[ix\(x-s1,y\)\]/,'the stencil must use the scaled offset');
+ assert.match(html,/r:spotRadius\(rng\)\*step/,'seeding must scale with the grid too');
+});
