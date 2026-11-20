@@ -1012,3 +1012,60 @@ test('tentacles are held away while the copies regrow and are out just before th
  assert.ok(tick.includes("m.tentacle=1-handoffEase((m.elapsed-growEnd)/Math.max(.01,m.tailDuration*.75));"),'tentacles must be fully out at 75% of the tail');
  assert.ok(src.includes("clamp(viewer.morph.tentacle??viewer.morph.fuse??0,0,1)"),'the draw must follow the tentacle schedule, not the copies');
 });
+
+// The mutation must happen in place. At the swap the body's placement used to switch from
+// A's to B's - DNA pose, swim offset (zeroed), close-up spin (re-randomised), drag - so
+// B appeared somewhere else, by however far A had swum or spun.
+test('the next body is born exactly where the last one stood, then settles into its own pose',()=>{
+ const {f}=runtime();
+ for(const name of ['mul4','translate3','scale3','rotX','rotY','rotZ'])f[name]=ctx[name];
+ const ev=code=>vm.runInContext(code,f);
+ const start=src.indexOf('function rigidInverse(m){');vm.runInContext(src.slice(start,src.indexOf('\n}\n',start)+3),f);
+ const continuity=ev('fuseContinuity');
+ const m={mode:'fuse',switched:false,stage:'fuse',elapsed:1.2,t:0,leadDuration:.5,fuseDuration:.9,holdDuration:.5,defuseDuration:.9,tailDuration:.65};
+ ev('viewer').morph=m;
+ // A sits turned and displaced; B's own placement is a different turn and position.
+ const A=ctx.mul4(ctx.translate3(1.5,-.4,2),ctx.mul4(ctx.rotY(.6),ctx.rotX(-.25)));
+ const B=ctx.mul4(ctx.translate3(-.8,.9,.3),ctx.mul4(ctx.rotY(-.9),ctx.rotZ(.4)));
+ continuity(A);
+ const apply=p=>{const v=[p[0],p[1],p[2]];return v;};
+ const point=(M,p)=>[0,1,2].map(i=>M[i]*p[0]+M[4+i]*p[1]+M[8+i]*p[2]+M[12+i]);
+ const probe=[[0,0,0],[1,0,0],[0,1,0],[0,0,1]];
+ const gap=(M,N)=>Math.max(...probe.map(p=>{const a=point(M,p),b=point(N,p);return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])}));
+ // First frame after the swap: B is drawn exactly as A was.
+ Object.assign(m,{switched:true,stage:'hold',elapsed:1.4,t:0});
+ assert.ok(gap(continuity(B),A)<1e-4,'the first frame of B must coincide with the last frame of A');
+ // It then settles monotonically and lands exactly on B's own placement.
+ const total=.5+.9+.5+.9+.65;let previous=Infinity;
+ for(let e=1.4;e<=total+1e-6;e+=.05){m.elapsed=e;const d=gap(continuity(B),B);assert.ok(d<=previous+1e-6,'the settling must not reverse');previous=d;}
+ m.elapsed=total;
+ assert.ok(gap(continuity(B),B)<1e-4,'by the handover B must be in its own pose, or the commit would jump');
+ // Rotation is about the body itself: midway, the body's centre lies on the straight
+ // line between A's position and B's, never swung round the origin.
+ m.elapsed=1.4+(total-1.4)/2;
+ const c=point(continuity(B),[0,0,0]),a=[A[12],A[13],A[14]],b=[B[12],B[13],B[14]];
+ const ab=[0,1,2].map(i=>b[i]-a[i]),ac=[0,1,2].map(i=>c[i]-a[i]);
+ const cross=Math.hypot(ab[1]*ac[2]-ab[2]*ac[1],ab[2]*ac[0]-ab[0]*ac[2],ab[0]*ac[1]-ab[1]*ac[0]);
+ assert.ok(cross/Math.hypot(...ab)<1e-4,'the body must travel straight from A to B, not orbit the origin');
+ ev('viewer').morph=null;
+ // What can be inherited is inherited rather than reset.
+ const tick=src.slice(src.indexOf('function fuseMorphState('),src.indexOf('function warpHandoffGlow('));
+ assert.ok(tick.includes('pulseTravel.specimen=spec;'),'B must inherit the swim');
+ assert.ok(!tick.includes('pulseTravel.position.fill(0)'),'the swim offset must not be zeroed at the swap');
+ assert.ok(!tick.includes('specimenDragQuat=[0,0,0,1]'),'the drag rotation must survive the swap');
+ assert.ok(tick.includes('specimenInspection.specimen=spec;'),'the close-up spin must carry on');
+ assert.ok(src.includes("if(typeof fuseContinuity==='function')base=fuseContinuity(base);"));
+});
+
+test('a mirrored first copy turns inside out across the hold instead of flipping',()=>{
+ // The sign goes on the fused copy's flags - a fresh object, never the DNA - and only
+ // the magnitude, which passes through zero, is applied on top.
+ assert.ok(src.includes("if(copyIndex===0&&copyFuse>.001&&fuseMorph.fuseMirrorA&&t!==raw){"),'the DNA transform must never be mutated');
+ assert.ok(src.includes("t.mirror=fusedMirror[0]<0;t.mirrorY=fusedMirror[1]<0;"));
+ assert.ok(src.includes("copyMatrix=mul4(copyMatrix,scale3(Math.max(1e-3,Math.abs(fusedMirror[0])),Math.max(1e-3,Math.abs(fusedMirror[1])),1));"));
+ // The pinned placement and winding lines are unchanged.
+ assert.ok(src.includes("let copyMatrix=articulatedCopyMatrix(placed,pose,spec.growthModel.copyLayout);"));
+ assert.ok(src.includes("const mvp=drawCopy(model,!!t.mirror!==!!t.mirrorY,glassPass,copyIndex);"));
+ const sign=(a,b,w)=>a+(b-a)*w;
+ assert.equal(Math.sign(sign(-1,1,0)),-1);assert.equal(sign(-1,1,.5),0);assert.equal(Math.sign(sign(-1,1,1)),1);
+});
