@@ -883,7 +883,11 @@ test('the organism convulses through the transition and settles exactly at both 
  assert.ok(html.includes("if(u.uFray)gl.uniform1f(u.uFray,FUSE_TREMOR_FRAY*fuseTremor());"));
  // A capture must come out clean, like the motion it already zeroes.
  assert.ok(html.includes("gl.uniform1f(u.uMotion,0);if(u.uFray)gl.uniform1f(u.uFray,0);"));
- assert.ok(html.includes("'uMotion','uFray','uStyle'"),'uFray must be resolved with the other uniforms');
+ const lists=html.match(/for\(const u of \['uSheetA'[\s\S]*?\]\)/g)||[];
+ assert.equal(lists.length,2,'one uniform list for the body program and one for the cilia program');
+ assert.ok(lists[0].includes("'uFray'"),'uFray must be resolved for the body program, not only present somewhere');
+ assert.ok(!lists[1].includes("'uFray'"),'the cilia shader does not declare uFray');
+ assert.ok(html.includes("'uTime','uMotion','uFray','uStyle','uSeed'"));
  // fuseTremor is read by the cilia pass, which lives above the viewer, so it must be
  // declared above it too and must survive a context with no viewer at all (the Worker).
  assert.ok(html.indexOf('function fuseTremor()')<html.indexOf('const viewer='),'fuseTremor must be declared before the viewer');
