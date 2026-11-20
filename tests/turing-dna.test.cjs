@@ -226,3 +226,51 @@ test('scale genes vary, segregate, and leave some individuals single-scale',()=>
  assert.ok(v.negative>4,`inverted fine detail must occur: ${v.negative}/64`);
  assert.ok(v.split>5&&v.mutations>5,'the scale block must segregate and mutate independently');
 });
+
+// The Worker runs the same module from the same inlined source, so its atlas must be
+// byte-identical to a main-thread bake. This builds the Worker's script exactly as the
+// page does and runs it against a stub `self`.
+test('the Worker bake is byte-identical to a main-thread bake',()=>{
+ const node=/<script data-bundled="surface-reaction\.js">([\s\S]*?)<\/script>/.exec(html);
+ assert.ok(node,'the inlined reaction module must be findable by the selector the page uses');
+ assert.match(html,/document\.querySelector\('script\[data-bundled="surface-reaction\.js"\]'\)/,'the page must read that same script tag');
+ const source='const window=self;const document={querySelectorAll:()=>[],getElementById:()=>({value:100})};\n'+node[1]+
+  '\nself.onmessage=event=>{const job=event.data;try{'+
+  'const atlas=self.MorphospaceReaction.createAtlas(job.seed,job.pattern,job.turing);'+
+  'self.postMessage({id:job.id,key:job.key,ok:true,width:atlas.width,height:atlas.height,pixels:atlas.pixels},[atlas.pixels.buffer]);'+
+  '}catch(error){self.postMessage({id:job.id,key:job.key,ok:false,message:error&&error.message||String(error)})}};';
+ let sent=null;
+ const self_={postMessage:m=>{sent=m},Float32Array,Uint8Array,Math,JSON,String,Number,Object,Error,isNaN,parseFloat};
+ self_.self=self_;
+ vm.createContext(self_);
+ vm.runInContext(source,self_);
+ assert.ok(self_.MorphospaceReaction,'the module must attach itself inside a Worker');
+ const g=plain(run(`(()=>{const g=makeFounderGenome(515151,6,3);return {seed:g.seed,p:copyJSON(g.patternDNA),t:copyJSON(g.turingDNA)};})()`));
+ self_.onmessage({data:{id:1,key:'k',seed:g.seed,pattern:g.p,turing:g.t}});
+ assert.ok(sent&&sent.ok,'the Worker must answer with an atlas: '+(sent&&sent.message));
+ const direct=reaction.createAtlas(g.seed,g.p,g.t);
+ assert.equal(sent.width,direct.width);
+ assert.deepEqual([...sent.pixels],[...direct.pixels],'moving the bake off-thread must not change a single byte');
+});
+
+test('a pending bake defers the draw instead of blocking it, and the thumbnail retries once',()=>{
+ // reactionTextureFor must return null while a bake is queued, never run the
+ // simulation inline, and must not enqueue the same atlas twice.
+ const fn=html.slice(html.indexOf('function reactionTextureFor('),html.indexOf('function applyReactionUniforms('));
+ assert.match(fn,/if\(reactionPending\.has\(key\)\)\{reactionDeferred=true;return null\}/,'a second request for a baking atlas must not re-queue it');
+ assert.match(fn,/reactionPending\.add\(key\);reactionDeferred=true;/);
+ assert.match(fn,/reactionQueue\.push\(\{id:\+\+reactionJobSeq,key,seed:palette\.seed,pattern:d,turing:t\}\)/);
+ // The synchronous bake must survive only as the no-Worker fallback.
+ const sync=fn.match(/MorphospaceReaction\.createAtlas/g)||[];
+ assert.equal(sync.length,1,'the inline bake must remain only as the fallback');
+ assert.ok(fn.indexOf('if(reactionWorkerPool())')<fn.lastIndexOf('MorphospaceReaction.createAtlas'),'the fallback must come after the Worker path');
+ const queue=html.slice(html.indexOf('function queueAtlasPreview('),html.indexOf('function drawGpuPreview('));
+ assert.match(queue,/if\(!reactionDeferred\|\|job\.retried\|\|job\.epoch!==atlasEpoch\)return;/,'a thumbnail must retry only when a bake was deferred');
+ assert.match(queue,/onReactionIdle\(\(\)=>\{if\(job\.epoch===atlasEpoch\)\{job\.queued=false;enqueue\(\)\}\}\)/);
+ // A stale generation must not redraw into a recycled canvas.
+ assert.match(queue,/job\.epoch!==atlasEpoch/);
+ assert.match(html,/while\(reactionGPUCache\.size>48\)/,'the cache must hold a whole generation so the retry hits it');
+ // The redraw is for the open specimen only: during a gallery build the main canvas
+ // holds nothing, and each thumbnail comes back through the preview queue instead.
+ assert.match(html,/if\(spec&&meshes&&!animating\)\{try\{render\(\)\}catch\(error\)\{\}\}/);
+});
