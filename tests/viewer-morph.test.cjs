@@ -863,7 +863,19 @@ test('the organism convulses through the transition and settles exactly at both 
  assert.ok(html.includes("Math.min(FUSE_TREMOR_BODY_CAP,(1+FUSE_TREMOR_BODY*fuseTremor())*Number($('motionAmp').value)/100"));
  // Post-multiplied, so the shudder turns the body about its own origin and never
  // slides it off centre.
- assert.ok(html.includes("base=mul4(base,mul4(rotX(Math.sin(t*41.3)*a),mul4(rotY(Math.sin(t*53.7+1.7)*a),rotZ(Math.sin(t*67.1+3.1)*a))));"));
+ assert.ok(html.includes("base=mul4(base,mul4(rotX(Math.sin(t*79.3)*a),mul4(rotY(Math.sin(t*101.7+1.7)*a),rotZ(Math.sin(t*127.1+3.1)*a))));"));
+ // The surface frays per vertex: neighbouring vertices of one triangle get independent
+ // offsets along the normal, so the skin bristles instead of breathing smoothly. The
+ // helper lives in the shared chunk, so both the full and the Safari path get it.
+ assert.equal((html.match(/float frayField\(vec3 p,float time\)/g)||[]).length,1,'frayField belongs in the shared chunk');
+ assert.ok(html.includes('vec3 wholeBodyWarp(vec3 p,float t,float amp){'),'the shared chunk must still define the body warp');
+ assert.equal((html.match(/\$\{wholeBodyGLSL\}/g)||[]).length,3,'both vertex shaders and the cilia pass include the shared chunk');
+ assert.ok(html.includes('if(uFray>0.0)shifted+=canonicalNormal*frayField(canonical,ancestralTime)*uFray;'),'the full path must fray');
+ assert.ok(html.includes('if(uFray>0.0)p+=n*frayField(jPos,uTime)*uFray;'),'the Safari path must fray too');
+ assert.ok(html.includes("if(u.uFray)gl.uniform1f(u.uFray,FUSE_TREMOR_FRAY*fuseTremor());"));
+ // A capture must come out clean, like the motion it already zeroes.
+ assert.ok(html.includes("gl.uniform1f(u.uMotion,0);if(u.uFray)gl.uniform1f(u.uFray,0);"));
+ assert.ok(html.includes("'uMotion','uFray','uStyle'"),'uFray must be resolved with the other uniforms');
  // fuseTremor is read by the cilia pass, which lives above the viewer, so it must be
  // declared above it too and must survive a context with no viewer at all (the Worker).
  assert.ok(html.indexOf('function fuseTremor()')<html.indexOf('const viewer='),'fuseTremor must be declared before the viewer');
