@@ -1102,3 +1102,23 @@ test('each new specimen turns the sky drift within 60 degrees, slowly, at consta
  assert.ok(src.includes("pulseTravel.specimen=spec;\n   if(typeof beginOrbitTurn==='function')beginOrbitTurn();"),'the turn must start when the next specimen takes over');
  assert.ok(src.includes('function stepCameraOrbit(dt){\n stepOrbitTurn(dt);'));
 });
+
+test('the first sky drift points anywhere in 360 degrees at the usual speed',()=>{
+ const f={CAMERA_ORBIT_BASE_SPEED:.08};vm.createContext(f);
+ const a=src.indexOf('let cameraOrbitSpeed='),b=src.indexOf('randomOrbitDrift();',a);
+ vm.runInContext(src.slice(a,b).replace(/\blet /g,'var '),f);
+ const quadrants=new Set();
+ for(const r of [0,.13,.26,.4,.55,.7,.83,.97]){
+  f.randomOrbitDrift(()=>r);
+  const yaw=f.cameraOrbitSpeed,pitch=f.cameraOrbitPitchSpeed;
+  assert.ok(Math.abs(Math.hypot(yaw,pitch)-.08)<1e-12,'the drift speed must be the base speed');
+  assert.equal(f.cameraOrbitRollSpeed,0);
+  assert.equal(f.cameraOrbitTargetSpeed,yaw);assert.equal(f.cameraOrbitTargetPitchSpeed,pitch);
+  quadrants.add((yaw>=0?1:0)+(pitch>=0?2:0));
+ }
+ assert.equal(quadrants.size,4,'the starting direction must cover the whole circle');
+ // Both the page load and every viewer reset draw a fresh direction.
+ assert.ok(src.slice(a,b+40).includes('randomOrbitDrift();'));
+ assert.ok(src.includes(" if(typeof randomOrbitDrift==='function')randomOrbitDrift();"),'closing the viewer must not restore the old fixed heading');
+ assert.ok(!src.includes('cameraOrbitSpeed=cameraOrbitTargetSpeed=-CAMERA_ORBIT_BASE_SPEED;'));
+});
