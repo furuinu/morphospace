@@ -11,7 +11,7 @@ function runtime(){
   Blob:class{},URL:{createObjectURL:()=> 'blob:worker'},Worker:class{constructor(){workers.push(this)}postMessage(value){this.request=value}terminate(){this.terminated=true}},
   gl:{ARRAY_BUFFER:1,ELEMENT_ARRAY_BUFFER:2,STATIC_DRAW:3,DYNAMIC_DRAW:4,createBuffer:()=> 'new-'+(++bufferId),bindBuffer(){},bufferData(target,size){events.push('allocate');transfers.push({allocate:size})},bufferSubData(target,offset,data){events.push('upload');transfers.push({bytes:data.byteLength})},deleteBuffer:buffer=>events.push('delete:'+buffer)},
   applyUploadedSpecimen:(sp,preserve,metadata,prepared)=>{assert.ok(prepared);f.spec=sp;f.meshes=prepared.meshes;events.push('apply')},currentIndividual:()=>({name:'original'}),recordDisplayName:r=>r.name,viewerMetadata:()=>events.push('metadata'),viewerPatternValues:()=>new Map(),morphFrameFactors:ctx.morphFrameFactors,interpolateMorphBatch:ctx.interpolateMorphBatch,layeredMorphScale:ctx.layeredMorphScale,interpolateLayeredMorphBatch:ctx.interpolateLayeredMorphBatch,
-  MICRO_DENSITY:.75,$:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},add(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
+  copyJSON:value=>JSON.parse(JSON.stringify(value)),MICRO_DENSITY:.75,$:id=>elements[id]||(elements[id]={open:false,value:String(defaults[id]??0),textContent:'',checked:true,hidden:false,style:{},classList:{toggle(){},add(){},remove(){},contains(){return true}},setAttribute(k,v){this[k]=v}})};
  vm.createContext(f);vm.runInContext(src.slice(src.indexOf('const viewer='),src.indexOf("$('viewerFullscreen').onclick=")),f);f.viewerMetadata=()=>events.push('metadata');f.viewerPatternValues=()=>new Map();f.v=vm.runInContext('viewer',f);return{f,events,workers,transfers};
 }
 function deliver(f,worker,target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{}}){
@@ -293,7 +293,7 @@ test('texture snapshots use separate uniform locations and an ordinary draw rese
 test('preloading starts during observation without activating a morph or modifying source arrays',()=>{
  const {f,workers,events}=runtime(),original=f.meshes,before=Array.from(a.data);f.tickViewer(.1);
  assert.equal(workers.length,1);assert.equal(f.v.preparing,false);assert.equal(f.v.morph,null);assert.equal(f.meshes,original);assert.equal(events.length,0);
- const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.equal('from' in request,false,'do not clone A topology');assert.equal('fromAppendages' in request,false);assert.deepEqual(Array.from(a.data),before);
+ const request=workers[0].request;assert.equal(request.record.seed,2);assert.equal(request.settings.density,.84);assert.ok(!request.from||(!request.from.data&&!request.from.tri&&!request.from.edges),'do not clone A topology');assert.equal('fromAppendages' in request,false);assert.deepEqual(Array.from(a.data),before);
  f.tickViewer(.1);assert.equal(workers.length,1);
 });
 
@@ -720,7 +720,7 @@ test('the morphing transition fuses the copies into the base part without moving
  // which is what lets the background keep scrolling through the transition.
  assert.ok(src.includes("const MORPH_TRANSITION=true"),'morphing must be the default transition');
  assert.ok(src.includes("if(MORPH_TRANSITION&&fuseTransitionReady(spec,job.target)){"));
- assert.ok(src.includes("viewer.morph={mode:'fuse',stage:'fuse',elapsed:0,t:0,"));
+ assert.ok(src.includes("viewer.morph={mode:'fuse',stage:'lead',elapsed:0,t:0,"));
  // Legacy specimens carry a preassembled shell with no copies and must fall back.
  assert.ok(src.includes("return copies(source)>=2&&copies(target)>=2;"));
  // No camera fields: the fuse must not borrow the warp's travel or world offset.
@@ -750,11 +750,13 @@ test('copies are absorbed in sequence and come back in sequence',()=>{
  // The timeline runs fuse, hold, then defuse, and the specimen is swapped while the
  // single fused part is on screen - never while the copies are visible.
  const tick=src.slice(src.indexOf('function fuseMorphState('),src.indexOf('function warpHandoffGlow('));
- assert.ok(tick.includes("m.stage='fuse';m.fuse=clamp(m.elapsed/m.fuseDuration,0,1);"));
+ assert.ok(tick.includes("m.stage='lead';m.fuse=0;"),'the tremor must build before anything folds');
+ assert.ok(tick.includes("m.stage='fuse';m.fuse=clamp((m.elapsed-foldStart)/m.fuseDuration,0,1);"));
  assert.ok(tick.includes("m.stage='hold';m.fuse=1;"));
  assert.ok(tick.indexOf("m.switched=true;spec=m.target")>tick.indexOf("m.stage='hold'"),'the swap must happen during the hold');
  assert.ok(tick.includes("m.stage='defuse';m.t=1;"));
- assert.ok(tick.includes("m.fuse=1-clamp((m.elapsed-m.fuseDuration-m.holdDuration)"),'the defuse must run the fuse backwards');
+ assert.ok(tick.includes("m.fuse=1-clamp((m.elapsed-holdEnd)"),'the defuse must run the fuse backwards');
+ assert.ok(tick.includes("m.stage='tail';m.t=1;m.fuse=0;"),'the tremor must outlive the regrowth');
 });
 
 // Driving the whole fuse timeline: the state machine was correct but the camera read
@@ -790,7 +792,7 @@ test('the fuse transition keeps the view distance finite from the swap to the co
  assert.equal(ev('viewer.morph'),null,'the transition must finish');
  assert.equal(f.spec,target,'the next specimen must be live at the end');
  assert.equal(swapStage,'hold','the specimen must be swapped while the single fused part is on screen');
- assert.deepEqual([...new Set(stages)],['fuse','hold','defuse'],'all three stages must run in order');
+ assert.deepEqual([...new Set(stages)],['lead','fuse','hold','defuse','tail'],'all five stages must run in order');
  // The commit sets the final distance; it must agree with the value the easing reached.
  assert.ok(Math.abs(f.spec.viewDistance-previous)<.5,'the commit must not snap the framing');
 });
@@ -837,7 +839,7 @@ test('only tentacle-like parts retract, and the strand simulation never feels th
 });
 
 test('the organism convulses through the transition and settles exactly at both ends',()=>{
- const m={mode:'fuse',elapsed:0,fuseDuration:1.8,holdDuration:.4,defuseDuration:1.8};
+ const m={mode:'fuse',elapsed:0,leadDuration:1,fuseDuration:1.8,holdDuration:1,defuseDuration:1.8,tailDuration:1.3};
  const saved=ctx.viewer;
  try{
   ctx.viewer={morph:null};
@@ -848,13 +850,18 @@ test('the organism convulses through the transition and settles exactly at both 
   const at=e=>{m.elapsed=e;return ctx.fuseTremor()};
   // Nothing at either end: a shudder still running when the next specimen is handed
   // over would look like a bug rather than a transformation.
+  const total=1+1.8+1+1.8+1.3;
   assert.equal(at(0),0);
-  assert.equal(at(4),0);
-  assert.ok(at(1.9)>.999&&at(2.1)>.999,'the tremor must be at full strength while the copies are merged');
+  assert.equal(at(total),0,'nothing may still be shaking at the handover');
+  // The fold begins at the end of the lead, and the body must already be shaking hard
+  // by then rather than starting to shake as it folds.
+  assert.ok(at(1)>.5,'the tremor must be past half strength when the fold starts, got '+at(1).toFixed(2));
+  // Still at full strength when the next body is whole: it settles after, never before.
+  assert.equal(at(1+1.8+1+1.8),1,'the tremor must not settle before the copies are back');
   let previous=-1;
-  for(let e=0;e<=1.8001;e+=.1){const v=at(e);assert.ok(v>=previous-1e-9,'the tremor must only rise through the fuse');previous=v;}
+  for(let e=0;e<=2.8001;e+=.1){const v=at(e);assert.ok(v>=previous-1e-9,'the tremor must only rise until the fold is done');previous=v;}
   previous=2;
-  for(let e=2.2;e<=4.0001;e+=.1){const v=at(e);assert.ok(v<=previous+1e-9,'the tremor must only fall through the defuse');previous=v;}
+  for(let e=5.6;e<=total+1e-4;e+=.1){const v=at(e);assert.ok(v<=previous+1e-9,'the tremor must only fall once the body is whole');previous=v;}
  }finally{ctx.viewer=saved}
  // Cilia are pushed toward the shader's own ceiling; the body is raised but capped,
  // because the shader multiplies uMotion by up to 1.82 and an uncapped value tears skin.
@@ -892,4 +899,62 @@ test('the organism convulses through the transition and settles exactly at both 
  // declared above it too and must survive a context with no viewer at all (the Worker).
  assert.ok(html.indexOf('function fuseTremor()')<html.indexOf('const viewer='),'fuseTremor must be declared before the viewer');
  assert.ok(html.includes("if(typeof viewer==='undefined'||!viewer)return 0;"),'the Worker runs this source without a viewer');
+});
+
+test('the single fused part steps through blended shapes into the next body',()=>{
+ const {f,workers}=runtime();
+ const ev=code=>vm.runInContext(code,f);
+ const copies=n=>Array.from({length:n},(_,i)=>({p:[i*2-2,0,0],scale:1,angle:.3*i,axis:'y',mirror:i%2===1,mirrorY:false}));
+ const group=n=>({shell:mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),parts:[],source:{blobs:[{p:[0,0,0],axes:[1,1,1]}]},copyTransforms:copies(n)});
+ const model=n=>({copyLayout:0,copyTransforms:copies(n),fusedSource:{blobs:[{p:[0,0,0],axes:[1,1,1],s:1}],bound:3},copyTransforms:copies(n)});
+ f.spec.growthModel=model(5);f.spec.localGroup=group(5);f.meshes.localShell=f.spec.localGroup.shell;
+ f.startViewerMorph();
+ // The outgoing body's fused source must reach the Worker, or there is nothing to
+ // blend towards and the shape can only hard-cut.
+ assert.ok(workers[0].request.from&&workers[0].request.from.blobs,'the outgoing fused source must be sent');
+ const tag=(m,t)=>Object.assign(m,{tag:t});
+ const target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{},growthModel:model(4),localGroup:group(4)};
+ workers[0].onmessage({data:{ok:true,payload:{target,distance:15,
+  targetMeshes:{shell:mesh([[0,0,1],[2,0,1],[0,2,1]],[0,1,2]),parts:[],cilia:[],
+   localShell:tag(mesh([[0,0,1],[2,0,1],[0,2,1]],[0,1,2]),'B'),localParts:[]},
+  morphFrames:[1,2,3,4,5].map(i=>tag(mesh([[0,0,1],[2,0,1],[0,2,1]],[0,1,2]),'f'+i)),
+  bounds:{radius:5}}}});
+ f.advanceViewerPreparation();
+ if(ev('viewer.preparing')&&ev('viewer.pending&&viewer.pending.ready'))f.activateViewerPreparation();
+ assert.equal(ev('viewer.morph&&viewer.morph.mode'),'fuse');
+ assert.equal(ev('viewer.morph.morphFrames.length'),5,'the frames must be carried into the transition');
+ const seen=[];
+ for(let i=0;i<120&&ev('viewer.morph');i++){
+  f.tickViewer(.1);
+  const shown=f.meshes&&f.meshes.localShell&&f.meshes.localShell.tag||'A';
+  if(seen[seen.length-1]!==shown)seen.push(shown);
+ }
+ // A, then every blend in order, then the incoming body's own mesh: no shape is
+ // skipped and none comes back after the next one.
+ assert.deepEqual(seen,['A','f1','f2','f3','f4','f5','B'],'the shape must step through every blend once');
+ assert.equal(f.spec,target);
+ // The incoming body's own mesh must be restored, or the specimen would be left
+ // wearing a low-resolution in-between shape for the rest of its life.
+ assert.equal(f.meshes.localShell.tag,'B','the real mesh must be restored before the handover');
+});
+
+test('the blend of two fused sources stays finite and lands on each end',()=>{
+ const blend=ctx.blendFusedSource;
+ const a={blobs:[{p:[0,0,0],axes:[1,1,1],s:1,kind:0},{p:[1,0,0],axes:[2,1,1],s:.5,kind:1}],bound:3,fuse:.2,rough:.1,cuts:['a']};
+ const b={blobs:[{p:[0,2,0],axes:[3,1,1],s:2,kind:2}],bound:5,fuse:.8,rough:.9,cuts:['b']};
+ for(const t of [0,.25,.5,.75,1]){
+  const out=blend(a,b,t);
+  assert.equal(out.blobs.length,2,'the longer blob list sets the count');
+  for(const blob of out.blobs)for(const v of [...blob.p,...blob.axes,blob.s])assert.ok(Number.isFinite(v),'every blended value must be finite at t='+t);
+  assert.ok(out.bound>=3-1e-9&&out.bound<=5+1e-9);
+ }
+ assert.deepEqual(blend(a,b,0).blobs[0].p,[0,0,0],'t=0 must be A');
+ assert.deepEqual(blend(a,b,1).blobs[0].p,[0,2,0],'t=1 must be B');
+ // Cuts and structures cannot be paired, so they switch at the midpoint rather than
+ // being interpolated into something meaningless.
+ assert.deepEqual(blend(a,b,.4).cuts,['a']);
+ assert.deepEqual(blend(a,b,.6).cuts,['b']);
+ // A source with no fuse or rough must not produce NaN.
+ const bare={blobs:[{p:[0,0,0],axes:[1,1,1],s:1}],bound:2};
+ for(const v of [blend(bare,b,.5).fuse,blend(bare,b,.5).rough])assert.ok(v===undefined||Number.isFinite(v));
 });
