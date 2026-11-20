@@ -835,3 +835,37 @@ test('only tentacle-like parts retract, and the strand simulation never feels th
  assert.ok(draw.includes('gl.uniformMatrix4fv(u.uModel,false,model);gl.uniformMatrix4fv(u.uMvp,false,mvp);'),'the copy matrices must be restored after a retracted part');
  assert.ok(draw.includes('if(retract<=.02)continue;'),'a fully retracted part must stop being drawn');
 });
+
+test('the organism convulses through the transition and settles exactly at both ends',()=>{
+ const m={mode:'fuse',elapsed:0,fuseDuration:1.8,holdDuration:.4,defuseDuration:1.8};
+ const saved=ctx.viewer;
+ try{
+  ctx.viewer={morph:null};
+  assert.equal(ctx.fuseTremor(),0,'no tremor outside a fuse transition');
+  ctx.viewer={morph:{mode:'camera-pan',elapsed:1}};
+  assert.equal(ctx.fuseTremor(),0,'the camera handoff must not shake the body');
+  ctx.viewer={morph:m};
+  const at=e=>{m.elapsed=e;return ctx.fuseTremor()};
+  // Nothing at either end: a shudder still running when the next specimen is handed
+  // over would look like a bug rather than a transformation.
+  assert.equal(at(0),0);
+  assert.equal(at(4),0);
+  assert.ok(at(1.9)>.999&&at(2.1)>.999,'the tremor must be at full strength while the copies are merged');
+  let previous=-1;
+  for(let e=0;e<=1.8001;e+=.1){const v=at(e);assert.ok(v>=previous-1e-9,'the tremor must only rise through the fuse');previous=v;}
+  previous=2;
+  for(let e=2.2;e<=4.0001;e+=.1){const v=at(e);assert.ok(v<=previous+1e-9,'the tremor must only fall through the defuse');previous=v;}
+ }finally{ctx.viewer=saved}
+ // Cilia are pushed toward the shader's own ceiling; the body is raised but capped,
+ // because the shader multiplies uMotion by up to 1.82 and an uncapped value tears skin.
+ assert.match(html,/clamp\(uCiliaAmp,0\.,8\.\)/,'the shader must still clamp the beat');
+ assert.ok(html.includes("CILIA_MOTION_GAIN*Number($('motionAmp').value)/100*(1+FUSE_TREMOR_CILIA*fuseTremor())"));
+ assert.ok(html.includes("Math.min(FUSE_TREMOR_BODY_CAP,(1+FUSE_TREMOR_BODY*fuseTremor())*Number($('motionAmp').value)/100"));
+ // Post-multiplied, so the shudder turns the body about its own origin and never
+ // slides it off centre.
+ assert.ok(html.includes("base=mul4(base,mul4(rotX(Math.sin(t*41.3)*a),mul4(rotY(Math.sin(t*53.7+1.7)*a),rotZ(Math.sin(t*67.1+3.1)*a))));"));
+ // fuseTremor is read by the cilia pass, which lives above the viewer, so it must be
+ // declared above it too and must survive a context with no viewer at all (the Worker).
+ assert.ok(html.indexOf('function fuseTremor()')<html.indexOf('const viewer='),'fuseTremor must be declared before the viewer');
+ assert.ok(html.includes("if(typeof viewer==='undefined'||!viewer)return 0;"),'the Worker runs this source without a viewer');
+});
