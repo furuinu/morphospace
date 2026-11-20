@@ -58,15 +58,39 @@
    [a,nextA]=[nextA,a];[b,nextB]=[nextB,b];
    if(STAGES.includes(tick))snapshots.push(b.slice());
   }
+  // Gray-Scott gives no control over how much of the field ends up pigmented: a
+  // regime that patterns beautifully can still settle mostly below the shader's
+  // threshold, which made some individuals render no marking at all. Each stage is
+  // therefore requantised so that exactly the inherited fraction of the field sits
+  // above the shader's pigment midpoint (.38 of smoothstep(.30,.46)). Earlier stages
+  // get a smaller share of the target, so growth over the four stages is preserved.
+  const STAGE_SHARE=[.45,.70,.90,1.];
+  const quantile=(sorted,q)=>sorted[Math.max(0,Math.min(sorted.length-1,Math.round(q*(sorted.length-1))))];
+  function requantise(field,target){
+   const sorted=Float32Array.from(field).sort(),len=sorted.length;
+   const thr=quantile(sorted,1-target);
+   // Width of the transition around the threshold, measured from the field itself so
+   // a soft field stays soft and a sharply separated one stays sharp.
+   const hi=quantile(sorted,Math.min(.999,1-target*.70)),lo=quantile(sorted,Math.max(.001,1-Math.min(.98,target*1.45)));
+   const w=Math.max(1e-5,(hi-lo)*.22);
+   const out=new Float32Array(len);
+   for(let i=0;i<len;i++)out[i]=clamp(.38+(field[i]-thr)/w*.26,0,1);
+   return out;
+  }
   const atlas=new Uint8Array(N*N*4*4),size=N*2;
+  const target=legacy?0:clamp(Number(t.coverTarget)||.3,.04,.80);
   for(let stage=0;stage<4;stage++){
-   const field=snapshots[stage],tileX=(stage%2)*N,tileY=Math.floor(stage/2)*N;
+   const raw=snapshots[stage],tileX=(stage%2)*N,tileY=Math.floor(stage/2)*N;
+   const field=legacy?raw:requantise(raw,Math.max(.02,target*STAGE_SHARE[stage]));
+   // The historical encode scaled the raw concentration; a normalised field is already
+   // in shader range, and its gradient is steeper, so it carries its own gain.
+   const gain=legacy?1.75:.85,scale=legacy?3.8:1;
    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
     const i=y*N+x,o=((tileY+y)*size+tileX+x)*4;
     const dx=field[ix(x+1,y)]-field[ix(x-1,y)],dy=field[ix(x,y+1)]-field[ix(x,y-1)];
-    atlas[o]=Math.round(clamp(field[i]*3.8,0,1)*255);
-    atlas[o+1]=Math.round(clamp(.5+dx*1.75,0,1)*255);
-    atlas[o+2]=Math.round(clamp(.5+dy*1.75,0,1)*255);
+    atlas[o]=Math.round(clamp(field[i]*scale,0,1)*255);
+    atlas[o+1]=Math.round(clamp(.5+dx*gain,0,1)*255);
+    atlas[o+2]=Math.round(clamp(.5+dy*gain,0,1)*255);
     atlas[o+3]=255;
    }
   }

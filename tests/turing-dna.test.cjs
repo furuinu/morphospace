@@ -136,3 +136,49 @@ test('colour genes vary across individuals and are inherited as their own block'
  assert.ok(v.strong>6&&v.faint>6,`both strongly and faintly tinted individuals must occur: ${v.strong}/${v.faint}`);
  assert.ok(v.split>5&&v.mutations>5,'the ink block must segregate and mutate independently');
 });
+
+// Shared helpers for the normalisation tests.
+const pigmentArea=(atlas,stage)=>{
+ const n=reaction.size,size=n*2,tx=(stage%2)*n,ty=Math.floor(stage/2)*n;
+ const ss=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+ let sum=0;for(let y=0;y<n;y++)for(let x=0;x<n;x++)sum+=ss(.30,.46,atlas.pixels[((ty+y)*size+tx+x)*4]/255);
+ return sum/(n*n);
+};
+
+test('every individual carries a visible marking at its inherited coverage',()=>{
+ const genes=plain(run(`(()=>{const o=[];for(let i=0;i<64;i++){const g=makeFounderGenome(600000+i*733,i%8,i%5);o.push({seed:g.seed,p:copyJSON(g.patternDNA),t:copyJSON(g.turingDNA)});}return o;})()`));
+ let blank=0,worst=0;
+ for(const g of genes){
+  const area=pigmentArea(reaction.createAtlas(g.seed,g.p,g.t),3);
+  if(area<.02)blank++;
+  worst=Math.max(worst,Math.abs(area-g.t.coverTarget));
+ }
+ // Before normalisation 5 of these 64 rendered nothing and the area ran 0% to 81%.
+ assert.equal(blank,0,`${blank} individuals rendered no marking`);
+ assert.ok(worst<.03,`coverage missed its target by ${(worst*100).toFixed(1)} points`);
+});
+
+test('normalisation keeps the four stages growing and the domains sharp',()=>{
+ const g=plain(run(`(()=>{const g=makeFounderGenome(707171,3,2);return {seed:g.seed,p:copyJSON(g.patternDNA),t:{...copyJSON(g.turingDNA),coverTarget:.45}};})()`));
+ const atlas=reaction.createAtlas(g.seed,g.p,g.t);
+ const areas=[0,1,2,3].map(i=>pigmentArea(atlas,i));
+ for(let i=1;i<4;i++)assert.ok(areas[i]>=areas[i-1]-.02,`stage ${i} must not shrink: ${areas.map(a=>(a*100).toFixed(0)).join('<')}`);
+ assert.ok(areas[3]>areas[0]+.05,'the marking must visibly grow across the stages');
+ // A soft ramp would put most of the field in the transition band and read as a wash.
+ const n=reaction.size,size=n*2,ty=n;let band=0;
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){const v=atlas.pixels[((ty+y)*size+n+x)*4]/255;if(Math.abs(v-.47)<.25)band++;}
+ assert.ok(band/(n*n)<.25,`the transition band must stay narrow, got ${(band/(n*n)*100).toFixed(0)}%`);
+});
+
+test('the coverage target is inherited and mutates with the display block',()=>{
+ const r=run(`(()=>{let a=makeFounderGenome(818111,1,2),b=makeFounderGenome(252521,7,0),mutations=0;const seen=new Set();
+ for(let gen=0;gen<40;gen++){const kid=crossoverGenome(a,b,91000+gen*523,2,.7);
+  const v=kid.genome.turingDNA.coverTarget;
+  if(!(v>=.10-1e-6&&v<=.62+1e-6))throw Error('coverTarget out of range: '+v);
+  seen.add(v.toFixed(4));
+  mutations+=kid.mutationLog.filter(x=>x.field==='turingDNA.coverTarget').length;
+  b=a;a=kid.genome;}
+ return {mutations,unique:seen.size};})()`);
+ assert.ok(plain(r).mutations>2,'the coverage target must be able to mutate');
+ assert.ok(plain(r).unique>12,'offspring must not all share one coverage');
+});
