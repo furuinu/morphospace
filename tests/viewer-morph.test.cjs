@@ -756,3 +756,41 @@ test('copies are absorbed in sequence and come back in sequence',()=>{
  assert.ok(tick.includes("m.stage='defuse';m.t=1;"));
  assert.ok(tick.includes("m.fuse=1-clamp((m.elapsed-m.fuseDuration-m.holdDuration)"),'the defuse must run the fuse backwards');
 });
+
+// Driving the whole fuse timeline: the state machine was correct but the camera read
+// spec.viewDistance every frame, and the specimen arriving from the Worker has none,
+// so the projection went NaN at the swap and the body vanished for the rest of the
+// transition. Keep the distance finite and continuous from the first tick to commit.
+test('the fuse transition keeps the view distance finite from the swap to the commit',()=>{
+ const {f,workers}=runtime();
+ const ev=code=>vm.runInContext(code,f);
+ const copies=n=>Array.from({length:n},(_,i)=>({p:[i*2-2,0,0],scale:1,angle:.3*i,axis:'y',mirror:i%2===1,mirrorY:false}));
+ const group=n=>({shell:mesh([[0,0,0],[1,0,0],[0,1,0]],[0,1,2]),parts:[],source:{blobs:[{p:[0,0,0],axes:[1,1,1]}]},copyTransforms:copies(n)});
+ const model=n=>({copyLayout:0,copyTransforms:copies(n),fusedSource:{blobs:[{p:[0,0,0],axes:[1,1,1]}]}});
+ f.spec.growthModel=model(5);f.spec.localGroup=group(5);f.meshes.localShell=f.spec.localGroup.shell;
+ const from=f.spec.viewDistance;
+ f.startViewerMorph();
+ const target={seed:2,style:0,genome:{},parts:[],rigs:[],palette:{},growthModel:model(4),localGroup:group(4)};
+ const tile=mesh([[0,0,1],[2,0,1],[0,2,1]],[0,1,2]);
+ workers[0].onmessage({data:{ok:true,payload:{target,distance:15,
+  targetMeshes:{shell:tile,parts:[],cilia:[],localShell:tile,localParts:[]},bounds:{radius:5}}}});
+ f.advanceViewerPreparation();
+ if(ev('viewer.preparing')&&ev('viewer.pending&&viewer.pending.ready'))f.activateViewerPreparation();
+ assert.equal(ev('viewer.morph&&viewer.morph.mode'),'fuse','a specimen built from copies must morph, not pan');
+ const stages=[];let swapStage=null,previous=from;
+ for(let i=0;i<80&&ev('viewer.morph');i++){
+  f.tickViewer(.1);
+  const m=ev('viewer.morph');
+  assert.ok(Number.isFinite(f.spec.viewDistance),'view distance went undefined, which makes the camera NaN');
+  // Monotone and continuous: no jump that would read as a cut.
+  assert.ok(Math.abs(f.spec.viewDistance-previous)<Math.abs(from-15)*.5+1e-6,'the view distance must not jump');
+  previous=f.spec.viewDistance;
+  if(m){stages.push(m.stage);if(m.switched&&swapStage===null)swapStage=m.stage;}
+ }
+ assert.equal(ev('viewer.morph'),null,'the transition must finish');
+ assert.equal(f.spec,target,'the next specimen must be live at the end');
+ assert.equal(swapStage,'hold','the specimen must be swapped while the single fused part is on screen');
+ assert.deepEqual([...new Set(stages)],['fuse','hold','defuse'],'all three stages must run in order');
+ // The commit sets the final distance; it must agree with the value the easing reached.
+ assert.ok(Math.abs(f.spec.viewDistance-previous)<.5,'the commit must not snap the framing');
+});
