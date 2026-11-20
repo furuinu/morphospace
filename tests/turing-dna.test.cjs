@@ -269,7 +269,12 @@ test('a pending bake defers the draw instead of blocking it, and the thumbnail r
  assert.match(queue,/onReactionIdle\(\(\)=>\{if\(job\.epoch===atlasEpoch\)\{job\.queued=false;enqueue\(\)\}\}\)/);
  // A stale generation must not redraw into a recycled canvas.
  assert.match(queue,/job\.epoch!==atlasEpoch/);
- assert.match(html,/while\(reactionGPUCache\.size>48\)/,'the cache must hold a whole generation so the retry hits it');
+ assert.match(html,/while\(reactionGPUCache\.size>16\)/,'the cache must outlive the retry and hold both sides of a morph');
+ // Specimens are generated one at a time, so two workers cover the open specimen and
+ // the one being morphed to; more would just be idle threads.
+ assert.match(html,/for\(let i=0;i<Math\.min\(2,Math\.max\(1,cores-1\)\);i\+\+\)/);
+ assert.match(html,/const nextReady=target===palette\|\|!!other;/,'a baking target must not borrow the open atlas');
+ assert.match(html,/uNextTuring0,nextReady\?genes\(target\):new Float32Array\(4\)/,'an unbaked target must contribute no marking');
  // The redraw is for the open specimen only: during a gallery build the main canvas
  // holds nothing, and each thumbnail comes back through the preview queue instead.
  assert.match(html,/if\(spec&&meshes&&!animating\)\{try\{render\(\)\}catch\(error\)\{\}\}/);
