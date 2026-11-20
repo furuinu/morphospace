@@ -182,3 +182,47 @@ test('the coverage target is inherited and mutates with the display block',()=>{
  assert.ok(plain(r).mutations>2,'the coverage target must be able to mutate');
  assert.ok(plain(r).unique>12,'offspring must not all share one coverage');
 });
+
+test('the second Turing scale adds finer structure at the same coverage',()=>{
+ const g=plain(run(`(()=>{const g=makeFounderGenome(707171,3,2);return {seed:g.seed,p:copyJSON(g.patternDNA),t:copyJSON(g.turingDNA)};})()`));
+ const base={...g.t,coverTarget:.35,anisotropy:0,fineInside:.8};
+ const n=reaction.size;
+ const read=t=>{const a=reaction.createAtlas(g.seed,g.p,t),sz=n*2,f=new Float64Array(n*n);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)f[y*n+x]=a.pixels[((n+y)*sz+n+x)*4]/255;return f;};
+ const detail=f=>{let s=0;for(let y=0;y<n;y++)for(let x=0;x<n;x++){const v=f[y*n+x];
+  s+=(v-f[y*n+(x+1)%n])**2+(v-f[((y+1)%n)*n+x])**2;}return s/(n*n);};
+ const area=f=>{let c=0;for(const v of f)if(v>.38)c++;return c/(n*n);};
+ const blobs=f=>{const seen=new Uint8Array(n*n);let c=0;
+  for(let i=0;i<n*n;i++){if(seen[i]||f[i]<=.38)continue;c++;const st=[i];seen[i]=1;
+   while(st.length){const j=st.pop(),x=j%n,y=(j-x)/n;
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=(x+dx+n)%n,ny=(y+dy+n)%n,k=ny*n+nx;
+     if(!seen[k]&&f[k]>.38){seen[k]=1;st.push(k);}}}}
+  return c;};
+ const single=read({...base,fineWeight:0});
+ const twoScale=read({...base,fineWeight:1,scaleRatio:2.5});
+ const wide=read({...base,fineWeight:1,scaleRatio:4});
+ const inverted=read({...base,fineWeight:-1,scaleRatio:2.5});
+ assert.ok(detail(twoScale)>detail(single)*1.2,'the fine mode must add high-frequency structure');
+ assert.ok(blobs(wide)>blobs(single)*2,'a wide scale ratio must break the marking into finer domains');
+ assert.notDeepEqual([...inverted],[...twoScale],'a negative weight must invert the fine mode');
+ // Requantisation runs after the two modes are combined, so coverage is unaffected.
+ for(const f of [twoScale,wide,inverted])assert.ok(Math.abs(area(f)-area(single))<.05,'coverage must hold across scale settings');
+});
+
+test('scale genes vary, segregate, and leave some individuals single-scale',()=>{
+ const r=run(`(()=>{const o=[];for(let i=0;i<64;i++)o.push(copyJSON(makeFounderGenome(600000+i*733,i%8,i%5)));
+ let a=o[0],b=o[9],split=0,mutations=0;
+ for(let gen=0;gen<40;gen++){const kid=crossoverGenome(a,b,101000+gen*613,2,.7);
+  const t=kid.genome.turingDNA;
+  if(!(t.scaleRatio>=1.6-1e-6&&t.scaleRatio<=4.2+1e-6&&t.fineWeight>=-1-1e-6&&t.fineWeight<=1+1e-6))throw Error('scale genes out of range');
+  if(kid.inherited.turing_scale!==kid.inherited.turing_chemistry)split++;
+  mutations+=kid.mutationLog.filter(x=>/turingDNA\.(scaleRatio|fineWeight|fineInside)/.test(x.field)).length;
+  b=a;a=kid.genome;}
+ const dnas=o.map(g=>g.turingDNA);
+ return {single:dnas.filter(d=>d.fineWeight===0).length,negative:dnas.filter(d=>d.fineWeight<0).length,split,mutations};})()`);
+ const v=plain(r);
+ // A second scale everywhere would be as monotonous as none: both must occur.
+ assert.ok(v.single>5&&v.single<40,`single-scale individuals must be a real minority: ${v.single}/64`);
+ assert.ok(v.negative>4,`inverted fine detail must occur: ${v.negative}/64`);
+ assert.ok(v.split>5&&v.mutations>5,'the scale block must segregate and mutate independently');
+});
