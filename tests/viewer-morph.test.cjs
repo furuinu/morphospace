@@ -1069,3 +1069,36 @@ test('a mirrored first copy turns inside out across the hold instead of flipping
  const sign=(a,b,w)=>a+(b-a)*w;
  assert.equal(Math.sign(sign(-1,1,0)),-1);assert.equal(sign(-1,1,.5),0);assert.equal(Math.sign(sign(-1,1,1)),1);
 });
+
+test('each new specimen turns the sky drift within 60 degrees, slowly, at constant speed',()=>{
+ const {f}=runtime();
+ const ev=code=>vm.runInContext(code,f);
+ // The orbit state is declared just above the viewer; load that stretch on its own.
+ const a=src.indexOf('let cameraOrbitSpeed='),b=src.indexOf('function stepCameraOrbit(dt){');
+ vm.runInContext(src.slice(a,src.indexOf('const ORBIT_TURN_LIMIT',a)).replace(/\b(let|const) /g,'var ')+src.slice(src.indexOf('const ORBIT_TURN_LIMIT'),b).replace(/\b(let|const) /g,'var '),Object.assign(f,{CAMERA_ORBIT_BASE_SPEED:.08}));
+ const read=()=>ev('[cameraOrbitSpeed,cameraOrbitPitchSpeed,cameraOrbitRollSpeed,cameraOrbitTargetSpeed,cameraOrbitTargetPitchSpeed]');
+ const angle=v=>Math.atan2(v[1],v[0]);
+ for(const r of [0,.25,.5,.75,.9999]){
+  ev('cameraOrbitSpeed=.05;cameraOrbitPitchSpeed=-.03;cameraOrbitRollSpeed=.02;cameraOrbitTargetSpeed=.05;cameraOrbitTargetPitchSpeed=-.03;');
+  const start=read(),speed=Math.hypot(start[0],start[1],start[2]);
+  ev('beginOrbitTurn')(()=>r);
+  let previous=angle(start),largest=0;
+  for(let i=0;i<200;i++){
+   ev('stepOrbitTurn')(.05);
+   const v=read();
+   // Speed is preserved exactly at every step, not just at the end.
+   assert.ok(Math.abs(Math.hypot(v[0],v[1],v[2])-speed)<1e-9,'the drift must not slow while it turns');
+   largest=Math.max(largest,Math.abs(angle(v)-previous));previous=angle(v);
+  }
+  const turned=angle(read())-angle(start),expected=(r*2-1)*Math.PI/3;
+  assert.ok(Math.abs(turned-expected)<1e-6,'the drift must end on the drawn angle');
+  assert.ok(Math.abs(turned)<=Math.PI/3+1e-9,'never more than 60 degrees either way');
+  // Over 8 s, never more than about 1 degree in a 50 ms frame: no sudden swing.
+  assert.ok(largest<.02,'the turn must ease, not jump: '+largest.toFixed(4));
+  // The target turns with the actual velocity, so the orbit's own easing has nothing to
+  // chase and cannot cut the corner.
+  const v=read();assert.ok(Math.abs(angle([v[3],v[4]])-angle(v))<1e-9);
+ }
+ assert.ok(src.includes("pulseTravel.specimen=spec;\n   if(typeof beginOrbitTurn==='function')beginOrbitTurn();"),'the turn must start when the next specimen takes over');
+ assert.ok(src.includes('function stepCameraOrbit(dt){\n stepOrbitTurn(dt);'));
+});
