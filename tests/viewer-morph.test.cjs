@@ -859,7 +859,13 @@ test('the organism convulses through the transition and settles exactly at both 
  // Cilia are pushed toward the shader's own ceiling; the body is raised but capped,
  // because the shader multiplies uMotion by up to 1.82 and an uncapped value tears skin.
  assert.match(html,/clamp\(uCiliaAmp,0\.,8\.\)/,'the shader must still clamp the beat');
- assert.ok(html.includes("CILIA_MOTION_GAIN*Number($('motionAmp').value)/100*(1+FUSE_TREMOR_CILIA*fuseTremor())"));
+ assert.ok(!html.includes('FUSE_TREMOR_CILIA'),'the transition must leave the cilia beat alone');
+ assert.ok(html.includes("gl.uniform1f(v.uCiliaAmp,$('motion').checked?CILIA_MOTION_GAIN*Number($('motionAmp').value)/100:0);"));
+ // A sin-based hash degenerates once its argument grows, which made the fray move the
+ // whole surface as one. No sin in the hash, and the beat phase is wrapped.
+ assert.ok(!/float frayHash\(vec3 p\)\{return fract\(sin/.test(html),'the fray hash must not use sin');
+ assert.ok(html.includes('q+=dot(q,q.yzx+33.33);'));
+ assert.ok(html.includes('float fast=mod(time*9.3+h*6.2831853,6.2831853);'),'the phase must be wrapped before it is scaled');
  assert.ok(html.includes("Math.min(FUSE_TREMOR_BODY_CAP,(1+FUSE_TREMOR_BODY*fuseTremor())*Number($('motionAmp').value)/100"));
  // Post-multiplied, so the shudder turns the body about its own origin and never
  // slides it off centre.
@@ -870,8 +876,10 @@ test('the organism convulses through the transition and settles exactly at both 
  assert.equal((html.match(/float frayField\(vec3 p,float time\)/g)||[]).length,1,'frayField belongs in the shared chunk');
  assert.ok(html.includes('vec3 wholeBodyWarp(vec3 p,float t,float amp){'),'the shared chunk must still define the body warp');
  assert.equal((html.match(/\$\{wholeBodyGLSL\}/g)||[]).length,3,'both vertex shaders and the cilia pass include the shared chunk');
- assert.ok(html.includes('if(uFray>0.0)shifted+=canonicalNormal*frayField(canonical,ancestralTime)*uFray;'),'the full path must fray');
- assert.ok(html.includes('if(uFray>0.0)p+=n*frayField(jPos,uTime)*uFray;'),'the Safari path must fray too');
+ assert.ok(html.includes('if(uFray>0.0)shifted+=frayDir(canonical,canonicalNormal)*frayField(canonical,ancestralTime)*uFray;'),'the full path must fray');
+ assert.ok(html.includes('if(uFray>0.0)p+=frayDir(jPos,n)*frayField(jPos,uTime)*uFray;'),'the Safari path must fray too');
+ assert.equal((html.match(/vec3 frayDir\(vec3 p,vec3 n\)/g)||[]).length,1,'the splay direction belongs in the shared chunk');
+ assert.ok(html.includes('return normalize(n*1.35+r+vec3(0.0,1e-4,0.0));'),'the splay must stay biased outward and never normalize a zero vector');
  assert.ok(html.includes("if(u.uFray)gl.uniform1f(u.uFray,FUSE_TREMOR_FRAY*fuseTremor());"));
  // A capture must come out clean, like the motion it already zeroes.
  assert.ok(html.includes("gl.uniform1f(u.uMotion,0);if(u.uFray)gl.uniform1f(u.uFray,0);"));
