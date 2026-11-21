@@ -7120,13 +7120,20 @@ float photoFlash(float t,float d,float g,float n,float P){
  float y=x-k*(d+g);
  return smoothstep(0.,d*.25,y)*(1.-smoothstep(d*.6,d,y));
 }
-// One organ: lit core inside a dark pigment cup. Returns (glow, darkening).
-vec2 photoOrgan(float r,float s,float level,float ringDark,float shutter){
+// One organ: lit core inside a dark pigment cup, with a soft glow halo and a
+// four-ray flare. d is the (along-body, around-body) offset. Returns (glow, darkening).
+vec2 photoOrgan(vec2 d,float s,float level,float ringDark,float shutter){
+ float r=length(d);
  float core=1.-smoothstep(s*.42,s*.62,r);
  float cup=smoothstep(s*.5,s*.68,r)*(1.-smoothstep(s*.95,s*1.15,r));
- float lit=core*level;
- float closed=shutter*core*(1.-clamp(level*1.6,0.,1.));
- return vec2(lit,clamp(cup*ringDark+closed*.85,0.,1.));
+ float lv=max(level,0.);
+ float halo=exp(-r/(s*1.1))*.75+exp(-r/(s*3.2))*.3;
+ vec2 ad=abs(d)/s;
+ float flare=exp(-ad.x*9.)*exp(-ad.y*.55)+exp(-ad.y*9.)*exp(-ad.x*.55);
+ float diag=exp(-abs(ad.x-ad.y)*8.)*exp(-(ad.x+ad.y)*.9);
+ float lit=core*lv*1.5+halo*lv+(flare*.85+diag*.25)*lv*lv*.8;
+ float closed=shutter*core*(1.-clamp(lv*1.6,0.,1.));
+ return vec2(lit,clamp(cup*ringDark*(1.-clamp(lv,0.,1.)*.4)+closed*.85,0.,1.));
 }
 // a=(rows,spread,lateral,head) b=(scatter,spacing,size,span)
 // c=(pulse,gap,pulses,period) d=(wave,shutter,ventralLevel,headLevel)
@@ -7134,23 +7141,25 @@ vec2 photoOrgan(float r,float s,float level,float ringDark,float shutter){
 vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float strength,vec3 tint,float mode,float speed,float seed){
  float redHead=step(9.5,mode),ringDark=mod(mode,10.);
  float R=max(.05,.5*(ext.x+ext.z));
+ // Organ sizes and spacing scale with the body so they read at any size.
+ float bodyScale=max(.6,R*2.2);
  float th=atan(q.x,-q.z),tha=abs(th);
  float u=q.y*ext.y,t=uTime*speed+seed;
- float spacing=max(.03,b.y),size=max(.008,b.z),inSpan=1.-smoothstep(b.w,b.w+.06,abs(q.y));
- vec2 acc=vec2(0.);vec3 glowCol=vec3(0.);
+ float spacing=max(.03,b.y)*bodyScale,size=max(.008,b.z)*bodyScale*1.6,inSpan=1.-smoothstep(b.w,b.w+.06,abs(q.y));
+ float acc=0.,dark=0.;vec3 glowCol=vec3(0.);
  // Ventral rows: steady, slowly breathing counter-illumination.
  if(a.x>.5){
   float n=a.x,ri=clamp(floor(tha/max(.01,a.y)*n),0.,n-1.),rowTh=a.y*(ri+.5)/n;
-  float cell=floor(u/spacing+.5),du=u-cell*spacing,dv=(tha-rowTh)*R;
-  vec2 o=photoOrgan(length(vec2(du,dv)),size,d.z*(.85+.15*sin(t*.4+cell*.37+ri)),ringDark,0.)*inSpan;
-  acc=max(acc,o);glowCol+=tint*o.x;
+  float cell=floor(u/spacing+.5);
+  vec2 o=photoOrgan(vec2(u-cell*spacing,(tha-rowTh)*R),size,(.55+d.z)*(.8+.2*sin(t*.4+cell*.37+ri)),ringDark,0.)*inSpan;
+  acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Lateral line: flash code travelling along the body as a wave.
  if(a.z>.5){
-  float sp=spacing*1.3,cell=floor(u/sp+.5),du=u-cell*sp,dv=(tha-1.5708)*R;
+  float sp=spacing*1.3,cell=floor(u/sp+.5);
   float f=photoFlash(t-d.x*q.y,c.x,c.y,c.z,c.w);
-  vec2 o=photoOrgan(length(vec2(du,dv)),size*1.15,.06+f,ringDark,d.y)*inSpan;
-  acc=max(acc,o);glowCol+=tint*o.x;
+  vec2 o=photoOrgan(vec2(u-cell*sp,(tha-1.5708)*R),size*1.15,.1+f*1.2,ringDark,d.y)*inSpan;
+  acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Scattered photophores: independent asynchronous twinkles.
  if(b.x>.01){
@@ -7159,21 +7168,22 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
   vec2 jit=vec2(photoHash(id+3.1),photoHash(id+7.7))-.5;
   float present=step(1.-b.x,h);
   float tw=photoFlash(t+h*c.w*4.,c.x*1.4,c.y,1.,c.w*(1.+h*1.6));
-  vec2 o=photoOrgan(length((f2-jit*.5)*g),size*.8,.04+tw*.9,ringDark,d.y)*present*inSpan;
-  acc=max(acc,o);glowCol+=tint*o.x;
+  vec2 o=photoOrgan((f2-jit*.5)*g,size*.85,.15+tw*1.1,ringDark,d.y)*present*inSpan;
+  acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Head searchlights: one steady pair near the anterior end.
  if(a.w>.5){
-  float du=(q.y-.78)*ext.y,dv=(tha-(1.5708-.45))*R;
-  vec2 o=photoOrgan(length(vec2(du,dv)),size*1.9,d.w,ringDark,0.);
-  acc=max(acc,o);glowCol+=mix(tint,vec3(1.,.13,.06),redHead)*o.x;
+  vec2 o=photoOrgan(vec2((q.y-.78)*ext.y,(tha-(1.5708-.45))*R),size*2.,d.w*1.2,ringDark,0.);
+  acc+=o.x;dark=max(dark,o.y);glowCol+=mix(tint,vec3(1.,.13,.06),redHead)*o.x;
  }
- float e=acc.x*clamp(strength,0.,1.8);
- vec3 lc=acc.x>.0001?glowCol/max(.0001,acc.x):tint;
+ float e=acc*clamp(strength,0.,1.8);
+ vec3 lc=acc>.0001?glowCol/acc:tint;
  lc=lc/max(.0001,max(lc.r,max(lc.g,lc.b)));
- color*=1.-acc.y*.8;
- color=mix(color,lc,clamp(e*.75,0.,.92));color=mix(color,mix(lc,vec3(1.),.6),clamp(pow(e,2.2)*.7,0.,.9));
- return vec4(color,clamp(e*.75,0.,1.));
+ color*=1.-dark*.8;
+ color=mix(color,lc,clamp(e*.8,0.,.95));color=mix(color,mix(lc,vec3(1.),.65),clamp(pow(max(e-.6,0.),1.5)*.8,0.,.9));
+ color+=lc*max(e-1.,0.)*.35;
+ // Alpha drives the bloom pass: the halo and flare spill light past the organ.
+ return vec4(color,clamp(e*.9,0.,1.));
 }
 vec4 emissionSurfaceColor(vec3 color,vec3 p){
  vec3 q=chromaticPoint(p);
@@ -10211,7 +10221,8 @@ void main(){
 }`;
 const lensExtract=`precision mediump float; varying vec2 vPost; uniform sampler2D uScene; uniform vec2 uPixel;
 // Only emission-marked pixels (alpha) feed the flare, so reflected highlights never flare.
-vec3 bright(vec2 p){vec4 s=texture2D(uScene,p);float l=dot(s.rgb,vec3(.2126,.7152,.0722));return s.rgb*smoothstep(.35,.9,s.a)*smoothstep(.55,.92,l)*1.8;}
+// Peak channel, not luminance: deep-sea blue-green photophores read dim in luma.
+vec3 bright(vec2 p){vec4 s=texture2D(uScene,p);float l=max(s.r,max(s.g,s.b));return s.rgb*smoothstep(.3,.85,s.a)*smoothstep(.45,.9,l)*2.1;}
 void main(){vec3 b=(bright(vPost+uPixel*vec2(-.5,-.5))+bright(vPost+uPixel*vec2(.5,-.5))+bright(vPost+uPixel*vec2(-.5,.5))+bright(vPost+uPixel*vec2(.5,.5)))*.25;gl_FragColor=vec4(b,1.0);}`;
 const lensOptics=`precision mediump float; varying vec2 vPost; uniform sampler2D uBright; uniform vec2 uPixel; uniform float uAspect; uniform vec3 uTint; uniform float uHaloRadius;
 vec3 sampleLight(vec2 p){vec2 inside=step(vec2(0.0),p)*step(p,vec2(1.0));return texture2D(uBright,clamp(p,0.0,1.0)).rgb*inside.x*inside.y;}

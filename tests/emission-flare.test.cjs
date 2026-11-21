@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 test('only emitters feed the lens flare, and the flare is stronger',()=>{
- assert.match(html,/return s\.rgb\*smoothstep\(\.35,\.9,s\.a\)\*smoothstep\(\.55,\.92,l\)\*1\.8;\}/);
+ assert.match(html,/float l=max\(s\.r,max\(s\.g,s\.b\)\);return s\.rgb\*smoothstep\(\.3,\.85,s\.a\)\*smoothstep\(\.45,\.9,l\)\*2\.1;\}/);
  assert.match(html,/vec3\(\.40\)\),1\.0\);/);assert.match(html,/flare=min\(texture2D\(uFlare,tape\)\.rgb,vec3\(\.32\)\);/);
  assert.match(html,/\/\/ Alpha carries the emission mask for the lens flare; the canvas itself is opaque \(alpha:false\)\.\n gl_FragColor=shaded;/);
  assert.match(html,/getContext\('webgl2',\{alpha:false/);
