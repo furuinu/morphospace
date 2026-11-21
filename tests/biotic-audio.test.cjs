@@ -593,7 +593,7 @@ test('morph source voices fade independently and wavetable updates retain their 
 test('20 percent blinking voices preserve independent bass and body-driven rhythm',()=>{
  const choir=src.slice(src.indexOf('function renderPureChoir('),src.indexOf('function updatePureChoir('));
  const engine=src.slice(src.indexOf('function createBioticAudioEngine('),src.indexOf('const bioticAudio='));
- assert.match(engine,/const gain=\.20\*envelope\*\(rapidLight/);
+ assert.match(engine,/const gain=\.20\*envelope\*\(photoRapid/);
  assert.match(engine,/consonantAir\+=\.20\*envelope\*art\.air/);
  assert.match(choir,/v\.out\.gain\.setTargetAtTime\(sharedVoiceLevel\*clamp\(lightBed\+gate\/\.75/);
  assert.match(choir,/const bassWarmth=ctx\.createBiquadFilter\(\),bassPresence=ctx\.createGain\(\)/);

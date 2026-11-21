@@ -90,3 +90,9 @@ test('organ systems vary internally: shape, elongation, clusters, fans and secon
  assert.match(html,/vec2 photoOrgan\(vec2 d,float s,float level,float ringDark,float shutter,vec2 sh\)/);
  assert.match(html,/PhotoShape:\[d\.shape,d\.elong,d\.sizeGrad,d\.cluster\]/);
 });
+
+test('light voices follow the photophore flash code on the shader clock',()=>{
+ const r=plain(run(`(()=>{const d=Object.assign(photophoreFounderDNA(12),{lateral:1,lateral2:0,wave:0,pulse:.2,gap:.3,pulses:3,rest:1,scatter:0,startle:1,startleDecay:1});const P=photophorePeriod(d);let hits=0,on=false;for(let t=0;t<P;t+=.002){const v=photophoreVoiceValues(d,t)[0];if(v>.42&&!on){hits++;on=true}if(v<.1)on=false;}return {hits,startle:photophoreVoiceValues(d,0,{age:.5})[3],silent:photophoreVoiceValues(Object.assign({},d,{lateral:0}),.1)[0]}})()`));
+ assert.equal(r.hits,3);assert.ok(r.startle>.4);assert.equal(r.silent,0);
+ assert.match(html,/const photo=light\.photophore&&/);assert.match(html,/const lightValues=photo\?photophoreVoiceValues\(photo,photoClock,photoStartleState\)/);
+});
