@@ -29,7 +29,7 @@ test('opaque skin preserves fine pigments and normal detail without pseudo-trans
 });
 
 test('the view state is saved without shifting historical share codec keys',()=>{
- assert.match(html,/time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead startle startleDecay startleSpeed'\)\.split\(' '\)/);
+ assert.match(html,/time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead startle startleDecay startleSpeed shape elong sizeGrad cluster stagger converge lateral2 scatterBias'\)\.split\(' '\)/);
  assert.match(source,/'shadeStrength','transparency','snowFarDim'/);
  // Optical genes live in the specimen's DNA, never in the shared viewing state.
  assert.doesNotMatch(source,/'transparency','fresnelStrength'/);

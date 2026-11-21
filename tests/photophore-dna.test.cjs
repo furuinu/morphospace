@@ -80,3 +80,13 @@ test('touch startle genes are heritable and old chromosomes gain them from the s
  assert.match(html,/float photoStartleBoost\(vec3 p,vec4 st,vec4 st2\)/);
  assert.match(html,/triggerPhotoStartle\(e\.clientX,e\.clientY\)/);
 });
+
+test('organ systems vary internally: shape, elongation, clusters, fans and second lines',()=>{
+ const list=plain(run(`Array.from({length:200},(_,i)=>photophoreFounderDNA(7000+i*31))`));
+ const kinds=new Set(list.map(d=>d.shape));assert.equal(kinds.size,4);
+ assert.ok(list.filter(d=>d.cluster>1).length>40);
+ assert.ok(list.filter(d=>d.lateral2>0).length>50);
+ assert.ok(list.filter(d=>d.elong>1.3).length>20);
+ assert.match(html,/vec2 photoOrgan\(vec2 d,float s,float level,float ringDark,float shutter,vec2 sh\)/);
+ assert.match(html,/PhotoShape:\[d\.shape,d\.elong,d\.sizeGrad,d\.cluster\]/);
+});

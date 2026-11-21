@@ -584,7 +584,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
- const KEYS=('version record view id name seed style genome generation parents sourceSeed ecology text kind sensation place habitat food behavior cue effect templateId picks index mode archetype bend coil elong bulge asym ruffle notches split sacs branches material pitch dev pressure axialGrowth lobation segmentation curvature chirality vacuoleGrowth surfaceGrowth motionEnergy membraneTension fusion colorDNA rows cols hybridStyle hybridMix morphDNA axial flat radial branch void asymmetry twist budding extension lamella surface polarity strain shear motionDNA primary secondary tempo amplitude duty rest propagation locality phase accent axisBias bioDNA elasticity damping conductance tension compliance inertia impulse anisotropy delay patternDNA weights globalScale midScale microScale contrast hardness linearity radiality threshold sharpness bandMix speckle shift freqA freqB freqC phaseA phaseB phaseC family eyeCount spikeBias mottleBias ribbonBias emissionDNA colorMode blinkMode blinkSpeed strength bloomRadius density micro emitColor emitBlink emissionStrength shadeStrength motionAmp coupling motionSpeed bodySpeed motion wire auto yaw cameraPitch panX panY zoom time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead startle startleDecay startleSpeed').split(' ');
+ const KEYS=('version record view id name seed style genome generation parents sourceSeed ecology text kind sensation place habitat food behavior cue effect templateId picks index mode archetype bend coil elong bulge asym ruffle notches split sacs branches material pitch dev pressure axialGrowth lobation segmentation curvature chirality vacuoleGrowth surfaceGrowth motionEnergy membraneTension fusion colorDNA rows cols hybridStyle hybridMix morphDNA axial flat radial branch void asymmetry twist budding extension lamella surface polarity strain shear motionDNA primary secondary tempo amplitude duty rest propagation locality phase accent axisBias bioDNA elasticity damping conductance tension compliance inertia impulse anisotropy delay patternDNA weights globalScale midScale microScale contrast hardness linearity radiality threshold sharpness bandMix speckle shift freqA freqB freqC phaseA phaseB phaseC family eyeCount spikeBias mottleBias ribbonBias emissionDNA colorMode blinkMode blinkSpeed strength bloomRadius density micro emitColor emitBlink emissionStrength shadeStrength motionAmp coupling motionSpeed bodySpeed motion wire auto yaw cameraPitch panX panY zoom time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead startle startleDecay startleSpeed shape elong sizeGrad cluster stagger converge lateral2 scatterBias').split(' ');
  const KEY_INDEX=new Map(KEYS.map((key,i)=>[key,i+1]));
  const forbidden=key=>key==='__proto__'||key==='constructor'||key==='prototype';
  const utf8=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
@@ -3457,9 +3457,9 @@ function turingCrossoverDNA(a,b,seed,strength,log,inherited){
 // counter-illumination, a lateral line flashing a firefly-like code, scattered
 // asynchronous twinkles and a pair of head "searchlights"), each organ a lit
 // core in a dark pigment cup. Generated procedurally in the shader.
-const PHOTO_LIMITS={rows:[0,3],spread:[.15,.55],lateral:[0,1],head:[0,1],scatter:[0,.35],spacing:[.07,.18],size:[.018,.05],span:[.45,.95],ringDark:[.2,.9],pulse:[.08,.6],gap:[.12,.9],pulses:[1,5],rest:[.5,4],wave:[0,1.5],shutter:[0,1],ventral:[.25,.7],headLevel:[.8,1.6],wavelength:[50,130],redHead:[0,1],strength:[.8,1.3],startle:[0,1.6],startleDecay:[.5,2.5],startleSpeed:[.6,3]};
-const PHOTO_INTEGERS=new Set(['rows','lateral','head','pulses','shutter','redHead']);
-const PHOTO_BLOCKS={ventral:['rows','spread','ventral','span'],lateral:['lateral','wave','scatter'],code:['pulse','gap','pulses','rest','shutter'],organ:['spacing','size','ringDark','strength'],head:['head','headLevel','redHead'],light:['wavelength'],startle:['startle','startleDecay','startleSpeed']};
+const PHOTO_LIMITS={rows:[0,3],spread:[.15,.55],lateral:[0,1],head:[0,1],scatter:[0,.35],spacing:[.07,.18],size:[.018,.05],span:[.45,.95],ringDark:[.2,.9],pulse:[.08,.6],gap:[.12,.9],pulses:[1,5],rest:[.5,4],wave:[0,1.5],shutter:[0,1],ventral:[.25,.7],headLevel:[.8,1.6],wavelength:[50,130],redHead:[0,1],strength:[.8,1.3],startle:[0,1.6],startleDecay:[.5,2.5],startleSpeed:[.6,3],shape:[0,3],elong:[.6,2.4],sizeGrad:[-.7,.7],cluster:[1,4],stagger:[0,1],converge:[-.6,.6],lateral2:[0,.5],scatterBias:[-1,1]};
+const PHOTO_INTEGERS=new Set(['rows','lateral','head','pulses','shutter','redHead','shape','cluster','stagger']);
+const PHOTO_BLOCKS={ventral:['rows','spread','ventral','span','sizeGrad','cluster','stagger','converge'],lateral:['lateral','wave','scatter','lateral2','scatterBias'],code:['pulse','gap','pulses','rest','shutter'],organ:['spacing','size','ringDark','strength','shape','elong'],head:['head','headLevel','redHead'],light:['wavelength'],startle:['startle','startleDecay','startleSpeed']};
 function photophoreFounderDNA(seed){
  const r=seedRng((seed>>>0)+52817),L=PHOTO_LIMITS,u=(k,x)=>L[k][0]+(L[k][1]-L[k][0])*x;
  const d={version:1};
@@ -3471,6 +3471,12 @@ function photophoreFounderDNA(seed){
  d.wavelength=clamp(85+(r()+r()+r()-1.5)*34,50,130);d.redHead=d.head&&r()<.12?1:0;d.strength=u('strength',r());
  // Touch response: most species answer a disturbance with a burst spreading from the contact.
  d.startle=r()<.22?0:u('startle',.25+.75*r());d.startleDecay=u('startleDecay',r());d.startleSpeed=u('startleSpeed',r());
+ // Variation inside each organ system: organ shape and elongation, a size gradient
+ // along the body, clustered or staggered rows that fan or converge, a second
+ // lateral line and a regional bias to the scattered organs.
+ {const x=r();d.shape=x<.4?0:x<.6?1:x<.8?2:3;}
+ d.elong=r()<.45?1:u('elong',r());d.sizeGrad=u('sizeGrad',r());d.cluster=r()<.55?1:2+Math.floor(r()*3);
+ d.stagger=r()<.5?1:0;d.converge=u('converge',r());d.lateral2=r()<.5?0:u('lateral2',.2+.8*r());d.scatterBias=u('scatterBias',r());
  if(!d.rows&&!d.lateral&&d.scatter<.08)d.lateral=1;
  return normalizedPhotophoreDNA(d,seed);
 }
@@ -3523,7 +3529,7 @@ function photophoreSummary(d){
  if(d.lateral)parts.push('側線');
  if(d.scatter>=.08)parts.push('散在');
  if(d.head)parts.push(d.redHead?'頭部(赤)':'頭部');
- return (parts.join('・')||'—')+' / '+Math.round(400+d.wavelength)+'nm / '+d.pulses+'連閃'+(d.shutter?'・遮光':'')+(d.startle>.05?'・接触で発光':'');
+ return (parts.join('・')||'—')+' / '+Math.round(400+d.wavelength)+'nm / '+d.pulses+'連閃'+(d.shutter?'・遮光':'')+(d.startle>.05?'・接触で発光':'')+' / '+['丸','環','双眼','レンズ'][d.shape]+(d.elong>1.3?'・長':'')+(d.cluster>1?'・'+d.cluster+'個群':'')+(d.lateral2>.02&&d.lateral?'・側線2本':'');
 }
 function opticsCrossoverDNA(a,b,seed,strength,log,inherited){
  const A=normalizedOpticsDNA(a.opticsDNA,a.seed,a),B=normalizedOpticsDNA(b.opticsDNA,b.seed,b),r=seedRng(seed+618047),d={version:1};
@@ -7101,13 +7107,15 @@ function initTextureMorphUniforms(gl,program,vars){
  vars.uTriBlend=gl.getUniformLocation(program,'uTriBlend');
  for(const name of ['uReactionAtlas','uNextReactionAtlas','uReactionEnabled','uTuring0','uNextTuring0','uTuring1','uNextTuring1'])vars[name]=gl.getUniformLocation(program,name);
  for(const name of TEXTURE_ENDPOINT_UNIFORMS)vars['uNext'+name.slice(1)]=gl.getUniformLocation(program,'uNext'+name.slice(1));
- for(const name of ['uNextEmit0','uNextEmit1','uNextEmit2','uNextEmit3','uNextEmission','uNextEmissionColor','uNextBlinkMode','uNextBlinkSpeed','uNextSeedPhase','uPhotoStartle','uPhotoStartle2','uNextPhotoStartle','uNextPhotoStartle2'])vars[name]=gl.getUniformLocation(program,name);
+ for(const name of ['uNextEmit0','uNextEmit1','uNextEmit2','uNextEmit3','uNextEmission','uNextEmissionColor','uNextBlinkMode','uNextBlinkSpeed','uNextSeedPhase','uPhotoStartle','uPhotoStartle2','uNextPhotoStartle','uNextPhotoStartle2','uPhotoShape','uPhotoLayout','uNextPhotoShape','uNextPhotoLayout'])vars[name]=gl.getUniformLocation(program,name);
 }
 const emissionMorphGLSL=`
 uniform vec4 uNextEmit0;uniform vec4 uNextEmit1;uniform vec4 uNextEmit2;uniform vec4 uNextEmit3;
 uniform float uNextEmission;uniform vec3 uNextEmissionColor;uniform float uNextBlinkMode;uniform float uNextBlinkSpeed;uniform float uNextSeedPhase;
 // Touch startle: (origin xyz in mesh space, age s) and (gain, decay s, spread speed, -).
 uniform vec4 uPhotoStartle;uniform vec4 uPhotoStartle2;uniform vec4 uNextPhotoStartle;uniform vec4 uNextPhotoStartle2;
+// Shape (kind, elongation, size gradient, cluster) and layout (stagger, converge, second lateral line, scatter bias).
+uniform vec4 uPhotoShape;uniform vec4 uPhotoLayout;uniform vec4 uNextPhotoShape;uniform vec4 uNextPhotoLayout;
 float emissionBlink(float phase,float mode,float speed,float seed){
  float t=uTime*speed+phase+seed,w=6.2831853,v=.8;
  if(mode<.5)v=1.;
@@ -7128,9 +7136,13 @@ float photoFlash(float t,float d,float g,float n,float P){
 }
 // One organ: lit core inside a dark pigment cup, with a soft glow halo and a
 // four-ray flare. d is the (along-body, around-body) offset. Returns (glow, darkening).
-vec2 photoOrgan(vec2 d,float s,float level,float ringDark,float shutter){
- float r=length(d);
- float core=1.-smoothstep(s*.42,s*.62,r);
+vec2 photoOrgan(vec2 d,float s,float level,float ringDark,float shutter,vec2 sh){
+ d.x/=max(.4,sh.y);
+ float r=length(d),core;
+ if(sh.x<.5)core=1.-smoothstep(s*.42,s*.62,r);
+ else if(sh.x<1.5)core=(1.-smoothstep(s*.5,s*.66,r))*(.18+.82*smoothstep(s*.16,s*.32,r));
+ else if(sh.x<2.5){float r2=min(length(d-vec2(s*.36,0.)),length(d+vec2(s*.36,0.)));core=1.-smoothstep(s*.2,s*.34,r2);}
+ else core=(1.-smoothstep(s*.42,s*.62,r))*.5+(1.-smoothstep(s*.08,s*.22,length(d-vec2(0.,-s*.2))))*1.1;
  float cup=smoothstep(s*.5,s*.68,r)*(1.-smoothstep(s*.95,s*1.15,r));
  float lv=max(level,0.);
  float halo=exp(-r/(s*1.1))*.75+exp(-r/(s*3.2))*.3;
@@ -7152,7 +7164,7 @@ float photoStartleBoost(vec3 p,vec4 st,vec4 st2){
  float wake=step(dist,front)*exp(-(st.w-dist/max(.01,st2.z*.5))/st2.y);
  return st2.x*(ring+wake);
 }
-vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float strength,vec3 tint,float mode,float speed,float seed,float boost){
+vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float strength,vec3 tint,float mode,float speed,float seed,float boost,vec4 sh,vec4 ly){
  float redHead=step(9.5,mode),ringDark=mod(mode,10.);
  float R=max(.05,.5*(ext.x+ext.z));
  // Organ sizes and spacing scale with the body so they read at any size.
@@ -7163,16 +7175,23 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
  float acc=0.,dark=0.;vec3 glowCol=vec3(0.);
  // Ventral rows: steady, slowly breathing counter-illumination.
  if(a.x>.5){
-  float n=a.x,ri=clamp(floor(tha/max(.01,a.y)*n),0.,n-1.),rowTh=a.y*(ri+.5)/n;
-  float cell=floor(u/spacing+.5);
-  vec2 o=photoOrgan(vec2(u-cell*spacing,(tha-rowTh)*R),size,(.55+d.z)*(.8+.2*sin(t*.4+cell*.37+ri))+boost,ringDark,0.)*inSpan;
+  // Rows fan out or converge along the body; odd rows may be staggered; organs
+  // may come in clusters with a gap, and grow or shrink toward the tail.
+  float fan=max(.3,1.+ly.y*q.y),th2=tha/fan;
+  float n=a.x,ri=clamp(floor(th2/max(.01,a.y)*n),0.,n-1.),rowTh=a.y*(ri+.5)/n;
+  float uu=u+ly.x*mod(ri,2.)*spacing*.5,cell=floor(uu/spacing+.5);
+  float keep=sh.w>1.5?step(mod(cell,sh.w+1.),sh.w-.5):1.;
+  float sz=size*max(.35,1.+sh.z*q.y)*(.85+.3*photoHash(vec2(cell,ri)+seed));
+  vec2 o=photoOrgan(vec2(uu-cell*spacing,(th2-rowTh)*R*fan),sz,(.55+d.z)*(.8+.2*sin(t*.4+cell*.37+ri))+boost,ringDark,0.,sh.xy)*inSpan*keep;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Lateral line: flash code travelling along the body as a wave.
  if(a.z>.5){
   float sp=spacing*1.3,cell=floor(u/sp+.5);
-  float f=photoFlash(t-d.x*q.y,c.x,c.y,c.z,c.w);
-  vec2 o=photoOrgan(vec2(u-cell*sp,(tha-1.5708)*R),size*1.15,.1+f*1.2+boost,ringDark,d.y*(1.-step(.05,boost)))*inSpan;
+  // Optionally two lateral lines, above and below the flank.
+  float lt=1.5708+(tha>1.5708?1.:-1.)*ly.z*step(.02,ly.z);
+  float f=photoFlash(t-d.x*q.y+step(1.5708,tha)*step(.02,ly.z)*c.x*.7,c.x,c.y,c.z,c.w);
+  vec2 o=photoOrgan(vec2(u-cell*sp,(tha-lt)*R),size*1.15*max(.35,1.+sh.z*q.y*.6),.1+f*1.2+boost,ringDark,d.y*(1.-step(.05,boost)),sh.xy)*inSpan;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Scattered photophores: independent asynchronous twinkles.
@@ -7180,14 +7199,15 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
   float g=spacing*1.7;vec2 w=vec2(u,th*R)/g,id=floor(w),f2=fract(w)-.5;
   float h=photoHash(id+seed*13.);
   vec2 jit=vec2(photoHash(id+3.1),photoHash(id+7.7))-.5;
-  float present=step(1.-b.x,h);
+  // Density leans toward one end of the body; organ sizes vary individually.
+  float present=step(1.-clamp(b.x*(1.+ly.w*q.y*1.3),0.,.85),h);
   float tw=photoFlash(t+h*c.w*4.,c.x*1.4,c.y,1.,c.w*(1.+h*1.6));
-  vec2 o=photoOrgan((f2-jit*.5)*g,size*.85,.15+tw*1.1+boost,ringDark,d.y*(1.-step(.05,boost)))*present*inSpan;
+  vec2 o=photoOrgan((f2-jit*.5)*g,size*(.45+.8*photoHash(id+11.3)),.15+tw*1.1+boost,ringDark,d.y*(1.-step(.05,boost)),vec2(sh.x,1.))*present*inSpan;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Head searchlights: one steady pair near the anterior end.
  if(a.w>.5){
-  vec2 o=photoOrgan(vec2((q.y-.78)*ext.y,(tha-(1.5708-.45))*R),size*2.,d.w*1.2+boost*.6,ringDark,0.);
+  vec2 o=photoOrgan(vec2((q.y-.78)*ext.y,(tha-(1.5708-.45))*R),size*2.,d.w*1.2+boost*.6,ringDark,0.,vec2(sh.x,1.));
   acc+=o.x;dark=max(dark,o.y);glowCol+=mix(tint,vec3(1.,.13,.06),redHead)*o.x;
  }
  float e=acc*clamp(strength,0.,1.8);
@@ -7206,11 +7226,11 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
 vec4 emissionSurfaceColor(vec3 color,vec3 p){
  vec3 q=chromaticPoint(p);
  float relation=mix(1.,.75+.4*surfaceRidge(q),uSurface1.y*.6);
- vec4 a=emissionLayer(color,q,vec3(uChromaAxis.w,uChromaOrigin.w,uChromaScale.x),uEmit0,uEmit1,uEmit2,uEmit3,uEmission*relation,uEmissionColor,uBlinkMode,uBlinkSpeed,uSeedPhase,photoStartleBoost(p,uPhotoStartle,uPhotoStartle2));
+ vec4 a=emissionLayer(color,q,vec3(uChromaAxis.w,uChromaOrigin.w,uChromaScale.x),uEmit0,uEmit1,uEmit2,uEmit3,uEmission*relation,uEmissionColor,uBlinkMode,uBlinkSpeed,uSeedPhase,photoStartleBoost(p,uPhotoStartle,uPhotoStartle2),uPhotoShape,uPhotoLayout);
  if(uTextureMix<=0.)return a;
  vec3 nq=nextChromaticPoint(p);
  float nextRelation=mix(1.,.75+.4*nextSurfaceRidge(nq),uNextSurface1.y*.6);
- vec4 b=emissionLayer(color,nq,vec3(uNextChromaAxis.w,uNextChromaOrigin.w,uNextChromaScale.x),uNextEmit0,uNextEmit1,uNextEmit2,uNextEmit3,uNextEmission*nextRelation,uNextEmissionColor,uNextBlinkMode,uNextBlinkSpeed,uNextSeedPhase,photoStartleBoost(p,uNextPhotoStartle,uNextPhotoStartle2));
+ vec4 b=emissionLayer(color,nq,vec3(uNextChromaAxis.w,uNextChromaOrigin.w,uNextChromaScale.x),uNextEmit0,uNextEmit1,uNextEmit2,uNextEmit3,uNextEmission*nextRelation,uNextEmissionColor,uNextBlinkMode,uNextBlinkSpeed,uNextSeedPhase,photoStartleBoost(p,uNextPhotoStartle,uNextPhotoStartle2),uNextPhotoShape,uNextPhotoLayout);
  return mix(a,b,clamp(uTextureMix,0.,1.));
 }
 `;
@@ -9892,7 +9912,9 @@ function photophoreUniformValues(sp,live=true){
   BlinkMode:[d.ringDark+d.redHead*10],
   BlinkSpeed:[speed],
   SeedPhase:[(sp.seed||0)*.001%1000],
-  ...photoStartleValues(sp)
+  ...photoStartleValues(sp),
+  PhotoShape:[d.shape,d.elong,d.sizeGrad,d.cluster],
+  PhotoLayout:[d.stagger,d.converge,d.lateral?d.lateral2:0,d.scatterBias]
  };
 }
 
