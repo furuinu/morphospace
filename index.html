@@ -14399,7 +14399,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   const light=blink(i*.31),previous=state.previousLights[i];
   // Use both visual brightness and the rising edge; slow glows sustain longer vowels.
  // Every luminous rise can articulate a note again, in sync with the actual blinking phase.
-  if(emission&&emission.strength>0&&emission.mode!==0&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;}
+  if(emission&&emission.strength>0&&(choirPhotoValues||emission.mode!==0)&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;}
   state.previousLights[i]=light;
   const a=t-state.lightTimes[i],v=state.lights[i];
   // Live shape-to-sound: refresh the oscillator wavetable as the body twists.
@@ -14421,7 +14421,8 @@ function renderPureChoir(quiet,state,sp,fade=1){
   const duration=[.62,.88,1.12,.72][(seed+i)%4]*(.75+voiceDNA.phraseLength*.065);
   // Luminous syllables answer the body mostly during pauses, with organism-specific response style.
    const responseWindow=voiceDNA.response===0?(1-phraseGate):voiceDNA.response===1?(.25+.75*phraseGate):voiceDNA.response===2?(.55+.45*Math.abs(wave)):(.4+.6*(1-phraseGate));
-   const gate=roundedLightEnvelope(a,duration)*Math.pow(Math.max(0,1-a/duration),temperament===2?.8:.35)*responseWindow;
+   // Photophores lead: every flash speaks, never held back by the musical phrase.
+   const gate=roundedLightEnvelope(a,duration)*Math.pow(Math.max(0,1-a/duration),temperament===2?.8:.35)*(choirPhotoValues?1:responseWindow);
   const voiceRole=(seed+i)%4;
   // LIGHT preserves blink timing and chord roles while adopting old mid/high vocal registers.
   const lightPitch=clamp(harmonyPitch(voiceRole,0),legacyHz(67),legacyHz(77));
@@ -14435,7 +14436,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   // Keep a faint resonant glow even between attacks; accents remain clearly distinct.
   const lightBed=emission&&emission.strength>0?.028*light:0;
   // Luminous call level is exactly half of the preceding 0.20 gain.
-  v.out.gain.setTargetAtTime(sharedVoiceLevel*clamp(lightBed+gate/.75,0,1),ctx.currentTime,.09);
+  v.out.gain.setTargetAtTime(sharedVoiceLevel*clamp(lightBed+gate/.75,0,1),ctx.currentTime,.09*(choirPhotoValues?.35:1));
   v.consonantGain.gain.setTargetAtTime(a>=0&&a<duration?(speechMode?.40:.14)*Math.exp(-Math.max(0,a-lightStep*duration/3)*13)*responseWindow:0,ctx.currentTime,.028);
   if(speechMode)articulate(v,lightPhoneme,a>=0&&a<duration?Math.exp(-Math.max(0,a-lightStep*duration/3)*12)*responseWindow:0);
   v.tone.frequency.setTargetAtTime([750,1250,1850,2600][i]*(.75+voiceDNA.breathiness*.45)*(1+.25*gate),ctx.currentTime,.09);

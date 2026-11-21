@@ -54,7 +54,7 @@ test('organ phrasing has actual breath gaps and motion-led response',()=>{
   assert.match(app, /const phraseActive=phrasePos<voiceDNA\.phraseLength/);
   assert.match(app, /const bodyLevel=\([^;]+\)\*phraseGate/);
   assert.match(app, /const responseWindow=voiceDNA\.response===0/);
-  assert.match(app, /roundedLightEnvelope\(a,duration\)[^;]+\*responseWindow/);
+  assert.match(app, /roundedLightEnvelope\(a,duration\)[^;]+\*\(choirPhotoValues\?1:responseWindow\)/);
 });
 
 test('comfort stage softens the choir and preserves deliberate rests',()=>{
@@ -105,7 +105,7 @@ test('legacy vocal registers retain body pulse light onset relationships',()=>{
   assert.match(app, /legacyHz\(62\),legacyHz\(69\)/);
   assert.match(app, /const lightPitch=clamp\(harmonyPitch\(voiceRole,0\),legacyHz\(67\),legacyHz\(77\)\)/);
   assert.match(app, /const responseWindow=voiceDNA\.response===0/);
-  assert.match(app, /if\(emission&&emission\.strength>0&&emission\.mode!==0&&light>\.38&&previous<=\.38\)/);
+  assert.match(app, /if\(emission&&emission\.strength>0&&\(choirPhotoValues\|\|emission\.mode!==0\)&&light>\.38&&previous<=\.38\)/);
 });
 
 test('uniform vocal baseline and soft organ syllables',()=>{
