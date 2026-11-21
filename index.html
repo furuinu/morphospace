@@ -584,7 +584,7 @@ body.boot-ready>.wrap,body.boot-ready>#overlay{visibility:hidden!important}
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MorphospaceCaptureShare=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const VERSION=1,MAX_BYTES=24000,MAX_NODES=2500;
- const KEYS=('version record view id name seed style genome generation parents sourceSeed ecology text kind sensation place habitat food behavior cue effect templateId picks index mode archetype bend coil elong bulge asym ruffle notches split sacs branches material pitch dev pressure axialGrowth lobation segmentation curvature chirality vacuoleGrowth surfaceGrowth motionEnergy membraneTension fusion colorDNA rows cols hybridStyle hybridMix morphDNA axial flat radial branch void asymmetry twist budding extension lamella surface polarity strain shear motionDNA primary secondary tempo amplitude duty rest propagation locality phase accent axisBias bioDNA elasticity damping conductance tension compliance inertia impulse anisotropy delay patternDNA weights globalScale midScale microScale contrast hardness linearity radiality threshold sharpness bandMix speckle shift freqA freqB freqC phaseA phaseB phaseC family eyeCount spikeBias mottleBias ribbonBias emissionDNA colorMode blinkMode blinkSpeed strength bloomRadius density micro emitColor emitBlink emissionStrength shadeStrength motionAmp coupling motionSpeed bodySpeed motion wire auto yaw cameraPitch panX panY zoom time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead').split(' ');
+ const KEYS=('version record view id name seed style genome generation parents sourceSeed ecology text kind sensation place habitat food behavior cue effect templateId picks index mode archetype bend coil elong bulge asym ruffle notches split sacs branches material pitch dev pressure axialGrowth lobation segmentation curvature chirality vacuoleGrowth surfaceGrowth motionEnergy membraneTension fusion colorDNA rows cols hybridStyle hybridMix morphDNA axial flat radial branch void asymmetry twist budding extension lamella surface polarity strain shear motionDNA primary secondary tempo amplitude duty rest propagation locality phase accent axisBias bioDNA elasticity damping conductance tension compliance inertia impulse anisotropy delay patternDNA weights globalScale midScale microScale contrast hardness linearity radiality threshold sharpness bandMix speckle shift freqA freqB freqC phaseA phaseB phaseC family eyeCount spikeBias mottleBias ribbonBias emissionDNA colorMode blinkMode blinkSpeed strength bloomRadius density micro emitColor emitBlink emissionStrength shadeStrength motionAmp coupling motionSpeed bodySpeed motion wire auto yaw cameraPitch panX panY zoom time ecologyVersion transparency opticsDNA fresnel iridescence thinFilm gloss turingDNA feed kill diffusionA diffusionB anisotropy axis seedSpots seedRadius expression maturity inkColor deepMix tintDepth edgeWeight coverTarget scaleRatio fineWeight fineInside photophoreDNA spread lateral head scatter spacing span ringDark pulse gap pulses wave shutter ventral headLevel wavelength redHead startle startleDecay startleSpeed').split(' ');
  const KEY_INDEX=new Map(KEYS.map((key,i)=>[key,i+1]));
  const forbidden=key=>key==='__proto__'||key==='constructor'||key==='prototype';
  const utf8=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
@@ -3457,9 +3457,9 @@ function turingCrossoverDNA(a,b,seed,strength,log,inherited){
 // counter-illumination, a lateral line flashing a firefly-like code, scattered
 // asynchronous twinkles and a pair of head "searchlights"), each organ a lit
 // core in a dark pigment cup. Generated procedurally in the shader.
-const PHOTO_LIMITS={rows:[0,3],spread:[.15,.55],lateral:[0,1],head:[0,1],scatter:[0,.35],spacing:[.07,.18],size:[.018,.05],span:[.45,.95],ringDark:[.2,.9],pulse:[.08,.6],gap:[.12,.9],pulses:[1,5],rest:[.5,4],wave:[0,1.5],shutter:[0,1],ventral:[.25,.7],headLevel:[.8,1.6],wavelength:[50,130],redHead:[0,1],strength:[.8,1.3]};
+const PHOTO_LIMITS={rows:[0,3],spread:[.15,.55],lateral:[0,1],head:[0,1],scatter:[0,.35],spacing:[.07,.18],size:[.018,.05],span:[.45,.95],ringDark:[.2,.9],pulse:[.08,.6],gap:[.12,.9],pulses:[1,5],rest:[.5,4],wave:[0,1.5],shutter:[0,1],ventral:[.25,.7],headLevel:[.8,1.6],wavelength:[50,130],redHead:[0,1],strength:[.8,1.3],startle:[0,1.6],startleDecay:[.5,2.5],startleSpeed:[.6,3]};
 const PHOTO_INTEGERS=new Set(['rows','lateral','head','pulses','shutter','redHead']);
-const PHOTO_BLOCKS={ventral:['rows','spread','ventral','span'],lateral:['lateral','wave','scatter'],code:['pulse','gap','pulses','rest','shutter'],organ:['spacing','size','ringDark','strength'],head:['head','headLevel','redHead'],light:['wavelength']};
+const PHOTO_BLOCKS={ventral:['rows','spread','ventral','span'],lateral:['lateral','wave','scatter'],code:['pulse','gap','pulses','rest','shutter'],organ:['spacing','size','ringDark','strength'],head:['head','headLevel','redHead'],light:['wavelength'],startle:['startle','startleDecay','startleSpeed']};
 function photophoreFounderDNA(seed){
  const r=seedRng((seed>>>0)+52817),L=PHOTO_LIMITS,u=(k,x)=>L[k][0]+(L[k][1]-L[k][0])*x;
  const d={version:1};
@@ -3469,13 +3469,17 @@ function photophoreFounderDNA(seed){
  d.wave=r()<.5?u('wave',r()):0;d.shutter=r()<.3?1:0;d.ventral=u('ventral',r());d.headLevel=u('headLevel',r());
  // Deep-sea light is overwhelmingly blue-green (~470-500 nm); stored as nm-400.
  d.wavelength=clamp(85+(r()+r()+r()-1.5)*34,50,130);d.redHead=d.head&&r()<.12?1:0;d.strength=u('strength',r());
+ // Touch response: most species answer a disturbance with a burst spreading from the contact.
+ d.startle=r()<.22?0:u('startle',.25+.75*r());d.startleDecay=u('startleDecay',r());d.startleSpeed=u('startleSpeed',r());
  if(!d.rows&&!d.lateral&&d.scatter<.08)d.lateral=1;
  return normalizedPhotophoreDNA(d,seed);
 }
 function normalizedPhotophoreDNA(source,seed=0){
  const d={version:1};
  const base=source&&typeof source==='object'&&source.version===1?source:null;
- const f=base||photophoreFounderDNA(seed);
+ let f=base;
+ if(!f)f=photophoreFounderDNA(seed);
+ else if(Object.keys(PHOTO_LIMITS).some(k=>!Number.isFinite(Number(f[k]))))f=Object.assign({},photophoreFounderDNA(seed),Object.fromEntries(Object.entries(f).filter(([,v])=>Number.isFinite(Number(v)))));
  for(const [key,lim]of Object.entries(PHOTO_LIMITS)){let v=Number(f[key]);if(!Number.isFinite(v))v=lim[0];v=clamp(v,...lim);d[key]=PHOTO_INTEGERS.has(key)?Math.round(v):+v.toFixed(4);}
  if(!d.head)d.redHead=0;
  return d;
@@ -3519,7 +3523,7 @@ function photophoreSummary(d){
  if(d.lateral)parts.push('側線');
  if(d.scatter>=.08)parts.push('散在');
  if(d.head)parts.push(d.redHead?'頭部(赤)':'頭部');
- return (parts.join('・')||'—')+' / '+Math.round(400+d.wavelength)+'nm / '+d.pulses+'連閃'+(d.shutter?'・遮光':'');
+ return (parts.join('・')||'—')+' / '+Math.round(400+d.wavelength)+'nm / '+d.pulses+'連閃'+(d.shutter?'・遮光':'')+(d.startle>.05?'・接触で発光':'');
 }
 function opticsCrossoverDNA(a,b,seed,strength,log,inherited){
  const A=normalizedOpticsDNA(a.opticsDNA,a.seed,a),B=normalizedOpticsDNA(b.opticsDNA,b.seed,b),r=seedRng(seed+618047),d={version:1};
@@ -7097,11 +7101,13 @@ function initTextureMorphUniforms(gl,program,vars){
  vars.uTriBlend=gl.getUniformLocation(program,'uTriBlend');
  for(const name of ['uReactionAtlas','uNextReactionAtlas','uReactionEnabled','uTuring0','uNextTuring0','uTuring1','uNextTuring1'])vars[name]=gl.getUniformLocation(program,name);
  for(const name of TEXTURE_ENDPOINT_UNIFORMS)vars['uNext'+name.slice(1)]=gl.getUniformLocation(program,'uNext'+name.slice(1));
- for(const name of ['uNextEmit0','uNextEmit1','uNextEmit2','uNextEmit3','uNextEmission','uNextEmissionColor','uNextBlinkMode','uNextBlinkSpeed','uNextSeedPhase'])vars[name]=gl.getUniformLocation(program,name);
+ for(const name of ['uNextEmit0','uNextEmit1','uNextEmit2','uNextEmit3','uNextEmission','uNextEmissionColor','uNextBlinkMode','uNextBlinkSpeed','uNextSeedPhase','uPhotoStartle','uPhotoStartle2','uNextPhotoStartle','uNextPhotoStartle2'])vars[name]=gl.getUniformLocation(program,name);
 }
 const emissionMorphGLSL=`
 uniform vec4 uNextEmit0;uniform vec4 uNextEmit1;uniform vec4 uNextEmit2;uniform vec4 uNextEmit3;
 uniform float uNextEmission;uniform vec3 uNextEmissionColor;uniform float uNextBlinkMode;uniform float uNextBlinkSpeed;uniform float uNextSeedPhase;
+// Touch startle: (origin xyz in mesh space, age s) and (gain, decay s, spread speed, -).
+uniform vec4 uPhotoStartle;uniform vec4 uPhotoStartle2;uniform vec4 uNextPhotoStartle;uniform vec4 uNextPhotoStartle2;
 float emissionBlink(float phase,float mode,float speed,float seed){
  float t=uTime*speed+phase+seed,w=6.2831853,v=.8;
  if(mode<.5)v=1.;
@@ -7138,7 +7144,15 @@ vec2 photoOrgan(vec2 d,float s,float level,float ringDark,float shutter){
 // a=(rows,spread,lateral,head) b=(scatter,spacing,size,span)
 // c=(pulse,gap,pulses,period) d=(wave,shutter,ventralLevel,headLevel)
 // mode packs ringDark + redHead*10.
-vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float strength,vec3 tint,float mode,float speed,float seed){
+// Disturbance burst: a bright front rings out from the touch, then the organs fade.
+float photoStartleBoost(vec3 p,vec4 st,vec4 st2){
+ if(st2.x<=.01||st.w>st2.y*4.)return 0.;
+ float L=max(.2,st2.w),dist=distance(p,st.xyz)/L,front=st.w*st2.z*.5;
+ float ring=exp(-pow((dist-front)/.09,2.))*1.6;
+ float wake=step(dist,front)*exp(-(st.w-dist/max(.01,st2.z*.5))/st2.y);
+ return st2.x*(ring+wake);
+}
+vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float strength,vec3 tint,float mode,float speed,float seed,float boost){
  float redHead=step(9.5,mode),ringDark=mod(mode,10.);
  float R=max(.05,.5*(ext.x+ext.z));
  // Organ sizes and spacing scale with the body so they read at any size.
@@ -7151,14 +7165,14 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
  if(a.x>.5){
   float n=a.x,ri=clamp(floor(tha/max(.01,a.y)*n),0.,n-1.),rowTh=a.y*(ri+.5)/n;
   float cell=floor(u/spacing+.5);
-  vec2 o=photoOrgan(vec2(u-cell*spacing,(tha-rowTh)*R),size,(.55+d.z)*(.8+.2*sin(t*.4+cell*.37+ri)),ringDark,0.)*inSpan;
+  vec2 o=photoOrgan(vec2(u-cell*spacing,(tha-rowTh)*R),size,(.55+d.z)*(.8+.2*sin(t*.4+cell*.37+ri))+boost,ringDark,0.)*inSpan;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Lateral line: flash code travelling along the body as a wave.
  if(a.z>.5){
   float sp=spacing*1.3,cell=floor(u/sp+.5);
   float f=photoFlash(t-d.x*q.y,c.x,c.y,c.z,c.w);
-  vec2 o=photoOrgan(vec2(u-cell*sp,(tha-1.5708)*R),size*1.15,.1+f*1.2,ringDark,d.y)*inSpan;
+  vec2 o=photoOrgan(vec2(u-cell*sp,(tha-1.5708)*R),size*1.15,.1+f*1.2+boost,ringDark,d.y*(1.-step(.05,boost)))*inSpan;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Scattered photophores: independent asynchronous twinkles.
@@ -7168,12 +7182,12 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
   vec2 jit=vec2(photoHash(id+3.1),photoHash(id+7.7))-.5;
   float present=step(1.-b.x,h);
   float tw=photoFlash(t+h*c.w*4.,c.x*1.4,c.y,1.,c.w*(1.+h*1.6));
-  vec2 o=photoOrgan((f2-jit*.5)*g,size*.85,.15+tw*1.1,ringDark,d.y)*present*inSpan;
+  vec2 o=photoOrgan((f2-jit*.5)*g,size*.85,.15+tw*1.1+boost,ringDark,d.y*(1.-step(.05,boost)))*present*inSpan;
   acc+=o.x;dark=max(dark,o.y);glowCol+=tint*o.x;
  }
  // Head searchlights: one steady pair near the anterior end.
  if(a.w>.5){
-  vec2 o=photoOrgan(vec2((q.y-.78)*ext.y,(tha-(1.5708-.45))*R),size*2.,d.w*1.2,ringDark,0.);
+  vec2 o=photoOrgan(vec2((q.y-.78)*ext.y,(tha-(1.5708-.45))*R),size*2.,d.w*1.2+boost*.6,ringDark,0.);
   acc+=o.x;dark=max(dark,o.y);glowCol+=mix(tint,vec3(1.,.13,.06),redHead)*o.x;
  }
  float e=acc*clamp(strength,0.,1.8);
@@ -7188,11 +7202,11 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
 vec4 emissionSurfaceColor(vec3 color,vec3 p){
  vec3 q=chromaticPoint(p);
  float relation=mix(1.,.75+.4*surfaceRidge(q),uSurface1.y*.6);
- vec4 a=emissionLayer(color,q,vec3(uChromaAxis.w,uChromaOrigin.w,uChromaScale.x),uEmit0,uEmit1,uEmit2,uEmit3,uEmission*relation,uEmissionColor,uBlinkMode,uBlinkSpeed,uSeedPhase);
+ vec4 a=emissionLayer(color,q,vec3(uChromaAxis.w,uChromaOrigin.w,uChromaScale.x),uEmit0,uEmit1,uEmit2,uEmit3,uEmission*relation,uEmissionColor,uBlinkMode,uBlinkSpeed,uSeedPhase,photoStartleBoost(p,uPhotoStartle,uPhotoStartle2));
  if(uTextureMix<=0.)return a;
  vec3 nq=nextChromaticPoint(p);
  float nextRelation=mix(1.,.75+.4*nextSurfaceRidge(nq),uNextSurface1.y*.6);
- vec4 b=emissionLayer(color,nq,vec3(uNextChromaAxis.w,uNextChromaOrigin.w,uNextChromaScale.x),uNextEmit0,uNextEmit1,uNextEmit2,uNextEmit3,uNextEmission*nextRelation,uNextEmissionColor,uNextBlinkMode,uNextBlinkSpeed,uNextSeedPhase);
+ vec4 b=emissionLayer(color,nq,vec3(uNextChromaAxis.w,uNextChromaOrigin.w,uNextChromaScale.x),uNextEmit0,uNextEmit1,uNextEmit2,uNextEmit3,uNextEmission*nextRelation,uNextEmissionColor,uNextBlinkMode,uNextBlinkSpeed,uNextSeedPhase,photoStartleBoost(p,uNextPhotoStartle,uNextPhotoStartle2));
  return mix(a,b,clamp(uTextureMix,0.,1.));
 }
 `;
@@ -9873,7 +9887,8 @@ function photophoreUniformValues(sp,live=true){
   EmissionColor:wavelengthRGB(400+d.wavelength),
   BlinkMode:[d.ringDark+d.redHead*10],
   BlinkSpeed:[speed],
-  SeedPhase:[(sp.seed||0)*.001%1000]
+  SeedPhase:[(sp.seed||0)*.001%1000],
+  ...photoStartleValues(sp)
  };
 }
 
@@ -11891,6 +11906,31 @@ let viewerTap=null,viewerLongPress=null,viewerHitFrame=null;
 const VIEWER_EDGE_TAP_WIDTH=1/6,VIEWER_EDGE_TAP_HEIGHT=2/3,VIEWER_LONG_PRESS_MS=550;
 // Screen-space hit test against the last drawn primary copy (shell + appendages).
 // Samples at most ~1500 vertices; vertex animation is ignored, so the radius is generous.
+// Nearest body vertex (mesh coordinates) under a screen point, or null.
+function specimenHitPoint(clientX,clientY){
+ const frame=viewerHitFrame;if(!frame)return null;
+ const rect=canvas.getBoundingClientRect(),m=frame.mvp,reach=Math.max(28,Math.min(rect.width,rect.height)*.06);
+ let best=null,bestD=reach*reach;
+ for(const mesh of frame.meshes.slice(0,1)){
+  const d=mesh?.data;if(!d)continue;const stride=d.length%17===0?17:9,step=Math.max(1,Math.floor(d.length/stride/3000));
+  for(let i=0;i+2<d.length;i+=stride*step){
+   const x=d[i],y=d[i+1],z=d[i+2],w=m[3]*x+m[7]*y+m[11]*z+m[15];if(w<=1e-4)continue;
+   const sx=rect.left+(.5+.5*(m[0]*x+m[4]*y+m[8]*z+m[12])/w)*rect.width,sy=rect.top+(.5-.5*(m[1]*x+m[5]*y+m[9]*z+m[13])/w)*rect.height;
+   const dd=(sx-clientX)**2+(sy-clientY)**2;if(dd<bestD){bestD=dd;best=[x,y,z];}
+  }
+ }
+ return best;
+}
+let photoStartle=null;
+function triggerPhotoStartle(clientX,clientY){
+ if(!spec)return false;const at=specimenHitPoint(clientX,clientY);if(!at)return false;
+ photoStartle={origin:at,start:bodyTime,specimen:spec};return true;
+}
+function photoStartleValues(sp){
+ const d=ensurePhotophoreDNA(sp.genome||(sp.genome={}),sp.seed||0),st=photoStartle&&photoStartle.specimen===sp?photoStartle:null;
+ const age=st?Math.max(0,bodyTime-st.start):99;
+ return {PhotoStartle:[...(st?st.origin:[0,0,0]),age],PhotoStartle2:[d.startle,d.startleDecay,d.startleSpeed,Math.max(.2,Number(sp.palette?.chromaticFrame?.extent?.[1])||1)]};
+}
 function specimenHitAt(clientX,clientY){
  const frame=viewerHitFrame;if(!frame)return false;
  const rect=canvas.getBoundingClientRect(),m=frame.mvp,reach=Math.max(22,Math.min(rect.width,rect.height)*.05),reach2=reach*reach;
@@ -16439,6 +16479,7 @@ canvas.addEventListener('pointerdown',e=>{
  if(nanoOperationBusy||nanoAction||captureShareIsOpen||e.button!==0)return;
  activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  canvas.setPointerCapture(e.pointerId);
+ if(activePointers.size===1&&typeof triggerPhotoStartle==='function')try{triggerPhotoStartle(e.clientX,e.clientY)}catch{}
  if(activePointers.size===1){drag=true;previous=[e.clientX,e.clientY];pinchState=null;viewerTap=e.isPrimary===false?null:{id:e.pointerId,x:e.clientX,y:e.clientY,started:performance.now(),settingsOpen:$('viewerSettings').open};
   cancelViewerLongPress();
   if(e.isPrimary!==false){const press={id:e.pointerId,x:e.clientX,y:e.clientY};press.timer=setTimeout(()=>{

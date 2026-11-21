@@ -35,7 +35,7 @@ test('crossover segregates whole blocks, logs mutations and keeps an organ syste
  let mutated=0;
  for(const {d,log,inh,A,B} of out){
   assert.ok(d.rows>0||d.lateral||d.scatter>=.08);
-  assert.equal(Object.keys(inh).filter(k=>k.startsWith('photophore_')).length,6);
+  assert.equal(Object.keys(inh).filter(k=>k.startsWith('photophore_')).length,7);
   const src=inh.photophore_light==='A'?A:B;
   if(!log.some(x=>x.field==='photophoreDNA.wavelength'))assert.ok(Math.abs(d.wavelength-src.wavelength)<1e-3||(d.wavelength-A.wavelength)*(d.wavelength-B.wavelength)<=1e-6);
   mutated+=log.length>0;
@@ -68,4 +68,15 @@ test('shader draws rule-placed photophores with pigment cups and morph endpoints
  for(const part of ['float photoFlash(float t,float d,float g,float n,float P)','vec2 photoOrgan(','// Ventral rows','// Lateral line','// Scattered photophores','// Head searchlights','vec3(uNextChromaAxis.w,uNextChromaOrigin.w,uNextChromaScale.x)'])assert.ok(html.includes(part),part);
  assert.match(html,/function setEmissionUniforms\(v\)\{\n if\(!spec\|\|!v\)return;\n const values=photophoreUniformValues\(spec,true\);/);
  assert.match(html,/viewer\.morph\.fusePatternB\.set\(vars\['uNext'\+name\],pb\[name\]\)/);
+});
+
+test('touch startle genes are heritable and old chromosomes gain them from the seed',()=>{
+ const list=plain(run(`Array.from({length:120},(_,i)=>photophoreFounderDNA(3000+i*29))`));
+ const silent=list.filter(d=>d.startle===0).length;
+ assert.ok(silent>8&&silent<50,`silent species ${silent}`);
+ const old=plain(run(`(()=>{const d=photophoreFounderDNA(55);delete d.startle;delete d.startleDecay;delete d.startleSpeed;return normalizedPhotophoreDNA(d,55)})()`));
+ assert.deepEqual(old,plain(run('photophoreFounderDNA(55)')));
+ assert.ok(html.includes("photophore_startle")||html.includes("startle:['startle','startleDecay','startleSpeed']"));
+ assert.match(html,/float photoStartleBoost\(vec3 p,vec4 st,vec4 st2\)/);
+ assert.match(html,/triggerPhotoStartle\(e\.clientX,e\.clientY\)/);
 });
