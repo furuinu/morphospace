@@ -102,3 +102,48 @@ test('skin just outside a joint region follows it: no vertex is left behind besi
  assert.equal(w(spread,pts.length-1),0,'the spread stops: distant skin stays with the body');
  assert.match(html,/for\(let ring=0;ring<3;ring\+\+\)\{/);
 });
+test('a dendritic structure swings as one chain: every twig has a bone and rides on its parent',()=>{
+ // Trunk out of the body, forking twice. Twigs start outside the body lump, so none of their
+ // length is buried in it and each keeps a bone of its own.
+ const branches=[{a:[0,.35,0],b:[0,.5,0],r0:.075,r1:.065}];
+ const grow=(from,dir,len,r,depth)=>{
+  const to=from.map((v,i)=>v+dir[i]*len);
+  branches.push({a:from,b:to,r0:r,r1:r*.72});
+  if(depth>=3)return;
+  for(const s of [-1,1]){
+   const nd=[dir[0]*Math.cos(.6*s)-dir[1]*Math.sin(.6*s),dir[0]*Math.sin(.6*s)+dir[1]*Math.cos(.6*s),dir[2]+.25*s];
+   const l=Math.hypot(...nd);grow(to,nd.map(v=>v/l),len*.68,r*.7,depth+1);
+  }
+ };
+ grow([0,.5,0],[0,1,0],.42,.055,1);
+ const blobs=[{p:[0,0,0],axes:[.42,.42,.42],kind:'nucleus'}];
+ // Skin: rings of six around every segment, plus triangles so neighbours share edges.
+ const pts=[],tri=[];
+ for(const b of branches){
+  const v=b.b.map((q,i)=>q-b.a[i]),len=Math.hypot(...v),d=v.map(q=>q/len);
+  const up=Math.abs(d[1])<.85?[0,1,0]:[1,0,0];
+  const u=[d[1]*up[2]-d[2]*up[1],d[2]*up[0]-d[0]*up[2],d[0]*up[1]-d[1]*up[0]];
+  const ul=Math.hypot(...u),n1=u.map(q=>q/ul);
+  const n2=[d[1]*n1[2]-d[2]*n1[1],d[2]*n1[0]-d[0]*n1[2],d[0]*n1[1]-d[1]*n1[0]];
+  const base=pts.length;
+  for(let i=0;i<=6;i++){const t=i/6,rr=b.r0+(b.r1-b.r0)*t;
+   for(let j=0;j<6;j++){const a=j/6*Math.PI*2;
+    pts.push(b.a.map((q,k)=>q+d[k]*len*t+(n1[k]*Math.cos(a)+n2[k]*Math.sin(a))*rr));}}
+  for(let i=0;i<6;i++)for(let j=0;j<6;j++){
+   const a=base+i*6+j,b2=base+i*6+(j+1)%6,c=base+(i+1)*6+j,e=base+(i+1)*6+(j+1)%6;
+   tri.push(a,b2,c,b2,e,c);}
+ }
+ const skin=pts.length;
+ for(let i=0;i<120;i++){const a=i*2.399963,z=1-2*(i+.5)/120,rr=Math.sqrt(1-z*z);
+  pts.push([.42*rr*Math.cos(a),.42*z,.42*rr*Math.sin(a)]);}
+ const data=new Float32Array(pts.length*17);pts.forEach((p,i)=>data.set(p,i*17));
+ const f=rig(),sp={seed:42,localGroup:{source:{blobs,links:[],structures:{branches}},copyTransforms:[{}]}};
+ const r=f.build(sp,{data,tri:new Uint16Array(tri)});
+ assert.equal(r.joints.length,branches.length,'every segment of the tree carries a bone');
+ for(let i=0;i<skin;i++)assert.ok(r.attr[i*3+1]>0,'no branch skin is left without an owner: vertex '+i);
+ r.joints.forEach((j,k)=>assert.ok(j.parent<k,'a parent always comes first, so its pose composes: '+k));
+ assert.ok(r.joints.filter(j=>j.parent>=0).length>=branches.length-2,'the tree is a chain, not a bundle of loose spikes');
+ assert.ok(r.joints.some(j=>j.depth>=2),'and it runs several levels deep');
+ for(let t=0;t<tri.length;t+=3)for(const [a,b] of [[tri[t],tri[t+1]],[tri[t+1],tri[t+2]],[tri[t+2],tri[t]]])
+  assert.ok(Math.abs(r.attr[a*3+1]-r.attr[b*3+1])<.62,'no torn seam inside the tree');
+});
