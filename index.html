@@ -7148,7 +7148,7 @@ vec2 photoOrgan(vec2 d,float s,float level,float ringDark,float shutter){
 float photoStartleBoost(vec3 p,vec4 st,vec4 st2){
  if(st2.x<=.01||st.w>st2.y*4.)return 0.;
  float L=max(.2,st2.w),dist=distance(p,st.xyz)/L,front=st.w*st2.z*.5;
- float ring=exp(-pow((dist-front)/.09,2.))*1.6;
+ float ring=exp(-pow((dist-front)/.22,2.))*1.4;
  float wake=step(dist,front)*exp(-(st.w-dist/max(.01,st2.z*.5))/st2.y);
  return st2.x*(ring+wake);
 }
@@ -7196,8 +7196,12 @@ vec4 emissionLayer(vec3 color,vec3 q,vec3 ext,vec4 a,vec4 b,vec4 c,vec4 d,float 
  color*=1.-dark*.8;
  color=mix(color,lc,clamp(e*.8,0.,.95));color=mix(color,mix(lc,vec3(1.),.65),clamp(pow(max(e-.6,0.),1.5)*.8,0.,.9));
  color+=lc*max(e-1.,0.)*.35;
+ // Startle also lights the skin itself (a luminous sheet sweeping the body), so the
+ // burst reads even where organs are sparse or already saturated.
+ float sk=clamp(boost*clamp(strength,.4,1.8),0.,2.);
+ color=mix(color,tint,clamp(sk*.55,0.,.85));color+=tint*max(sk-.8,0.)*.4;
  // Alpha drives the bloom pass: the halo and flare spill light past the organ.
- return vec4(color,clamp(e*.9,0.,1.));
+ return vec4(color,clamp(max(e*.9,sk*.85),0.,1.));
 }
 vec4 emissionSurfaceColor(vec3 color,vec3 p){
  vec3 q=chromaticPoint(p);
@@ -9956,7 +9960,7 @@ function activeEmitColor(){
 function blinkStrength(i){
  const d=spec?ensurePhotophoreDNA(spec.genome||(spec.genome={}),spec.seed||0):null;
  if(!d)return soundBlinkValue(0,0);
- const t=bodyTime*Number($('blinkSpeed').value)/100+(spec.seed||0)*.001-d.wave*(i/(EMIT_COUNT-1)*2-1);
+ const t=performance.now()/1000*Number($('blinkSpeed').value)/100+(spec.seed||0)*.001-d.wave*(i/(EMIT_COUNT-1)*2-1);
  return clamp(.12+.88*photophoreFlash(t,d.pulse,d.gap,d.pulses,photophorePeriod(d)),.08,1);
 }
 
@@ -11924,11 +11928,11 @@ function specimenHitPoint(clientX,clientY){
 let photoStartle=null;
 function triggerPhotoStartle(clientX,clientY){
  if(!spec)return false;const at=specimenHitPoint(clientX,clientY);if(!at)return false;
- photoStartle={origin:at,start:bodyTime,specimen:spec};return true;
+ photoStartle={origin:at,start:performance.now()/1000,specimen:spec};return true;
 }
 function photoStartleValues(sp){
  const d=ensurePhotophoreDNA(sp.genome||(sp.genome={}),sp.seed||0),st=photoStartle&&photoStartle.specimen===sp?photoStartle:null;
- const age=st?Math.max(0,bodyTime-st.start):99;
+ const age=st?Math.max(0,performance.now()/1000-st.start):99;
  return {PhotoStartle:[...(st?st.origin:[0,0,0]),age],PhotoStartle2:[d.startle,d.startleDecay,d.startleSpeed,Math.max(.2,Number(sp.palette?.chromaticFrame?.extent?.[1])||1)]};
 }
 function specimenHitAt(clientX,clientY){
