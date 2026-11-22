@@ -1,11 +1,16 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-test('turning traces the organism scale on a glass voice',()=>{
- const src=html.slice(html.indexOf('function updateTurnSound('),html.indexOf('const heartbeatBus='));
- assert.match(src,/Math\.atan2\(cameraOrbitPitchSpeed\|\|0,cameraOrbitSpeed\|\|0\)/,'heading of the drift');
- assert.match(src,/Math\.abs\(b\.acc\)>=traits\.stepDeg/,'one tone per step of degrees');
- assert.match(src,/soundMusicalProfile\(spec\)/,'tones come from the organism scale');
- assert.match(src,/turnRub\(b,now/);assert.match(src,/traits\.decay\*1\.8/,'landing tone');
- assert.match(html,/\[\[1,1\],\[2\.76,\.45\*bright\],\[5\.4,\.22\*bright\*bright\]\]/,'inharmonic glass partials');
- assert.match(html,/updateTurnSound\(quiet,Number\(\$\('viewerSoundVolume'\)\.value\)\/100\)/);
+test('turning sings a choir vowel that glides along the organism scale',()=>{
+ const src=html.slice(html.indexOf('function updateTurnSound('),html.indexOf('// Branch clicks'));
+ assert.match(src,/Math\.atan2\(cameraOrbitPitchSpeed\|\|0,cameraOrbitSpeed\|\|0\)/);
+ assert.match(src,/soundMusicalProfile\(spec\)/);
+ assert.match(src,/\(\.2\/3\)\*2\.2/,'about a third of a choir voice');
+ assert.match(html,/function choirBusInput\(engine\)\{return \(typeof pureChoir!=='undefined'&&pureChoir\?\.master\)\|\|engine\.sampleInput;\}/);
+});
+test('branch clicks ratchet with the shader branch motion, sized per branch',()=>{
+ const src=html.slice(html.indexOf('// Branch clicks'),html.indexOf('const heartbeatBus='));
+ assert.match(src,/identity=phase\*17\.31\+role\*19\.7\+7\.41/,'mirrors branchJointWarp');
+ assert.match(src,/\(\.2\/4\)\*/,'about a quarter of a choir voice');
+ assert.match(src,/\$\('branchMotion'\)\.checked/);
+ assert.match(html,/updateBranchClicks\(quiet,Number\(\$\('viewerSoundVolume'\)\.value\)\/100\)/);
 });
