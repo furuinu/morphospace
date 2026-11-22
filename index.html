@@ -13942,7 +13942,7 @@ function branchClickList(sp){
  const out=[];let i=0;
  const parts=(sp.parts||[]).filter(p=>p.tag!=='cilium');
  parts.forEach((pt,idx)=>{if(pt.chain)out.push({phase:pt.chain.phase,role:6,root:pt.chain.root,size:.35+.65*branchHash(idx+sp.seed*.001)});});
- for(const rig of sp.rigs||[]){if(rig.microType)continue;const len=rig.rest?.length||8;out.push({phase:(rig.phase+rig.seed*.31)%(Math.PI*2),role:rig.type==='root'?7:6,root:rig.rest?.[0]||[0,0,0],size:clamp(len/14,.3,1)});i++;}
+ for(const rig of sp.rigs||[]){if(rig.microType)continue;const reach=(rig.links||[]).reduce((a,v)=>a+v,0)||1,thick=rig.radii?.[0]||.06;out.push({rig,phase:(rig.phase+rig.seed*.31)%(Math.PI*2),role:rig.type==='root'?7:6,root:rig.rest?.[0]||[0,0,0],size:clamp(.25+thick*6+reach*.12,.25,1)});i++;}
  return out.slice(0,12).map((b,k)=>({...b,acc:0,last:null,hz:(b.size>.62?620+500*(1-b.size):1500+2200*(1-b.size))*(.9+.2*branchHash(k*3.7+sp.seed))}));
 }
 function branchClick(b,when,hz,level,pan){
@@ -13965,7 +13965,11 @@ function updateBranchClicks(quiet,level){
  const t=bodyTime,amp=1.72;
  let fired=0;
  for(const br of b.list){
-  const v=branchBendSample(br.phase,br.role,t)*amp;
+  // Rig branches move on the CPU (verlet chain): measure their actual bending —
+  // the summed turning between successive segments — instead of the shader mirror.
+  let v;
+  if(br.rig?.now?.length>2){const P=br.rig.now;v=0;for(let j=2;j<P.length;j++){const a=V.norm(V.sub(P[j-1],P[j-2])),c=V.norm(V.sub(P[j],P[j-1]));v+=Math.acos(clamp(V.dot(a,c),-1,1));}v+=Math.hypot(...V.sub(P[P.length-1],br.rig.rest[P.length-1]))*.6;}
+  else v=branchBendSample(br.phase,br.role,t)*amp;
   if(br.last===null||!on){br.last=v;continue;}
   br.acc+=Math.abs(v-br.last);br.last=v;
   const step=.018*(.6+.8*br.size);
@@ -13973,7 +13977,9 @@ function updateBranchClicks(quiet,level){
   while(br.acc>=step&&n<5&&fired<16){
    br.acc-=step;n++;fired++;
    // About a quarter of one choir voice; bigger branches knock a little louder.
-   branchClick(b,now+n*.022+Math.random()*.01,br.hz,(.2/4)*(.6+.6*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
+   // Transients read far quieter than sustained voices, so the peak sits above a
+   // quarter of a choir voice to land at about a quarter in loudness.
+   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
   }
   br.acc=Math.min(br.acc,step*2);
  }
