@@ -9862,14 +9862,18 @@ function partJointConst(mesh,rig){
   for(let i=0;i<n;i++)for(let a=0;a<3;a++)c[a]+=d[i*17+a]/n;mesh.jointConst=n?rig.locate(c):null;}
  return mesh.jointConst;
 }
+// Live bend of each articulated joint (copy 0), read by the branch clicks.
+const JOINT_TAP=[];
 function applyJointUniforms(rig,copyIndex,t,gain){
  const u=renderer?.vars;if(!u?.uJointQuat)return;
+ if(copyIndex===0){JOINT_TAP.length=0;JOINT_TAP.rig=rig;}
  JOINT_QUAT.fill(0);for(let k=0;k<12;k++)JOINT_QUAT[k*4+3]=1;JOINT_PIVOT.fill(0);
  if(rig&&gain>0){
   const states=rig.states[copyIndex]||(rig.states[copyIndex]=rig.joints.map(()=>({})));
   rig.joints.forEach((j,k)=>{
    const [a,b]=stepJointBehaviour(j,states[k],t*(j.tempo||1),k+copyIndex*5.3);
    const g=gain*(j.amp??1),axis=V.add(V.scale(j.side,a*g),V.scale(j.across,b*g)),angle=Math.hypot(...axis);
+   if(copyIndex===0)JOINT_TAP[k]={x:a*g,y:b*g,pivot:j.pivot,len:j.length||.2,depth:j.depth||0};
    const q=angle>1e-6?(()=>{const sn=Math.sin(angle/2)/angle;return [axis[0]*sn,axis[1]*sn,axis[2]*sn,Math.cos(angle/2)];})():[0,0,0,1];
    composeJointChain(j,k,q,JOINT_QUAT,JOINT_PIVOT);
   });
@@ -13899,10 +13903,24 @@ function updateBranchClicks(quiet,level){
  if(b.context!==ctx){b.context=ctx;b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;}
  const dest=choirBusInput(engine);if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
  if(b.key!==spec){b.key=spec;b.list=branchClickList(spec);}
- const motionOn=$('branchMotion').checked&&viewer?.morph?.mode!=='fuse';
+ const motionOn=viewer?.morph?.mode!=='fuse';
  const on=!quiet&&$('viewerSound').checked&&motionOn;
- const t=bodyTime,amp=1.72*($('motion').checked?1:0);
+ const t=bodyTime,amp=1.72*($('motion').checked&&$('branchMotion').checked?1:0);
  let fired=0;
+ // Articulated joints (the shell's own branches) click as they actually bend.
+ if(JOINT_TAP.length){
+  if(b.jointRig!==JOINT_TAP.rig){b.jointRig=JOINT_TAP.rig;b.joints=[];}
+  const maxLen=Math.max(...JOINT_TAP.map(j=>j?.len||0),.01);
+  JOINT_TAP.forEach((j,k)=>{
+   if(!j)return;const st=b.joints[k]||(b.joints[k]={acc:0,last:null});
+   const size=clamp(j.len/maxLen,.15,1),hz=(size>.55?560+520*(1-size):1500+2400*(1-size))*(.9+.2*branchHash(k*5.1+spec.seed));
+   if(st.last===null||!on){st.last=[j.x,j.y];return;}
+   st.acc+=Math.hypot(j.x-st.last[0],j.y-st.last[1]);st.last=[j.x,j.y];
+   const step=.035*(.6+.8*size);let n=0;
+   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
+   st.acc=Math.min(st.acc,step*2);
+  });
+ }
  for(const br of b.list){
   // Rigs are posed once at build time; in the viewer every branch bends on the GPU
   // (branchJointWarp), so the clicks mirror that motion.
