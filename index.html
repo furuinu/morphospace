@@ -13908,7 +13908,10 @@ function updateTurnSound(quiet,level){
  b.rate+=(rate-b.rate)*(1-Math.exp(-dt/.25));
  const on=!quiet&&$('viewerSound').checked&&viewer?.morph?.mode!=='fuse';
  const traits=turnSoundTraits(spec),strength=clamp(b.rate/6,0,1);
- if(on)b.acc=clamp(b.acc+turn*180/Math.PI,-traits.stepDeg*7,traits.stepDeg*10);
+ // Each turn starts from the current note: up for one direction, down for the other,
+ // never more than an octave away; a settled organism resets to the home tone.
+ const octaveDeg=traits.stepDeg*soundMusicalProfile(spec).scale.length;
+ if(on)b.acc=clamp(b.acc+turn*180/Math.PI,-octaveDeg,octaveDeg);
  const m=soundMusicalProfile(spec),scale=m.scale,base=110*Math.pow(2,(Math.max(32,Math.min(77,m.root))-45)/12);
  const k=Math.round(b.acc/traits.stepDeg),n=scale.length,j=((k%n)+n)%n;
  const hz=clamp(base*2*Math.pow(2,(scale[j]-scale[0]+12*Math.floor(k/n))/12),110,880);
@@ -13917,9 +13920,9 @@ function updateTurnSound(quiet,level){
  b.f1.frequency.setTargetAtTime(v1*(.85+.3*open),now,.15);b.f2.frequency.setTargetAtTime(v2*(.85+.3*open),now,.15);
  if(b.pan.pan)b.pan.pan.setTargetAtTime(clamp(b.acc/(traits.stepDeg*6),-1,1)*.5,now,.3);
  // About a third of one choir voice (sharedVoiceLevel .20); filters remove ~2/3 of the saw.
- b.out.gain.setTargetAtTime(on?(.2/3)*2.2*Math.pow(strength,.8):0,now,strength>b.out.gain.value?.18:.6);
- // Drift back toward the tonic while the organism is still.
- if(strength<.05)b.acc*=Math.exp(-dt/6);
+ b.out.gain.setTargetAtTime(on?.65*(.2/3)*2.2*Math.pow(strength,.8):0,now,strength>b.out.gain.value?.18:.6);
+ b.still=strength<.08?(b.still||0)+dt:0;
+ if(b.still>.6)b.acc=0;
 }
 // Branch clicks: every branch ratchets as its joints bend, a tiny resonant tick for
 // each small increment of bend — knocking "ko-ko-ko" for thick, low branches and
@@ -13944,9 +13947,11 @@ function branchClickList(sp){
 }
 function branchClick(b,when,hz,level,pan){
  const ctx=b.context,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
- o.type='square';o.frequency.value=hz*.5;f.type='bandpass';f.frequency.value=hz;f.Q.value=9;if(p.pan)p.pan.value=pan;
- const dur=.018+12/hz;
- g.gain.setValueAtTime(level,when);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
+ // A pitched wooden ping: sine body plus a brief bright edge, no lossy narrow filter.
+ o.type='triangle';o.frequency.setValueAtTime(hz*1.25,when);o.frequency.exponentialRampToValueAtTime(hz,when+.006);
+ f.type='highpass';f.frequency.value=hz*.5;f.Q.value=.7;if(p.pan)p.pan.value=pan;
+ const dur=.025+16/hz;
+ g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(level,when+.0015);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
  o.connect(f);f.connect(g);g.connect(p);p.connect(b.out);o.start(when);o.stop(when+dur+.01);
 }
 function updateBranchClicks(quiet,level){
@@ -13955,7 +13960,7 @@ function updateBranchClicks(quiet,level){
  if(b.context!==ctx){b.context=ctx;b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;}
  const dest=choirBusInput(engine);if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
  if(b.key!==spec){b.key=spec;b.list=branchClickList(spec);}
- const motionOn=$('motion').checked&&$('branchMotion').checked&&!viewer?.morph;
+ const motionOn=$('branchMotion').checked&&viewer?.morph?.mode!=='fuse';
  const on=!quiet&&$('viewerSound').checked&&motionOn;
  const t=bodyTime,amp=1.72;
  let fired=0;
