@@ -13786,6 +13786,82 @@ function createBioticAudioEngine(context){
 
 // Independent, pitched heartbeat bus. Uses the same model-space deformation pickups
 // as the visual body, never random noise or a free-running metronome.
+// Morph sounds: a separate, non-vocal "material" family that follows what the fuse
+// transition shows. Tremor = a rubbed membrane, fray = static crackle, tentacles =
+// string zips (down when they retract, up when they grow), copies = detuned tones
+// that beat and fold into one (and split back out across the stereo field), shape
+// change = a low swell gliding from the source organism's key to the target's.
+const morphSoundBus={context:null};
+function morphSoundHz(sp){const m=soundMusicalProfile(sp);return 110*Math.pow(2,(Math.max(32,Math.min(77,m.root))-45)/12);}
+function morphSoundNodes(engine){
+ const ctx=engine.context,b=morphSoundBus;
+ if(b.context===ctx)return b;
+ b.context=ctx;b.out=ctx.createGain();b.out.gain.value=0;b.out.connect(engine.sampleInput);
+ const noise=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),nd=noise.getChannelData(0);
+ for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+ const loop=()=>{const s=ctx.createBufferSource();s.buffer=noise;s.loop=true;s.start();return s;};
+ // Tremor: band of noise amplitude-modulated at the shudder rate.
+ b.tremBand=ctx.createBiquadFilter();b.tremBand.type='bandpass';b.tremBand.frequency.value=520;b.tremBand.Q.value=3.2;
+ b.tremAM=ctx.createGain();b.tremAM.gain.value=0;b.tremLevel=ctx.createGain();b.tremLevel.gain.value=0;
+ b.tremLfo=ctx.createOscillator();b.tremLfo.frequency.value=11;const lfoDepth=ctx.createGain();lfoDepth.gain.value=.5;
+ b.tremLfo.connect(lfoDepth);lfoDepth.connect(b.tremAM.gain);b.tremLfo.start();
+ loop().connect(b.tremBand);b.tremBand.connect(b.tremAM);b.tremAM.connect(b.tremLevel);b.tremLevel.connect(b.out);
+ // Fray: high-passed noise opened in short random grains.
+ b.crackHp=ctx.createBiquadFilter();b.crackHp.type='highpass';b.crackHp.frequency.value=3800;
+ b.crackGate=ctx.createGain();b.crackGate.gain.value=0;
+ loop().connect(b.crackHp);b.crackHp.connect(b.crackGate);b.crackGate.connect(b.out);
+ // Shape change: low filtered swell.
+ b.swellLp=ctx.createBiquadFilter();b.swellLp.type='lowpass';b.swellLp.frequency.value=320;b.swellLp.Q.value=4;
+ b.swellLevel=ctx.createGain();b.swellLevel.gain.value=0;b.swellLp.connect(b.swellLevel);b.swellLevel.connect(b.out);
+ b.swell=[0,1].map(i=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=55;o.detune.value=i?7:-7;o.connect(b.swellLp);o.start();return o;});
+ // Copies: three detuned voices, each panned toward its copy.
+ b.copyLevel=ctx.createGain();b.copyLevel.gain.value=0;b.copyLevel.connect(b.out);
+ b.copies=[-1,0,1].map(side=>{const o=ctx.createOscillator();o.type='triangle';const p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();o.connect(p);p.connect(b.copyLevel);o.start();return {o,p,side};});
+ b.lastTentacle=0;b.lastStep=0;b.grainAt=0;
+ return b;
+}
+function morphTentacleZip(b,retracting,when,hz){
+ const ctx=b.context,o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();
+ o.type='sawtooth';f.type='bandpass';f.Q.value=6;
+ const lo=hz*2,hi=hz*7,dur=.22;
+ o.frequency.setValueAtTime(retracting?hi:lo,when);o.frequency.exponentialRampToValueAtTime(retracting?lo:hi,when+dur);
+ f.frequency.setValueAtTime(retracting?2400:900,when);f.frequency.exponentialRampToValueAtTime(retracting?700:2600,when+dur);
+ g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(.16,when+.012);g.gain.exponentialRampToValueAtTime(.001,when+dur);
+ o.connect(f);f.connect(g);g.connect(b.out);o.start(when);o.stop(when+dur+.05);
+}
+function updateMorphSound(quiet,level){
+ const engine=bioticAudio.engine;if(!engine||typeof viewer==='undefined'||!viewer)return;
+ const b=morphSoundNodes(engine),ctx=b.context,now=ctx.currentTime,m=viewer.morph;
+ const active=!quiet&&$('viewerSound').checked&&m?.mode==='fuse'&&m.source&&m.target;
+ b.out.gain.setTargetAtTime(active?level*.55:0,now,.12);
+ if(!active){b.tremLevel.gain.setTargetAtTime(0,now,.1);b.swellLevel.gain.setTargetAtTime(0,now,.1);b.copyLevel.gain.setTargetAtTime(0,now,.1);b.lastTentacle=0;b.lastStep=0;return;}
+ const tremor=typeof fuseTremor==='function'?fuseTremor():0;
+ const hzA=morphSoundHz(m.source),hzB=morphSoundHz(m.target),shape=clamp(m.t||0,0,1);
+ const hz=hzA*Math.pow(hzB/hzA,shape);
+ // Tremor and fray ride the shudder envelope through the whole transition.
+ b.tremLevel.gain.setTargetAtTime(tremor*.5,now,.05);
+ b.tremLfo.frequency.setTargetAtTime(8+tremor*9,now,.1);
+ b.tremBand.frequency.setTargetAtTime(hz*4*(1+.3*tremor),now,.1);
+ if(now>=b.grainAt){
+  const fray=tremor*FUSE_TREMOR_FRAY/ .34,n=Math.round(fray*6);
+  for(let i=0;i<n;i++){const at=now+Math.random()*.06;b.crackGate.gain.setValueAtTime(.05+Math.random()*.16*fray,at);b.crackGate.gain.setTargetAtTime(0,at+.004,.006);}
+  b.grainAt=now+.06;
+ }
+ // Copies: detuned beating while apart, folding into unison as they merge.
+ const apart=m.stage==='fuse'||m.stage==='defuse'||m.stage==='hold'?1-clamp(m.fuse||0,0,1):0;
+ const copiesOn=m.stage==='fuse'||m.stage==='hold'||m.stage==='defuse';
+ b.copyLevel.gain.setTargetAtTime(copiesOn?.07+.05*apart:0,now,.08);
+ for(const c of b.copies){c.o.frequency.setTargetAtTime(hz*3,now,.06);c.o.detune.setTargetAtTime(c.side*apart*28,now,.06);if(c.p.pan)c.p.pan.setTargetAtTime(c.side*apart*.75,now,.08);}
+ // Shape change: the swell blooms during the hold and glides between keys.
+ const swell=m.stage==='hold'?Math.sin(Math.PI*shape)*.6+.25:m.stage==='fuse'?.25*clamp(m.fuse||0,0,1):m.stage==='defuse'?.25*clamp(m.fuse||0,0,1):0;
+ b.swellLevel.gain.setTargetAtTime(swell*.22,now,.1);
+ for(const o of b.swell)o.frequency.setTargetAtTime(hz*.5,now,.08);
+ b.swellLp.frequency.setTargetAtTime(220+900*swell,now,.1);
+ // Tentacles: one zip each time another fifth of them finishes retracting or growing.
+ const tent=clamp(m.tentacle||0,0,1),step=Math.floor(tent*5+1e-6);
+ if(step!==b.lastStep){const retracting=step>b.lastStep;for(let k=0;k<Math.min(3,Math.abs(step-b.lastStep));k++)morphTentacleZip(b,retracting,now+k*.07,hz);b.lastStep=step;}
+ b.lastTentacle=tent;
+}
 const heartbeatBus={context:null,gain:null,previous:new Map(),lastHit:new Map(),fastPhase:new Map(),flows:new Map(),enabled:true};
 function updateHeartbeat(individuals,quiet,level){
  const engine=bioticAudio.engine;if(!engine)return;
@@ -15059,7 +15135,7 @@ function tickBioticAudio(){
  bioticAudio.galleryTick=ctxNow;
  for(const filter of [engine.galleryLow,engine.galleryLow2])filter.frequency.setTargetAtTime(20000,ctxNow,.12);
  engine.galleryVolume.gain.setTargetAtTime(1,ctxNow,.12);
- try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
+ try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateMorphSound==='function')updateMorphSound(quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
 async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;
