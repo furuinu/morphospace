@@ -13862,68 +13862,7 @@ function updateMorphSound(quiet,level){
  if(step!==b.lastStep){const retracting=step>b.lastStep;for(let k=0;k<Math.min(3,Math.abs(step-b.lastStep));k++)morphTentacleZip(b,retracting,now+k*.07,hz);b.lastStep=step;}
  b.lastTentacle=tent;
 }
-// Turn voice: a choir-like sustained vowel that sings while the organism changes
-// heading. Its pitch glides along the organism's own scale with the accumulated turn
-// (rising for one direction, falling for the other), its loudness and brightness follow
-// the turn speed, and it fades out when the turn settles. Mixed into the choir bus at
-// about a third of a choir voice. Degrees per scale step and vowel come from the seed.
-const turnSoundBus={context:null,key:null,dest:null};
-function turnSoundTraits(sp){
- const r=seedRng((sp.seed>>>0)+61403);
- return {stepDeg:[10,12,15,18][Math.floor(r()*4)],vowel:Math.floor(r()*3),bright:.3+.5*r()};
-}
-const TURN_VOWELS=[[730,1090],[400,800],[530,1840]]; // ah, oo, eh
 function choirBusInput(engine){return (typeof pureChoir!=='undefined'&&pureChoir?.master)||engine.sampleInput;}
-function turnSoundNodes(engine){
- const ctx=engine.context,b=turnSoundBus;
- if(b.context!==ctx){
-  b.context=ctx;b.out=ctx.createGain();b.out.gain.value=0;b.dest=null;
-  b.oscs=[-6,5].map(det=>{const o=ctx.createOscillator();o.type='sawtooth';o.detune.value=det;o.start();return o;});
-  b.vib=ctx.createOscillator();b.vib.frequency.value=5.1;b.vibDepth=ctx.createGain();b.vibDepth.gain.value=9;b.vib.connect(b.vibDepth);b.vib.start();
-  b.f1=ctx.createBiquadFilter();b.f1.type='bandpass';b.f1.Q.value=6;b.f2=ctx.createBiquadFilter();b.f2.type='bandpass';b.f2.Q.value=8;
-  b.f2Gain=ctx.createGain();b.f2Gain.gain.value=.5;b.pan=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
-  for(const o of b.oscs){b.vibDepth.connect(o.detune);o.connect(b.f1);o.connect(b.f2);}
-  b.f1.connect(b.out);b.f2.connect(b.f2Gain);b.f2Gain.connect(b.out);b.out.connect(b.pan);
-  b.heading=null;b.yaw=null;b.acc=0;b.lastAt=0;b.rate=0;
- }
- const dest=choirBusInput(engine);
- if(b.dest!==dest){try{b.pan.disconnect()}catch(e){}b.pan.connect(dest);b.dest=dest;}
- return b;
-}
-function updateTurnSound(quiet,level){
- const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec)return;
- const b=turnSoundNodes(engine),ctx=b.context,now=ctx.currentTime;
- if(typeof cameraOrbitSpeed!=='number')return;
- const heading=Math.atan2(cameraOrbitPitchSpeed||0,cameraOrbitSpeed||0);
- const yaw=typeof modelYaw==='number'?modelYaw:0,pitch=typeof modelPitch==='number'?modelPitch:0;
- if(b.key!==spec.seed||b.heading===null){b.key=spec.seed;b.heading=heading;b.yaw=[yaw,pitch];b.lastAt=now;b.acc=0;b.rate=0;return;}
- const dt=Math.max(.01,now-b.lastAt);b.lastAt=now;
- let dh=heading-b.heading;dh=Math.atan2(Math.sin(dh),Math.cos(dh));b.heading=heading;
- // Dragging the organism also turns it: the part of its rotation beyond the drift.
- const dy=yaw-b.yaw[0],dp=pitch-b.yaw[1];b.yaw=[yaw,pitch];
- const drift=Math.hypot(cameraOrbitSpeed||0,cameraOrbitPitchSpeed||0)*dt;
- const manual=Math.max(0,Math.hypot(dy,dp)-drift*1.2),manualDir=Math.sign(dy)||1;
- const turn=Math.abs(dh)>manual?dh:manual*manualDir;
- const rate=Math.min(120,Math.abs(turn)/dt*180/Math.PI);
- b.rate+=(rate-b.rate)*(1-Math.exp(-dt/.25));
- const on=!quiet&&$('viewerSound').checked&&viewer?.morph?.mode!=='fuse';
- const traits=turnSoundTraits(spec),strength=clamp(b.rate/6,0,1);
- // Each turn starts from the current note: up for one direction, down for the other,
- // never more than an octave away; a settled organism resets to the home tone.
- const octaveDeg=traits.stepDeg*soundMusicalProfile(spec).scale.length;
- if(on)b.acc=clamp(b.acc+turn*180/Math.PI,-octaveDeg,octaveDeg);
- const m=soundMusicalProfile(spec),scale=m.scale,base=110*Math.pow(2,(Math.max(32,Math.min(77,m.root))-45)/12);
- const k=Math.round(b.acc/traits.stepDeg),n=scale.length,j=((k%n)+n)%n;
- const hz=clamp(base*2*Math.pow(2,(scale[j]-scale[0]+12*Math.floor(k/n))/12),110,880);
- for(const o of b.oscs)o.frequency.setTargetAtTime(hz,now,.12);
- const [v1,v2]=TURN_VOWELS[traits.vowel],open=clamp(traits.bright+.4*strength,0,1);
- b.f1.frequency.setTargetAtTime(v1*(.85+.3*open),now,.15);b.f2.frequency.setTargetAtTime(v2*(.85+.3*open),now,.15);
- if(b.pan.pan)b.pan.pan.setTargetAtTime(clamp(b.acc/(traits.stepDeg*6),-1,1)*.5,now,.3);
- // About a third of one choir voice (sharedVoiceLevel .20); filters remove ~2/3 of the saw.
- b.out.gain.setTargetAtTime(on?.65*(.2/3)*2.2*Math.pow(strength,.8):0,now,strength>b.out.gain.value?.18:.6);
- b.still=strength<.08?(b.still||0)+dt:0;
- if(b.still>.6)b.acc=0;
-}
 // Branch clicks: every branch ratchets as its joints bend, a tiny resonant tick for
 // each small increment of bend — knocking "ko-ko-ko" for thick, low branches and
 // clicking "ka-ka-ka" for thin ones. Mirrors branchJointWarp in the vertex shader.
@@ -13962,14 +13901,12 @@ function updateBranchClicks(quiet,level){
  if(b.key!==spec){b.key=spec;b.list=branchClickList(spec);}
  const motionOn=$('branchMotion').checked&&viewer?.morph?.mode!=='fuse';
  const on=!quiet&&$('viewerSound').checked&&motionOn;
- const t=bodyTime,amp=1.72;
+ const t=bodyTime,amp=1.72*($('motion').checked?1:0);
  let fired=0;
  for(const br of b.list){
-  // Rig branches move on the CPU (verlet chain): measure their actual bending —
-  // the summed turning between successive segments — instead of the shader mirror.
-  let v;
-  if(br.rig?.now?.length>2){const P=br.rig.now;v=0;for(let j=2;j<P.length;j++){const a=V.norm(V.sub(P[j-1],P[j-2])),c=V.norm(V.sub(P[j],P[j-1]));v+=Math.acos(clamp(V.dot(a,c),-1,1));}v+=Math.hypot(...V.sub(P[P.length-1],br.rig.rest[P.length-1]))*.6;}
-  else v=branchBendSample(br.phase,br.role,t)*amp;
+  // Rigs are posed once at build time; in the viewer every branch bends on the GPU
+  // (branchJointWarp), so the clicks mirror that motion.
+  const v=branchBendSample(br.phase,br.role,t)*amp;
   if(br.last===null||!on){br.last=v;continue;}
   br.acc+=Math.abs(v-br.last);br.last=v;
   const step=.018*(.6+.8*br.size);
@@ -15257,7 +15194,7 @@ function tickBioticAudio(){
  bioticAudio.galleryTick=ctxNow;
  for(const filter of [engine.galleryLow,engine.galleryLow2])filter.frequency.setTargetAtTime(20000,ctxNow,.12);
  engine.galleryVolume.gain.setTargetAtTime(1,ctxNow,.12);
- try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateMorphSound==='function')updateMorphSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateTurnSound==='function')updateTurnSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateBranchClicks==='function')updateBranchClicks(quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
+ try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateMorphSound==='function')updateMorphSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateBranchClicks==='function')updateBranchClicks(quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
 async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;
