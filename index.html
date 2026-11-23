@@ -13888,7 +13888,16 @@ function branchClickList(sp){
  for(const rig of sp.rigs||[]){if(rig.microType)continue;const reach=(rig.links||[]).reduce((a,v)=>a+v,0)||1,thick=rig.radii?.[0]||.06;out.push({rig,phase:(rig.phase+rig.seed*.31)%(Math.PI*2),role:rig.type==='root'?7:6,root:rig.rest?.[0]||[0,0,0],size:clamp(.25+thick*6+reach*.12,.25,1)});i++;}
  return out.slice(0,12).map((b,k)=>({...b,acc:0,last:null,hz:(b.size>.62?620+500*(1-b.size):1500+2200*(1-b.size))*(.9+.2*branchHash(k*3.7+sp.seed))}));
 }
+// Snap a click pitch to the nearest tone of the organism's own scale.
+function snapToOrganismScale(hz,sp){
+ if(!sp||typeof soundMusicalProfile!=='function')return hz;
+ const m=soundMusicalProfile(sp),root=Math.max(32,Math.min(77,m.root));
+ const midi=69+12*Math.log2(hz/440),rel=midi-root,oct=Math.floor(rel/12),pc=rel-oct*12;
+ let best=m.scale[0],d=99;for(const x of m.scale.concat(m.scale[0]+12)){const e=Math.abs((x-m.scale[0])-pc);if(e<d){d=e;best=x-m.scale[0];}}
+ return 440*Math.pow(2,(root+oct*12+best-69)/12);
+}
 function branchClick(b,when,hz,level,pan){
+ hz=snapToOrganismScale(hz,typeof spec!=='undefined'?spec:null);
  const ctx=b.context,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
  // A pitched wooden ping: sine body plus a brief bright edge, no lossy narrow filter.
  o.type='triangle';o.frequency.setValueAtTime(hz*1.25,when);o.frequency.exponentialRampToValueAtTime(hz,when+.006);
@@ -13917,7 +13926,7 @@ function updateBranchClicks(quiet,level){
    if(st.last===null||!on){st.last=[j.x,j.y];return;}
    st.acc+=Math.hypot(j.x-st.last[0],j.y-st.last[1]);st.last=[j.x,j.y];
    const step=.035*(.6+.8*size);let n=0;
-   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size)*(.3+.2*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
+   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size)*(.05+.35*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
    st.acc=Math.min(st.acc,step*2);
   });
  }
@@ -13934,7 +13943,7 @@ function updateBranchClicks(quiet,level){
    // About a quarter of one choir voice; bigger branches knock a little louder.
    // Transients read far quieter than sustained voices, so the peak sits above a
    // quarter of a choir voice to land at about a quarter in loudness.
-   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size)*(.3+.2*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
+   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size)*(.05+.35*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
   }
   br.acc=Math.min(br.acc,step*2);
  }
