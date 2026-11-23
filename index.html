@@ -13911,7 +13911,8 @@ function updateBranchClicks(quiet,level){
  const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec)return;
  const b=branchClickBus,ctx=engine.context,now=ctx.currentTime;
  if(b.context!==ctx){b.context=ctx;b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;}
- const dest=choirBusInput(engine);if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
+ // Same deformation-driven HP/LP sweep and saturator as the choir's rhythm voices.
+ const dest=(typeof pureChoir!=='undefined'&&pureChoir?.rhythmInput)||choirBusInput(engine);if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
  if(b.key!==spec){b.key=spec;b.list=branchClickList(spec);}
  const motionOn=viewer?.morph?.mode!=='fuse';
  const on=!quiet&&$('viewerSound').checked&&motionOn;
@@ -14320,6 +14321,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
    lowpass.connect(shaper);shaper.connect(rhythmWet);rhythmWet.connect(state.master);
   }
   state.pulse.out.disconnect();state.pulse.out.connect(rhythmInput);
+  state.rhythmInput=rhythmInput; // branch clicks share the deforming filter + saturator
   // The rhythm highpass may rise above 800 Hz during large deformations.
   // Keep a modest independent bass path so lower notes remain audible.
   // Both paths still run through the common output compressor and peak safety.
