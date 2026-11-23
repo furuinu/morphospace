@@ -13977,8 +13977,9 @@ function tentacleVoiceNodes(engine){
    return v;
   });
  }
- // Shares the choir's deforming filter and saturator, like the branch clicks.
- const dest=(typeof pureChoir!=='undefined'&&pureChoir?.rhythmInput)||choirBusInput(engine);
+ // Into the choir bus directly: the rhythm bus highpass sweeps up to ~800 Hz while the
+ // body deforms, which silenced these low tube tones.
+ const dest=choirBusInput(engine);
  if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
  return b;
 }
