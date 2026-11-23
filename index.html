@@ -13638,6 +13638,7 @@ function createBioticAudioEngine(context){
     const crossing=part.lastValue!==null&&part.lastValue<threshold&&value>=threshold;
     if(enabled&&crossing&&now-part.onAt>.07){
      part.onAt=now;part.events++;v.blinkEvents++;
+     if(photo&&typeof sonarPing==='function')try{sonarPing(bioticAudio.engine,i,sp,photo,lightStrength)}catch(e){}
      const selected=syllableFor(sp.seed+37,part.events,i,photoRapid?i+1:3);
      part.syllable=selected.label;part.consonant=selected.consonant;part.vowel=selected.vowel;
     }
@@ -13653,9 +13654,10 @@ function createBioticAudioEngine(context){
     const note=vocalNoteAt(v,phrase,0,part.events+i);
     const hz=clamp(note.frequency*(i%2?.96:1.06),285,710);
     smooth(part.source.frequency,hz,now,.042);
-    const gain=.20*envelope*(photoRapid?.058:.038)*(.6+.4*art.voiced)/Math.sqrt(Math.max(1,lightActive));
+    // Photophores speak through the sonar ping; the vowel voice stays silent for them.
+    const gain=(photo?0:1)*.20*envelope*(photoRapid?.058:.038)*(.6+.4*art.voiced)/Math.sqrt(Math.max(1,lightActive));
     smooth(part.gain.gain,gain,now,photoRapid?.055:.12);
-    consonantAir+=.20*envelope*art.air*.009;
+    consonantAir+=(photo?0:1)*.20*envelope*art.air*.009;
     for(let j=0;j<3;j++){
      let target=vowels[part.vowel][j];
      if(part.consonant==='w'&&j===1)target=target*(1-art.formantGlide)+1900*art.formantGlide;
@@ -14080,6 +14082,42 @@ function updateTentacleSound(quiet,level){
   v.wind.gain.setTargetAtTime(.035*clamp(stream*.8,0,1)*voiceScale,now,.2);
   if(v.pan.pan)v.pan.pan.setTargetAtTime(clamp(g.reduce((a,x)=>a+x.root[0],0)/g.length/1.5,-.8,.8),now,.3);
  });
+}
+// Photophore voice: a sonar ping — "kon------" — instead of a vowel, so the lights no
+// longer crowd the choir. Each flash strikes one ping; the attack softens with longer,
+// smoother pulses, the pitch comes from the organism's scale (a tone per organ system)
+// and rises an octave for fast flash codes, falls for slow ones. A dark shared echo
+// gives the long underwater tail.
+const sonarBus={context:null,dest:null,last:[0,0,0,0]};
+function sonarNodes(engine){
+ const b=sonarBus,ctx=engine.context;
+ if(b.context!==ctx){
+  b.context=ctx;b.in=ctx.createGain();b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;
+  b.delay=ctx.createDelay(2);b.delay.delayTime.value=.42;b.fb=ctx.createGain();b.fb.gain.value=.38;
+  b.damp=ctx.createBiquadFilter();b.damp.type='lowpass';b.damp.frequency.value=1100;
+  b.in.connect(b.out);b.in.connect(b.delay);b.delay.connect(b.damp);b.damp.connect(b.fb);b.fb.connect(b.delay);
+  const wet=ctx.createGain();wet.gain.value=.45;b.damp.connect(wet);wet.connect(b.out);
+  b.last=[0,0,0,0];
+ }
+ const dest=choirBusInput(engine);
+ if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
+ return b;
+}
+function sonarPing(engine,i,sp,photo,strength){
+ const b=sonarNodes(engine),ctx=b.context,now=ctx.currentTime;
+ if(now-b.last[i]<.1)return;b.last[i]=now;
+ const m=soundMusicalProfile(sp),scale=m.scale,root=Math.max(32,Math.min(77,m.root)),n=scale.length;
+ const P=typeof photophorePeriod==='function'?photophorePeriod(photo):2,oct=P<1.4?1:P<3.2?0:-1;
+ const deg=[0,2,4,1][i]||0,j=deg%n;
+ let hz=440*Math.pow(2,(root+12*oct+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
+ while(hz<160)hz*=2;while(hz>900)hz*=.5;
+ const smooth=clamp((photo.pulse-.08)/.52,0,1),attack=.003+.11*smooth*smooth,ring=1.1+1.8*(1-smooth*.4)+(oct<0?.6:0);
+ const level=.055*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
+ const g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(p.pan)p.pan.value=pan;
+ g.gain.setValueAtTime(0,now);g.gain.setTargetAtTime(level,now,attack/3);g.gain.setTargetAtTime(0,now+attack,ring/4.5);
+ [[1,1],[2.01,.18],[3.02,.05*(1-smooth)]].forEach(([r,a])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type='sine';
+  o.frequency.setValueAtTime(hz*r*1.012,now);o.frequency.exponentialRampToValueAtTime(hz*r,now+.08);og.gain.value=a;o.connect(og);og.connect(g);o.start(now);o.stop(now+attack+ring+.1);});
+ g.connect(p);p.connect(b.in);
 }
 const heartbeatBus={context:null,gain:null,previous:new Map(),lastHit:new Map(),fastPhase:new Map(),flows:new Map(),enabled:true};
 function updateHeartbeat(individuals,quiet,level){
@@ -14695,7 +14733,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   const light=blink(i*.31),previous=state.previousLights[i];
   // Use both visual brightness and the rising edge; slow glows sustain longer vowels.
  // Every luminous rise can articulate a note again, in sync with the actual blinking phase.
-  if(emission&&emission.strength>0&&(choirPhotoValues||emission.mode!==0)&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;}
+  if(emission&&emission.strength>0&&(choirPhotoValues||emission.mode!==0)&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;if(choirPhotoValues&&typeof sonarPing==='function')try{sonarPing(bioticAudio.engine,i,sp,choirPhoto,emission.strength)}catch(e){}}
   state.previousLights[i]=light;
   const a=t-state.lightTimes[i],v=state.lights[i];
   // Live shape-to-sound: refresh the oscillator wavetable as the body twists.
@@ -14732,7 +14770,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   // Keep a faint resonant glow even between attacks; accents remain clearly distinct.
   const lightBed=emission&&emission.strength>0?.028*light:0;
   // Luminous call level is exactly half of the preceding 0.20 gain.
-  v.out.gain.setTargetAtTime(sharedVoiceLevel*clamp(lightBed+gate/.75,0,1),ctx.currentTime,.09*(choirPhotoValues?.35:1));
+  v.out.gain.setTargetAtTime((choirPhotoValues?0:1)*sharedVoiceLevel*clamp(lightBed+gate/.75,0,1),ctx.currentTime,.09*(choirPhotoValues?.35:1));
   v.consonantGain.gain.setTargetAtTime(a>=0&&a<duration?(speechMode?.40:.14)*Math.exp(-Math.max(0,a-lightStep*duration/3)*13)*responseWindow:0,ctx.currentTime,.028);
   if(speechMode)articulate(v,lightPhoneme,a>=0&&a<duration?Math.exp(-Math.max(0,a-lightStep*duration/3)*12)*responseWindow:0);
   v.tone.frequency.setTargetAtTime([750,1250,1850,2600][i]*(.75+voiceDNA.breathiness*.45)*(1+.25*gate),ctx.currentTime,.09);

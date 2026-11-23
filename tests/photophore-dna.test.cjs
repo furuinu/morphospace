@@ -96,3 +96,9 @@ test('light voices follow the photophore flash code on the shader clock',()=>{
  assert.equal(r.hits,3);assert.ok(r.startle>.4);assert.equal(r.silent,0);
  assert.match(html,/const photo=light\.photophore&&/);assert.match(html,/const lightValues=photo\?photophoreVoiceValues\(photo,photoClock,photoStartleState\)/);
 });
+
+test('photophore flashes speak as sonar pings, not vowels',()=>{
+ assert.match(html,/function sonarPing\(engine,i,sp,photo,strength\)/);
+ assert.match(html,/const smooth=clamp\(\(photo\.pulse-\.08\)\/\.52,0,1\),attack=\.003\+\.11\*smooth\*smooth/,'longer pulses soften the attack');
+ assert.match(html,/oct=P<1\.4\?1:P<3\.2\?0:-1/,'fast codes ping higher');
+});
