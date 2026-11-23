@@ -14112,7 +14112,7 @@ function sonarPing(engine,i,sp,photo,strength){
  let hz=440*Math.pow(2,(root+12*oct+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
  while(hz<160)hz*=2;while(hz>900)hz*=.5;
  const smooth=clamp((photo.pulse-.08)/.52,0,1),attack=.003+.11*smooth*smooth,ring=1.1+1.8*(1-smooth*.4)+(oct<0?.6:0);
- const level=.055*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
+ const level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
  const g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(p.pan)p.pan.value=pan;
  g.gain.setValueAtTime(0,now);g.gain.setTargetAtTime(level,now,attack/3);g.gain.setTargetAtTime(0,now+attack,ring/4.5);
  [[1,1],[2.01,.18],[3.02,.05*(1-smooth)]].forEach(([r,a])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type='sine';
