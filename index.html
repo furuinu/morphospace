@@ -13917,7 +13917,7 @@ function updateBranchClicks(quiet,level){
    if(st.last===null||!on){st.last=[j.x,j.y];return;}
    st.acc+=Math.hypot(j.x-st.last[0],j.y-st.last[1]);st.last=[j.x,j.y];
    const step=.035*(.6+.8*size);let n=0;
-   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.07*(.55+.6*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
+   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size)*(.3+.2*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
    st.acc=Math.min(st.acc,step*2);
   });
  }
@@ -13934,7 +13934,7 @@ function updateBranchClicks(quiet,level){
    // About a quarter of one choir voice; bigger branches knock a little louder.
    // Transients read far quieter than sustained voices, so the peak sits above a
    // quarter of a choir voice to land at about a quarter in loudness.
-   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.07*(.55+.6*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
+   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size)*(.3+.2*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
   }
   br.acc=Math.min(br.acc,step*2);
  }
