@@ -13900,10 +13900,11 @@ function branchClick(b,when,hz,level,pan){
  hz=snapToOrganismScale(hz,typeof spec!=='undefined'?spec:null);
  const ctx=b.context,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
  // A pitched wooden ping: sine body plus a brief bright edge, no lossy narrow filter.
- o.type='triangle';o.frequency.setValueAtTime(hz*1.25,when);o.frequency.exponentialRampToValueAtTime(hz,when+.006);
+ // Rounded attack: a pure sine body with a soft ~10 ms swell, no pitch chirp.
+ o.type='sine';o.frequency.setValueAtTime(hz,when);
  f.type='highpass';f.frequency.value=hz*.5;f.Q.value=.7;if(p.pan)p.pan.value=pan;
- const dur=.025+16/hz;
- g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(level,when+.0015);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
+ const dur=.04+16/hz;
+ g.gain.setValueAtTime(0,when);g.gain.setTargetAtTime(level,when,.004);g.gain.setValueAtTime(level*.9,when+.012);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
  o.connect(f);f.connect(g);g.connect(p);p.connect(b.out);o.start(when);o.stop(when+dur+.01);
 }
 function updateBranchClicks(quiet,level){
@@ -13926,7 +13927,7 @@ function updateBranchClicks(quiet,level){
    if(st.last===null||!on){st.last=[j.x,j.y];return;}
    st.acc+=Math.hypot(j.x-st.last[0],j.y-st.last[1]);st.last=[j.x,j.y];
    const step=.035*(.6+.8*size);let n=0;
-   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size)*(.02+.23*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
+   while(st.acc>=step&&n<5&&fired<18){st.acc-=step;n++;fired++;branchClick(b,now+n*.022+Math.random()*.01,hz,.2*(.55+.6*size)*(.02+.13*size),clamp((j.pivot?.[0]||0)/1.5,-.8,.8));}
    st.acc=Math.min(st.acc,step*2);
   });
  }
@@ -13943,7 +13944,7 @@ function updateBranchClicks(quiet,level){
    // About a quarter of one choir voice; bigger branches knock a little louder.
    // Transients read far quieter than sustained voices, so the peak sits above a
    // quarter of a choir voice to land at about a quarter in loudness.
-   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size)*(.02+.23*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
+   branchClick(b,now+n*.022+Math.random()*.01,br.hz,.2*(.55+.6*br.size)*(.02+.13*br.size),clamp((br.root?.[0]||0)/1.5,-.8,.8));
   }
   br.acc=Math.min(br.acc,step*2);
  }
