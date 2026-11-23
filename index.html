@@ -13896,16 +13896,51 @@ function snapToOrganismScale(hz,sp){
  let best=m.scale[0],d=99;for(const x of m.scale.concat(m.scale[0]+12)){const e=Math.abs((x-m.scale[0])-pc);if(e<d){d=e;best=x-m.scale[0];}}
  return 440*Math.pow(2,(root+oct*12+best-69)/12);
 }
+// The organism's branch voice. Continuous traits from its sound DNA blend one click
+// shape into another, so related organisms sound related and the family is wide:
+// sweep < 0 falls like a cricket chirp, > 0 rises like a water drop; inharm adds a
+// metallic second partial; air mixes a breathy noise puff; ring sets the tail; soft
+// rounds the attack; reg shifts the register.
+const branchVoiceCache=new WeakMap();
+function branchVoiceTraits(sp){
+ if(branchVoiceCache.has(sp))return branchVoiceCache.get(sp);
+ const d=sp.genome?.soundDNA||{},r=seedRng(((sp.seed||1)>>>0)+77131),n=(k,lo,hi)=>Number.isFinite(Number(d[k]))?clamp((Number(d[k])-lo)/(hi-lo),0,1):r();
+ const timbre=n('timbre',0,1),glide=n('glide',0,1),res=n('resonance',0,1),grain=n('grain',0,1),decay=n('decay',0,1),membrane=n('membrane',0,1),pitch=n('pitch',0,1),inh=n('inharmonicity',0,.06);
+ const traits={
+  sweep:clamp((timbre-.5)*1.6+(glide-.5)*.8,-1,1),
+  inharm:clamp(res*.7+inh*.6-.15,0,1),
+  air:clamp(grain*.75-.15,0,.6),
+  ring:.5+1.6*decay,
+  soft:.35+.65*membrane,
+  reg:Math.pow(2,Math.round((pitch-.5)*2))  // one octave down, same, or up
+ };
+ branchVoiceCache.set(sp,traits);return traits;
+}
+const BRANCH_CLICK_MAX_HZ=1700; // keep the voice out of the piercing 2-5 kHz band
 function branchClick(b,when,hz,level,pan){
- hz=snapToOrganismScale(hz,typeof spec!=='undefined'?spec:null);
- const ctx=b.context,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
- // A pitched wooden ping: sine body plus a brief bright edge, no lossy narrow filter.
- // Rounded attack: a pure sine body with a soft ~10 ms swell, no pitch chirp.
- o.type='sine';o.frequency.setValueAtTime(hz,when);
- f.type='highpass';f.frequency.value=hz*.5;f.Q.value=.7;if(p.pan)p.pan.value=pan;
- const dur=.04+16/hz;
- g.gain.setValueAtTime(0,when);g.gain.setTargetAtTime(level,when,.004);g.gain.setValueAtTime(level*.9,when+.012);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
- o.connect(f);f.connect(g);g.connect(p);p.connect(b.out);o.start(when);o.stop(when+dur+.01);
+ const sp=typeof spec!=='undefined'?spec:null,v=sp?branchVoiceTraits(sp):{sweep:0,inharm:0,air:0,ring:1,soft:.6,reg:1};
+ hz=snapToOrganismScale(hz*v.reg,sp);
+ while(hz>BRANCH_CLICK_MAX_HZ)hz*=.5;
+ const ctx=b.context,g=ctx.createGain(),lp=ctx.createBiquadFilter(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
+ // Soft top: a gentle low-pass keeps even the edge of the attack below the harsh band.
+ lp.type='lowpass';lp.frequency.value=Math.min(3200,hz*3.2);lp.Q.value=.5;if(p.pan)p.pan.value=pan;
+ const dur=(.05+18/hz)*v.ring,att=.003+.012*v.soft;
+ g.gain.setValueAtTime(0,when);g.gain.setTargetAtTime(level,when,att);g.gain.setValueAtTime(level*.9,when+att*3);g.gain.exponentialRampToValueAtTime(.0003,when+dur);
+ const end=when+dur+.02;
+ // Body: a sine whose pitch glides by the sweep trait (chirp down / drop up).
+ const o=ctx.createOscillator();o.type='sine';
+ const from=hz*Math.pow(2,-v.sweep*.5),glideT=Math.min(dur*.8,.03+.05*Math.abs(v.sweep));
+ o.frequency.setValueAtTime(from,when);o.frequency.exponentialRampToValueAtTime(hz,when+glideT);
+ const bodyGain=ctx.createGain();bodyGain.gain.value=1-v.air*.6;o.connect(bodyGain);bodyGain.connect(lp);o.start(when);o.stop(end);
+ // Metallic partial.
+ if(v.inharm>.05){const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type='sine';o2.frequency.setValueAtTime(from*(1.5+1.26*v.inharm),when);o2.frequency.exponentialRampToValueAtTime(hz*(1.5+1.26*v.inharm),when+glideT);g2.gain.setValueAtTime(.45*v.inharm,when);g2.gain.exponentialRampToValueAtTime(.001,when+dur*.6);o2.connect(g2);g2.connect(lp);o2.start(when);o2.stop(end);}
+ // Breath puff.
+ if(v.air>.04){
+  if(!b.noise){const nb=ctx.createBuffer(1,ctx.sampleRate*.5,ctx.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;b.noise=nb;}
+  const src=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),ng=ctx.createGain();src.buffer=b.noise;bp.type='bandpass';bp.frequency.value=hz*1.2;bp.Q.value=3;ng.gain.value=v.air*1.4;
+  src.connect(bp);bp.connect(ng);ng.connect(lp);src.start(when,Math.random()*.4);src.stop(end);
+ }
+ lp.connect(g);g.connect(p);p.connect(b.out);
 }
 function updateBranchClicks(quiet,level){
  const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec)return;

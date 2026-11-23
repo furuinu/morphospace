@@ -7,3 +7,8 @@ test('branch clicks ratchet with the shader branch motion, sized per branch',()=
  assert.match(src,/JOINT_TAP\.forEach/,'articulated joints click');
  assert.match(html,/updateBranchClicks\(quiet,Number\(\$\('viewerSoundVolume'\)\.value\)\/100\)/);
 });
+test('branch voice varies continuously with sound DNA and stays out of the harsh band',()=>{
+ assert.match(html,/const BRANCH_CLICK_MAX_HZ=1700;/);
+ assert.match(html,/sweep:clamp\(\(timbre-\.5\)\*1\.6\+\(glide-\.5\)\*\.8,-1,1\)/);
+ assert.match(html,/lp\.type='lowpass';lp\.frequency\.value=Math\.min\(3200,hz\*3\.2\)/);
+});
