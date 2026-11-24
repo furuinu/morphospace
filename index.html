@@ -14128,7 +14128,7 @@ function sonarPing(engine,i,sp,photo,strength,when){
  const deg=[0,2,4,1][i]||0,j=deg%n;
  let hz=440*Math.pow(2,(root+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
  while(hz<110)hz*=2;while(hz>420)hz*=.5;
- const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.0088*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
+ const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
  // "po…": a soft tonal pop with a little breath under it.
  const o=ctx.createOscillator(),og=ctx.createGain(),op=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(op.pan)op.pan.value=pan;
  const popDur=.07+.1*smooth;
