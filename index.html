@@ -14111,6 +14111,10 @@ function sonarNodes(engine){
   b.warm=ctx.createBiquadFilter();b.warm.type='lowpass';b.warm.frequency.value=5200;b.warm.Q.value=.5;
   b.in.connect(b.warm);b.warm.connect(b.out);
   const nb=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),nd=nb.getChannelData(0);for(let k=0;k<nd.length;k++)nd[k]=Math.random()*2-1;b.noise=nb;
+  // Shared, always-running noise lanes gated by automation: a flash costs a few
+  // automation events instead of ~20 new audio nodes.
+  const lane=(type,freq,q)=>{const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();src.buffer=nb;src.loop=true;f.type=type;f.frequency.value=freq;f.Q.value=q;g.gain.value=0;src.connect(f);f.connect(g);g.connect(b.in);src.start();return g;};
+  b.breathGate=lane('lowpass',300,.7);b.sizzleGate=lane('bandpass',2800,1.2);
   b.last={};
  }
  const dest=choirBusInput(engine);
@@ -14138,10 +14142,10 @@ function sonarPing(engine,i,sp,photo,strength,when){
  o.type='sine';o.frequency.setValueAtTime(hz*1.6,now);o.frequency.exponentialRampToValueAtTime(hz*.7,now+popDur);
  og.gain.setValueAtTime(0,now);og.gain.setTargetAtTime(level,now,.004+.015*smooth);og.gain.setTargetAtTime(0,now+.012+.025*smooth,popDur/3);
  o.connect(og);og.connect(op);op.connect(b.in);o.start(now);o.stop(now+popDur*3+.1);
- flameNoise(b,now,.08+.2*smooth,'lowpass',300,.7,level*.6,.005+.03*smooth,pan);
+ {const g=b.breathGate.gain,att=.005+.03*smooth;g.setTargetAtTime(level*.6,now,att/3);g.setTargetAtTime(0,now+att,(.08+.2*smooth)/4);}
  // "…shiri-shiri-shiri": a fine sizzle that lingers and thins out.
  const tail=1.1+.8*smooth,count=16;
- for(let k=0;k<count;k++){const u=Math.pow((k+Math.random())/count,1.4),at=now+.05+tail*u;flameNoise(b,at,.022,'bandpass',2200+1400*Math.random(),1.4,level*1.1*(1-u*.85),.002,pan+(Math.random()-.5)*.3);}
+ {const g=b.sizzleGate.gain;for(let k=0;k<count;k++){const u=Math.pow((k+Math.random())/count,1.4),at=now+.05+tail*u;g.setValueAtTime(level*1.1*(1-u*.85),at);g.setTargetAtTime(0,at+.003,.007);}}
 }
 // Every flash on the body lights a flame: each lateral-line pulse (both lines), each
 // scattered twinkle on its own, and the touch startle — detected on the shader clock.
@@ -14152,7 +14156,7 @@ const flameFlashState={key:null,done:{},anchor:null,rate:null};
 function updateFlameFlashes(quiet){
  const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec||typeof ensurePhotophoreDNA!=='function')return;
  const ctx=engine.context,now=ctx.currentTime,st=flameFlashState;
- if(st.key!==spec){st.key=spec;st.edge={};st.anchor=null;}
+ if(st.key!==spec){st.key=spec;st.edge={};st.anchor=null;st.scanned=null;}
  const on=!quiet&&$('viewerSound').checked&&viewer?.morph?.mode!=='fuse';
  const strength=Number($('emissionStrength').value)/100;
  const d=ensurePhotophoreDNA(spec.genome||(spec.genome={}),spec.seed||0);
@@ -14162,10 +14166,13 @@ function updateFlameFlashes(quiet){
  st.anchor={c:now,t:tNow};
  updateSteadyGlow(engine,on&&strength>.05,d,strength);
  if(!on||strength<=.05||!(st.rate>0))return;
- const look=.35*st.rate,startle=typeof photoStartle!=='undefined'&&photoStartle?.specimen===spec?{age:Math.max(0,performance.now()/1000-photoStartle.start)}:null;
- const voice={f:0,r:1,u:1,t:3},step=.004;
- let prev=photophoreFlashChannels(d,tNow-step,startle);
- for(let tt=tNow;tt<=tNow+look;tt+=step){
+ const look=.35*Math.min(st.rate,4),startle=typeof photoStartle!=='undefined'&&photoStartle?.specimen===spec?{age:Math.max(0,performance.now()/1000-photoStartle.start)}:null;
+ const voice={f:0,r:1,u:1,t:3},step=.006;
+ // Only scan the part of the window not seen yet (resets if the clock jumps).
+ let from=st.scanned!=null&&st.scanned>tNow-.2&&st.scanned<tNow+look?st.scanned:tNow;
+ st.scanned=tNow+look;
+ let prev=photophoreFlashChannels(d,from-step,startle);
+ for(let tt=from;tt<=tNow+look;tt+=step){
   const ch=photophoreFlashChannels(d,tt,startle&&{age:startle.age+(tt-tNow)/st.rate});
   for(const [k,v] of Object.entries(ch)){
    const pv=prev[k]??v;if(!(pv<.42&&v>=.42))continue;
