@@ -9127,7 +9127,7 @@ function dynamicBatches(sp){
 }
 
 function upload(gl,mesh){let buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,mesh.data,gl.STATIC_DRAW);let tri=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,tri);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,mesh.tri,gl.STATIC_DRAW);let line=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,line);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,mesh.edges,gl.STATIC_DRAW);return {...mesh,buffer,triBuffer:tri,lineBuffer:line}}
-function destroy(gl,mesh){gl.deleteBuffer(mesh.buffer);gl.deleteBuffer(mesh.triBuffer);gl.deleteBuffer(mesh.lineBuffer)}
+function destroy(gl,mesh){if(!mesh)return;for(const k of ['buffer','triBuffer','lineBuffer','jointBuffer'])if(mesh[k]){gl.deleteBuffer(mesh[k]);mesh[k]=null}}
 
 // Convert a static nine-float vertex to thirteen floats with one extra vec4:
 // distance from root, per-fiber phase, bend axis azimuth and elevation.
@@ -10077,7 +10077,7 @@ function fail(e){
  $('status').textContent='描画エラー';$('status').classList.add('fail');$('message').textContent=msg;const sceneAlert=$('sceneAlert');if(sceneAlert){sceneAlert.textContent='3D描画を継続できませんでした：\n'+msg;sceneAlert.hidden=false;}
  const diag=$('gpuDiag');diag.hidden=false;diag.textContent='GPU診断: '+msg+'\n（スクリーンショットを送ってください）';
 }
-function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>destroy(gl,pt.mesh));(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));if(meshes.localShell)destroy(gl,meshes.localShell);(meshes.localParts||[]).forEach(pt=>{destroy(gl,pt.mesh);for(const copy of pt.worldCopies||[])if(copy)destroy(gl,copy);});}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
+function destroyMeshes(){if(meshes&&gl){destroy(gl,meshes.shell);meshes.parts.forEach(pt=>{destroy(gl,pt.mesh);for(const copy of pt.worldCopies||[])destroy(gl,copy);pt.worldCopies=null;});(meshes.cilia||[]).forEach(mesh=>destroy(gl,mesh));if(meshes.localShell)destroy(gl,meshes.localShell);(meshes.localParts||[]).forEach(pt=>{destroy(gl,pt.mesh);for(const copy of pt.worldCopies||[])if(copy)destroy(gl,copy);});}if(gl)for(const rm of rigMeshes)if(rm.uploaded)destroy(gl,rm.uploaded);rigMeshes=[];meshes=null;}
 function createSpecimenForIndex(i,motion=null){
  if(activeStoredIndividual){
   const rec=activeStoredIndividual.payload.record,g=copyJSON(rec.genome);
@@ -12630,6 +12630,8 @@ function cancelViewerMorph(commit=false){
  if(commit&&m.mode==='camera-pan')for(let i=0;i<3;i++)
   viewer.worldOffset[i]+=m.warpChase?m.warpTarget[i]:2*m.travelDistance*m.travelAxis[i];
  for(const batch of m.batches||[])retireViewerMesh(batch);
+ // A->B keyframe shells are uploaded per transition; free them once it ends.
+ for(const frame of m.morphFrames||[])retireViewerMesh(frame);
  for(const part of [...(m.appendages?.source||[]),...(m.appendages?.target||[])])retireViewerMesh(part);
  if(commit){
   if(viewer.random){if(m.direction<0&&viewer.history[viewer.history.length-1]===m.itemKey)viewer.history.pop();else if(m.direction>0&&m.sourceItemKey){viewer.history.push(m.sourceItemKey);if(viewer.history.length>256)viewer.history.shift();}}
