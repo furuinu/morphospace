@@ -14119,46 +14119,74 @@ function flameNoise(b,when,dur,type,freq,q,level,attack,pan){
  g.gain.setValueAtTime(0,when);g.gain.setTargetAtTime(level,when,attack/3);g.gain.setTargetAtTime(0,when+attack,dur/4);
  src.connect(f);f.connect(g);g.connect(p);p.connect(b.in);src.start(when,Math.random()*.8);src.stop(when+attack+dur+.05);
 }
-function sonarPing(engine,i,sp,photo,strength){
- const b=sonarNodes(engine),ctx=b.context,now=ctx.currentTime;
- const key=String(i);if(now-(b.last[key]||0)<.08)return;b.last[key]=now;
- i=Math.floor(i)%4;
+function sonarPing(engine,i,sp,photo,strength,when){
+ const b=sonarNodes(engine),ctx=b.context,now=Math.max(ctx.currentTime,when||0);
+ i=Math.floor(Number(i))%4;
  const m=soundMusicalProfile(sp),scale=m.scale,root=Math.max(32,Math.min(77,m.root)),n=scale.length;
- const P=typeof photophorePeriod==='function'?photophorePeriod(photo):2;
  const deg=[0,2,4,1][i]||0,j=deg%n;
  let hz=440*Math.pow(2,(root+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
  while(hz<110)hz*=2;while(hz>420)hz*=.5;
- const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
- // Ignition body: a pop (short, tonal thump) blending into a bo (longer breathy whoomph).
+ const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.0088*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
+ // "po…": a soft tonal pop with a little breath under it.
  const o=ctx.createOscillator(),og=ctx.createGain(),op=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(op.pan)op.pan.value=pan;
- const popDur=.06+.12*smooth;
+ const popDur=.07+.1*smooth;
  o.type='sine';o.frequency.setValueAtTime(hz*1.6,now);o.frequency.exponentialRampToValueAtTime(hz*.7,now+popDur);
- og.gain.setValueAtTime(0,now);og.gain.setTargetAtTime(level*(1-.5*smooth),now,.004+.02*smooth);og.gain.setTargetAtTime(0,now+.01+.03*smooth,popDur/3);
+ og.gain.setValueAtTime(0,now);og.gain.setTargetAtTime(level,now,.004+.015*smooth);og.gain.setTargetAtTime(0,now+.012+.025*smooth,popDur/3);
  o.connect(og);og.connect(op);op.connect(b.in);o.start(now);o.stop(now+popDur*3+.1);
- flameNoise(b,now,.08+.35*smooth,'lowpass',260+200*(1-smooth),.7,level*(.7+.9*smooth),.005+.06*smooth,pan);
- // Crackle: sparse soft ticks that thin out, for slow codes, scattered twinkles, the odd flame.
- const crackle=(P>2.6||i===2||Math.random()<.3)?clamp(.4+(P-2)*.15,.3,1):0;
- if(crackle){
-  const count=Math.round(4+10*crackle),span=.5+1.2*crackle;
-  for(let k=0;k<count;k++){const at=now+.06+span*Math.pow(Math.random(),1.6);flameNoise(b,at,.012,'bandpass',1400+1200*Math.random(),2.2,level*(.35+.4*Math.random())*(1-(at-now)/(span+.2)),.0015,pan+(Math.random()-.5)*.3);}
- }
+ flameNoise(b,now,.08+.2*smooth,'lowpass',300,.7,level*.6,.005+.03*smooth,pan);
+ // "…shiri-shiri-shiri": a fine sizzle that lingers and thins out.
+ const tail=1.1+.8*smooth,count=16;
+ for(let k=0;k<count;k++){const u=Math.pow((k+Math.random())/count,1.4),at=now+.05+tail*u;flameNoise(b,at,.016,'bandpass',1500+900*Math.random(),2,level*.55*(1-u*.85),.002,pan+(Math.random()-.5)*.3);}
 }
 // Every flash on the body lights a flame: each lateral-line pulse (both lines), each
 // scattered twinkle on its own, and the touch startle — detected on the shader clock.
-const flameFlashState={key:null,last:{}};
+const flameFlashState={key:null,done:{},anchor:null,rate:null};
+// Lookahead scheduler: rising edges are found on the shader clock a little ahead of
+// time and placed at their exact audio time, so no flash is missed or late even when
+// the audio update runs only every few frames.
 function updateFlameFlashes(quiet){
  const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec||typeof ensurePhotophoreDNA!=='function')return;
- const st=flameFlashState;if(st.key!==spec){st.key=spec;st.last={};}
- if(quiet||!$('viewerSound').checked||viewer?.morph?.mode==='fuse')return;
- const strength=Number($('emissionStrength').value)/100;if(strength<=.05)return;
+ const ctx=engine.context,now=ctx.currentTime,st=flameFlashState;
+ if(st.key!==spec){st.key=spec;st.edge={};st.anchor=null;}
+ const on=!quiet&&$('viewerSound').checked&&viewer?.morph?.mode!=='fuse';
+ const strength=Number($('emissionStrength').value)/100;
  const d=ensurePhotophoreDNA(spec.genome||(spec.genome={}),spec.seed||0);
- const t=bodyTime*Number($('blinkSpeed').value)/100+((spec.seed||0)*.001%1000);
- const startle=typeof photoStartle!=='undefined'&&photoStartle?.specimen===spec?{age:Math.max(0,performance.now()/1000-photoStartle.start)}:null;
- const ch=photophoreFlashChannels(d,t,startle),voice={f:0,r:1,u:1,t:3};
- for(const [k,v] of Object.entries(ch)){
-  const prev=st.last[k]??v;st.last[k]=v;
-  if(prev<.42&&v>=.42)try{sonarPing(engine,k[0]==='s'?2+Number(k.slice(1))*.01+'':voice[k]+(k==='u'?.5:0),spec,d,strength*d.strength)}catch(e){}
+ const speed=Number($('blinkSpeed').value)/100,tNow=bodyTime*speed+((spec.seed||0)*.001%1000);
+ // Clock rate of the shader time against audio time, smoothed.
+ if(st.anchor){const dc=now-st.anchor.c;if(dc>.02){const r=(tNow-st.anchor.t)/dc;st.rate=st.rate==null?r:st.rate+(r-st.rate)*.3;}}
+ st.anchor={c:now,t:tNow};
+ updateSteadyGlow(engine,on&&strength>.05,d,strength);
+ if(!on||strength<=.05||!(st.rate>0))return;
+ const look=.35*st.rate,startle=typeof photoStartle!=='undefined'&&photoStartle?.specimen===spec?{age:Math.max(0,performance.now()/1000-photoStartle.start)}:null;
+ const voice={f:0,r:1,u:1,t:3},step=.004;
+ let prev=photophoreFlashChannels(d,tNow-step,startle);
+ for(let tt=tNow;tt<=tNow+look;tt+=step){
+  const ch=photophoreFlashChannels(d,tt,startle&&{age:startle.age+(tt-tNow)/st.rate});
+  for(const [k,v] of Object.entries(ch)){
+   const pv=prev[k]??v;if(!(pv<.42&&v>=.42))continue;
+   st.edge=st.edge||{};if(Math.abs(tt-(st.edge[k]??-99))<Math.max(.06,d.pulse*.5))continue;st.edge[k]=tt;
+   try{sonarPing(engine,k[0]==='s'?2:voice[k],spec,d,strength*d.strength,now+(tt-tNow)/st.rate)}catch(e){}
+  }
+  prev=ch;
  }
+}
+// Steady organs (ventral rows, head lights) keep a faint "shiri-shiri" sizzle going.
+const steadyGlowBus={context:null};
+function updateSteadyGlow(engine,on,d,strength){
+ const b=steadyGlowBus,ctx=engine.context,now=ctx.currentTime;
+ if(b.context!==ctx){
+  b.context=ctx;const nb=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),nd=nb.getChannelData(0);
+  // Sparse crackle: mostly silence with tiny grains, so it sizzles instead of hissing.
+  for(let k=0;k<nd.length;k++)nd[k]=Math.random()<.012?(Math.random()*2-1)*(.4+.6*Math.random()):(Math.random()*2-1)*.04;
+  b.src=ctx.createBufferSource();b.src.buffer=nb;b.src.loop=true;
+  b.bp=ctx.createBiquadFilter();b.bp.type='bandpass';b.bp.frequency.value=1700;b.bp.Q.value=.9;
+  b.lp=ctx.createBiquadFilter();b.lp.type='lowpass';b.lp.frequency.value=2800;
+  b.g=ctx.createGain();b.g.gain.value=0;b.src.connect(b.bp);b.bp.connect(b.lp);b.lp.connect(b.g);b.src.start();b.dest=null;
+ }
+ const dest=choirBusInput(engine);if(b.dest!==dest){try{b.g.disconnect()}catch(e){}b.g.connect(dest);b.dest=dest;}
+ const steady=(d.rows>0?.6+.15*d.rows:0)+(d.head?.5:0);
+ // About a tenth of a choir voice (sharedVoiceLevel .20) when steady organs are present.
+ b.g.gain.setTargetAtTime(on&&steady>0?.02*clamp(steady,0,1.2)*clamp(strength*d.strength,0,1.4):0,now,.6);
 }
 const heartbeatBus={context:null,gain:null,previous:new Map(),lastHit:new Map(),fastPhase:new Map(),flows:new Map(),enabled:true};
 function updateHeartbeat(individuals,quiet,level){
