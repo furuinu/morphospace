@@ -12063,9 +12063,11 @@ function viewerGlowSetting(id){
 }
 function viewerGlowTint(){const m=viewer.morph;return m?.mode!=='camera-pan'&&m?.emissionA&&m?.emissionB?m.emissionA.tint.map((v,i)=>v+(m.emissionB.tint[i]-v)*m.t):activeEmitColor()}
 function retireViewerMesh(mesh){if(mesh&&!viewer.retired.includes(mesh))viewer.retired.push(mesh)}
-function retireViewerMeshes(group,rigs=[]){if(!group)return;retireViewerMesh(group.shell);for(const p of group.parts)retireViewerMesh(p.mesh);for(const m of group.cilia||[])retireViewerMesh(m);if(group.localShell)retireViewerMesh(group.localShell);for(const p of group.localParts||[])retireViewerMesh(p.mesh);for(const r of rigs)if(r.uploaded)retireViewerMesh(r.uploaded)}
+// Tentacle strands own per-copy GPU clones (strandCopyMesh); retire them with the part.
+function retirePart(p){if(!p)return;retireViewerMesh(p.mesh);for(const c of p.worldCopies||[])retireViewerMesh(c);p.worldCopies=null;}
+function retireViewerMeshes(group,rigs=[]){if(!group)return;retireViewerMesh(group.shell);for(const p of group.parts)retirePart(p);for(const m of group.cilia||[])retireViewerMesh(m);if(group.localShell)retireViewerMesh(group.localShell);for(const p of group.localParts||[])retirePart(p);for(const r of rigs)if(r.uploaded)retireViewerMesh(r.uploaded)}
 function drainViewerRetired(limit=1){
- for(let i=0;i<limit&&viewer.retired.length;i++){const mesh=viewer.retired.shift();for(const key of ['buffer','triBuffer','lineBuffer'])if(mesh[key]){gl.deleteBuffer(mesh[key]);mesh[key]=null}}
+ for(let i=0;i<limit&&viewer.retired.length;i++){const mesh=viewer.retired.shift();for(const key of ['buffer','triBuffer','lineBuffer','jointBuffer'])if(mesh[key]){gl.deleteBuffer(mesh[key]);mesh[key]=null}}
 }
 function discardViewerPreparation(){
  const job=viewer.pending;if(!job)return;viewer.pending=null;if(job.worker)job.worker.terminate();for(const mesh of job.resources)retireViewerMesh(mesh);
