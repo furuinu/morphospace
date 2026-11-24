@@ -14106,7 +14106,7 @@ function sonarNodes(engine){
  if(b.context!==ctx){
   b.context=ctx;b.in=ctx.createGain();b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;
   // Warm the whole flame: nothing bright reaches the ear.
-  b.warm=ctx.createBiquadFilter();b.warm.type='lowpass';b.warm.frequency.value=2600;b.warm.Q.value=.5;
+  b.warm=ctx.createBiquadFilter();b.warm.type='lowpass';b.warm.frequency.value=5200;b.warm.Q.value=.5;
   b.in.connect(b.warm);b.warm.connect(b.out);
   const nb=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),nd=nb.getChannelData(0);for(let k=0;k<nd.length;k++)nd[k]=Math.random()*2-1;b.noise=nb;
   b.last={};
@@ -14127,7 +14127,8 @@ function sonarPing(engine,i,sp,photo,strength,when){
  const m=soundMusicalProfile(sp),scale=m.scale,root=Math.max(32,Math.min(77,m.root)),n=scale.length;
  const deg=[0,2,4,1][i]||0,j=deg%n;
  let hz=440*Math.pow(2,(root+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
- while(hz<110)hz*=2;while(hz>420)hz*=.5;
+ // Phone speakers barely reproduce below ~300 Hz: keep the pop in 300-750 Hz.
+ while(hz<300)hz*=2;while(hz>750)hz*=.5;
  const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
  // "po…": a soft tonal pop with a little breath under it.
  const o=ctx.createOscillator(),og=ctx.createGain(),op=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(op.pan)op.pan.value=pan;
@@ -14138,7 +14139,7 @@ function sonarPing(engine,i,sp,photo,strength,when){
  flameNoise(b,now,.08+.2*smooth,'lowpass',300,.7,level*.6,.005+.03*smooth,pan);
  // "…shiri-shiri-shiri": a fine sizzle that lingers and thins out.
  const tail=1.1+.8*smooth,count=16;
- for(let k=0;k<count;k++){const u=Math.pow((k+Math.random())/count,1.4),at=now+.05+tail*u;flameNoise(b,at,.016,'bandpass',1500+900*Math.random(),2,level*.55*(1-u*.85),.002,pan+(Math.random()-.5)*.3);}
+ for(let k=0;k<count;k++){const u=Math.pow((k+Math.random())/count,1.4),at=now+.05+tail*u;flameNoise(b,at,.022,'bandpass',2200+1400*Math.random(),1.4,level*1.1*(1-u*.85),.002,pan+(Math.random()-.5)*.3);}
 }
 // Every flash on the body lights a flame: each lateral-line pulse (both lines), each
 // scattered twinkle on its own, and the touch startle — detected on the shader clock.
