@@ -3533,6 +3533,17 @@ function photophoreVoiceValues(d,t,startle=null){
  if(startle&&d.startle>.01&&startle.age<d.startleDecay*4)out[3]=clamp(Math.exp(-startle.age/d.startleDecay)*Math.min(1,startle.age*8),0,1);
  return out;
 }
+function photophoreFlashChannels(d,t,startle){
+ const P=photophorePeriod(d),ch={};
+ if(d.lateral){
+  ch.f=photophoreFlash(t-d.wave*.6,d.pulse,d.gap,d.pulses,P);
+  ch.r=photophoreFlash(t+d.wave*.6,d.pulse,d.gap,d.pulses,P);
+  if(d.lateral2>.02)ch.u=photophoreFlash(t+d.pulse*.7,d.pulse,d.gap,d.pulses,P);
+ }
+ if(d.scatter>=.01)for(let k=0;k<6;k++){const h=((Math.sin((k+1)*127.1+d.wavelength*3.1)*43758.5453)%1+1)%1;ch['s'+k]=photophoreFlash(t+h*P*4,d.pulse*1.4,d.gap,1,P*(1+h*1.6));}
+ if(startle&&d.startle>.01&&startle.age<d.startleDecay*4)ch.t=clamp(Math.exp(-startle.age/d.startleDecay)*Math.min(1,startle.age*8),0,1);
+ return ch;
+}
 function wavelengthRGB(nm){
  let r=0,g=0,b=0;
  if(nm<490){g=(nm-440)/50;b=1;}else if(nm<510){g=1;b=(510-nm)/20;}else if(nm<580){r=(nm-510)/70;g=1;}else{r=1;g=Math.max(0,(645-nm)/65);}
@@ -13638,7 +13649,6 @@ function createBioticAudioEngine(context){
     const crossing=part.lastValue!==null&&part.lastValue<threshold&&value>=threshold;
     if(enabled&&crossing&&now-part.onAt>.07){
      part.onAt=now;part.events++;v.blinkEvents++;
-     if(photo&&typeof sonarPing==='function')try{sonarPing(bioticAudio.engine,i,sp,photo,lightStrength)}catch(e){}
      const selected=syllableFor(sp.seed+37,part.events,i,photoRapid?i+1:3);
      part.syllable=selected.label;part.consonant=selected.consonant;part.vowel=selected.vowel;
     }
@@ -14083,41 +14093,72 @@ function updateTentacleSound(quiet,level){
   if(v.pan.pan)v.pan.pan.setTargetAtTime(clamp(g.reduce((a,x)=>a+x.root[0],0)/g.length/1.5,-.8,.8),now,.3);
  });
 }
-// Photophore voice: a sonar ping — "kon------" — instead of a vowel, so the lights no
-// longer crowd the choir. Each flash strikes one ping; the attack softens with longer,
-// smoother pulses, the pitch comes from the organism's scale (a tone per organ system)
-// and rises an octave for fast flash codes, falls for slow ones. A dark shared echo
-// gives the long underwater tail.
+// Photophore voice: a candle catching — a faint "po…", a breathier "bo…", sometimes
+// trailing into "chiri-chiri" crackle. Short sharp flashes pop; long smooth pulses
+// breathe a soft whoomph; slow codes and scattered twinkles crackle on. The pop's pitch
+// sits on the organism's scale (one tone per organ system), but it stays a hushed,
+// mostly noisy sound so it never competes with the choir.
 const sonarBus={context:null,dest:null,last:[0,0,0,0]};
 function sonarNodes(engine){
  const b=sonarBus,ctx=engine.context;
  if(b.context!==ctx){
   b.context=ctx;b.in=ctx.createGain();b.out=ctx.createGain();b.out.gain.value=1;b.dest=null;
-  b.delay=ctx.createDelay(2);b.delay.delayTime.value=.42;b.fb=ctx.createGain();b.fb.gain.value=.38;
-  b.damp=ctx.createBiquadFilter();b.damp.type='lowpass';b.damp.frequency.value=1100;
-  b.in.connect(b.out);b.in.connect(b.delay);b.delay.connect(b.damp);b.damp.connect(b.fb);b.fb.connect(b.delay);
-  const wet=ctx.createGain();wet.gain.value=.45;b.damp.connect(wet);wet.connect(b.out);
-  b.last=[0,0,0,0];
+  // Warm the whole flame: nothing bright reaches the ear.
+  b.warm=ctx.createBiquadFilter();b.warm.type='lowpass';b.warm.frequency.value=2600;b.warm.Q.value=.5;
+  b.in.connect(b.warm);b.warm.connect(b.out);
+  const nb=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),nd=nb.getChannelData(0);for(let k=0;k<nd.length;k++)nd[k]=Math.random()*2-1;b.noise=nb;
+  b.last={};
  }
  const dest=choirBusInput(engine);
  if(b.dest!==dest){try{b.out.disconnect()}catch(e){}b.out.connect(dest);b.dest=dest;}
  return b;
 }
+function flameNoise(b,when,dur,type,freq,q,level,attack,pan){
+ const ctx=b.context,src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
+ src.buffer=b.noise;f.type=type;f.frequency.value=freq;f.Q.value=q;if(p.pan)p.pan.value=pan;
+ g.gain.setValueAtTime(0,when);g.gain.setTargetAtTime(level,when,attack/3);g.gain.setTargetAtTime(0,when+attack,dur/4);
+ src.connect(f);f.connect(g);g.connect(p);p.connect(b.in);src.start(when,Math.random()*.8);src.stop(when+attack+dur+.05);
+}
 function sonarPing(engine,i,sp,photo,strength){
  const b=sonarNodes(engine),ctx=b.context,now=ctx.currentTime;
- if(now-b.last[i]<.1)return;b.last[i]=now;
+ const key=String(i);if(now-(b.last[key]||0)<.08)return;b.last[key]=now;
+ i=Math.floor(i)%4;
  const m=soundMusicalProfile(sp),scale=m.scale,root=Math.max(32,Math.min(77,m.root)),n=scale.length;
- const P=typeof photophorePeriod==='function'?photophorePeriod(photo):2,oct=P<1.4?1:P<3.2?0:-1;
+ const P=typeof photophorePeriod==='function'?photophorePeriod(photo):2;
  const deg=[0,2,4,1][i]||0,j=deg%n;
- let hz=440*Math.pow(2,(root+12*oct+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
- while(hz<160)hz*=2;while(hz>900)hz*=.5;
- const smooth=clamp((photo.pulse-.08)/.52,0,1),attack=.003+.11*smooth*smooth,ring=1.1+1.8*(1-smooth*.4)+(oct<0?.6:0);
- const level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
- const g=ctx.createGain(),p=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(p.pan)p.pan.value=pan;
- g.gain.setValueAtTime(0,now);g.gain.setTargetAtTime(level,now,attack/3);g.gain.setTargetAtTime(0,now+attack,ring/4.5);
- [[1,1],[2.01,.18],[3.02,.05*(1-smooth)]].forEach(([r,a])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type='sine';
-  o.frequency.setValueAtTime(hz*r*1.012,now);o.frequency.exponentialRampToValueAtTime(hz*r,now+.08);og.gain.value=a;o.connect(og);og.connect(g);o.start(now);o.stop(now+attack+ring+.1);});
- g.connect(p);p.connect(b.in);
+ let hz=440*Math.pow(2,(root+scale[j]-scale[0]+12*Math.floor(deg/n)-69)/12);
+ while(hz<110)hz*=2;while(hz>420)hz*=.5;
+ const smooth=clamp((photo.pulse-.08)/.52,0,1),level=.022*clamp(strength,0,1.4),pan=[-.35,.35,0,0][i]||0;
+ // Ignition body: a pop (short, tonal thump) blending into a bo (longer breathy whoomph).
+ const o=ctx.createOscillator(),og=ctx.createGain(),op=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();if(op.pan)op.pan.value=pan;
+ const popDur=.06+.12*smooth;
+ o.type='sine';o.frequency.setValueAtTime(hz*1.6,now);o.frequency.exponentialRampToValueAtTime(hz*.7,now+popDur);
+ og.gain.setValueAtTime(0,now);og.gain.setTargetAtTime(level*(1-.5*smooth),now,.004+.02*smooth);og.gain.setTargetAtTime(0,now+.01+.03*smooth,popDur/3);
+ o.connect(og);og.connect(op);op.connect(b.in);o.start(now);o.stop(now+popDur*3+.1);
+ flameNoise(b,now,.08+.35*smooth,'lowpass',260+200*(1-smooth),.7,level*(.7+.9*smooth),.005+.06*smooth,pan);
+ // Crackle: sparse soft ticks that thin out, for slow codes, scattered twinkles, the odd flame.
+ const crackle=(P>2.6||i===2||Math.random()<.3)?clamp(.4+(P-2)*.15,.3,1):0;
+ if(crackle){
+  const count=Math.round(4+10*crackle),span=.5+1.2*crackle;
+  for(let k=0;k<count;k++){const at=now+.06+span*Math.pow(Math.random(),1.6);flameNoise(b,at,.012,'bandpass',1400+1200*Math.random(),2.2,level*(.35+.4*Math.random())*(1-(at-now)/(span+.2)),.0015,pan+(Math.random()-.5)*.3);}
+ }
+}
+// Every flash on the body lights a flame: each lateral-line pulse (both lines), each
+// scattered twinkle on its own, and the touch startle — detected on the shader clock.
+const flameFlashState={key:null,last:{}};
+function updateFlameFlashes(quiet){
+ const engine=bioticAudio.engine;if(!engine||typeof spec==='undefined'||!spec||typeof ensurePhotophoreDNA!=='function')return;
+ const st=flameFlashState;if(st.key!==spec){st.key=spec;st.last={};}
+ if(quiet||!$('viewerSound').checked||viewer?.morph?.mode==='fuse')return;
+ const strength=Number($('emissionStrength').value)/100;if(strength<=.05)return;
+ const d=ensurePhotophoreDNA(spec.genome||(spec.genome={}),spec.seed||0);
+ const t=bodyTime*Number($('blinkSpeed').value)/100+((spec.seed||0)*.001%1000);
+ const startle=typeof photoStartle!=='undefined'&&photoStartle?.specimen===spec?{age:Math.max(0,performance.now()/1000-photoStartle.start)}:null;
+ const ch=photophoreFlashChannels(d,t,startle),voice={f:0,r:1,u:1,t:3};
+ for(const [k,v] of Object.entries(ch)){
+  const prev=st.last[k]??v;st.last[k]=v;
+  if(prev<.42&&v>=.42)try{sonarPing(engine,k[0]==='s'?2+Number(k.slice(1))*.01+'':voice[k]+(k==='u'?.5:0),spec,d,strength*d.strength)}catch(e){}
+ }
 }
 const heartbeatBus={context:null,gain:null,previous:new Map(),lastHit:new Map(),fastPhase:new Map(),flows:new Map(),enabled:true};
 function updateHeartbeat(individuals,quiet,level){
@@ -14733,7 +14774,7 @@ function renderPureChoir(quiet,state,sp,fade=1){
   const light=blink(i*.31),previous=state.previousLights[i];
   // Use both visual brightness and the rising edge; slow glows sustain longer vowels.
  // Every luminous rise can articulate a note again, in sync with the actual blinking phase.
-  if(emission&&emission.strength>0&&(choirPhotoValues||emission.mode!==0)&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;if(choirPhotoValues&&typeof sonarPing==='function')try{sonarPing(bioticAudio.engine,i,sp,choirPhoto,emission.strength)}catch(e){}}
+  if(emission&&emission.strength>0&&(choirPhotoValues||emission.mode!==0)&&light>.38&&previous<=.38){state.lightTimes[i]=t;state.lightLastHit[i]=t;}
   state.previousLights[i]=light;
   const a=t-state.lightTimes[i],v=state.lights[i];
   // Live shape-to-sound: refresh the oscillator wavetable as the body twists.
@@ -15393,7 +15434,7 @@ function tickBioticAudio(){
  bioticAudio.galleryTick=ctxNow;
  for(const filter of [engine.galleryLow,engine.galleryLow2])filter.frequency.setTargetAtTime(20000,ctxNow,.12);
  engine.galleryVolume.gain.setTargetAtTime(1,ctxNow,.12);
- try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateMorphSound==='function')updateMorphSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateBranchClicks==='function')updateBranchClicks(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateTentacleSound==='function')updateTentacleSound(quiet,Number($('viewerSoundVolume').value)/100)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
+ try{engine.update(individuals,0);updatePureChoir(quiet);if(typeof updateHeartbeat==='function')updateHeartbeat(individuals,quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateMorphSound==='function')updateMorphSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateBranchClicks==='function')updateBranchClicks(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateTentacleSound==='function')updateTentacleSound(quiet,Number($('viewerSoundVolume').value)/100);if(typeof updateFlameFlashes==='function')updateFlameFlashes(quiet)}catch(error){stopBioticAudio('活動音を停止しました：'+error.message);}
 }
 async function startBioticAudio(){
  if(!$('viewerSound').checked||bioticAudio.starting||bioticAudioRunning())return;

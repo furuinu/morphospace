@@ -97,8 +97,14 @@ test('light voices follow the photophore flash code on the shader clock',()=>{
  assert.match(html,/const photo=light\.photophore&&/);assert.match(html,/const lightValues=photo\?photophoreVoiceValues\(photo,photoClock,photoStartleState\)/);
 });
 
-test('photophore flashes speak as sonar pings, not vowels',()=>{
+test('photophore flashes catch like a candle flame',()=>{
  assert.match(html,/function sonarPing\(engine,i,sp,photo,strength\)/);
- assert.match(html,/const smooth=clamp\(\(photo\.pulse-\.08\)\/\.52,0,1\),attack=\.003\+\.11\*smooth\*smooth/,'longer pulses soften the attack');
- assert.match(html,/oct=P<1\.4\?1:P<3\.2\?0:-1/,'fast codes ping higher');
+ assert.match(html,/const popDur=\.06\+\.12\*smooth;/,'smooth pulses lengthen the pop into a bo');
+ assert.match(html,/flameNoise\(b,at,\.012,'bandpass'/,'chiri-chiri crackle');
+});
+
+test('every flash lights its own flame, scattered twinkles included',()=>{
+ const n=run(`(()=>{const d=Object.assign(photophoreFounderDNA(31),{lateral:1,lateral2:.3,scatter:.3,pulses:3,pulse:.2,gap:.3,rest:1,wave:.4});const P=photophorePeriod(d);const last={};let hits=0;for(let t=0;t<P*3;t+=.02){const ch=photophoreFlashChannels(d,t,null);for(const [k,v] of Object.entries(ch)){if((last[k]??v)<.42&&v>=.42)hits++;last[k]=v;}}return hits})()`);
+ assert.ok(n>=27,`flashes ${n}`); // 3 lines x 3 pulses x 3 periods, plus twinkles
+ assert.match(html,/updateFlameFlashes\(quiet\)/);
 });
