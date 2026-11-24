@@ -100,7 +100,7 @@ test('light voices follow the photophore flash code on the shader clock',()=>{
 test('photophore flashes catch like a candle flame',()=>{
  assert.match(html,/function sonarPing\(engine,i,sp,photo,strength,when\)/);
  assert.match(html,/const popDur=\.07\+\.1\*smooth;/);assert.match(html,/const look=\.35\*st\.rate/,'lookahead scheduling');assert.match(html,/function updateSteadyGlow\(engine,on,d,strength\)/,'steady organs sizzle');
- assert.match(html,/flameNoise\(b,at,\.016,'bandpass'/,'shiri-shiri tail');
+ assert.match(html,/flameNoise\(b,at,\.022,'bandpass'/,'shiri-shiri tail');
 });
 
 test('every flash lights its own flame, scattered twinkles included',()=>{
